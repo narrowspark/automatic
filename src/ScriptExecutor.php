@@ -27,18 +27,21 @@ class ScriptExecutor
     protected $io;
 
     /**
-     * @var null|\Composer\Util\ProcessExecutor
+     * @var \Composer\Util\ProcessExecutor
      */
     private $executor;
 
+    /**
+     * @var array
+     */
     private $options;
 
-    public function __construct(Composer $composer, IOInterface $io, array $options, ProcessExecutor $executor = null)
+    public function __construct(Composer $composer, IOInterface $io, array $options, ProcessExecutor $executor)
     {
         $this->composer = $composer;
         $this->io       = $io;
         $this->options  = $options;
-        $this->executor = $executor ?: new ProcessExecutor();
+        $this->executor = $executor;
     }
 
     /**
@@ -51,9 +54,10 @@ class ScriptExecutor
      */
     public function execute(string $type, string $cmd): void
     {
-        $parsedCmd = self::expandTargetDir($this->options, $cmd);
+        $parsedCmd   = self::expandTargetDir($this->options, $cmd);
+        $expandedCmd = $this->expandCmd($type, $parsedCmd);
 
-        if ($expandedCmd = $this->expandCmd($type, $parsedCmd) === null) {
+        if ($expandedCmd === null) {
             return;
         }
 
@@ -109,6 +113,7 @@ class ScriptExecutor
 
     /**
      * @param string $cmd
+     *
      * @return null|string
      */
     private function expandCerebroCmd(string $cmd)

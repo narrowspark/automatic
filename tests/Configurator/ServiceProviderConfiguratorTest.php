@@ -4,10 +4,10 @@ namespace Narrowspark\Discovery\Test\Configurator;
 
 use Composer\Composer;
 use Composer\IO\NullIO;
-use Viserio\Component\Contract\Foundation\Kernel;
 use Narrowspark\Discovery\Configurator\ServiceProviderConfigurator;
 use Narrowspark\Discovery\Package;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use Viserio\Component\Contract\Foundation\Kernel;
 
 class ServiceProviderConfiguratorTest extends MockeryTestCase
 {

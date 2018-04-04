@@ -12,6 +12,7 @@ use Composer\Package\Locker;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
+use Composer\Util\ProcessExecutor;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
@@ -251,7 +252,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
         $jsonContents = $json->read();
 
-        $executor = new ScriptExecutor($this->composer, $this->io, $this->projectOptions);
+        $executor = new ScriptExecutor($this->composer, $this->io, $this->projectOptions, new ProcessExecutor());
 
         foreach ($jsonContents['scripts']['auto-scripts'] as $cmd => $type) {
             $executor->execute($type, $cmd);
@@ -346,21 +347,19 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * @param $packageConfig
+     * @param array $packageConfig
      *
      * @return string
      */
-    private function getPackageQuestion($packageConfig): string
+    private function getPackageQuestion(array $packageConfig): string
     {
-        $question = sprintf('    Review the package at %s.
+        return \sprintf('    Review the package at %s.
     Do you want to execute this package?
     [<comment>y</>] Yes
     [<comment>n</>] No
     [<comment>a</>] Yes for all packages, only for the current installation session
     [<comment>p</>] Yes permanently, never ask again for this project
     (defaults to <comment>n</>): ', $packageConfig['url']);
-
-        return $question;
     }
 
     /**
@@ -377,7 +376,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 'root-dir'      => '',
                 'routes-dir'    => 'routes',
                 'tests-dir'     => 'tests',
-                'storage-dir'   => 'storage'
+                'storage-dir'   => 'storage',
             ],
             $this->composer->getPackage()->getExtra()
         );

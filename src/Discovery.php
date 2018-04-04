@@ -86,7 +86,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->projectOptions = $extra[static::EXTRA_CONFIG_NAME] ?? [];
         $this->vendorDir      = $this->config->get('vendor-dir');
         $this->configurator   = new Configurator($this->composer, $this->io, $this->initOptions());
-        $this->lock           = new Lock(str_replace('composer.json', static::EXTRA_CONFIG_NAME . '.lock', Factory::getComposerFile()));
+        $this->lock           = new Lock(\str_replace('composer.json', static::EXTRA_CONFIG_NAME . '.lock', Factory::getComposerFile()));
     }
 
     /**
@@ -119,7 +119,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $manipulator->removeProperty('name');
         $manipulator->removeProperty('description');
 
-        file_put_contents($json->getPath(), $manipulator->getContents());
+        \file_put_contents($json->getPath(), $manipulator->getContents());
 
         $this->updateComposerLock();
     }
@@ -164,7 +164,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         $this->io->writeError(\sprintf('<info>%s operations</>', \ucwords(static::EXTRA_CONFIG_NAME)));
 
-        $options = array_merge(
+        $options = \array_merge(
             [
                 'allow_auto_install' => false,
                 'ignore'             => [
@@ -191,9 +191,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                             return 'n';
                         }
 
-                        $value = mb_strtolower($value[0]);
+                        $value = \mb_strtolower($value[0]);
 
-                        if (! in_array($value, ['y', 'n', 'a', 'p'], true)) {
+                        if (! \in_array($value, ['y', 'n', 'a', 'p'], true)) {
                             throw new \InvalidArgumentException('Invalid choice');
                         }
 
@@ -310,7 +310,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private function getInstalledPackagesExtraConfiguration(): array
     {
         $composerInstalledFilePath    = $this->vendorDir . '/composer/installed.json';
-        $composerInstalledFileContent = (array) \file_get_contents($composerInstalledFilePath);
+        $composerInstalledFileContent = \json_decode(\file_get_contents($composerInstalledFilePath), true);
 
         foreach ($composerInstalledFileContent as $package) {
             if (isset($package['extra'][static::EXTRA_CONFIG_NAME])) {
@@ -321,7 +321,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                             'package_version' => $package['version'],
                             'url'             => $package['support']['source'] ?? ($package['homepage'] ?? 'url not found'),
                         ],
-                        (array) $package['extra'][static::EXTRA_CONFIG_NAME]
+                        $package['extra'][static::EXTRA_CONFIG_NAME]
                     )
                 );
             }
@@ -340,7 +340,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private function manipulateComposerJsonWithAllowAutoInstall(): void
     {
         $json        = new JsonFile(Factory::getComposerFile());
-        $manipulator = new JsonManipulator(file_get_contents($json->getPath()));
+        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
         $manipulator->addSubNode('extra', static::EXTRA_CONFIG_NAME . '.allow_auto_install', true);
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
@@ -367,7 +367,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     private function initOptions(): array
     {
-        return array_merge(
+        return \array_merge(
             [
                 'app-dir'       => 'app',
                 'config-dir'    => 'config',

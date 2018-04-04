@@ -1,0 +1,21 @@
+dist: trusty
+sudo: required
+language: php
+
+env:
+  global:
+    - TEST="./vendor/bin/phpunit --verbose"
+    - COMPOSER_UP="composer update --no-interaction --prefer-dist --no-progress --profile --no-suggest"
+
+cache:
+  directories:
+    - $HOME/.composer/cache/files
+    - $HOME/.php-cs-fixer
+
+before_install:
+  - stty cols 120
+
+install:
+  - composer require roave/security-advisories:dev-master
+  - composer global require hirak/prestissimo
+  - $COMPOSER_UP

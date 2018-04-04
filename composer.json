@@ -1,0 +1,65 @@
+{
+    "name"       : "narrowspark/discovery",
+    "type"       : "composer-plugin",
+    "description": "Composer plugin for the extra section configuration and unconfiguration keys.",
+    "keywords"   : [
+        "narrowspark",
+        "composer-plugin",
+        "viserio",
+        "discovery"
+    ],
+    "license"    : "MIT",
+    "homepage"   : "http://github.com/narrowspark/framework",
+    "support"    : {
+        "issues": "https://github.com/narrowspark/framework/issues",
+        "source": "https://github.com/narrowspark/framework"
+    },
+    "authors"    : [
+        {
+          "name"    : "Daniel Bannert",
+          "email"   : "d.bannert@anolilab.de",
+          "homepage": "http://www.anolilab.de",
+          "role"    : "Developer"
+        }
+    ],
+    "require": {
+        "php"                                 : "^7.2",
+        "composer-plugin-api"                 : "^1.0"
+    },
+    "require-dev": {
+        "composer/composer"                   : "^1.0",
+        "mockery/mockery"                     : "^1.0",
+        "narrowspark/testing-helper"          : "^6.0",
+        "narrowspark/php-cs-fixer-config"     : "^2.1",
+        "phpunit/phpunit"                     : "^7.0",
+        "phpstan/phpstan"                     : "^0.9",
+        "phpstan/phpstan-phpunit"             : "^0.9",
+        "viserio/foundation"                  : "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Narrowspark\\Discovery\\"        : "src/"
+        },
+        "exclude-from-classmap"               : ["/tests/"]
+    },
+    "autoload-dev": {
+        "files"                               : ["tests/TmpDirMock.php"],
+        "psr-4": {
+            "Narrowspark\\Discovery\\Tests\\" : "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master"                      : "1.0-dev"
+        },
+        "class"                               : "Narrowspark\\Discovery\\Discovery"
+    },
+    "scripts": {
+        "cs"                                  : "php-cs-fixer fix",
+        "test"                                : "phpunit",
+        "coverage"                            : "phpunit --coverage-html=\"build/logs\"",
+        "phpstan"                             : "phpstan analyse -c phpstan.neon -l 7 src"
+    },
+    "minimum-stability"                       : "dev",
+    "prefer-stable"                           : true
+}

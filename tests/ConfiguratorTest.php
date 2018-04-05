@@ -76,7 +76,7 @@ class ConfiguratorTest extends TestCase
 
     public function testConfigureWithProviders()
     {
-        $configurator = new Configurator($this->composer, $this->nullIo, []);
+        $configurator = new Configurator($this->composer, $this->nullIo, ['config-dir' => __DIR__,]);
 
         $package = new Package(
             'test',

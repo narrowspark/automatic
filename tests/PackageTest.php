@@ -67,6 +67,14 @@ class PackageTest extends TestCase
         $options = $this->package->getConfiguratorOptions('env', Package::UNCONFIGURE);
 
         self::assertEquals(['name' => 'value'], $options);
+
+        $options = $this->package->getConfiguratorOptions('test', Package::CONFIGURE);
+
+        self::assertEquals([], $options);
+
+        $options = $this->package->getConfiguratorOptions('test', Package::UNCONFIGURE);
+
+        self::assertEquals([], $options);
     }
 
     public function testGetExtraOptions(): void

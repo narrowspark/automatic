@@ -4,7 +4,7 @@ namespace Narrowspark\Discovery\Configurator;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Composer\Util\Filesystem;
+use Symfony\Component\Filesystem\Filesystem;
 use Narrowspark\Discovery\Package;
 use Narrowspark\Discovery\Path;
 use Narrowspark\Discovery\Traits\ExpandTargetDirTrait;
@@ -24,7 +24,7 @@ abstract class AbstractConfigurator
     protected $io;
 
     /**
-     * @var \Composer\Util\Filesystem
+     * @var \Symfony\Component\Filesystem\Filesystem
      */
     protected $filesystem;
 

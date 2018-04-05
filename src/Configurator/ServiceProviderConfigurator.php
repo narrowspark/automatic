@@ -136,7 +136,7 @@ if ($kernel->isLocal() || $kernel->isRunningUnitTests()) {
         $globalContent      = $this->buildGlobalServiceProviderContent($package, $global);
         $content            = $this->stringInsert($content, $globalContent, $endOfArrayPosition);
 
-        if ($kernelExists === true) {
+        if ($kernelExists === true && \count($local) !== 0) {
             $endOfIfPosition = \mb_strpos($content, "}\n");
 
             $localContent = $this->buildLocalServiceProviderContent($package, $local);

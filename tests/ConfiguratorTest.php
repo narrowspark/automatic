@@ -6,6 +6,7 @@ use Composer\Composer;
 use Composer\IO\NullIO;
 use Narrowspark\Discovery\Configurator;
 use Narrowspark\Discovery\Configurator\AbstractConfigurator;
+use Narrowspark\Discovery\Package;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
@@ -71,5 +72,63 @@ class ConfiguratorTest extends TestCase
         $configurator = new Configurator($this->composer, $this->nullIo, []);
 
         $configurator->add('foo/mock-configurator', \stdClass::class);
+    }
+
+    public function testConfigureWithProviders()
+    {
+        $configurator = new Configurator($this->composer, $this->nullIo, []);
+
+        $package = new Package(
+            'test',
+            __DIR__,
+            [
+                'package_version'  => '1',
+                Package::CONFIGURE => [
+                    'providers' => [
+                        'global' => [
+                            self::class,
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+        $configurator->configure($package);
+
+        $filePath = __DIR__ . '/serviceproviders.php';
+
+        $array = include $filePath;
+
+        self::assertSame(self::class, $array[0]);
+
+        \unlink($filePath);
+    }
+
+    public function testConfigureWithCopy()
+    {
+        $configurator = new Configurator($this->composer, $this->nullIo, []);
+
+        $toFileName = 'copy_of_copy.txt';
+
+        $package = new Package(
+            'Fixtures',
+            __DIR__,
+            [
+                'package_version'  => '1',
+                Package::CONFIGURE => [
+                    'copy' => [
+                        'copy.txt' => $toFileName
+                    ],
+                ],
+            ]
+        );
+
+        $configurator->configure($package);
+
+        $filePath = \sys_get_temp_dir() . '/' . $toFileName;
+
+        self::assertTrue(\file_exists($filePath));
+
+        \unlink($filePath);
     }
 }

@@ -134,17 +134,25 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
 
         self::assertSame(self::class, $array[0]);
 
+        $this->configurator->configure($package);
+
+        self::assertFalse(isset($array[1]));
+
+        \unlink($filePath);
+    }
+
+    public function testUpdateAExistedFileWithGlobalProvider(): void
+    {
         $package = new Package(
-        'test',
-        __DIR__,
+            'test',
+            __DIR__,
             [
                 'package_version'  => '1',
                 Package::CONFIGURE => [
                     'providers' => [
                         'global' => [
                             self::class,
-                            Package::class,
-                        ],
+                        ]
                     ],
                 ],
             ]
@@ -152,7 +160,47 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
 
-        self::assertFalse(isset($array[1]));
+        $kernel = $this->mock(Kernel::class);
+        $kernel->shouldReceive('isLocal')
+            ->andReturn(false);
+        $kernel->shouldReceive('isRunningUnitTests')
+            ->andReturn(true);
+
+        $filePath = __DIR__ . '/serviceproviders.php';
+
+        $array = include $filePath;
+
+        self::assertSame(self::class, $array[0]);
+
+        $package = new Package(
+            'test2',
+            __DIR__,
+            [
+                'package_version'  => '1',
+                Package::CONFIGURE => [
+                    'providers' => [
+                        'global' => [
+                            Package::class,
+                        ]
+                    ],
+                ],
+            ]
+        );
+
+        $this->configurator->configure($package);
+
+        $kernel = $this->mock(Kernel::class);
+        $kernel->shouldReceive('isLocal')
+            ->andReturn(false);
+        $kernel->shouldReceive('isRunningUnitTests')
+            ->andReturn(true);
+
+        $filePath = __DIR__ . '/serviceproviders.php';
+
+        $array = include $filePath;
+
+        self::assertSame(self::class, $array[0]);
+        self::assertSame(Package::class, $array[1]);
 
         \unlink($filePath);
     }

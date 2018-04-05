@@ -71,7 +71,7 @@ final class EnvConfigurator extends AbstractConfigurator
                 $count
             );
 
-            if (! $count) {
+            if (empty($count)) {
                 continue;
             }
 

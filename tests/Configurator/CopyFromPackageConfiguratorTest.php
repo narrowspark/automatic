@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery\Test\Configurator;
 
-
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Narrowspark\Discovery\Configurator\CopyFromPackageConfigurator;
@@ -39,7 +38,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $this->configurator = new CopyFromPackageConfigurator($this->composer, $this->ioMock, []);
     }
 
-    public function testCopyFileFromPackage()
+    public function testCopyFileFromPackage(): void
     {
         $toFileName = 'copy_of_copy.txt';
 
@@ -50,7 +49,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
                 'package_version'  => '1',
                 Package::CONFIGURE => [
                     'copy' => [
-                        'copy.txt' => $toFileName
+                        'copy.txt' => $toFileName,
                     ],
                 ],
             ]
@@ -67,12 +66,12 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
-        self::assertTrue(\file_exists($filePath));
+        self::assertFileExists($filePath);
 
         \unlink($filePath);
     }
 
-    public function testCopyADirWithFileFromPackage()
+    public function testCopyADirWithFileFromPackage(): void
     {
         $toAndFromFileName = '/css/style.css';
 
@@ -83,7 +82,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
                 'package_version'  => '1',
                 Package::CONFIGURE => [
                     'copy' => [
-                        $toAndFromFileName => $toAndFromFileName
+                        $toAndFromFileName => $toAndFromFileName,
                     ],
                 ],
             ]
@@ -102,13 +101,13 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $filePath = $dirPath . '/style.css';
 
         self::assertTrue(\is_dir($dirPath));
-        self::assertTrue(\file_exists($filePath));
+        self::assertFileExists($filePath);
 
         \unlink($filePath);
         \rmdir($dirPath);
     }
 
-    public function testTryCopyAFileThatIsNotFoundFromPackage()
+    public function testTryCopyAFileThatIsNotFoundFromPackage(): void
     {
         $toFileName = 'notfound.txt';
 
@@ -119,7 +118,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
                 'package_version'  => '1',
                 Package::CONFIGURE => [
                     'copy' => [
-                        $toFileName => $toFileName
+                        $toFileName => $toFileName,
                     ],
                 ],
             ]
@@ -130,16 +129,16 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "'. __DIR__ .'/Fixtures/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
+            ->with(['    <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . __DIR__ . '/Fixtures/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
-        self::assertFalse(\file_exists($filePath));
+        self::assertFileNotExists($filePath);
     }
 
-    public function testUnconfigureAFileFromPackage()
+    public function testUnconfigureAFileFromPackage(): void
     {
         $toFileName = 'copy_of_copy.txt';
 
@@ -150,12 +149,12 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
                 'package_version'  => '1',
                 Package::CONFIGURE => [
                     'copy' => [
-                        'copy.txt' => $toFileName
+                        'copy.txt' => $toFileName,
                     ],
                 ],
                 Package::UNCONFIGURE => [
                     'copy' => [
-                        'copy.txt' => $toFileName
+                        'copy.txt' => $toFileName,
                     ],
                 ],
             ]
@@ -180,7 +179,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $this->configurator->unconfigure($package);
     }
 
-    public function testUnconfigureADirWithFileFromPackage()
+    public function testUnconfigureADirWithFileFromPackage(): void
     {
         $toAndFromFileName = '/css/style.css';
 
@@ -191,12 +190,12 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
                 'package_version'  => '1',
                 Package::CONFIGURE => [
                     'copy' => [
-                        $toAndFromFileName => $toAndFromFileName
+                        $toAndFromFileName => $toAndFromFileName,
                     ],
                 ],
                 Package::UNCONFIGURE => [
                     'copy' => [
-                        $toAndFromFileName => $toAndFromFileName
+                        $toAndFromFileName => $toAndFromFileName,
                     ],
                 ],
             ]

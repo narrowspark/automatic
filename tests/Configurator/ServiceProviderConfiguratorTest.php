@@ -152,7 +152,7 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
                     'providers' => [
                         'global' => [
                             self::class,
-                        ]
+                        ],
                     ],
                 ],
             ]
@@ -181,7 +181,7 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
                     'providers' => [
                         'global' => [
                             Package::class,
-                        ]
+                        ],
                     ],
                 ],
             ]

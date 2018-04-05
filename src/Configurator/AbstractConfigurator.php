@@ -4,10 +4,10 @@ namespace Narrowspark\Discovery\Configurator;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Narrowspark\Discovery\Package;
 use Narrowspark\Discovery\Path;
 use Narrowspark\Discovery\Traits\ExpandTargetDirTrait;
+use Symfony\Component\Filesystem\Filesystem;
 
 abstract class AbstractConfigurator
 {

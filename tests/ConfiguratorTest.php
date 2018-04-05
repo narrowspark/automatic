@@ -74,9 +74,9 @@ class ConfiguratorTest extends TestCase
         $configurator->add('foo/mock-configurator', \stdClass::class);
     }
 
-    public function testConfigureWithProviders()
+    public function testConfigureWithProviders(): void
     {
-        $configurator = new Configurator($this->composer, $this->nullIo, ['config-dir' => __DIR__,]);
+        $configurator = new Configurator($this->composer, $this->nullIo, ['config-dir' => __DIR__]);
 
         $package = new Package(
             'test',
@@ -104,7 +104,7 @@ class ConfiguratorTest extends TestCase
         \unlink($filePath);
     }
 
-    public function testConfigureWithCopy()
+    public function testConfigureWithCopy(): void
     {
         $configurator = new Configurator($this->composer, $this->nullIo, []);
 
@@ -117,7 +117,7 @@ class ConfiguratorTest extends TestCase
                 'package_version'  => '1',
                 Package::CONFIGURE => [
                     'copy' => [
-                        'copy.txt' => $toFileName
+                        'copy.txt' => $toFileName,
                     ],
                 ],
             ]
@@ -127,7 +127,7 @@ class ConfiguratorTest extends TestCase
 
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
-        self::assertTrue(\file_exists($filePath));
+        self::assertFileExists($filePath);
 
         \unlink($filePath);
     }

@@ -167,7 +167,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $options = \array_merge(
             [
                 'allow_auto_install' => false,
-                'ignore'             => [
+                'dont-discover'      => [
                     'package' => [],
                 ],
             ],
@@ -177,7 +177,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $allowInstall = false;
 
         foreach ($this->getInstalledPackagesExtraConfiguration() as $name => $packageConfig) {
-            if (\array_key_exists($name, $options['ignore']['package'])) {
+            if (\array_key_exists($name, $options['dont-discover']['package'])) {
                 $this->io->write(\sprintf('<info>Package "%s" was ignored.</>', $name));
 
                 continue;

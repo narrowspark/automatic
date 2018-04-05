@@ -17,11 +17,11 @@ final class Configurator
      * @var array
      */
     public static $configurators = [
-        'composer_script' => ComposerScriptsConfigurator::class,
-        'copy'            => CopyFromPackageConfigurator::class,
-        'env'             => EnvConfigurator::class,
-        'gitignore'       => GitIgnoreConfigurator::class,
-        'providers'       => ServiceProviderConfigurator::class,
+        'composer-scripts' => ComposerScriptsConfigurator::class,
+        'copy'             => CopyFromPackageConfigurator::class,
+        'env'              => EnvConfigurator::class,
+        'gitignore'        => GitIgnoreConfigurator::class,
+        'providers'        => ServiceProviderConfigurator::class,
     ];
 
     /**

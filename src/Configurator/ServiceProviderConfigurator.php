@@ -7,76 +7,14 @@ use Viserio\Component\Foundation\AbstractKernel;
 
 final class ServiceProviderConfigurator extends AbstractConfigurator
 {
-    private const CLASS_SUFIX = '::class';
-
     /**
-     * {@inheritdoc}
-     */
-    public function configure(Package $package): void
-    {
-        $this->write('Enabling the package as a Service Provider.');
-
-        $file = $this->getConfFile();
-
-        if ($this->isPHPFileMarked($package->getName(), $file)) {
-            return;
-        }
-
-        $global = [];
-        $local  = [];
-
-        foreach ($package->getConfiguratorOptions('providers', Package::CONFIGURE) as $name => $providers) {
-            if ($name === 'global') {
-                foreach ($providers as $provider) {
-                    $class = \mb_strpos($provider, self::CLASS_SUFIX) !== false ? $provider : $provider . self::CLASS_SUFIX;
-
-                    $global[$class] = $class;
-                }
-            }
-
-            if ($name === 'local') {
-                foreach ($providers as $provider) {
-                    $class = \mb_strpos($provider, self::CLASS_SUFIX) !== false ? $provider : $provider . self::CLASS_SUFIX;
-
-                    $local[$class] = $class;
-                }
-            }
-        }
-
-        if (\count($global) === 0 && \count($local) === 0) {
-            return;
-        }
-
-        if (\file_exists($file)) {
-            $this->extendFileContent($file, $package, $global, $local);
-        } else {
-            $this->generateServiceProviderFile($file, $package, $global, $local);
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function unconfigure(Package $package): void
-    {
-    }
-
-    /**
-     * Build and dump serviceproviders config file.
+     * Return only the commentary for the global array.
      *
-     * @param string                         $file
-     * @param \Narrowspark\Discovery\Package $package
-     * @param array                          $global
-     * @param array                          $local
-     *
-     * @return void
+     * @return string
      */
-    private function generateServiceProviderFile(string $file, Package $package, array $global, array $local): void
+    public static function getGlobalServiceProviderCommentary(): string
     {
-        $kernelExists = \class_exists(AbstractKernel::class);
-
-        $content = '<?php
-declare(strict_types=1);
+        return '
 
 /*
 |--------------------------------------------------------------------------
@@ -87,16 +25,17 @@ declare(strict_types=1);
 | request to your application. Feel free to add your own services to
 | this array to grant expanded functionality to your applications.
 |
-*/
-$providers = [
-';
-        $content .= $this->buildGlobalServiceProviderContent($package, $global);
+*/';
+    }
 
-        $content .= '];';
-
-        if ($kernelExists === true && \count($local) !== 0) {
-            $content .= '
-/*
+    /**
+     * Return only the commentary for the global array.
+     *
+     * @return string
+     */
+    public static function getLocalServiceProviderCommentary(): string
+    {
+        return '/*
  |--------------------------------------------------------------------------
  | Testing And Local Autoloaded Service Providers
  |--------------------------------------------------------------------------
@@ -106,47 +45,148 @@ $providers = [
  | when the application runs in \'local\' or \'testing\' environments. This allows
  | to increase application performance in the production environment.
  |
- */
-if ($kernel->isLocal() || $kernel->isRunningUnitTests()) {
-';
-            $content .= $this->buildLocalServiceProviderContent($package, $local);
-
-            $content .='}';
-        }
-
-        $content .= "\n\nreturn \$providers;\n";
-
-        $this->dump($file, $content);
+ */';
     }
 
     /**
-     * @param string                         $file
-     * @param \Narrowspark\Discovery\Package $package
-     * @param array                          $global
-     * @param array                          $local
-     *
-     * @return void
+     * {@inheritdoc}
      */
-    private function extendFileContent(string $file, Package $package, array $global, array $local): void
+    public function configure(Package $package): void
     {
-        $content            = \file_get_contents($file);
-        $kernelExists       = \class_exists(AbstractKernel::class);
+        $this->write('Enabling the package as a Narrowspark service-provider');
 
-        $endOfArrayPosition = \mb_strpos($content, "];\n");
-        $globalContent      = $this->buildGlobalServiceProviderContent($package, $global);
-        $content            = $this->stringInsert($content, $globalContent, $endOfArrayPosition);
+        $global = [];
+        $local  = [];
 
-        if ($kernelExists === true && \count($local) !== 0) {
-            $endOfIfPosition = \mb_strpos($content, "}\n");
+        foreach ($package->getConfiguratorOptions('providers', Package::CONFIGURE) as $name => $providers) {
+            if ($name === 'global') {
+                foreach ($providers as $provider) {
+                    $class = \mb_strpos($provider, '::class') !== false ? $provider : $provider . '::class';
 
-            $localContent = $this->buildLocalServiceProviderContent($package, $local);
+                    $global[$class] = $class;
+                }
+            }
 
-            $content = $this->stringInsert($content, $localContent, $endOfIfPosition);
+            if ($name === 'local') {
+                foreach ($providers as $provider) {
+                    $class = \mb_strpos($provider, '::class') !== false ? $provider : $provider . '::class';
+
+                    $local[$class] = $class;
+                }
+            }
         }
 
-        \unlink($file);
+        if (\count($global) === 0 && \count($local) === 0) {
+            return;
+        }
 
-        $this->dump($file, $content);
+        $filePath = $this->getConfFile();
+        $content  = $this->generateServiceProviderFileContent($filePath, $global, $local);
+
+        $this->dump($filePath, $content);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function unconfigure(Package $package): void
+    {
+        $this->write('Disable the Narrowspark service-provider');
+
+        $filePath = $this->getConfFile();
+
+        if (! \is_file($filePath)) {
+            return;
+        }
+
+        $global = [];
+        $local  = [];
+
+        foreach ($package->getConfiguratorOptions('providers', Package::UNCONFIGURE) as $name => $providers) {
+            if ($name === 'global') {
+                foreach ($providers as $provider) {
+                    $class = \mb_strpos($provider, '::class') !== false ? $provider : $provider . '::class';
+
+                    $global[$class] = $class;
+                }
+            }
+
+            if ($name === 'local') {
+                foreach ($providers as $provider) {
+                    $class = \mb_strpos($provider, '::class') !== false ? $provider : $provider . '::class';
+
+                    $local[$class] = $class;
+                }
+            }
+        }
+
+        if (\count($global) === 0 && \count($local) === 0) {
+            return;
+        }
+
+        $content = \file_get_contents($filePath);
+
+        \unlink($filePath);
+
+        foreach ($global as $provider) {
+            $content = \str_replace('    ' . $provider . ',', '', $content);
+        }
+
+        foreach ($local as $provider) {
+            $content = \str_replace('    $providers[] = ' . $provider . ';', '', $content);
+        }
+
+        $this->dump($filePath, $content);
+    }
+
+    /**
+     * Generates the global and local service provider file content.
+     *
+     * @param string $filePath
+     * @param array  $global
+     * @param array  $local
+     *
+     * @return string
+     */
+    private function generateServiceProviderFileContent(string $filePath, array $global, array $local): string
+    {
+        if (\file_exists($filePath)) {
+            $content = \file_get_contents($filePath);
+
+            \unlink($filePath);
+        } else {
+            $content = '<?php
+declare(strict_types=1);';
+        }
+
+        if (\count($global) !== 0) {
+            $endOfArrayPosition = \mb_strpos($content, '];');
+
+            if ($endOfArrayPosition === false) {
+                $content .= $this->createGlobalServiceProviderContentWithCommentary($global);
+            } else {
+                $globalContent = $this->buildGlobalServiceProviderContent($global);
+                $content       = $this->doInsertStringBeforePosition($content, $globalContent, $endOfArrayPosition);
+            }
+        } elseif (\mb_strpos($content, '$providers = [') === false) {
+            $content .= self::getGlobalServiceProviderCommentary();
+            $content .= "\n\$providers = [\n\n];\n\nreturn \$providers;\n";
+        }
+
+        if (\class_exists(AbstractKernel::class) === true && \count($local) !== 0) {
+            $endOfIfPosition     = \mb_strpos($content, "}\n");
+            $endOfReturnPosition = \mb_strpos($content, 'return $providers;');
+
+            if ($endOfIfPosition !== false) {
+                $localContent = $this->buildLocalServiceProviderContent($local);
+                $content      = $this->doInsertStringBeforePosition($content, $localContent, $endOfIfPosition);
+            } elseif ($endOfReturnPosition !== false) {
+                $localContent = $this->createLocalServiceProviderContentWithCommentary($local);
+                $content      = $this->doInsertStringBeforePosition($content, $localContent . "\n\n", $endOfReturnPosition);
+            }
+        }
+
+        return $content;
     }
 
     /**
@@ -154,13 +194,87 @@ if ($kernel->isLocal() || $kernel->isRunningUnitTests()) {
      *
      * @param string $string
      * @param string $insertStr
-     * @param int    $pos
+     * @param int    $position
      *
      * @return string
      */
-    private function stringInsert(string $string, string $insertStr, int $pos): string
+    private function doInsertStringBeforePosition(string $string, string $insertStr, int $position): string
     {
-        return \mb_substr($string, 0, $pos) . $insertStr . \mb_substr($string, $pos);
+        return \mb_substr($string, 0, $position) . $insertStr . \mb_substr($string, $position);
+    }
+
+    /**
+     * Builds a global service provider array value.
+     *
+     * @param array $global
+     *
+     * @return string
+     */
+    private function buildGlobalServiceProviderContent(array $global): string
+    {
+        $globalContent = '';
+
+        foreach ($global as $provider) {
+            $globalContent .= '    ' . $provider . ",\n";
+
+            $this->write(\sprintf('Enabling "%s" as a global service provider.', $provider));
+        }
+
+        return $globalContent;
+    }
+
+    /**
+     * Builds a local service provider array value.
+     *
+     * @param array $local
+     *
+     * @return string
+     */
+    private function buildLocalServiceProviderContent(array $local): string
+    {
+        $localContent = '';
+
+        foreach ($local as $provider) {
+            $localContent .= '    $providers[] = ' . $provider . ";\n";
+
+            $this->write(\sprintf('Enabling "%s" as a local service provider.', $provider));
+        }
+
+        return $localContent;
+    }
+
+    /**
+     * Creates the basic global array with commentary.
+     *
+     * @param array $global
+     *
+     * @return string
+     */
+    private function createGlobalServiceProviderContentWithCommentary(array $global): string
+    {
+        $content  = self::getGlobalServiceProviderCommentary();
+        $content .= "\n\$providers = [\n";
+        $content .= $this->buildGlobalServiceProviderContent($global);
+        $content .= "];\n\nreturn \$providers;\n";
+
+        return $content;
+    }
+
+    /**
+     * Creates the local basic array with commentary.
+     *
+     * @param array $local
+     *
+     * @return string
+     */
+    private function createLocalServiceProviderContentWithCommentary(array $local): string
+    {
+        $content = self::getLocalServiceProviderCommentary();
+        $content .= "\nif (\$kernel->isLocal() || \$kernel->isRunningUnitTests()) {\n";
+        $content .= $this->buildLocalServiceProviderContent($local);
+        $content .= '}';
+
+        return $content;
     }
 
     /**
@@ -176,78 +290,18 @@ if ($kernel->isLocal() || $kernel->isRunningUnitTests()) {
     /**
      * Dump file content.
      *
-     * @param string $file
+     * @param string $filePath
      * @param string $content
      *
      * @return void
      */
-    private function dump(string $file, string $content): void
+    private function dump(string $filePath, string $content): void
     {
-        \file_put_contents($file, $content);
+        \file_put_contents($filePath, $content);
+        \chmod($filePath, 0777);
 
         if (\function_exists('opcache_invalidate')) {
-            \opcache_invalidate($file);
+            \opcache_invalidate($filePath);
         }
-    }
-
-    /**
-     * @param \Narrowspark\Discovery\Package $package
-     * @param array                          $global
-     *
-     * @return string
-     */
-    private function buildGlobalServiceProviderContent(Package $package, array $global): string
-    {
-        $globalContent = $this->markPHPData($package->getName());
-
-        foreach ($global as $provider) {
-            $globalContent .= '    ' . $provider . ",\n";
-
-            $this->write(\sprintf('Enabling "%s" as a global service provider.', $provider));
-        }
-
-        return $globalContent;
-    }
-
-    /**
-     * @param \Narrowspark\Discovery\Package $package
-     * @param array                          $local
-     *
-     * @return string
-     */
-    private function buildLocalServiceProviderContent(Package $package, array $local): string
-    {
-        $localContent = $this->markPHPData($package->getName());
-
-        foreach ($local as $provider) {
-            $localContent .= '    $providers[] = ' . $provider . ";\n";
-
-            $this->write(\sprintf('Enabling "%s" as a local service provider.', $provider));
-        }
-
-        return $localContent;
-    }
-
-    /**
-     * @param string $packageName
-     * @param string $file
-     *
-     * @return bool
-     */
-    private function isPHPFileMarked(string $packageName, string $file): bool
-    {
-        return \is_file($file) && \mb_strpos(\file_get_contents($file), \sprintf("* > %s\n    */", $packageName)) !== false;
-    }
-
-    /**
-     * Mark a php file with the package name.
-     *
-     * @param string $packageName
-     *
-     * @return string
-     */
-    private function markPHPData(string $packageName): string
-    {
-        return \sprintf("   /**\n    * > %s\n    */\r\n", $packageName);
     }
 }

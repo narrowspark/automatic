@@ -24,7 +24,8 @@
     ],
     "require": {
         "php"                                 : "^7.2",
-        "composer-plugin-api"                 : "^1.0"
+        "composer-plugin-api"                 : "^1.0",
+        "ext-mbstring"                        : "*"
     },
     "require-dev": {
         "composer/composer"                   : "^1.0",

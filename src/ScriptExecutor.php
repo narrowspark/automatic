@@ -36,6 +36,14 @@ class ScriptExecutor
      */
     private $options;
 
+    /**
+     * Create a new ScriptExecutor instance.
+     *
+     * @param \Composer\Composer             $composer
+     * @param \Composer\IO\IOInterface       $io
+     * @param array                          $options
+     * @param \Composer\Util\ProcessExecutor $executor
+     */
     public function __construct(Composer $composer, IOInterface $io, array $options, ProcessExecutor $executor)
     {
         $this->composer = $composer;
@@ -71,19 +79,19 @@ class ScriptExecutor
             $cmdOutput->write($buffer, false, OutputInterface::OUTPUT_RAW);
         };
 
-        $this->io->writeError(sprintf('Executing script %s', $parsedCmd), $this->io->isVerbose());
+        $this->io->writeError(\sprintf('Executing script %s', $parsedCmd), $this->io->isVerbose());
 
         $exitCode = $this->executor->execute($expandedCmd, $outputHandler);
 
-        $code = 0 === $exitCode ? ' <info>[OK]</info>' : ' <error>[KO]</error>';
+        $code = $exitCode === 0 ? ' <info>[OK]</info>' : ' <error>[KO]</error>';
 
         if ($this->io->isVerbose()) {
-            $this->io->writeError(sprintf('Executed script %s %s', $cmd, $code));
+            $this->io->writeError(\sprintf('Executed script %s %s', $cmd, $code));
         } else {
             $this->io->writeError($code);
         }
 
-        if (0 !== $exitCode) {
+        if ($exitCode !== 0) {
             $this->io->writeError(' <error>[KO]</error>');
             $this->io->writeError(sprintf('<error>Script %s returned with error code %s</error>', $cmd, $exitCode));
 
@@ -97,7 +105,13 @@ class ScriptExecutor
         }
     }
 
-    private function expandCmd(string $type, string $cmd)
+    /**
+     * @param string $type
+     * @param string $cmd
+     *
+     * @return null|string
+     */
+    private function expandCmd(string $type, string $cmd): ?string
     {
         switch ($type) {
             case 'cerebro-cmd':
@@ -107,7 +121,7 @@ class ScriptExecutor
             case 'script':
                 return $cmd;
             default:
-                throw new \InvalidArgumentException(sprintf('Command type "%s" is not valid.', $type));
+                throw new \InvalidArgumentException(\sprintf('Command type "%s" is not valid.', $type));
         }
     }
 
@@ -116,7 +130,7 @@ class ScriptExecutor
      *
      * @return null|string
      */
-    private function expandCerebroCmd(string $cmd)
+    private function expandCerebroCmd(string $cmd): ?string
     {
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
 
@@ -126,7 +140,7 @@ class ScriptExecutor
             return null;
         }
 
-        $console = \ escapeshellarg($this->options['root-dir'] . '/cerebro');
+        $console = \escapeshellarg($this->options['root-dir'] . '/cerebro');
 
         if ($this->io->isDecorated()) {
             $console .= ' --ansi';
@@ -137,6 +151,8 @@ class ScriptExecutor
 
     /**
      * @param string $cmd
+     *
+     * @throws \RuntimeException
      *
      * @return string
      */
@@ -151,7 +167,7 @@ class ScriptExecutor
         $arguments = $phpFinder->findArguments();
 
         if ($env = (string) (\getenv('COMPOSER_ORIGINAL_INIS'))) {
-            $paths = \explode(PATH_SEPARATOR, $env);
+            $paths = \explode(\PATH_SEPARATOR, $env);
             $ini   = \array_shift($paths);
         } else {
             $ini = \php_ini_loaded_file();

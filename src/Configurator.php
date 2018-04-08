@@ -71,7 +71,7 @@ final class Configurator
     public function add(string $name, string $configurator): void
     {
         if (isset(self::$configurators[$name])) {
-            throw new \InvalidArgumentException(sprintf('Configurator with the name "%s" already exists.', $name));
+            throw new \InvalidArgumentException(\sprintf('Configurator with the name "%s" already exists.', $name));
         }
 
         if (! \is_subclass_of($configurator, AbstractConfigurator::class)) {
@@ -89,7 +89,7 @@ final class Configurator
     public function configure(Package $package): void
     {
         foreach (\array_keys(self::$configurators) as $key) {
-            if ($package->hasConfiguratorKey($key, Package::CONFIGURE)) {
+            if ($package->hasConfiguratorKey($key)) {
                 $this->get($key)->configure($package);
             }
         }
@@ -102,8 +102,8 @@ final class Configurator
      */
     public function unconfigure(Package $package): void
     {
-        foreach (array_keys(self::$configurators) as $key) {
-            if ($package->hasConfiguratorKey($key, Package::UNCONFIGURE)) {
+        foreach (\array_keys(self::$configurators) as $key) {
+            if ($package->hasConfiguratorKey($key)) {
                 $this->get($key)->unconfigure($package);
             }
         }

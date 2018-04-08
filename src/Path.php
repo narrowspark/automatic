@@ -8,6 +8,8 @@ namespace Narrowspark\Discovery;
 final class Path
 {
     /**
+     * Path to the working directory.
+     *
      * @var string
      */
     private $workingDirectory;
@@ -39,9 +41,9 @@ final class Path
      */
     public function relativize(string $absolutePath): string
     {
-        $relativePath = str_replace($this->workingDirectory, '.', $absolutePath);
+        $relativePath = \str_replace($this->workingDirectory, '.', $absolutePath);
 
-        return is_dir($absolutePath) ? rtrim($relativePath, '/') . '/' : $relativePath;
+        return \is_dir($absolutePath) ? \rtrim($relativePath, '/') . '/' : $relativePath;
     }
 
     /**
@@ -51,10 +53,10 @@ final class Path
      */
     public function concatenate(array $parts): string
     {
-        $first = array_shift($parts);
+        $first = \array_shift($parts);
 
-        return array_reduce($parts, function (string $initial, string $next): string {
-            return rtrim($initial, '/') . '/' . ltrim($next, '/');
+        return \array_reduce($parts, function (string $initial, string $next): string {
+            return \rtrim($initial, '/') . '/' . \ltrim($next, '/');
         }, $first);
     }
 }

@@ -21,7 +21,7 @@ final class EnvConfigurator extends AbstractConfigurator
 
         $data = '';
 
-        foreach ($package->getConfiguratorOptions('env', Package::CONFIGURE) as $key => $value) {
+        foreach ($package->getConfiguratorOptions('env') as $key => $value) {
             if ($key[0] === '#' && \is_numeric(\mb_substr($key, 1))) {
                 $data .= '# ' . $value . "\n";
 
@@ -57,12 +57,13 @@ final class EnvConfigurator extends AbstractConfigurator
         foreach (['.env', '.env.dist'] as $file) {
             $env = getcwd() . '/' . $file;
 
+            // @codeCoverageIgnoreStart
             if (! \file_exists($env)) {
                 continue;
             }
+            // @codeCoverageIgnoreEnd
 
-            $count = 0;
-
+            $count    = 0;
             $contents = \preg_replace(
                 \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getName(), $package->getName(), "\n"),
                 '',

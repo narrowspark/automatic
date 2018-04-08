@@ -5,16 +5,6 @@ namespace Narrowspark\Discovery;
 final class Package
 {
     /**
-     * @var string
-     */
-    public const CONFIGURE = 'configure';
-
-    /**
-     * @var string
-     */
-    public const UNCONFIGURE = 'unconfigure';
-
-    /**
      * The package name.
      *
      * @var string
@@ -53,9 +43,9 @@ final class Package
     {
         $this->name       = $name;
         $this->vendorPath = $vendorDirPath;
-        $this->version    = $packageConfig['package_version'];
+        $this->version    = $packageConfig['version'];
 
-        unset($packageConfig['package_version']);
+        unset($packageConfig['version']);
 
         $this->packageConfig = $packageConfig;
     }
@@ -92,27 +82,25 @@ final class Package
      * Checks if configurator key exits in extra narrowspark config.
      *
      * @param string $key
-     * @param string $type
      *
      * @return bool
      */
-    public function hasConfiguratorKey(string $key, string $type): bool
+    public function hasConfiguratorKey(string $key): bool
     {
-        return \array_key_exists($key, $this->packageConfig[$type]);
+        return \array_key_exists($key, $this->packageConfig);
     }
 
     /**
      * Returns the needed options for the right configurator.
      *
      * @param string $key
-     * @param string $type
      *
      * @return array
      */
-    public function getConfiguratorOptions($key, $type): array
+    public function getConfiguratorOptions(string $key): array
     {
-        if ($this->hasConfiguratorKey($key, $type)) {
-            return (array) $this->packageConfig[$type][$key];
+        if ($this->hasConfiguratorKey($key)) {
+            return (array) $this->packageConfig[$key];
         }
 
         return [];

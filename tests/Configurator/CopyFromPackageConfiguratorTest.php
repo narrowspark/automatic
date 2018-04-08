@@ -46,11 +46,9 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'Fixtures',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'copy' => [
-                        'copy.txt' => $toFileName,
-                    ],
+                'version'          => '1',
+                'copy'             => [
+                    'copy.txt' => $toFileName,
                 ],
             ]
         );
@@ -79,11 +77,9 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'Fixtures',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'copy' => [
-                        $toAndFromFileName => $toAndFromFileName,
-                    ],
+                'version'          => '1',
+                'copy'             => [
+                    $toAndFromFileName => $toAndFromFileName,
                 ],
             ]
         );
@@ -115,11 +111,9 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'Fixtures',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'copy' => [
-                        $toFileName => $toFileName,
-                    ],
+                'version'          => '1',
+                'copy'             => [
+                    $toFileName => $toFileName,
                 ],
             ]
         );
@@ -146,16 +140,9 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'Fixtures',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'copy' => [
-                        'copy.txt' => $toFileName,
-                    ],
-                ],
-                Package::UNCONFIGURE => [
-                    'copy' => [
-                        'copy.txt' => $toFileName,
-                    ],
+                'version'          => '1',
+                'copy'             => [
+                    'copy.txt' => $toFileName,
                 ],
             ]
         );
@@ -187,16 +174,9 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'Fixtures',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'copy' => [
-                        $toAndFromFileName => $toAndFromFileName,
-                    ],
-                ],
-                Package::UNCONFIGURE => [
-                    'copy' => [
-                        $toAndFromFileName => $toAndFromFileName,
-                    ],
+                'version' => '1',
+                'copy'    => [
+                    $toAndFromFileName => $toAndFromFileName,
                 ],
             ]
         );

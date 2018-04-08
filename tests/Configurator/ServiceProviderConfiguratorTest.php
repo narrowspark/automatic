@@ -49,12 +49,10 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        self::class,
                     ],
                 ],
             ]
@@ -79,15 +77,13 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
-                        'local' => [
-                            self::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        self::class,
+                    ],
+                    'local' => [
+                        self::class,
                     ],
                 ],
             ]
@@ -120,12 +116,10 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        self::class,
                     ],
                 ],
             ]
@@ -154,24 +148,16 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        self::class,
                     ],
                 ],
             ]
         );
 
         $this->configurator->configure($package);
-
-        $kernel = $this->mock(Kernel::class);
-        $kernel->shouldReceive('isLocal')
-            ->andReturn(false);
-        $kernel->shouldReceive('isRunningUnitTests')
-            ->andReturn(true);
 
         $filePath = __DIR__ . '/serviceproviders.php';
 
@@ -185,24 +171,16 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test2',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            Package::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        Package::class,
                     ],
                 ],
             ]
         );
 
         $this->configurator->configure($package);
-
-        $kernel = $this->mock(Kernel::class);
-        $kernel->shouldReceive('isLocal')
-            ->andReturn(false);
-        $kernel->shouldReceive('isRunningUnitTests')
-            ->andReturn(true);
 
         $filePath = __DIR__ . '/serviceproviders.php';
 
@@ -220,15 +198,13 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
-                        'local' => [
-                            self::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        self::class,
+                    ],
+                    'local' => [
+                        self::class,
                     ],
                 ],
             ]
@@ -256,15 +232,13 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test2',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            Package::class,
-                        ],
-                        'local' => [
-                            Package::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        Package::class,
+                    ],
+                    'local' => [
+                        Package::class,
                     ],
                 ],
             ]
@@ -296,12 +270,10 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'local' => [
-                            self::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'local' => [
+                        self::class,
                     ],
                 ],
             ]
@@ -332,10 +304,8 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                    ],
+                'version'   => '1',
+                'providers' => [
                 ],
             ]
         );
@@ -350,12 +320,10 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [],
-                        'local'  => [],
-                    ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [],
+                    'local'  => [],
                 ],
             ]
         );
@@ -367,25 +335,68 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
         self::assertFileNotExists($filePath);
     }
 
+    /**
+     * @FIXME Find a good way to remove providers from other required packages
+     */
+//    public function testConfigureRemoveAProviderFromAOtherPackageOnlyIfPackageIsRequired(): void
+//    {
+//        $package = new Package(
+//            'test',
+//            __DIR__,
+//            [
+//                'version'   => '1',
+//                'requires'  => [],
+//                'providers' => [
+//                    'global' => [
+//                        self::class,
+//                    ],
+//                ],
+//            ]
+//        );
+//
+//        $this->configurator->configure($package);
+//
+//        $package = new Package(
+//            'test2',
+//            __DIR__,
+//            [
+//                'version'  => '1',
+//                'requires' => [
+//                    'test',
+//                ],
+//                'providers' => [
+//                    'global' => [
+//                        Package::class,
+//                    ],
+//                    'remove' => [
+//                        self::class,
+//                    ],
+//                ],
+//            ]
+//        );
+//
+//        $this->configurator->configure($package);
+//
+//        $filePath = __DIR__ . '/serviceproviders.php';
+//
+//        $array = include $filePath;
+//
+//        self::assertSame(Package::class, $array[0]);
+//        self::assertFalse(isset($array[1]));
+//
+//        \unlink($filePath);
+//    }
+
     public function testUnconfigureWithGlobalProviders(): void
     {
         $package = new Package(
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
-                    ],
-                ],
-                Package::UNCONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        self::class,
                     ],
                 ],
             ]
@@ -398,12 +409,10 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test2',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            Package::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        Package::class,
                     ],
                 ],
             ]
@@ -427,25 +436,13 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
-                        'local' => [
-                            Package::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        self::class,
                     ],
-                ],
-                Package::UNCONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
-                        'local' => [
-                            Package::class,
-                        ],
+                    'local' => [
+                        Package::class,
                     ],
                 ],
             ]
@@ -453,21 +450,6 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
         $this->configurator->unconfigure($package);
-
-        $package = new Package(
-            'test2',
-            __DIR__,
-            [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            Package::class,
-                        ],
-                    ],
-                ],
-            ]
-        );
 
         $kernel = $this->mock(Kernel::class);
         $kernel->shouldReceive('isLocal')
@@ -481,72 +463,7 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
 
         $array = include $filePath;
 
-        self::assertSame(Package::class, $array[0]);
-        self::assertFalse(isset($array[1], $array[2]));
-
-        \unlink($filePath);
-    }
-
-    public function testUnconfigureWithEmptyProvidersConfig(): void
-    {
-        $package = new Package(
-            'test',
-            __DIR__,
-            [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            Package::class,
-                        ],
-                    ],
-                ],
-                Package::UNCONFIGURE => [
-                    'providers' => [
-                    ],
-                ],
-            ]
-        );
-
-        $this->configurator->configure($package);
-        $this->configurator->unconfigure($package);
-
-        $filePath = __DIR__ . '/serviceproviders.php';
-
-        $array = include $filePath;
-
-        self::assertSame(Package::class, $array[0]);
-
-        $package = new Package(
-            'test',
-            __DIR__,
-            [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            Package::class,
-                        ],
-                    ],
-                ],
-                Package::UNCONFIGURE => [
-                    'providers' => [
-                        'global' => [],
-                        'local'  => [],
-                    ],
-                ],
-            ]
-        );
-
-        $this->configurator->configure($package);
-        $this->configurator->unconfigure($package);
-
-        $filePath = __DIR__ . '/serviceproviders.php';
-
-        $array = include $filePath;
-
-        self::assertSame(Package::class, $array[0]);
-        self::assertSame(Package::class, $array[1]);
+        self::assertFalse(isset($array[0], $array[1]));
 
         \unlink($filePath);
     }

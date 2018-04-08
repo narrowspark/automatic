@@ -14,7 +14,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     {
         $this->write('Copying files');
 
-        foreach ($package->getConfiguratorOptions('copy', Package::CONFIGURE) as $from => $to) {
+        foreach ($package->getConfiguratorOptions('copy') as $from => $to) {
             try {
                 $this->filesystem->copy(
                     $this->path->concatenate([$package->getPackagePath(), $from]),
@@ -39,7 +39,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     {
         $this->write('Removing files');
 
-        foreach ($package->getConfiguratorOptions('copy', Package::UNCONFIGURE) as $source) {
+        foreach ($package->getConfiguratorOptions('copy') as $source) {
             try {
                 $this->filesystem->remove($this->path->concatenate([$this->path->getWorkingDir(), $source]));
 

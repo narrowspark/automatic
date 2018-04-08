@@ -56,4 +56,19 @@ class LockTest extends TestCase
 
         self::assertSame(['tests' => ['version' => '3']], $this->lock->read());
     }
+
+    public function testGet(): void
+    {
+        $execptedArray = ['version' => '1'];
+
+        $this->lock->add('test', $execptedArray);
+
+        $execptedHash = 'f5s6daf2s8d6a51f6a9s';
+
+        $this->lock->add('hash', $execptedHash);
+
+        self::assertSame($execptedArray, $this->lock->get('test'));
+        self::assertSame($execptedHash, $this->lock->get('hash'));
+        self::assertNull($this->lock->get('test2'));
+    }
 }

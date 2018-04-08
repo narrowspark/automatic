@@ -16,7 +16,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         [$json, $autoScripts] = $this->getComposerContentAndAutoScripts();
 
-        $autoScripts = \array_merge($autoScripts, $package->getConfiguratorOptions('composer_script', Package::CONFIGURE));
+        $autoScripts = \array_merge($autoScripts, $package->getConfiguratorOptions('composer-scripts'));
 
         $this->manipulateAndWrite($json, $autoScripts);
     }
@@ -28,7 +28,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         [$json, $autoScripts] = $this->getComposerContentAndAutoScripts();
 
-        foreach (\array_keys($package->getConfiguratorOptions('composer_script', Package::UNCONFIGURE)) as $cmd) {
+        foreach (\array_keys($package->getConfiguratorOptions('composer-scripts')) as $cmd) {
             unset($autoScripts[$cmd]);
         }
 

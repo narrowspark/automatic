@@ -25,16 +25,9 @@ class PackageTest extends TestCase
         parent::setUp();
 
         $this->config = [
-            'package_version'  => '1',
-            Package::CONFIGURE => [
-                'copy' => [
-                    'from' => 'to',
-                ],
-            ],
-            Package::UNCONFIGURE => [
-                'env' => [
-                    'name' => 'value',
-                ],
+            'version'  => '1',
+            'copy'     => [
+                'from' => 'to',
             ],
         ];
         $this->package = new Package('test', __DIR__, $this->config);
@@ -60,19 +53,11 @@ class PackageTest extends TestCase
 
     public function testGetConfiguratorOptions(): void
     {
-        $options = $this->package->getConfiguratorOptions('copy', Package::CONFIGURE);
+        $options = $this->package->getConfiguratorOptions('copy');
 
         self::assertEquals(['from' => 'to'], $options);
 
-        $options = $this->package->getConfiguratorOptions('env', Package::UNCONFIGURE);
-
-        self::assertEquals(['name' => 'value'], $options);
-
-        $options = $this->package->getConfiguratorOptions('test', Package::CONFIGURE);
-
-        self::assertEquals([], $options);
-
-        $options = $this->package->getConfiguratorOptions('test', Package::UNCONFIGURE);
+        $options = $this->package->getConfiguratorOptions('test');
 
         self::assertEquals([], $options);
     }
@@ -81,7 +66,7 @@ class PackageTest extends TestCase
     {
         $config = $this->config;
 
-        unset($config['package_version']);
+        unset($config['version']);
 
         self::assertEquals($config, $this->package->getExtraOptions());
     }

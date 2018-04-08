@@ -7,12 +7,16 @@ use Composer\Json\JsonFile;
 class Lock
 {
     /**
-     * @var JsonFile
+     * Instance of JsonFile.
+     *
+     * @var \Composer\Json\JsonFile
      */
     private $json;
 
     /**
-     * @var array|mixed
+     * Array of all lock file data.
+     *
+     * @var array
      */
     private $lock = [];
 
@@ -31,27 +35,45 @@ class Lock
     }
 
     /**
+     * Check if key exists in lock file.
+     *
      * @param string $name
      *
      * @return bool
      */
     public function has(string $name): bool
     {
-        return array_key_exists($name, $this->lock);
+        return \array_key_exists($name, $this->lock);
     }
 
     /**
-     * @param string $name
-     * @param array  $data
+     * Add a value to the lock file.
+     *
+     * @param string       $name
+     * @param array|string $data
      *
      * @return void
      */
-    public function add(string $name, array $data): void
+    public function add(string $name, $data): void
     {
         $this->lock[$name] = $data;
     }
 
     /**
+     * Get package data found in the lock file.
+     *
+     * @param string $name
+     *
+     * @return null|array|string
+     */
+    public function get(string $name)
+    {
+        return $this->lock[$name] ?? null;
+    }
+
+    /**
+     * Remove a package from lock file.
+     *
      * @param string $name
      */
     public function remove(string $name): void

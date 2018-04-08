@@ -105,6 +105,6 @@ abstract class AbstractConfigurator
      */
     protected function markData(string $packageName, string $data): string
     {
-        return sprintf('###> %s ###%s%s%s###< %s ###%s', $packageName, "\n", \rtrim($data, "\r\n"), "\n", $packageName, "\n");
+        return sprintf("###> %s ###\n%s\n###< %s ###\n", $packageName, \rtrim($data, "\r\n"), $packageName);
     }
 }

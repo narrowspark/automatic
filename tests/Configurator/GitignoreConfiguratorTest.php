@@ -63,12 +63,10 @@ class GitignoreConfiguratorTest extends TestCase
             'FooBundle',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'git_ignore' => [
-                        '.env',
-                        '/%PUBLIC_DIR%/css/',
-                    ],
+                'version'    => '1',
+                'gitignore'  => [
+                    '.env',
+                    '/%PUBLIC_DIR%/css/',
                 ],
             ]
         );
@@ -84,12 +82,10 @@ EOF;
             'BarBundle',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'git_ignore' => [
-                        '/var/',
-                        '/vendor/',
-                    ],
+                'version'    => '1',
+                'gitignore'  => [
+                    '/var/',
+                    '/vendor/',
                 ],
             ]
         );
@@ -121,5 +117,44 @@ EOF;
         $this->configurator->unconfigure($package2);
 
         self::assertStringEqualsFile($this->gitignorePath, '');
+    }
+
+    public function testUnconfigureWithNotFoundPackage(): void
+    {
+        $package = new Package(
+            'FooBundle',
+            __DIR__,
+            [
+                'version'    => '1',
+                'gitignore'  => [
+                    '.env',
+                    '/%PUBLIC_DIR%/css/',
+                ],
+            ]
+        );
+
+        $this->configurator->configure($package);
+
+        $package = new Package(
+            'BarBundle',
+            __DIR__,
+            [
+                'version'    => '1',
+                'gitignore'  => [
+                    '/var/',
+                    '/vendor/',
+                ],
+            ]
+        );
+
+        $this->configurator->unconfigure($package);
+
+        $gitignoreContents1 = <<<'EOF'
+###> FooBundle ###
+.env
+/public/css/
+###< FooBundle ###
+EOF;
+        self::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
     }
 }

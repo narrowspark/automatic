@@ -37,7 +37,7 @@ class ConfiguratorTest extends TestCase
     {
         $configurator = new Configurator($this->composer, $this->nullIo, []);
 
-        $ref      = new ReflectionClass($configurator);
+        $ref = new ReflectionClass($configurator);
         // @var \ReflectionProperty $property
         $property = $ref->getProperty('configurators');
         $property->setAccessible(true);
@@ -82,12 +82,10 @@ class ConfiguratorTest extends TestCase
             'test',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'providers' => [
-                        'global' => [
-                            self::class,
-                        ],
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        self::class,
                     ],
                 ],
             ]
@@ -114,11 +112,9 @@ class ConfiguratorTest extends TestCase
             'Fixtures',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'copy' => [
-                        'copy.txt' => $toFileName,
-                    ],
+                'version'  => '1',
+                'copy'     => [
+                    'copy.txt' => $toFileName,
                 ],
             ]
         );
@@ -128,6 +124,35 @@ class ConfiguratorTest extends TestCase
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
         self::assertFileExists($filePath);
+
+        \unlink($filePath);
+    }
+
+    public function testUnconfigureWithProviders(): void
+    {
+        $configurator = new Configurator($this->composer, $this->nullIo, ['config-dir' => __DIR__]);
+
+        $package = new Package(
+            'test',
+            __DIR__,
+            [
+                'version'   => '1',
+                'providers' => [
+                    'global' => [
+                        self::class,
+                    ],
+                ],
+            ]
+        );
+
+        $configurator->configure($package);
+        $configurator->unconfigure($package);
+
+        $filePath = __DIR__ . '/serviceproviders.php';
+
+        $array = include $filePath;
+
+        self::assertFalse(isset($array[0]));
 
         \unlink($filePath);
     }

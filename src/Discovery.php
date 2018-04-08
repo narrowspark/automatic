@@ -5,6 +5,8 @@ namespace Narrowspark\Discovery;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Factory;
+use Composer\Installer\PackageEvent;
+use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
@@ -16,8 +18,6 @@ use Composer\Util\ProcessExecutor;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
-    public const EXTRA_CONFIG_NAME = 'narrowspark';
-
     /**
      * A composer instance.
      *
@@ -45,13 +45,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $configurator;
 
     /**
-     * A composer config instance.
-     *
-     * @var \Composer\Config
-     */
-    private $config;
-
-    /**
      * A array of project options.
      *
      * @var array
@@ -73,30 +66,57 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $shouldUpdateComposerLock = false;
 
     /**
+     * Get the narrowspark.lock file path.
+     *
+     * @return string
+     */
+    public static function getNarrowsparkLockFile(): string
+    {
+        return \str_replace(
+            'composer.json',
+            'narrowspark.lock',
+            Factory::getComposerFile()
+        );
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
         $this->composer = $composer;
         $this->io       = $io;
-        $this->config   = $composer->getConfig();
 
-        $extra = $composer->getPackage()->getExtra();
-
-        $this->projectOptions = $extra[static::EXTRA_CONFIG_NAME] ?? [];
-        $this->vendorDir      = $this->config->get('vendor-dir');
+        $this->projectOptions = $this->initProjectOptions();
+        $this->vendorDir      = $composer->getConfig()->get('vendor-dir');
         $this->configurator   = new Configurator($this->composer, $this->io, $this->initOptions());
-        $this->lock           = new Lock(\str_replace('composer.json', static::EXTRA_CONFIG_NAME . '.lock', Factory::getComposerFile()));
+        $this->lock           = new Lock(self::getNarrowsparkLockFile());
+
+        $this->lock->add('_readme', [
+            'This file locks the narrowspark information of your project to a known state',
+            'This file is @generated automatically',
+        ]);
+        $this->lock->add('content-hash', \md5((string) \random_int(100, 999)));
     }
 
     /**
-     * Get the configurator instance.
+     * Get the Configurator instance.
      *
      * @return \Narrowspark\Discovery\Configurator
      */
     public function getConfigurator(): Configurator
     {
         return $this->configurator;
+    }
+
+    /**
+     * Get the Lock instance.
+     *
+     * @return \Narrowspark\Discovery\Lock
+     */
+    public function getLock(): Lock
+    {
+        return $this->lock;
     }
 
     /**
@@ -137,6 +157,31 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Execute on composer uninstall event.
+     *
+     * @param \Composer\Installer\PackageEvent $event
+     *
+     * @return void
+     */
+    public function uninstall(PackageEvent $event): void
+    {
+        $name = $event->getName();
+
+        if (! $this->lock->has($name)) {
+            return;
+        }
+
+        $this->io->writeError(\sprintf('  - Unconfiguring %s', $name));
+
+        $package = new Package($name, $this->vendorDir, (array) $this->lock->get($name));
+
+        $this->configurator->unconfigure($package);
+
+        $this->lock->remove($name);
+        $this->lock->write();
+    }
+
+    /**
      * Execute on composer update event.
      *
      * @param \Composer\Script\Event $event
@@ -162,43 +207,21 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function dump(Event $event): void
     {
-        $this->io->writeError(\sprintf('<info>%s operations</>', \ucwords(static::EXTRA_CONFIG_NAME)));
-
-        $options = \array_merge(
-            [
-                'allow_auto_install' => false,
-                'dont-discover'      => [
-                    'package' => [],
-                ],
-            ],
-            $this->projectOptions
-        );
+        $this->io->writeError(\sprintf('<info>%s operations</info>', \ucwords('narrowspark')));
 
         $allowInstall = false;
 
         foreach ($this->getInstalledPackagesExtraConfiguration() as $name => $packageConfig) {
-            if (\array_key_exists($name, $options['dont-discover']['package'])) {
-                $this->io->write(\sprintf('<info>Package "%s" was ignored.</>', $name));
+            if (\array_key_exists($name, $this->projectOptions['dont-discover']['package'])) {
+                $this->io->write(\sprintf('<info>Package "%s" was ignored.</info>', $name));
 
                 continue;
             }
 
-            if ($allowInstall === false && $options['allow_auto_install'] === false) {
+            if ($allowInstall === false && $this->projectOptions['allow_auto_install'] === false) {
                 $answer = $this->io->askAndValidate(
                     $this->getPackageQuestion($packageConfig),
-                    function ($value) {
-                        if ($value === null) {
-                            return 'n';
-                        }
-
-                        $value = \mb_strtolower($value[0]);
-
-                        if (! \in_array($value, ['y', 'n', 'a', 'p'], true)) {
-                            throw new \InvalidArgumentException('Invalid choice');
-                        }
-
-                        return $value;
-                    },
+                    [$this, 'validateAnswerValue'],
                     null,
                     'n'
                 );
@@ -218,17 +241,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
             $package = new Package($name, $this->vendorDir, $packageConfig);
 
-            if (isset($packageConfig['configure'])) {
-                $this->io->writeError(\sprintf('  - Configuring %s', $name));
+            $this->io->writeError(\sprintf('  - Configuring %s', $name));
 
-                $this->configurator->configure($package);
-            }
-
-            if (isset($packageConfig['unconfigure'])) {
-                $this->io->writeError(\sprintf('  - Unconfiguring %s', $name));
-
-                $this->configurator->unconfigure($package);
-            }
+            $this->configurator->configure($package);
         }
 
         $this->lock->write();
@@ -265,12 +280,37 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
+            'auto-scripts'                        => 'executeAutoScripts',
+            PackageEvents::POST_PACKAGE_UNINSTALL => 'uninstall',
             ScriptEvents::POST_CREATE_PROJECT_CMD => 'configureProject',
             ScriptEvents::POST_INSTALL_CMD        => 'install',
             ScriptEvents::POST_UPDATE_CMD         => 'update',
             ScriptEvents::POST_AUTOLOAD_DUMP      => 'dump',
-            'auto-scripts'                        => 'executeAutoScripts',
         ];
+    }
+
+    /**
+     * Validate given input answer.
+     *
+     * @param null|string $value
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return string
+     */
+    public function validateAnswerValue(?string $value): string
+    {
+        if ($value === null) {
+            return 'n';
+        }
+
+        $value = \mb_strtolower($value[0]);
+
+        if (! \in_array($value, ['y', 'n', 'a', 'p'], true)) {
+            throw new \InvalidArgumentException('Invalid choice');
+        }
+
+        return $value;
     }
 
     /**
@@ -282,10 +322,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     private function updateComposerLock(): void
     {
-        $lock         = \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
-        $composerJson = \file_get_contents(Factory::getComposerFile());
+        $composerLockPath = \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
+        $composerJson     = \file_get_contents(Factory::getComposerFile());
 
-        $lockFile = new JsonFile($lock, null, $this->io);
+        $lockFile = new JsonFile($composerLockPath, null, $this->io);
         $locker   = new Locker(
             $this->io,
             $lockFile,
@@ -313,15 +353,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $composerInstalledFileContent = \json_decode(\file_get_contents($composerInstalledFilePath), true);
 
         foreach ($composerInstalledFileContent as $package) {
-            if (isset($package['extra'][static::EXTRA_CONFIG_NAME])) {
+            if (isset($package['extra']['narrowspark'])) {
                 $this->lock->add(
                     $package['name'],
                     \array_merge(
                         [
-                            'package_version' => $package['version'],
-                            'url'             => $package['support']['source'] ?? ($package['homepage'] ?? 'url not found'),
+                            'version' => $package['version'],
+                            'url'     => $package['support']['source'] ?? ($package['homepage'] ?? 'url not found'),
                         ],
-                        $package['extra'][static::EXTRA_CONFIG_NAME]
+                        $package['extra']['narrowspark']
                     )
                 );
             }
@@ -341,7 +381,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         $json        = new JsonFile(Factory::getComposerFile());
         $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
-        $manipulator->addSubNode('extra', static::EXTRA_CONFIG_NAME . '.allow_auto_install', true);
+        $manipulator->addSubNode('extra', 'narrowspark.allow_auto_install', true);
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
     }
@@ -355,14 +395,37 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         return \sprintf('    Review the package at %s.
     Do you want to execute this package?
-    [<comment>y</>] Yes
-    [<comment>n</>] No
-    [<comment>a</>] Yes for all packages, only for the current installation session
-    [<comment>p</>] Yes permanently, never ask again for this project
-    (defaults to <comment>n</>): ', $packageConfig['url']);
+    [<comment>y</comment>] Yes
+    [<comment>n</comment>] No
+    [<comment>a</comment>] Yes for all packages, only for the current installation session
+    [<comment>p</comment>] Yes permanently, never ask again for this project
+    (defaults to <comment>n</comment>): ', $packageConfig['url']);
     }
 
     /**
+     * Init default options.
+     *
+     * @return array
+     */
+    private function initProjectOptions(): array
+    {
+        $extra       = $this->composer->getPackage()->getExtra();
+        $rootOptions = $extra['narrowspark'] ?? [];
+
+        return \array_merge(
+            [
+                'allow_auto_install' => false,
+                'dont-discover'      => [
+                    'package' => [],
+                ],
+            ],
+            $rootOptions
+        );
+    }
+
+    /**
+     * Init default extra options.
+     *
      * @return array
      */
     private function initOptions(): array

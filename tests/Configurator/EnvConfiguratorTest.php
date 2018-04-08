@@ -70,20 +70,18 @@ class EnvConfiguratorTest extends MockeryTestCase
             'TEST PACKAGE',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'env' => [
-                        'APP_ENV'         => 'test bar',
-                        'APP_DEBUG'       => '0',
-                        'APP_PARAGRAPH'   => "foo\n\"bar\"\\t",
-                        'DATABASE_URL'    => 'mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7',
-                        'MAILER_URL'      => 'null://localhost',
-                        'MAILER_USER'     => 'narrow',
-                        '#1'              => 'Comment 1',
-                        '#2'              => 'Comment 3',
-                        '#TRUSTED_SECRET' => 's3cretf0rt3st"<>',
-                        'APP_SECRET'      => 's3cretf0rt3st"<>',
-                    ],
+                'version'          => '1',
+                'env'              => [
+                    'APP_ENV'         => 'test bar',
+                    'APP_DEBUG'       => '0',
+                    'APP_PARAGRAPH'   => "foo\n\"bar\"\\t",
+                    'DATABASE_URL'    => 'mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7',
+                    'MAILER_URL'      => 'null://localhost',
+                    'MAILER_USER'     => 'narrow',
+                    '#1'              => 'Comment 1',
+                    '#2'              => 'Comment 3',
+                    '#TRUSTED_SECRET' => 's3cretf0rt3st"<>',
+                    'APP_SECRET'      => 's3cretf0rt3st"<>',
                 ],
             ]
         );
@@ -125,10 +123,8 @@ EOF;
             'env2',
             __DIR__,
             [
-                'package_version'  => '1',
-                Package::CONFIGURE => [
-                    'env' => $envConfig,
-                ],
+                'version' => '1',
+                'env'     => $envConfig,
             ]
         );
 
@@ -152,10 +148,8 @@ EOF;
             'env2',
             __DIR__,
             [
-                'package_version'    => '1',
-                Package::UNCONFIGURE => [
-                    'env' => $envConfig,
-                ],
+                'version'            => '1',
+                'env'                => $envConfig,
             ]
         );
 

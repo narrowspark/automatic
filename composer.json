@@ -60,7 +60,11 @@
         "cs"                                  : "php-cs-fixer fix",
         "test"                                : "phpunit",
         "coverage"                            : "phpunit --coverage-html=\"build/logs\"",
-        "phpstan"                             : "phpstan analyse -c phpstan.neon -l 7 src"
+        "phpstan"                             : "phpstan analyse -c phpstan.neon -l 7 src --memory-limit=-1"
+    },
+    "config": {
+        "preferred-install"                   : "dist",
+        "optimize-autoloader"                 : true
     },
     "minimum-stability"                       : "dev",
     "prefer-stable"                           : true

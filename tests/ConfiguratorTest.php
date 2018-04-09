@@ -4,8 +4,8 @@ namespace Narrowspark\Discovery\Test;
 
 use Composer\Composer;
 use Composer\IO\NullIO;
+use Narrowspark\Discovery\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Discovery\Configurator;
-use Narrowspark\Discovery\Configurator\AbstractConfigurator;
 use Narrowspark\Discovery\Package;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -44,7 +44,7 @@ class ConfiguratorTest extends TestCase
 
         self::assertArrayNotHasKey('mock-configurator', $property->getValue($configurator));
 
-        $mockConfigurator = $this->getMockForAbstractClass(AbstractConfigurator::class, [$this->composer, $this->nullIo, []]);
+        $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
         $configurator->add('mock-configurator', get_class($mockConfigurator));
 
         self::assertArrayHasKey('mock-configurator', $property->getValue($configurator));
@@ -58,16 +58,16 @@ class ConfiguratorTest extends TestCase
     {
         $configurator = new Configurator($this->composer, $this->nullIo, []);
 
-        $mockConfigurator = $this->getMockForAbstractClass(AbstractConfigurator::class, [$this->composer, $this->nullIo, []]);
+        $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
         $configurator->add('mock-configurator', get_class($mockConfigurator));
         $configurator->add('mock-configurator', get_class($mockConfigurator));
     }
 
     /**
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Configurator class "stdClass" must extend the class "Narrowspark\Discovery\Configurator\AbstractConfigurator".
+     * @expectedExceptionMessage Configurator class "stdClass" must extend the class "Narrowspark\Discovery\Common\Contract\Configurator".
      */
-    public function testAddWithoutAbstractConfiguratorClass(): void
+    public function testAddWithoutConfiguratorContractClass(): void
     {
         $configurator = new Configurator($this->composer, $this->nullIo, []);
 

@@ -4,7 +4,9 @@ namespace Narrowspark\Discovery;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Narrowspark\Discovery\Configurator\AbstractConfigurator;
+use Narrowspark\Discovery\Common\Contract\Configurator as ConfiguratorContract;
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
+use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Discovery\Configurator\CopyFromPackageConfigurator;
 use Narrowspark\Discovery\Configurator\EnvConfigurator;
@@ -66,27 +68,29 @@ final class Configurator
      * @param string $name
      * @param string $configurator
      *
+     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     *
      * @return void
      */
     public function add(string $name, string $configurator): void
     {
         if (isset(self::$configurators[$name])) {
-            throw new \InvalidArgumentException(\sprintf('Configurator with the name "%s" already exists.', $name));
+            throw new InvalidArgumentException(\sprintf('Configurator with the name "%s" already exists.', $name));
         }
 
-        if (! \is_subclass_of($configurator, AbstractConfigurator::class)) {
-            throw new \InvalidArgumentException(\sprintf('Configurator class "%s" must extend the class "%s".', $configurator, AbstractConfigurator::class));
+        if (! \is_subclass_of($configurator, ConfiguratorContract::class)) {
+            throw new InvalidArgumentException(\sprintf('Configurator class "%s" must extend the class "%s".', $configurator, ConfiguratorContract::class));
         }
 
         static::$configurators[$name] = $configurator;
     }
 
     /**
-     * @param \Narrowspark\Discovery\Package $package
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
      *
      * @return void
      */
-    public function configure(Package $package): void
+    public function configure(PackageContract $package): void
     {
         foreach (\array_keys(self::$configurators) as $key) {
             if ($package->hasConfiguratorKey($key)) {
@@ -96,11 +100,11 @@ final class Configurator
     }
 
     /**
-     * @param \Narrowspark\Discovery\Package $package
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
      *
      * @return void
      */
-    public function unconfigure(Package $package): void
+    public function unconfigure(PackageContract $package): void
     {
         foreach (\array_keys(self::$configurators) as $key) {
             if ($package->hasConfiguratorKey($key)) {
@@ -112,9 +116,9 @@ final class Configurator
     /**
      * @param string $key
      *
-     * @return \Narrowspark\Discovery\Configurator\AbstractConfigurator
+     * @return \Narrowspark\Discovery\Common\Contract\Configurator
      */
-    private function get(string $key): AbstractConfigurator
+    private function get(string $key): ConfiguratorContract
     {
         if (isset($this->cache[$key])) {
             return $this->cache[$key];

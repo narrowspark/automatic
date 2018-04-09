@@ -1,7 +1,7 @@
 {
     "name"       : "narrowspark/discovery",
     "type"       : "composer-plugin",
-    "description": "Composer plugin for the extra section configuration and unconfiguration keys.",
+    "description": "Composer plugin for narrowspark automated configuration.",
     "keywords"   : [
         "narrowspark",
         "composer-plugin",
@@ -9,10 +9,10 @@
         "discovery"
     ],
     "license"    : "MIT",
-    "homepage"   : "http://github.com/narrowspark/framework",
+    "homepage"   : "http://github.com/narrowspark/discovery",
     "support"    : {
-        "issues": "https://github.com/narrowspark/framework/issues",
-        "source": "https://github.com/narrowspark/framework"
+        "issues": "https://github.com/narrowspark/discovery/issues",
+        "source": "https://github.com/narrowspark/discovery"
     },
     "authors"    : [
         {
@@ -25,7 +25,8 @@
     "require": {
         "php"                                 : "^7.2",
         "composer-plugin-api"                 : "^1.0",
-        "ext-mbstring"                        : "*"
+        "ext-mbstring"                        : "*",
+        "narrowspark/discovery-common"        : "^0.1.0"
     },
     "require-dev": {
         "composer/composer"                   : "^1.0",

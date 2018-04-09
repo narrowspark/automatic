@@ -17,7 +17,7 @@ Installation
 Use [Composer](https://getcomposer.org/) to install this package:
 
 ```sh
-composer require narroswpark/discovery
+composer require narrowspark/discovery
 ```
 
 Usage

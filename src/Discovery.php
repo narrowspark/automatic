@@ -15,6 +15,7 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
+use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
@@ -294,7 +295,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @param null|string $value
      *
-     * @throws \InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
      *
      * @return string
      */
@@ -307,7 +308,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $value = \mb_strtolower($value[0]);
 
         if (! \in_array($value, ['y', 'n', 'a', 'p'], true)) {
-            throw new \InvalidArgumentException('Invalid choice');
+            throw new InvalidArgumentException('Invalid choice');
         }
 
         return $value;

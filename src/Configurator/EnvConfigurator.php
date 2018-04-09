@@ -2,14 +2,15 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery\Configurator;
 
-use Narrowspark\Discovery\Package;
+use Narrowspark\Discovery\Common\Configurator\AbstractConfigurator;
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 
 final class EnvConfigurator extends AbstractConfigurator
 {
     /**
      * {@inheritdoc}
      */
-    public function configure(Package $package): void
+    public function configure(PackageContract $package): void
     {
         $this->write('Added environment variable defaults');
 
@@ -37,7 +38,7 @@ final class EnvConfigurator extends AbstractConfigurator
             $data .= "$key=$value\n";
         }
 
-        if (! file_exists(getcwd() . '/.env')) {
+        if (! \file_exists(getcwd() . '/.env')) {
             \copy($distenv, getcwd() . '/.env');
         }
 
@@ -50,7 +51,7 @@ final class EnvConfigurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
-    public function unconfigure(Package $package): void
+    public function unconfigure(PackageContract $package): void
     {
         $this->write('Remove environment variables');
 

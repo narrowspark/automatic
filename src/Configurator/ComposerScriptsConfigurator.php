@@ -5,14 +5,15 @@ namespace Narrowspark\Discovery\Configurator;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
-use Narrowspark\Discovery\Package;
+use Narrowspark\Discovery\Common\Configurator\AbstractConfigurator;
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 
 final class ComposerScriptsConfigurator extends AbstractConfigurator
 {
     /**
      * {@inheritdoc}
      */
-    public function configure(Package $package): void
+    public function configure(PackageContract $package): void
     {
         [$json, $autoScripts] = $this->getComposerContentAndAutoScripts();
 
@@ -24,7 +25,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
-    public function unconfigure(Package $package): void
+    public function unconfigure(PackageContract $package): void
     {
         [$json, $autoScripts] = $this->getComposerContentAndAutoScripts();
 

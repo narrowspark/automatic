@@ -2,7 +2,8 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery\Configurator;
 
-use Narrowspark\Discovery\Package;
+use Narrowspark\Discovery\Common\Configurator\AbstractConfigurator;
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Symfony\Component\Filesystem\Exception\IOException;
 
 final class CopyFromPackageConfigurator extends AbstractConfigurator
@@ -10,7 +11,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
-    public function configure(Package $package): void
+    public function configure(PackageContract $package): void
     {
         $this->write('Copying files');
 
@@ -35,7 +36,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
-    public function unconfigure(Package $package): void
+    public function unconfigure(PackageContract $package): void
     {
         $this->write('Removing files');
 

@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery;
 
-final class Package
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
+
+final class Package implements PackageContract
 {
     /**
      * The package name.
@@ -51,9 +53,7 @@ final class Package
     }
 
     /**
-     * Get the package name.
-     *
-     * @return string
+     * {@inheritdoc}
      */
     public function getName(): string
     {
@@ -61,9 +61,7 @@ final class Package
     }
 
     /**
-     * Get the package version.
-     *
-     * @return string
+     * {@inheritdoc}
      */
     public function getVersion(): string
     {
@@ -71,7 +69,7 @@ final class Package
     }
 
     /**
-     * @return string
+     * {@inheritdoc}
      */
     public function getPackagePath(): string
     {
@@ -79,11 +77,7 @@ final class Package
     }
 
     /**
-     * Checks if configurator key exits in extra narrowspark config.
-     *
-     * @param string $key
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function hasConfiguratorKey(string $key): bool
     {
@@ -91,11 +85,7 @@ final class Package
     }
 
     /**
-     * Returns the needed options for the right configurator.
-     *
-     * @param string $key
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getConfiguratorOptions(string $key): array
     {
@@ -107,9 +97,7 @@ final class Package
     }
 
     /**
-     * Returns the extra config for narrowspark.
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getExtraOptions(): array
     {

@@ -7,7 +7,9 @@ use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\IO\IOInterface;
 use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Util\ProcessExecutor;
-use Narrowspark\Discovery\Traits\ExpandTargetDirTrait;
+use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Common\Exception\RuntimeException;
+use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -17,21 +19,29 @@ class ScriptExecutor
     use ExpandTargetDirTrait;
 
     /**
+     * A Composer instance.
+     *
      * @var \Composer\Composer
      */
     protected $composer;
 
     /**
+     * A instance of a IOInterface.
+     *
      * @var \Composer\IO\IOInterface
      */
     protected $io;
 
     /**
+     * A ProcessExecutor instance.
+     *
      * @var \Composer\Util\ProcessExecutor
      */
     private $executor;
 
     /**
+     * A array of root project options.
+     *
      * @var array
      */
     private $options;
@@ -109,6 +119,8 @@ class ScriptExecutor
      * @param string $type
      * @param string $cmd
      *
+     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     *
      * @return null|string
      */
     private function expandCmd(string $type, string $cmd): ?string
@@ -121,7 +133,7 @@ class ScriptExecutor
             case 'script':
                 return $cmd;
             default:
-                throw new \InvalidArgumentException(\sprintf('Command type "%s" is not valid.', $type));
+                throw new InvalidArgumentException(\sprintf('Command type "%s" is not valid.', $type));
         }
     }
 
@@ -152,7 +164,7 @@ class ScriptExecutor
     /**
      * @param string $cmd
      *
-     * @throws \RuntimeException
+     * @throws \Narrowspark\Discovery\Common\Exception\RuntimeException
      *
      * @return string
      */
@@ -161,7 +173,7 @@ class ScriptExecutor
         $phpFinder = new PhpExecutableFinder();
 
         if (! $php = $phpFinder->find(false)) {
-            throw new \RuntimeException('The PHP executable could not be found, add it to your PATH and try again.');
+            throw new RuntimeException('The PHP executable could not be found, add it to your PATH and try again.');
         }
 
         $arguments = $phpFinder->findArguments();

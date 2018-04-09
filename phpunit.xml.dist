@@ -15,7 +15,7 @@
     </php>
 
     <testsuites>
-        <testsuite name="Narrowspark Discovery Component Test Suite">
+        <testsuite name="Narrowspark Discovery Test Suite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>

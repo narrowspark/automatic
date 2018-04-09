@@ -2,7 +2,8 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery\Configurator;
 
-use Narrowspark\Discovery\Package;
+use Narrowspark\Discovery\Common\Configurator\AbstractConfigurator;
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Viserio\Component\Foundation\AbstractKernel;
 
 final class ServiceProviderConfigurator extends AbstractConfigurator
@@ -51,7 +52,7 @@ final class ServiceProviderConfigurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
-    public function configure(Package $package): void
+    public function configure(PackageContract $package): void
     {
         $this->write('Enabling the package as a Narrowspark service-provider');
 
@@ -75,7 +76,7 @@ final class ServiceProviderConfigurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
-    public function unconfigure(Package $package): void
+    public function unconfigure(PackageContract $package): void
     {
         $this->write('Disable the Narrowspark service-provider');
 
@@ -127,14 +128,14 @@ final class ServiceProviderConfigurator extends AbstractConfigurator
     /**
      * Generates the global and local service provider file content.
      *
-     * @param \Narrowspark\Discovery\Package $package
-     * @param string                         $filePath
-     * @param array                          $global
-     * @param array                          $local
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param string                                         $filePath
+     * @param array                                          $global
+     * @param array                                          $local
      *
      * @return string
      */
-    private function generateServiceProviderFileContent(Package $package, string $filePath, array $global, array $local): string
+    private function generateServiceProviderFileContent(PackageContract $package, string $filePath, array $global, array $local): string
     {
         if (\file_exists($filePath)) {
             $content = \file_get_contents($filePath);
@@ -192,12 +193,12 @@ declare(strict_types=1);';
     /**
      * Builds a global service provider array value.
      *
-     * @param \Narrowspark\Discovery\Package $package
-     * @param array                          $global
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param array                                          $global
      *
      * @return string
      */
-    private function buildGlobalServiceProviderContent(Package $package, array $global): string
+    private function buildGlobalServiceProviderContent(PackageContract $package, array $global): string
     {
         $globalContent = '';
 
@@ -213,12 +214,12 @@ declare(strict_types=1);';
     /**
      * Builds a local service provider array value.
      *
-     * @param \Narrowspark\Discovery\Package $package
-     * @param array                          $local
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param array                                          $local
      *
      * @return string
      */
-    private function buildLocalServiceProviderContent(Package $package, array $local): string
+    private function buildLocalServiceProviderContent(PackageContract $package, array $local): string
     {
         $localContent = '';
 
@@ -234,12 +235,12 @@ declare(strict_types=1);';
     /**
      * Creates the basic global array with commentary.
      *
-     * @param \Narrowspark\Discovery\Package $package
-     * @param array                          $global
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param array                                          $global
      *
      * @return string
      */
-    private function createGlobalServiceProviderContentWithCommentary(Package $package, array $global): string
+    private function createGlobalServiceProviderContentWithCommentary(PackageContract $package, array $global): string
     {
         $content  = self::getGlobalServiceProviderCommentary();
         $content .= "\n\$providers = [\n";
@@ -252,12 +253,12 @@ declare(strict_types=1);';
     /**
      * Creates the local basic array with commentary.
      *
-     * @param \Narrowspark\Discovery\Package $package
-     * @param array                          $local
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param array                                          $local
      *
      * @return string
      */
-    private function createLocalServiceProviderContentWithCommentary(Package $package, array $local): string
+    private function createLocalServiceProviderContentWithCommentary(PackageContract $package, array $local): string
     {
         $content = self::getLocalServiceProviderCommentary();
         $content .= "\nif (\$kernel->isLocal() || \$kernel->isRunningUnitTests()) {\n";
@@ -299,11 +300,11 @@ declare(strict_types=1);';
     /**
      * Get arrays of global and local providers.
      *
-     * @param \Narrowspark\Discovery\Package $package
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
      *
      * @return array
      */
-    private function getPackageGlobalAndLocalProviders(Package $package): array
+    private function getPackageGlobalAndLocalProviders(PackageContract $package): array
     {
         $global = [];
         $local  = [];

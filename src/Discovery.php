@@ -218,6 +218,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
                 continue;
             }
+            // Skip configured packages.
+            if ($this->lock->has($name)) {
+                continue;
+            }
 
             if ($allowInstall === false && $this->projectOptions['allow_auto_install'] === false) {
                 $answer = $this->io->askAndValidate(

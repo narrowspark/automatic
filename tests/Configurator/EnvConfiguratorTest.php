@@ -104,6 +104,9 @@ APP_SECRET="s3cretf0rt3st\"<>"
 
 EOF;
 
+        // Skip on second call
+        $this->configurator->configure($package);
+
         self::assertStringEqualsFile($this->envDistPath, $envContents);
         self::assertStringEqualsFile($this->envPath, $envContents);
     }

@@ -84,9 +84,7 @@ class ConfiguratorTest extends TestCase
             [
                 'version'   => '1',
                 'providers' => [
-                    'global' => [
-                        self::class,
-                    ],
+                    self::class => ['global'],
                 ],
             ]
         );
@@ -138,9 +136,7 @@ class ConfiguratorTest extends TestCase
             [
                 'version'   => '1',
                 'providers' => [
-                    'global' => [
-                        self::class,
-                    ],
+                    self::class => ['global'],
                 ],
             ]
         );

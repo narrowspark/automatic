@@ -20,6 +20,21 @@ use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
     /**
+     * @var string
+     */
+    public const PROJECT_FULL_TYPE = 'full';
+
+    /**
+     * @var string
+     */
+    public const PROJECT_HTTP_TYPE = 'http';
+
+    /**
+     * @var string
+     */
+    public const PROJECT_CONSOLE_TYPE = 'console';
+
+    /**
      * A composer instance.
      *
      * @var \Composer\Composer

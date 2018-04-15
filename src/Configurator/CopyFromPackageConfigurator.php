@@ -16,17 +16,19 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
         $this->write('Copying files');
 
         foreach ($package->getConfiguratorOptions('copy') as $from => $to) {
+            $target = self::expandTargetDir($this->options, $to);
+
             try {
                 $this->filesystem->copy(
                     $this->path->concatenate([$package->getPackagePath(), $from]),
-                    $this->path->concatenate([$this->path->getWorkingDir(), $to])
+                    $this->path->concatenate([$this->path->getWorkingDir(), $target])
                 );
 
-                $this->write(\sprintf('Created <fg=green>"%s"</>', $this->path->relativize($to)));
+                $this->write(\sprintf('Created <fg=green>"%s"</>', $this->path->relativize($target)));
             } catch (IOException $exception) {
                 $this->write(\sprintf(
                     '<fg=red>Failed to create "%s"</>; Error message: %s',
-                    $this->path->relativize($to),
+                    $this->path->relativize($target),
                     $exception->getMessage()
                 ));
             }
@@ -41,6 +43,8 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
         $this->write('Removing files');
 
         foreach ($package->getConfiguratorOptions('copy') as $source) {
+            $source = self::expandTargetDir($this->options, $source);
+
             try {
                 $this->filesystem->remove($this->path->concatenate([$this->path->getWorkingDir(), $source]));
 

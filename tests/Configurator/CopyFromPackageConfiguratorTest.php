@@ -35,7 +35,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $this->composer = new Composer();
         $this->ioMock   = $this->mock(IOInterface::class);
 
-        $this->configurator = new CopyFromPackageConfigurator($this->composer, $this->ioMock, []);
+        $this->configurator = new CopyFromPackageConfigurator($this->composer, $this->ioMock, ['self-dir' => 'test']);
     }
 
     public function testCopyFileFromPackage(): void
@@ -96,7 +96,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $dirPath  = \sys_get_temp_dir() . '/css';
         $filePath = $dirPath . '/style.css';
 
-        self::assertTrue(\is_dir($dirPath));
+        self::assertDirectoryExists($dirPath);
         self::assertFileExists($filePath);
 
         \unlink($filePath);
@@ -198,6 +198,44 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    Removed <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->unconfigure($package);
+
+        $dirPath = \sys_get_temp_dir() . '/css';
+
+        self::assertDirectoryExists($dirPath);
+
+        \rmdir($dirPath);
+    }
+
+    public function testCopyFileFromPackageWithConfig(): void
+    {
+        $toFileName = 'copy_of_copy.txt';
+
+        $package = new Package(
+            'Fixtures',
+            __DIR__,
+            [
+                'version' => '1',
+                'copy'    => [
+                    'copy.txt' => '%SELF_DIR%/' . $toFileName,
+                ],
+            ]
+        );
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with(['    Copying files'], true, IOInterface::VERBOSE);
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with(['    Created <fg=green>"test/copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
+
+        $this->configurator->configure($package);
+
+        $filePath = \sys_get_temp_dir() . '/test/' . $toFileName;
+
+        self::assertFileExists($filePath);
+
+        \unlink($filePath);
+        \rmdir(\sys_get_temp_dir() . '/test/');
     }
 
     /**

@@ -29,7 +29,7 @@ final class EnvConfigurator extends AbstractConfigurator
                 continue;
             }
 
-            $value = $this->expandTargetDir($this->options, $value);
+            $value = self::expandTargetDir($this->options, $value);
 
             if (\strpbrk($value, " \t\n&!\"") !== false) {
                 $value = '"' . \str_replace(['\\', '"', "\t", "\n"], ['\\\\', '\\"', '\t', '\n'], $value) . '"';

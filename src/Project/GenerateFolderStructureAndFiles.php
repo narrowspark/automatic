@@ -34,10 +34,8 @@ final class GenerateFolderStructureAndFiles
         self::createResourcesFolders($options, $filesystem, $projectType, $io);
         self::createAppFolders($options, $filesystem, $projectType, $io);
 
-        $rootPath = self::expandTargetDir($options, '%ROOT_DIR%');
-
-        if (\file_exists($rootPath . '/README.md')) {
-            \unlink($rootPath . '/README.md');
+        if (! isset($options['discovery_test']) && \file_exists('README.md')) {
+            \unlink('README.md');
         }
     }
 
@@ -140,7 +138,10 @@ PHPUNITFIRSTCONTENT;
 PHPUNITSECONDCONTENT;
 
         $filesystem->dumpFile($testFolders['tests'] . '/AbstractTestCase.php', "<?php\ndeclare(strict_types=1);\nnamespace Tests;\n\nuse PHPUnit\Framework\TestCase as BaseTestCase;\n\nabstract class AbstractTestCase extends BaseTestCase\n{\n}\n");
-        $filesystem->dumpFile(self::expandTargetDir($options, '%ROOT_DIR%/phpunit.xml'), $phpunitContent);
+
+        if (! isset($options['discovery_test'])) {
+            $filesystem->dumpFile('phpunit.xml', $phpunitContent);
+        }
 
         $io->writeError('Tests folder created', true, IOInterface::VERBOSE);
     }

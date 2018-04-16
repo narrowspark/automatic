@@ -388,7 +388,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     /**
      * Get found narrowspark configurations from installed packages.
      *
-     * $@param \Composer\Package\PackageInterface $package
+     * @param \Composer\Package\PackageInterface $package
      *
      * @throws \Exception
      *
@@ -396,7 +396,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     private function getInstalledPackagesExtraConfiguration(PackageInterface $package): array
     {
-        $extra = $package->getExtra();
+        $extra         = $package->getExtra();
         $packageConfig = [];
 
         if (isset($extra['narrowspark'])) {
@@ -479,7 +479,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 'config-dir'    => 'config',
                 'public-dir'    => 'public',
                 'resources-dir' => 'resources',
-                'root-dir'      => '',
                 'routes-dir'    => 'routes',
                 'tests-dir'     => 'tests',
                 'storage-dir'   => 'storage',

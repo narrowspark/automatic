@@ -104,10 +104,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         return [
             'auto-scripts'                        => 'executeAutoScripts',
             PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostPackageUninstall',
+            PackageEvents::POST_PACKAGE_INSTALL   => 'onPostPackageInstall',
+            PackageEvents::POST_PACKAGE_UPDATE    => 'onPostUpdate',
             ScriptEvents::POST_CREATE_PROJECT_CMD => 'onPostCreateProject',
-            ScriptEvents::POST_INSTALL_CMD        => 'onPostPackageInstall',
-            ScriptEvents::POST_UPDATE_CMD         => 'onPostUpdate',
-            ScriptEvents::POST_AUTOLOAD_DUMP      => 'onPostAutoloadDump',
         ];
     }
 
@@ -160,11 +159,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function onPostCreateProject(Event $event): void
     {
-        if (! $event->isDevMode()) {
-            // Do nothing in production mode.
-            return;
-        }
-
         $json        = new JsonFile(Factory::getComposerFile());
         $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
 
@@ -192,11 +186,11 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     /**
      * Execute on composer install event.
      *
-     * @param \Composer\Script\Event $event
+     * @param \Composer\Installer\PackageEvent $event
      *
      * @return void
      */
-    public function onPostPackageInstall(Event $event): void
+    public function onPostPackageInstall(PackageEvent $event): void
     {
         $this->onPostUpdate($event);
     }
@@ -204,65 +198,19 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     /**
      * Execute on composer update event.
      *
-     * @param \Composer\Script\Event $event
-     * @param array                  $operations
-     *
-     * @return void
-     */
-    public function onPostUpdate(Event $event, array $operations = []): void
-    {
-        if (! \file_exists(getcwd() . '/.env') && \file_exists(getcwd() . '/.env.dist')) {
-            \copy(getcwd() . '/.env.dist', getcwd() . '/.env');
-        }
-    }
-
-    /**
-     * Execute on composer uninstall event.
-     *
      * @param \Composer\Installer\PackageEvent $event
      *
      * @return void
      */
-    public function onPostPackageUninstall(PackageEvent $event): void
+    public function onPostUpdate(PackageEvent $event): void
     {
-        if (! $event->isDevMode()) {
-            // Do nothing in production mode.
-            return;
+        if (! \file_exists(getcwd() . '/.env') && \file_exists(getcwd() . '/.env.dist')) {
+            \copy(getcwd() . '/.env.dist', getcwd() . '/.env');
         }
 
-        $name = $event->getName();
+        $package = $event->getOperation()->getPackage();
 
-        if (! $this->lock->has($name)) {
-            return;
-        }
-
-        $this->io->writeError(\sprintf('  - Unconfiguring %s', $name));
-
-        $package = new Package($name, $this->vendorDir, (array) $this->lock->get($name));
-
-        $this->configurator->unconfigure($package);
-
-        $this->lock->remove($name);
-        $this->lock->write();
-    }
-
-    /**
-     * Execute on composer dump event.
-     *
-     * @param \Composer\Script\Event $event
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    public function onPostAutoloadDump(Event $event): void
-    {
-        if (! $event->isDevMode()) {
-            // Do nothing in production mode.
-            return;
-        }
-
-        $this->io->writeError(\sprintf('<info>%s operations</info>', \ucwords('narrowspark')));
+        $this->io->writeError(\sprintf('<info>Narrowspark operations: %s</info>', \ucwords('narrowspark')));
 
         $allowInstall = false;
 
@@ -312,6 +260,31 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         if ($this->shouldUpdateComposerLock) {
             $this->updateComposerLock();
         }
+    }
+
+    /**
+     * Execute on composer uninstall event.
+     *
+     * @param \Composer\Installer\PackageEvent $event
+     *
+     * @return void
+     */
+    public function onPostPackageUninstall(PackageEvent $event): void
+    {
+        $name = $event->getName();
+
+        if (! $this->lock->has($name)) {
+            return;
+        }
+
+        $this->io->writeError(\sprintf('  - Unconfiguring %s', $name));
+
+        $package = new Package($name, $this->vendorDir, (array) $this->lock->get($name));
+
+        $this->configurator->unconfigure($package);
+
+        $this->lock->remove($name);
+        $this->lock->write();
     }
 
     /**

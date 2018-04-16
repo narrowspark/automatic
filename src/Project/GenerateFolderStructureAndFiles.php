@@ -109,7 +109,7 @@ final class GenerateFolderStructureAndFiles
 
 PHPUNITFIRSTCONTENT;
 
-        if (\in_array($projectType, [Discovery::PROJECT_FULL_TYPE, Discovery::PROJECT_HTTP_TYPE], true)) {
+        if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::HTTP_PROJECT], true)) {
             $testFolders['feature'] = $testsPath . '/Feature';
 
             $phpunitContent .= "        <testsuite name=\"Feature\">\n            <directory suffix=\"Test.php\">./tests/Feature</directory>\n        </testsuite>\n";
@@ -161,12 +161,12 @@ PHPUNITSECONDCONTENT;
 
         $filesystem->mkdir($routesPath);
 
-        if (\in_array($projectType, [Discovery::PROJECT_FULL_TYPE, Discovery::PROJECT_HTTP_TYPE], true)) {
+        if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::HTTP_PROJECT], true)) {
             $filesystem->dumpFile($routesPath . '/web.php', "<?php\ndeclare(strict_types=1);\nuse Viserio\Component\Routing\Proxy\Route;\n\nRoute::get('/', 'WelcomeController@index');");
             $filesystem->dumpFile($routesPath . '/api.php', "<?php\ndeclare(strict_types=1);\n\n");
         }
 
-        if (\in_array($projectType, [Discovery::PROJECT_FULL_TYPE, Discovery::PROJECT_CONSOLE_TYPE], true)) {
+        if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::CONSOLE_PROJECT], true)) {
             $filesystem->dumpFile($routesPath . '/console.php', "<?php\ndeclare(strict_types=1);\n\n");
         }
 
@@ -185,7 +185,7 @@ PHPUNITSECONDCONTENT;
      */
     private static function createResourcesFolders(array $options, Filesystem $filesystem, string $projectType, IOInterface $io): void
     {
-        if (\in_array($projectType, [Discovery::PROJECT_FULL_TYPE, Discovery::PROJECT_HTTP_TYPE], true)) {
+        if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::HTTP_PROJECT], true)) {
             $resourcesPath =self::expandTargetDir($options, '%RESOURCES_DIR%');
 
             $testFolders = [
@@ -219,7 +219,7 @@ PHPUNITSECONDCONTENT;
             'provider' => $appPath . '/Provider',
         ];
 
-        if (\in_array($projectType, [Discovery::PROJECT_FULL_TYPE, Discovery::PROJECT_HTTP_TYPE], true)) {
+        if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::HTTP_PROJECT], true)) {
             $appFolders = \array_merge(
                 $appFolders,
                 [
@@ -231,7 +231,7 @@ PHPUNITSECONDCONTENT;
             $filesystem->dumpFile($appFolders['controller'] . '/Controller.php', "<?php\ndeclare(strict_types=1);\nnamespace App\Http\Controller;\n\nuse Viserio\Component\Routing\Controller as BaseController;\n\nclass Controller extends BaseController\n{\n}\n");
         }
 
-        if (\in_array($projectType, [Discovery::PROJECT_FULL_TYPE, Discovery::PROJECT_CONSOLE_TYPE], true)) {
+        if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::CONSOLE_PROJECT], true)) {
             $appFolders['console'] = $appFolders['app'] . '/Console';
         }
 

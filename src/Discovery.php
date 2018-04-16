@@ -16,23 +16,24 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Project\GenerateFolderStructureAndFiles;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
     /**
      * @var string
      */
-    public const PROJECT_FULL_TYPE = 'full';
+    public const FULL_PROJECT = 'full';
 
     /**
      * @var string
      */
-    public const PROJECT_HTTP_TYPE = 'http';
+    public const HTTP_PROJECT = 'http';
 
     /**
      * @var string
      */
-    public const PROJECT_CONSOLE_TYPE = 'console';
+    public const CONSOLE_PROJECT = 'console';
 
     /**
      * A composer instance.
@@ -98,6 +99,21 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     /**
      * {@inheritdoc}
      */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            'auto-scripts'                        => 'executeAutoScripts',
+            PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostPackageUninstall',
+            ScriptEvents::POST_CREATE_PROJECT_CMD => 'onPostCreateProject',
+            ScriptEvents::POST_INSTALL_CMD        => 'onPostPackageInstall',
+            ScriptEvents::POST_UPDATE_CMD         => 'onPostUpdate',
+            ScriptEvents::POST_AUTOLOAD_DUMP      => 'onPostAutoloadDump',
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function activate(Composer $composer, IOInterface $io): void
     {
         $this->composer = $composer;
@@ -142,11 +158,24 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @throws \Exception
      */
-    public function configureProject(Event $event): void
+    public function onPostCreateProject(Event $event): void
     {
-        $json = new JsonFile(Factory::getComposerFile());
+        if (! $event->isDevMode()) {
+            // Do nothing in production mode.
+            return;
+        }
 
+        $json        = new JsonFile(Factory::getComposerFile());
         $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+
+        $answer = $this->io->askAndValidate(
+            self::getProjectQuestion(),
+            [$this, 'validateProjectQuestionAnswerValue'],
+            null,
+            'n'
+        );
+
+        GenerateFolderStructureAndFiles::create($this->projectOptions, $answer, $this->io);
 
         // new projects are most of the time proprietary
         $manipulator->addMainKey('license', 'proprietary');
@@ -167,9 +196,24 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @return void
      */
-    public function install(Event $event): void
+    public function onPostPackageInstall(Event $event): void
     {
-        $this->update($event);
+        $this->onPostUpdate($event);
+    }
+
+    /**
+     * Execute on composer update event.
+     *
+     * @param \Composer\Script\Event $event
+     * @param array                  $operations
+     *
+     * @return void
+     */
+    public function onPostUpdate(Event $event, array $operations = []): void
+    {
+        if (! \file_exists(getcwd() . '/.env') && \file_exists(getcwd() . '/.env.dist')) {
+            \copy(getcwd() . '/.env.dist', getcwd() . '/.env');
+        }
     }
 
     /**
@@ -179,8 +223,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @return void
      */
-    public function uninstall(PackageEvent $event): void
+    public function onPostPackageUninstall(PackageEvent $event): void
     {
+        if (! $event->isDevMode()) {
+            // Do nothing in production mode.
+            return;
+        }
+
         $name = $event->getName();
 
         if (! $this->lock->has($name)) {
@@ -198,21 +247,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Execute on composer update event.
-     *
-     * @param \Composer\Script\Event $event
-     * @param array                  $operations
-     *
-     * @return void
-     */
-    public function update(Event $event, array $operations = []): void
-    {
-        if (! \file_exists(getcwd() . '/.env') && \file_exists(getcwd() . '/.env.dist')) {
-            \copy(getcwd() . '/.env.dist', getcwd() . '/.env');
-        }
-    }
-
-    /**
      * Execute on composer dump event.
      *
      * @param \Composer\Script\Event $event
@@ -221,8 +255,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @return void
      */
-    public function dump(Event $event): void
+    public function onPostAutoloadDump(Event $event): void
     {
+        if (! $event->isDevMode()) {
+            // Do nothing in production mode.
+            return;
+        }
+
         $this->io->writeError(\sprintf('<info>%s operations</info>', \ucwords('narrowspark')));
 
         $allowInstall = false;
@@ -240,15 +279,17 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
             if ($allowInstall === false && $this->projectOptions['allow_auto_install'] === false) {
                 $answer = $this->io->askAndValidate(
-                    $this->getPackageQuestion($packageConfig),
-                    [$this, 'validateAnswerValue'],
+                    self::getPackageQuestion($packageConfig),
+                    [$this, 'validatePackageQuestionAnswerValue'],
                     null,
                     'n'
                 );
 
                 if ($answer === 'n') {
                     continue;
-                } elseif ($answer === 'a') {
+                }
+
+                if ($answer === 'a') {
                     $allowInstall = true;
                 } elseif ($answer === 'p') {
                     $allowInstall = true;
@@ -295,18 +336,27 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Validate given input answer.
+     *
+     * @param null|string $value
+     *
+     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     *
+     * @return string
      */
-    public static function getSubscribedEvents(): array
+    public function validatePackageQuestionAnswerValue(?string $value): string
     {
-        return [
-            'auto-scripts'                        => 'executeAutoScripts',
-            PackageEvents::POST_PACKAGE_UNINSTALL => 'uninstall',
-            ScriptEvents::POST_CREATE_PROJECT_CMD => 'configureProject',
-            ScriptEvents::POST_INSTALL_CMD        => 'install',
-            ScriptEvents::POST_UPDATE_CMD         => 'update',
-            ScriptEvents::POST_AUTOLOAD_DUMP      => 'dump',
-        ];
+        if ($value === null) {
+            return 'n';
+        }
+
+        $value = \mb_strtolower($value[0]);
+
+        if (! \in_array($value, ['y', 'n', 'a', 'p'], true)) {
+            throw new InvalidArgumentException('Invalid choice');
+        }
+
+        return $value;
     }
 
     /**
@@ -318,15 +368,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @return string
      */
-    public function validateAnswerValue(?string $value): string
+    public function validateProjectQuestionAnswerValue(?string $value): string
     {
         if ($value === null) {
-            return 'n';
+            return 'f';
         }
 
         $value = \mb_strtolower($value[0]);
 
-        if (! \in_array($value, ['y', 'n', 'a', 'p'], true)) {
+        if (! \in_array($value, ['f', 'h', 'c'], true)) {
             throw new InvalidArgumentException('Invalid choice');
         }
 
@@ -411,7 +461,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @return string
      */
-    private function getPackageQuestion(array $packageConfig): string
+    private static function getPackageQuestion(array $packageConfig): string
     {
         return \sprintf('    Review the package at %s.
     Do you want to execute this package?
@@ -420,6 +470,18 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     [<comment>a</comment>] Yes for all packages, only for the current installation session
     [<comment>p</comment>] Yes permanently, never ask again for this project
     (defaults to <comment>n</comment>): ', $packageConfig['url']);
+    }
+
+    /**
+     * @return string
+     */
+    private static function getProjectQuestion(): string
+    {
+        return '    Please choose you project type.
+    [<comment>f</comment>] Full Stack framework
+    [<comment>h</comment>] Http framework
+    [<comment>c</comment>] Console framework
+    (defaults to <comment>f</comment>): ';
     }
 
     /**

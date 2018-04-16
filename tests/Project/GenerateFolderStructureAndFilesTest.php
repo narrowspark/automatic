@@ -4,6 +4,7 @@ namespace Narrowspark\Discovery\Test\Project;
 
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
+use Narrowspark\Discovery\Discovery;
 use Narrowspark\Discovery\Project\GenerateFolderStructureAndFiles;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -53,7 +54,7 @@ class GenerateFolderStructureAndFilesTest extends MockeryTestCase
             'storage-dir'   => $this->path . '/storage',
         ];
 
-        GenerateFolderStructureAndFiles::create($config, 'full', new NullIO());
+        GenerateFolderStructureAndFiles::create($config, Discovery::FULL_PROJECT, new NullIO());
 
         foreach ($config as $dir) {
             self::assertDirectoryExists($dir);
@@ -92,7 +93,7 @@ class GenerateFolderStructureAndFilesTest extends MockeryTestCase
             'storage-dir'   => $this->path . '/storage',
         ];
 
-        GenerateFolderStructureAndFiles::create($config, 'console', new NullIO());
+        GenerateFolderStructureAndFiles::create($config, Discovery::CONSOLE_PROJECT, new NullIO());
 
         foreach ($config as $dir) {
             self::assertDirectoryExists($dir);
@@ -132,7 +133,7 @@ class GenerateFolderStructureAndFilesTest extends MockeryTestCase
             'storage-dir'   => $this->path . '/storage',
         ];
 
-        GenerateFolderStructureAndFiles::create($config, 'http', new NullIO());
+        GenerateFolderStructureAndFiles::create($config, Discovery::HTTP_PROJECT, new NullIO());
 
         foreach ($config as $dir) {
             self::assertDirectoryExists($dir);

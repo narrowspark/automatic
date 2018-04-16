@@ -26,7 +26,7 @@ class DiscoveryTest extends MockeryTestCase
         $ioMock       = $this->mock(IOInterface::class);
 
         $composerMock->shouldReceive('getPackage->getExtra')
-            ->twice()
+            ->once()
             ->andReturn([]);
         $composerMock->shouldReceive('getConfig->get')
             ->once()

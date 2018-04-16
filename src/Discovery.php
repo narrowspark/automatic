@@ -121,7 +121,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
         $this->projectOptions = $this->initProjectOptions();
         $this->vendorDir      = $composer->getConfig()->get('vendor-dir');
-        $this->configurator   = new Configurator($this->composer, $this->io, $this->initOptions());
+        $this->configurator   = new Configurator($this->composer, $this->io, $this->projectOptions);
         $this->lock           = new Lock(self::getNarrowsparkLockFile());
 
         $this->lock->add('_readme', [
@@ -500,20 +500,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 'dont-discover'      => [
                     'package' => [],
                 ],
-            ],
-            $rootOptions
-        );
-    }
-
-    /**
-     * Init default extra options.
-     *
-     * @return array
-     */
-    private function initOptions(): array
-    {
-        return \array_merge(
-            [
                 'app-dir'       => 'app',
                 'config-dir'    => 'config',
                 'public-dir'    => 'public',
@@ -523,7 +509,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 'tests-dir'     => 'tests',
                 'storage-dir'   => 'storage',
             ],
-            $this->composer->getPackage()->getExtra()
+            $rootOptions
         );
     }
 }

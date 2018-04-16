@@ -5,3 +5,6 @@ includes:
 parameters:
     autoload_directories:
         - %currentWorkingDirectory%/src
+
+    ignoreErrors:
+        - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'

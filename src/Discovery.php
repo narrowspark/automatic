@@ -11,6 +11,7 @@ use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Locker;
+use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
@@ -208,13 +209,14 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             \copy(getcwd() . '/.env.dist', getcwd() . '/.env');
         }
 
+        /** @var \Composer\Package\PackageInterface $package */
         $package = $event->getOperation()->getPackage();
 
-        $this->io->writeError(\sprintf('<info>Narrowspark operations: %s</info>', \ucwords('narrowspark')));
+        $this->io->writeError(\sprintf('<info>Narrowspark operations: %s</info>', $package->getName()));
 
         $allowInstall = false;
 
-        foreach ($this->getInstalledPackagesExtraConfiguration() as $name => $packageConfig) {
+        foreach ($this->getInstalledPackagesExtraConfiguration($package) as $name => $packageConfig) {
             if (\array_key_exists($name, $this->projectOptions['dont-discover']['package'])) {
                 $this->io->write(\sprintf('<info>Package "%s" was ignored.</info>', $name));
 
@@ -386,33 +388,33 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     /**
      * Get found narrowspark configurations from installed packages.
      *
+     * $@param \Composer\Package\PackageInterface $package
+     *
      * @throws \Exception
      *
      * @return array
      */
-    private function getInstalledPackagesExtraConfiguration(): array
+    private function getInstalledPackagesExtraConfiguration(PackageInterface $package): array
     {
-        $composerInstalledFilePath    = $this->vendorDir . '/composer/installed.json';
-        $composerInstalledFileContent = \json_decode(\file_get_contents($composerInstalledFilePath), true);
+        $extra = $package->getExtra();
+        $packageConfig = [];
 
-        foreach ($composerInstalledFileContent as $package) {
-            if (isset($package['extra']['narrowspark'])) {
-                $this->lock->add(
-                    $package['name'],
-                    \array_merge(
-                        [
-                            'version' => $package['version'],
-                            'url'     => $package['support']['source'] ?? ($package['homepage'] ?? 'url not found'),
-                        ],
-                        $package['extra']['narrowspark']
-                    )
-                );
-            }
+        if (isset($extra['narrowspark'])) {
+            $packageConfig = \array_merge(
+                [
+                    'version' => $package->getVersion(),
+                    'url'     => $package->getSourceUrl(),
+                    'type'    => $package->getType(),
+                ],
+                $extra['narrowspark']
+            );
+
+            $this->lock->add($package->getName(), $packageConfig);
+
+            $this->lock->write();
         }
 
-        $this->lock->write();
-
-        return $this->lock->read();
+        return $packageConfig;
     }
 
     /**

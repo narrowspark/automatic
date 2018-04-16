@@ -82,6 +82,10 @@ abstract class AbstractClassConfigurator extends AbstractConfigurator
      */
     public function unconfigure(PackageContract $package): void
     {
+        if (! $this->supports()) {
+            return;
+        }
+
         $this->write(static::$unconfigureOutputMessage);
 
         $sortedClasses = $this->getSortedClasses($package, static::$optionName);

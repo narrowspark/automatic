@@ -83,6 +83,9 @@ class ConfiguratorTest extends TestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     self::class => ['global'],
                 ],
@@ -110,8 +113,11 @@ class ConfiguratorTest extends TestCase
             'Fixtures',
             __DIR__,
             [
-                'version'  => '1',
-                'copy'     => [
+                'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
+                'copy'      => [
                     'copy.txt' => $toFileName,
                 ],
             ]
@@ -135,6 +141,9 @@ class ConfiguratorTest extends TestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     self::class => ['global'],
                 ],

@@ -70,8 +70,11 @@ class EnvConfiguratorTest extends MockeryTestCase
             'TEST PACKAGE',
             __DIR__,
             [
-                'version'          => '1',
-                'env'              => [
+                'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
+                'env'       => [
                     'APP_ENV'         => 'test bar',
                     'APP_DEBUG'       => '0',
                     'APP_PARAGRAPH'   => "foo\n\"bar\"\\t",
@@ -126,8 +129,11 @@ EOF;
             'env2',
             __DIR__,
             [
-                'version' => '1',
-                'env'     => $envConfig,
+                'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
+                'env'       => $envConfig,
             ]
         );
 
@@ -151,8 +157,11 @@ EOF;
             'env2',
             __DIR__,
             [
-                'version'            => '1',
-                'env'                => $envConfig,
+                'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
+                'env'       => $envConfig,
             ]
         );
 

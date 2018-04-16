@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Configurator;
 
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
+use Viserio\Component\StaticalProxy\StaticalProxy;
 
 class ProxyConfigurator extends AbstractClassConfigurator
 {
@@ -34,6 +35,18 @@ class ProxyConfigurator extends AbstractClassConfigurator
     /**
      * {@inheritdoc}
      */
+    public function configure(PackageContract $package): void
+    {
+        if (! \class_exists(StaticalProxy::class)) {
+            return;
+        }
+
+        parent::configure($package);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function generateFileContent(PackageContract $package, string $filePath, array $classes, string $env): string
     {
         if (\file_exists($filePath)) {
@@ -41,7 +54,7 @@ class ProxyConfigurator extends AbstractClassConfigurator
 
             \unlink($filePath);
         } else {
-            $content = "<?php\ndeclare(strict_types=1);\nreturn [\n    'viserio' => [\n        'staticalproxy' => [\n            'aliases' => [\n            ],\n        ],\n    ],\n];";
+            $content = "<?php\ndeclare(strict_types=1);\n\nreturn [\n    'viserio' => [\n        'staticalproxy' => [\n            'aliases' => [\n            ],\n        ],\n    ],\n];";
         }
 
         if (\count($classes) !== 0) {

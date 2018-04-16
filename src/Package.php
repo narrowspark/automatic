@@ -21,11 +21,39 @@ final class Package implements PackageContract
     private $version;
 
     /**
-     * The package extra config for narrowspark.
+     * The package type.
+     *
+     * @var string
+     */
+    private $type;
+
+    /**
+     * The package url.
+     *
+     * @var string
+     */
+    private $url;
+
+    /**
+     * The package operation.
+     *
+     * @var string
+     */
+    private $operation;
+
+    /**
+     * The package config for narrowspark.
      *
      * @var array
      */
-    private $packageConfig;
+    private $options;
+
+    /**
+     * The configurator config for narrowspark.
+     *
+     * @var array
+     */
+    private $configuratorOptions;
 
     /**
      * Path to the composer vendor dir.
@@ -39,17 +67,21 @@ final class Package implements PackageContract
      *
      * @param string $name
      * @param string $vendorDirPath
-     * @param array  $packageConfig
+     * @param array  $options
      */
-    public function __construct(string $name, string $vendorDirPath, array $packageConfig)
+    public function __construct(string $name, string $vendorDirPath, array $options)
     {
         $this->name       = $name;
         $this->vendorPath = $vendorDirPath;
-        $this->version    = $packageConfig['version'];
+        $this->version    = $options['version'];
+        $this->url        = $options['url'];
+        $this->operation  = $options['operation'];
+        $this->type       = $options['type'];
+        $this->options    = $options;
 
-        unset($packageConfig['version']);
+        unset($options['version'], $options['type'], $options['operation'], $options['url']);
 
-        $this->packageConfig = $packageConfig;
+        $this->configuratorOptions = $options;
     }
 
     /**
@@ -71,6 +103,30 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOperation(): string
+    {
+        return $this->operation;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getPackagePath(): string
     {
         return \strtr($this->vendorPath . '/' . $this->name . '/', '\\', '/');
@@ -81,7 +137,7 @@ final class Package implements PackageContract
      */
     public function hasConfiguratorKey(string $key): bool
     {
-        return \array_key_exists($key, $this->packageConfig);
+        return \array_key_exists($key, $this->configuratorOptions);
     }
 
     /**
@@ -90,7 +146,7 @@ final class Package implements PackageContract
     public function getConfiguratorOptions(string $key): array
     {
         if ($this->hasConfiguratorKey($key)) {
-            return (array) $this->packageConfig[$key];
+            return (array) $this->configuratorOptions[$key];
         }
 
         return [];
@@ -99,8 +155,8 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function getExtraOptions(): array
+    public function getOptions(): array
     {
-        return $this->packageConfig;
+        return $this->options;
     }
 }

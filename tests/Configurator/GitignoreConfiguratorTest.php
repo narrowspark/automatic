@@ -64,6 +64,9 @@ class GitignoreConfiguratorTest extends TestCase
             __DIR__,
             [
                 'version'    => '1',
+                'url'        => 'example.local',
+                'type'       => 'library',
+                'operation'  => 'i',
                 'gitignore'  => [
                     '.env',
                     '/%PUBLIC_DIR%/css/',
@@ -83,6 +86,9 @@ EOF;
             __DIR__,
             [
                 'version'    => '1',
+                'url'        => 'example.local',
+                'type'       => 'library',
+                'operation'  => 'i',
                 'gitignore'  => [
                     '/var/',
                     '/vendor/',
@@ -126,6 +132,9 @@ EOF;
             __DIR__,
             [
                 'version'    => '1',
+                'url'        => 'example.local',
+                'type'       => 'library',
+                'operation'  => 'i',
                 'gitignore'  => [
                     '.env',
                     '/%PUBLIC_DIR%/css/',
@@ -140,6 +149,9 @@ EOF;
             __DIR__,
             [
                 'version'    => '1',
+                'url'        => 'example.local',
+                'type'       => 'library',
+                'operation'  => 'i',
                 'gitignore'  => [
                     '/var/',
                     '/vendor/',

@@ -25,8 +25,11 @@ class PackageTest extends TestCase
         parent::setUp();
 
         $this->config = [
-            'version'  => '1',
-            'copy'     => [
+            'version'   => '1',
+            'url'       => 'example.local',
+            'type'      => 'library',
+            'operation' => 'i',
+            'copy'      => [
                 'from' => 'to',
             ],
         ];
@@ -62,12 +65,23 @@ class PackageTest extends TestCase
         self::assertEquals([], $options);
     }
 
-    public function testGetExtraOptions(): void
+    public function testGetOptions(): void
     {
-        $config = $this->config;
+        self::assertEquals($this->config, $this->package->getOptions());
+    }
 
-        unset($config['version']);
+    public function testGetUrl(): void
+    {
+        self::assertSame($this->config['url'], $this->package->getUrl());
+    }
 
-        self::assertEquals($config, $this->package->getExtraOptions());
+    public function testGetOperation(): void
+    {
+        self::assertSame($this->config['operation'], $this->package->getOperation());
+    }
+
+    public function testGetType(): void
+    {
+        self::assertSame($this->config['type'], $this->package->getType());
     }
 }

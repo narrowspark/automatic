@@ -44,23 +44,11 @@ class GenerateFolderStructureAndFilesTest extends MockeryTestCase
 
     public function testCreateWithFullProjectType(): void
     {
-        $config = [
-            'app-dir'       => $this->path . '/app',
-            'config-dir'    => $this->path . '/config',
-            'resources-dir' => $this->path . '/resources',
-            'root-dir'      => $this->path,
-            'routes-dir'    => $this->path . '/routes',
-            'tests-dir'     => $this->path . '/tests',
-            'storage-dir'   => $this->path . '/storage',
-        ];
+        $config = $this->arrangeConfig();
 
         GenerateFolderStructureAndFiles::create($config, Discovery::FULL_PROJECT, new NullIO());
 
-        foreach ($config as $dir) {
-            self::assertDirectoryExists($dir);
-        }
-
-        self::assertFileExists($config['root-dir'] . '/phpunit.xml');
+        $this->arrangeAssertDirectoryExists($config, []);
 
         self::assertDirectoryExists($config['app-dir'] . '/Console');
         self::assertDirectoryExists($config['app-dir'] . '/Provider');
@@ -84,22 +72,11 @@ class GenerateFolderStructureAndFilesTest extends MockeryTestCase
 
     public function testCreateWithConsoleProjectType(): void
     {
-        $config = [
-            'app-dir'       => $this->path . '/app',
-            'config-dir'    => $this->path . '/config',
-            'root-dir'      => $this->path,
-            'routes-dir'    => $this->path . '/routes',
-            'tests-dir'     => $this->path . '/tests',
-            'storage-dir'   => $this->path . '/storage',
-        ];
+        $config = $this->arrangeConfig();
 
         GenerateFolderStructureAndFiles::create($config, Discovery::CONSOLE_PROJECT, new NullIO());
 
-        foreach ($config as $dir) {
-            self::assertDirectoryExists($dir);
-        }
-
-        self::assertFileExists($config['root-dir'] . '/phpunit.xml');
+        $this->arrangeAssertDirectoryExists($config, ['resources-dir']);
 
         self::assertDirectoryExists($config['app-dir'] . '/Console');
         self::assertDirectoryExists($config['app-dir'] . '/Provider');
@@ -123,23 +100,11 @@ class GenerateFolderStructureAndFilesTest extends MockeryTestCase
 
     public function testCreateWithHttpProjectType(): void
     {
-        $config = [
-            'app-dir'       => $this->path . '/app',
-            'config-dir'    => $this->path . '/config',
-            'resources-dir' => $this->path . '/resources',
-            'root-dir'      => $this->path,
-            'routes-dir'    => $this->path . '/routes',
-            'tests-dir'     => $this->path . '/tests',
-            'storage-dir'   => $this->path . '/storage',
-        ];
+        $config = $this->arrangeConfig();
 
         GenerateFolderStructureAndFiles::create($config, Discovery::HTTP_PROJECT, new NullIO());
 
-        foreach ($config as $dir) {
-            self::assertDirectoryExists($dir);
-        }
-
-        self::assertFileExists($config['root-dir'] . '/phpunit.xml');
+        $this->arrangeAssertDirectoryExists($config);
 
         self::assertDirectoryNotExists($config['app-dir'] . '/Console');
         self::assertDirectoryExists($config['app-dir'] . '/Provider');
@@ -159,5 +124,38 @@ class GenerateFolderStructureAndFilesTest extends MockeryTestCase
         self::assertDirectoryExists($config['tests-dir'] . '/Feature');
         self::assertDirectoryExists($config['tests-dir'] . '/Unit');
         self::assertFileExists($config['tests-dir'] . '/AbstractTestCase.php');
+    }
+
+    /**
+     * @return array
+     */
+    protected function arrangeConfig(): array
+    {
+        $config = [
+            'app-dir'        => $this->path . '/app',
+            'config-dir'     => $this->path . '/config',
+            'resources-dir'  => $this->path . '/resources',
+            'routes-dir'     => $this->path . '/routes',
+            'tests-dir'      => $this->path . '/tests',
+            'storage-dir'    => $this->path . '/storage',
+            'discovery_test' => true,
+        ];
+
+        return $config;
+    }
+
+    /**
+     * @param array $config
+     * @param array $skip
+     */
+    protected function arrangeAssertDirectoryExists(array $config, array $skip = []): void
+    {
+        foreach ($config as $key => $dir) {
+            if (\in_array($key, \array_merge(['discovery_test'], $skip), true)) {
+                continue;
+            }
+
+            self::assertDirectoryExists($dir);
+        }
     }
 }

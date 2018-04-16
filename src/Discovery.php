@@ -3,6 +3,9 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Factory;
 use Composer\Installer\PackageEvent;
@@ -83,6 +86,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $shouldUpdateComposerLock = false;
 
     /**
+     * The composer operations.
+     *
+     * @var array
+     */
+    private $operations = [];
+
+    /**
      * Get the narrowspark.lock file path.
      *
      * @return string
@@ -103,11 +113,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         return [
             'auto-scripts'                        => 'executeAutoScripts',
-            PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostPackageUninstall',
-            ScriptEvents::POST_CREATE_PROJECT_CMD => 'onPostCreateProject',
-            ScriptEvents::POST_INSTALL_CMD        => 'onPostPackageInstall',
+            PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostUninstall',
+            PackageEvents::POST_PACKAGE_INSTALL   => 'record',
+            PackageEvents::POST_PACKAGE_UPDATE    => 'record',
+            PackageEvents::POST_PACKAGE_UNINSTALL => 'record',
+            ScriptEvents::POST_INSTALL_CMD        => 'onPostInstall',
             ScriptEvents::POST_UPDATE_CMD         => 'onPostUpdate',
-            ScriptEvents::POST_AUTOLOAD_DUMP      => 'onPostAutoloadDump',
+            ScriptEvents::POST_CREATE_PROJECT_CMD => 'onPostCreateProject',
         ];
     }
 
@@ -152,6 +164,22 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Records composer operations.
+     *
+     * @param \Composer\Installer\PackageEvent $event
+     *
+     * @return void
+     */
+    public function record(PackageEvent $event): void
+    {
+        if (! $this->shouldRecordOperation($event)) {
+            return;
+        }
+
+        $this->operations[] = $event->getOperation();
+    }
+
+    /**
      * Execute on composer create project event.
      *
      * @param \Composer\Script\Event $event
@@ -160,11 +188,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function onPostCreateProject(Event $event): void
     {
-        if (! $event->isDevMode()) {
-            // Do nothing in production mode.
-            return;
-        }
-
         $json        = new JsonFile(Factory::getComposerFile());
         $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
 
@@ -172,10 +195,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             self::getProjectQuestion(),
             [$this, 'validateProjectQuestionAnswerValue'],
             null,
-            'n'
+            'f'
         );
+        $mapping = [
+            'f' => self::FULL_PROJECT,
+            'c' => self::CONSOLE_PROJECT,
+            'h' => self::HTTP_PROJECT,
+        ];
 
-        GenerateFolderStructureAndFiles::create($this->projectOptions, $answer, $this->io);
+        GenerateFolderStructureAndFiles::create($this->projectOptions, $mapping[$answer], $this->io);
 
         // new projects are most of the time proprietary
         $manipulator->addMainKey('license', 'proprietary');
@@ -194,9 +222,11 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @param \Composer\Script\Event $event
      *
+     * @throws \Exception
+     *
      * @return void
      */
-    public function onPostPackageInstall(Event $event): void
+    public function onPostInstall(Event $event): void
     {
         $this->onPostUpdate($event);
     }
@@ -207,12 +237,72 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      * @param \Composer\Script\Event $event
      * @param array                  $operations
      *
+     * @throws \Exception
+     *
      * @return void
      */
     public function onPostUpdate(Event $event, array $operations = []): void
     {
+        if (\count($operations) !== 0) {
+            $this->operations = $operations;
+        }
+
         if (! \file_exists(getcwd() . '/.env') && \file_exists(getcwd() . '/.env.dist')) {
             \copy(getcwd() . '/.env.dist', getcwd() . '/.env');
+        }
+
+        $packages     = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
+        $allowInstall = false;
+
+        $this->io->writeError(\sprintf(
+            '<info>Narrowspark operations: %s package%s</info>',
+            \count($packages),
+            \count($packages) > 1 ? 's' : ''
+        ));
+
+        foreach ($packages as $package) {
+            if ($this->lock->has($package->getName())) {
+                return;
+            }
+
+            if (\array_key_exists($package->getName(), $this->projectOptions['dont-discover']['package'])) {
+                $this->io->write(\sprintf('<info>Package "%s" was ignored.</info>', $package->getName()));
+
+                return;
+            }
+
+            if ($allowInstall === false && $this->projectOptions['allow-auto-install'] === false) {
+                $answer = $this->io->askAndValidate(
+                    self::getPackageQuestion($package->getUrl()),
+                    [$this, 'validatePackageQuestionAnswerValue'],
+                    null,
+                    'n'
+                );
+
+                if ($answer === 'n') {
+                    return;
+                }
+
+                if ($answer === 'a') {
+                    $allowInstall = true;
+                } elseif ($answer === 'p') {
+                    $allowInstall = true;
+
+                    $this->manipulateComposerJsonWithAllowAutoInstall();
+
+                    $this->shouldUpdateComposerLock = true;
+                }
+            }
+
+            $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+            $this->configurator->configure($package);
+            $this->lock->add($package->getName(), $package->getOptions());
+        }
+
+        $this->lock->write();
+
+        if ($this->shouldUpdateComposerLock) {
+            $this->updateComposerLock();
         }
     }
 
@@ -221,15 +311,12 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @param \Composer\Installer\PackageEvent $event
      *
+     * @throws \Exception
+     *
      * @return void
      */
-    public function onPostPackageUninstall(PackageEvent $event): void
+    public function onPostUninstall(PackageEvent $event): void
     {
-        if (! $event->isDevMode()) {
-            // Do nothing in production mode.
-            return;
-        }
-
         $name = $event->getName();
 
         if (! $this->lock->has($name)) {
@@ -244,74 +331,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
         $this->lock->remove($name);
         $this->lock->write();
-    }
-
-    /**
-     * Execute on composer dump event.
-     *
-     * @param \Composer\Script\Event $event
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    public function onPostAutoloadDump(Event $event): void
-    {
-        if (! $event->isDevMode()) {
-            // Do nothing in production mode.
-            return;
-        }
-
-        $this->io->writeError(\sprintf('<info>%s operations</info>', \ucwords('narrowspark')));
-
-        $allowInstall = false;
-
-        foreach ($this->getInstalledPackagesExtraConfiguration() as $name => $packageConfig) {
-            if (\array_key_exists($name, $this->projectOptions['dont-discover']['package'])) {
-                $this->io->write(\sprintf('<info>Package "%s" was ignored.</info>', $name));
-
-                continue;
-            }
-            // Skip configured packages.
-            if ($this->lock->has($name)) {
-                continue;
-            }
-
-            if ($allowInstall === false && $this->projectOptions['allow_auto_install'] === false) {
-                $answer = $this->io->askAndValidate(
-                    self::getPackageQuestion($packageConfig),
-                    [$this, 'validatePackageQuestionAnswerValue'],
-                    null,
-                    'n'
-                );
-
-                if ($answer === 'n') {
-                    continue;
-                }
-
-                if ($answer === 'a') {
-                    $allowInstall = true;
-                } elseif ($answer === 'p') {
-                    $allowInstall = true;
-
-                    $this->manipulateComposerJsonWithAllowAutoInstall();
-
-                    $this->shouldUpdateComposerLock = true;
-                }
-            }
-
-            $package = new Package($name, $this->vendorDir, $packageConfig);
-
-            $this->io->writeError(\sprintf('  - Configuring %s', $name));
-
-            $this->configurator->configure($package);
-        }
-
-        $this->lock->write();
-
-        if ($this->shouldUpdateComposerLock) {
-            $this->updateComposerLock();
-        }
     }
 
     /**
@@ -384,6 +403,42 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Check which package should be recorded.
+     *
+     * @param \Composer\Installer\PackageEvent $event
+     *
+     * @return bool
+     */
+    private function shouldRecordOperation(PackageEvent $event): bool
+    {
+        $operation = $event->getOperation();
+
+        if ($operation instanceof UpdateOperation) {
+            $package = $operation->getTargetPackage();
+        } else {
+            $package = $operation->getPackage();
+        }
+
+        // when Composer runs with --no-dev, ignore uninstall operations on packages from require-dev
+        if (! $event->isDevMode() && $operation instanceof UninstallOperation) {
+            foreach ($event->getComposer()->getLocker()->getLockData()['packages-dev'] as $devPackage) {
+                if ($package->getName() === $devPackage['name']) {
+                    return false;
+                }
+            }
+        }
+
+        if (
+            ($operation instanceof InstallOperation && ! $this->lock->has($package->getName())) ||
+            $operation instanceof UninstallOperation
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Update composer.lock file the composer.json do change.
      *
      * @throws \Exception
@@ -411,39 +466,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Get found narrowspark configurations from installed packages.
-     *
-     * @throws \Exception
-     *
-     * @return array
-     */
-    private function getInstalledPackagesExtraConfiguration(): array
-    {
-        $composerInstalledFilePath    = $this->vendorDir . '/composer/installed.json';
-        $composerInstalledFileContent = \json_decode(\file_get_contents($composerInstalledFilePath), true);
-
-        foreach ($composerInstalledFileContent as $package) {
-            if (isset($package['extra']['narrowspark'])) {
-                $this->lock->add(
-                    $package['name'],
-                    \array_merge(
-                        [
-                            'version' => $package['version'],
-                            'url'     => $package['support']['source'] ?? ($package['homepage'] ?? 'url not found'),
-                        ],
-                        $package['extra']['narrowspark']
-                    )
-                );
-            }
-        }
-
-        $this->lock->write();
-
-        return $this->lock->read();
-    }
-
-    /**
-     * Add extra option "allow_auto_install" to composer.json.
+     * Add extra option "allow-auto-install" to composer.json.
      *
      * @return void
      */
@@ -451,25 +474,27 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         $json        = new JsonFile(Factory::getComposerFile());
         $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
-        $manipulator->addSubNode('extra', 'narrowspark.allow_auto_install', true);
+        $manipulator->addSubNode('extra', 'narrowspark.allow-auto-install', true);
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
     }
 
     /**
-     * @param array $packageConfig
+     * Returns the questions for package install.
+     *
+     * @param string $url
      *
      * @return string
      */
-    private static function getPackageQuestion(array $packageConfig): string
+    private static function getPackageQuestion(string $url): string
     {
-        return \sprintf('    Review the package at %s.
+        return \sprintf('    Review the package from %s.
     Do you want to execute this package?
     [<comment>y</comment>] Yes
     [<comment>n</comment>] No
     [<comment>a</comment>] Yes for all packages, only for the current installation session
     [<comment>p</comment>] Yes permanently, never ask again for this project
-    (defaults to <comment>n</comment>): ', $packageConfig['url']);
+    (defaults to <comment>n</comment>): ', $url);
     }
 
     /**
@@ -496,7 +521,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
         return \array_merge(
             [
-                'allow_auto_install' => false,
+                'allow-auto-install' => false,
                 'dont-discover'      => [
                     'package' => [],
                 ],
@@ -504,7 +529,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 'config-dir'    => 'config',
                 'public-dir'    => 'public',
                 'resources-dir' => 'resources',
-                'root-dir'      => '',
                 'routes-dir'    => 'routes',
                 'tests-dir'     => 'tests',
                 'storage-dir'   => 'storage',

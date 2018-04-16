@@ -36,7 +36,7 @@ final class ServiceProviderConfigurator extends AbstractClassConfigurator
 
             \unlink($filePath);
         } else {
-            $content = "<?php\ndeclare(strict_types=1);\nreturn [];\n";
+            $content = "<?php\ndeclare(strict_types=1);\n\nreturn [\n];\n";
         }
 
         if (\count($classes) !== 0) {

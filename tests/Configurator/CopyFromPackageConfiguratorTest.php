@@ -47,6 +47,9 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'          => '1',
+                'url'              => 'example.local',
+                'type'             => 'library',
+                'operation'        => 'i',
                 'copy'             => [
                     'copy.txt' => $toFileName,
                 ],
@@ -78,6 +81,9 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'          => '1',
+                'url'              => 'example.local',
+                'type'             => 'library',
+                'operation'        => 'i',
                 'copy'             => [
                     $toAndFromFileName => $toAndFromFileName,
                 ],
@@ -111,8 +117,11 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'Fixtures',
             __DIR__,
             [
-                'version'          => '1',
-                'copy'             => [
+                'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
+                'copy'      => [
                     $toFileName => $toFileName,
                 ],
             ]
@@ -140,8 +149,11 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'Fixtures',
             __DIR__,
             [
-                'version'          => '1',
-                'copy'             => [
+                'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
+                'copy'      => [
                     'copy.txt' => $toFileName,
                 ],
             ]
@@ -174,8 +186,11 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'Fixtures',
             __DIR__,
             [
-                'version' => '1',
-                'copy'    => [
+                'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
+                'copy'      => [
                     $toAndFromFileName => $toAndFromFileName,
                 ],
             ]
@@ -214,8 +229,11 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'Fixtures',
             __DIR__,
             [
-                'version' => '1',
-                'copy'    => [
+                'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
+                'copy'      => [
                     'copy.txt' => '%SELF_DIR%/' . $toFileName,
                 ],
             ]

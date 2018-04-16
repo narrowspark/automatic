@@ -82,6 +82,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     self::class => ['global'],
                 ],
@@ -104,6 +107,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     self::class => ['global', 'local'],
                 ],
@@ -131,6 +137,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     self::class => ['global'],
                 ],
@@ -155,6 +164,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     self::class => ['global'],
                 ],
@@ -172,6 +184,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     Package::class => ['global'],
                 ],
@@ -193,6 +208,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     self::class => ['global', 'local'],
                 ],
@@ -214,6 +232,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     Package::class => ['global', 'local'],
                 ],
@@ -240,6 +261,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                 ],
             ]
@@ -301,6 +325,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     self::class => ['global'],
                 ],
@@ -315,6 +342,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     Package::class => ['global'],
                 ],
@@ -336,6 +366,9 @@ class ServiceProviderConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'providers' => [
                     self::class    => ['global'],
                     Package::class => ['local'],

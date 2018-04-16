@@ -82,6 +82,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     self::class => ['global'],
                 ],
@@ -104,6 +107,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     self::class => ['global', 'local'],
                 ],
@@ -131,6 +137,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     self::class => ['global'],
                 ],
@@ -155,6 +164,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     self::class => ['global'],
                 ],
@@ -174,6 +186,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     Package::class => ['global'],
                 ],
@@ -197,6 +212,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     self::class => ['global', 'local'],
                 ],
@@ -218,6 +236,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     Package::class => ['global', 'local'],
                 ],
@@ -244,6 +265,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                 ],
             ]
@@ -261,6 +285,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     self::class => ['global'],
                 ],
@@ -280,6 +307,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     Package::class => ['global'],
                 ],
@@ -303,6 +333,9 @@ class ProxyConfiguratorTest extends MockeryTestCase
             __DIR__,
             [
                 'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
                 'proxies'   => [
                     self::class    => ['global'],
                     Package::class => ['local'],

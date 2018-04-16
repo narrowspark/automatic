@@ -167,7 +167,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             self::getProjectQuestion(),
             [$this, 'validateProjectQuestionAnswerValue'],
             null,
-            'n'
+            'f'
         );
 
         GenerateFolderStructureAndFiles::create($this->projectOptions, $answer, $this->io);

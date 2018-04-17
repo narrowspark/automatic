@@ -193,6 +193,12 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
         $manipulator->removeProperty('name');
         $manipulator->removeProperty('description');
 
+        foreach ($this->projectOptions as $key => $value) {
+            if ($key !== 'narrowspark') {
+                $manipulator->addSubNode('extra', $key, $value);
+            }
+        }
+
         \file_put_contents($json->getPath(), $manipulator->getContents());
 
         $this->lock->add('project-type', $mapping[$answer]);
@@ -235,8 +241,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
             \copy(getcwd() . '/.env.dist', getcwd() . '/.env');
         }
 
-        $packages     = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
-        $allowInstall = false;
+        $packages           = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
+        $allowInstall       = false;
+        $narrowsparkOptions = $this->projectOptions['narrowspark'];
 
         $this->io->writeError(\sprintf(
             '<info>Narrowspark operations: %s package%s</info>',
@@ -249,13 +256,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
                 return;
             }
 
-            if (\array_key_exists($package->getName(), $this->projectOptions['dont-discover']['package'])) {
+            if (\array_key_exists($package->getName(), $narrowsparkOptions['dont-discover'])) {
                 $this->io->write(\sprintf('<info>Package "%s" was ignored.</info>', $package->getName()));
 
                 return;
             }
 
-            if ($allowInstall === false && $this->projectOptions['allow-auto-install'] === false) {
+            if ($allowInstall === false && $narrowsparkOptions['allow-auto-install'] === false) {
                 $answer = $this->io->askAndValidate(
                     self::getPackageQuestion($package->getUrl()),
                     [$this, 'validatePackageQuestionAnswerValue'],
@@ -500,24 +507,21 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
      */
     private function initProjectOptions(): array
     {
-        $extra       = $this->composer->getPackage()->getExtra();
-        $rootOptions = $extra['narrowspark'] ?? [];
-
         return \array_merge(
             [
-                'allow-auto-install' => false,
-                'dont-discover'      => [
-                    'package' => [],
+                'narrowspark' => [
+                    'allow-auto-install' => false,
+                    'dont-discover'      => [],
                 ],
-                'app-dir'       => 'app',
-                'config-dir'    => 'config',
-                'public-dir'    => 'public',
-                'resources-dir' => 'resources',
-                'routes-dir'    => 'routes',
-                'tests-dir'     => 'tests',
-                'storage-dir'   => 'storage',
+                'app-dir'            => 'app',
+                'config-dir'         => 'config',
+                'public-dir'         => 'public',
+                'resources-dir'      => 'resources',
+                'routes-dir'         => 'routes',
+                'tests-dir'          => 'tests',
+                'storage-dir'        => 'storage',
             ],
-            $rootOptions
+            $this->composer->getPackage()->getExtra()
         );
     }
 }

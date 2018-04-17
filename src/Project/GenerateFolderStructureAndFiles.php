@@ -74,6 +74,8 @@ final class GenerateFolderStructureAndFiles
      * @param \Symfony\Component\Filesystem\Filesystem $filesystem
      * @param \Composer\IO\IOInterface                 $io
      *
+     * @throws \Symfony\Component\Filesystem\Exception\IOException
+     *
      * @return void
      */
     private static function createStorageFolders(array $options, Filesystem $filesystem, IOInterface $io): void
@@ -101,71 +103,41 @@ final class GenerateFolderStructureAndFiles
      * @param string                                   $projectType
      * @param \Composer\IO\IOInterface                 $io
      *
+     * @throws \Symfony\Component\Filesystem\Exception\IOException
+     *
      * @return void
      */
     private static function createTestFolders(array $options, Filesystem $filesystem, string $projectType, IOInterface $io): void
     {
-        $testsPath = self::expandTargetDir($options, '%TESTS_DIR%');
-
-        $testFolders = [
+        $testsPath      = self::expandTargetDir($options, '%TESTS_DIR%');
+        $testFolders    = [
             'tests' => $testsPath,
             'unit'  => $testsPath . '/Unit',
         ];
-
-        $phpunitContent = <<<'PHPUNITFIRSTCONTENT'
-<?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/7.0/phpunit.xsd"
-    bootstrap="vendor/autoload.php"
-    colors="true"
-    verbose="true"
-    failOnRisky="true"
-    failOnWarning="true" 
->
-    <php>
-        <ini name="error_reporting" value="-1" />
-        <ini name="intl.default_locale" value="en" />
-        <ini name="intl.error_level" value="0" />
-    </php>
-
-    <testsuites>
-        <testsuite name="Unit">
-            <directory suffix="Test.php">./tests/Unit</directory>
-        </testsuite>
-
-PHPUNITFIRSTCONTENT;
+        $phpunitContent = \file_get_contents(__DIR__ . '/../Resource/phpunit.xml.template');
 
         if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::HTTP_PROJECT], true)) {
             $testFolders['feature'] = $testsPath . '/Feature';
 
-            $phpunitContent .= "        <testsuite name=\"Feature\">\n            <directory suffix=\"Test.php\">./tests/Feature</directory>\n        </testsuite>\n";
+            $feature        = "        <testsuite name=\"Feature\">\n            <directory suffix=\"Test.php\">./tests/Feature</directory>\n        </testsuite>\n";
+            $phpunitContent = self::doInsertStringBeforePosition(
+                $phpunitContent,
+                $feature,
+                \mb_strpos($phpunitContent, '</testsuites>')
+            );
         }
 
         $filesystem->mkdir($testFolders);
 
-        $phpunitContent .= <<<'PHPUNITSECONDCONTENT'
-    </testsuites>
+        $filesystem->dumpFile(
+            $testFolders['tests'] . '/AbstractTestCase.php',
+            \file_get_contents(__DIR__ . '/../Resource/AbstractTestCase.php.template')
+        );
 
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">./</directory>
-            <exclude>
-                <directory>./vendor</directory>
-                <directory>./tests</directory>
-            </exclude>
-        </whitelist>
-    </filter>
-
-    <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="CACHE_DRIVER" value="array"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="MAIL_DRIVER" value="array"/>
-    </php>
-</phpunit>
-PHPUNITSECONDCONTENT;
-
-        $filesystem->dumpFile($testFolders['tests'] . '/AbstractTestCase.php', "<?php\ndeclare(strict_types=1);\nnamespace Tests;\n\nuse PHPUnit\Framework\TestCase as BaseTestCase;\n\nabstract class AbstractTestCase extends BaseTestCase\n{\n}\n");
+        $filesystem->dumpFile(
+            $testFolders['tests'] . '/bootstrap.php',
+            \file_get_contents(__DIR__ . '/../Resource/bootstrap.php.template')
+        );
 
         if (! isset($options['discovery_test'])) {
             $filesystem->dumpFile('phpunit.xml', $phpunitContent);
@@ -182,21 +154,32 @@ PHPUNITSECONDCONTENT;
      * @param string                                   $projectType
      * @param \Composer\IO\IOInterface                 $io
      *
+     * @throws \Symfony\Component\Filesystem\Exception\IOException
+     *
      * @return void
      */
     private static function createRoutesFolder(array $options, Filesystem $filesystem, string $projectType, IOInterface $io): void
     {
-        $routesPath =self::expandTargetDir($options, '%ROUTES_DIR%');
+        $routesPath = self::expandTargetDir($options, '%ROUTES_DIR%');
 
         $filesystem->mkdir($routesPath);
 
         if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::HTTP_PROJECT], true)) {
-            $filesystem->dumpFile($routesPath . '/web.php', "<?php\ndeclare(strict_types=1);\n\n\$router->get('/', 'WelcomeController@index');");
-            $filesystem->dumpFile($routesPath . '/api.php', "<?php\ndeclare(strict_types=1);\n\n");
+            $filesystem->dumpFile(
+                $routesPath . '/web.php',
+                \file_get_contents(__DIR__ . '/../Resource/Routes/web.php.template')
+            );
+            $filesystem->dumpFile(
+                $routesPath . '/api.php',
+                \file_get_contents(__DIR__ . '/../Resource/Routes/api.php.template')
+            );
         }
 
         if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::CONSOLE_PROJECT], true)) {
-            $filesystem->dumpFile($routesPath . '/console.php', "<?php\ndeclare(strict_types=1);\n\n");
+            $filesystem->dumpFile(
+                $routesPath . '/console.php',
+                \file_get_contents(__DIR__ . '/../Resource/Routes/console.php.template')
+            );
         }
 
         $io->writeError('Routes folder created', true, IOInterface::VERBOSE);
@@ -215,7 +198,7 @@ PHPUNITSECONDCONTENT;
     private static function createResourcesFolders(array $options, Filesystem $filesystem, string $projectType, IOInterface $io): void
     {
         if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::HTTP_PROJECT], true)) {
-            $resourcesPath =self::expandTargetDir($options, '%RESOURCES_DIR%');
+            $resourcesPath = self::expandTargetDir($options, '%RESOURCES_DIR%');
 
             $testFolders = [
                 'resources' => $resourcesPath,
@@ -237,11 +220,13 @@ PHPUNITSECONDCONTENT;
      * @param string                                   $projectType
      * @param \Composer\IO\IOInterface                 $io
      *
+     * @throws \Symfony\Component\Filesystem\Exception\IOException
+     *
      * @return void
      */
     private static function createAppFolders(array $options, Filesystem $filesystem, string $projectType, IOInterface $io): void
     {
-        $appPath =self::expandTargetDir($options, '%APP_DIR%');
+        $appPath = self::expandTargetDir($options, '%APP_DIR%');
 
         $appFolders = [
             'app'      => $appPath,
@@ -257,7 +242,10 @@ PHPUNITSECONDCONTENT;
                     'middleware' => $appFolders['app'] . '/Http/Middleware',
                 ]
             );
-            $filesystem->dumpFile($appFolders['controller'] . '/Controller.php', "<?php\ndeclare(strict_types=1);\nnamespace App\Http\Controller;\n\nuse Viserio\Component\Routing\Controller as BaseController;\n\nclass Controller extends BaseController\n{\n}\n");
+            $filesystem->dumpFile(
+                $appFolders['controller'] . '/Controller.php',
+                \file_get_contents(__DIR__ . '/../Resource/Http/Controller.php.template')
+            );
         }
 
         if (\in_array($projectType, [Discovery::FULL_PROJECT, Discovery::CONSOLE_PROJECT], true)) {
@@ -265,5 +253,21 @@ PHPUNITSECONDCONTENT;
         }
 
         $filesystem->mkdir($appFolders);
+
+        $io->writeError('App folder created', true, IOInterface::VERBOSE);
+    }
+
+    /**
+     * Insert string at specified position.
+     *
+     * @param string $string
+     * @param string $insertStr
+     * @param int    $position
+     *
+     * @return string
+     */
+    private static function doInsertStringBeforePosition(string $string, string $insertStr, int $position): string
+    {
+        return \mb_substr($string, 0, $position) . $insertStr . \mb_substr($string, $position);
     }
 }

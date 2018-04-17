@@ -98,7 +98,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
     {
         return [
             'auto-scripts'                        => 'executeAutoScripts',
-            PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostUninstall',
             PackageEvents::POST_PACKAGE_INSTALL   => 'record',
             PackageEvents::POST_PACKAGE_UPDATE    => 'record',
             PackageEvents::POST_PACKAGE_UNINSTALL => 'record',
@@ -237,9 +236,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
             $this->operations = $operations;
         }
 
-        $packages           = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
-        $allowInstall       = false;
         $narrowsparkOptions = $this->projectOptions['narrowspark'];
+        $packages           = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
+        $allowInstall       = $narrowsparkOptions['allow-auto-install'] ?? false;
 
         $this->io->writeError(\sprintf(
             '<info>Narrowspark operations: %s package%s</info>',
@@ -248,17 +247,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
         ));
 
         foreach ($packages as $package) {
-            if ($this->lock->has($package->getName())) {
-                return;
-            }
-
-            if (\array_key_exists($package->getName(), $narrowsparkOptions['dont-discover'])) {
+            if (isset($narrowsparkOptions['dont-discover']) && \array_key_exists($package->getName(), $narrowsparkOptions['dont-discover'])) {
                 $this->io->write(\sprintf('<info>Package "%s" was ignored.</info>', $package->getName()));
 
                 return;
             }
 
-            if ($allowInstall === false && $narrowsparkOptions['allow-auto-install'] === false) {
+            if ($package->getOperation() === 'install' && $allowInstall === false) {
                 $answer = $this->io->askAndValidate(
                     self::getPackageQuestion($package->getUrl()),
                     [$this, 'validatePackageQuestionAnswerValue'],
@@ -281,9 +276,32 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
                 }
             }
 
-            $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
-            $this->configurator->configure($package);
-            $this->lock->add($package->getName(), $package->getOptions());
+            $updateLock = true;
+
+            if ($this->lock->has($package->getName())) {
+                $updateLock = $package->getVersion() !== $this->lock->get($package->getName())['version'];
+            }
+
+            switch ($package->getOperation()) {
+                case 'install' && ! $this->lock->has($package->getName()):
+                case 'update' && $updateLock:
+                    $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+
+                    $this->configurator->configure($package);
+
+                    $this->lock->add($package->getName(), $package->getOptions());
+
+                    break;
+                case 'uninstall' && $this->lock->has($package->getName()):
+                    $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
+
+                    $this->configurator->unconfigure($package);
+
+                    $this->lock->remove($package->getName());
+                    $this->lock->write();
+
+                    break;
+            }
         }
 
         $this->lock->write();
@@ -291,33 +309,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
         if ($this->shouldUpdateComposerLock) {
             $this->updateComposerLock();
         }
-    }
-
-    /**
-     * Execute on composer uninstall event.
-     *
-     * @param \Composer\Installer\PackageEvent $event
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    public function onPostUninstall(PackageEvent $event): void
-    {
-        $name = $event->getName();
-
-        if (! $this->lock->has($name)) {
-            return;
-        }
-
-        $this->io->writeError(\sprintf('  - Unconfiguring %s', $name));
-
-        $package = new Package($name, $this->vendorDir, (array) $this->lock->get($name));
-
-        $this->configurator->unconfigure($package);
-
-        $this->lock->remove($name);
-        $this->lock->write();
     }
 
     /**

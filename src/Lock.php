@@ -32,6 +32,8 @@ class Lock
         if ($this->json->exists()) {
             $this->lock = $this->read();
         }
+
+        $this->add('content-hash', \md5((string) \random_int(100, 999)));
     }
 
     /**

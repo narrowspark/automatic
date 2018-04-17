@@ -49,12 +49,12 @@ class LockTest extends TestCase
     {
         $this->lock->write();
 
-        self::assertSame([], $this->lock->read());
+        self::assertCount(1, $this->lock->read());
 
         $this->lock->add('tests', ['version' => '3']);
         $this->lock->write();
 
-        self::assertSame(['tests' => ['version' => '3']], $this->lock->read());
+        self::assertCount(2, $this->lock->read());
     }
 
     public function testGet(): void

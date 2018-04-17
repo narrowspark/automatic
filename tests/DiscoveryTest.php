@@ -11,9 +11,9 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 class DiscoveryTest extends MockeryTestCase
 {
-    public function testGetNarrowsparkLockFile(): void
+    public function testGetDiscoveryLockFile(): void
     {
-        self::assertSame('./narrowspark.lock', Discovery::getNarrowsparkLockFile());
+        self::assertSame('./discovery.lock', Discovery::getDiscoveryLockFile());
     }
 
     public function testActivate(): void

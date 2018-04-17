@@ -40,6 +40,31 @@ final class GenerateFolderStructureAndFiles
     }
 
     /**
+     * Removes files and dirs on the project type.
+     *
+     * @param array $options
+     * @param string $projectType
+     * @param \Symfony\Component\Filesystem\Filesystem $filesystem
+     * @param \Composer\IO\IOInterface $io
+     *
+     * @throws \Symfony\Component\Filesystem\Exception\IOException
+     *
+     * @return void
+     */
+    private function removeFilesAndDirsOnProjectType(array $options, string $projectType, Filesystem $filesystem, IOInterface $io): void
+    {
+        if ($projectType === Discovery::CONSOLE_PROJECT) {
+            $filesystem->remove([
+                self::expandTargetDir($options, '%PUBLIC_DIR%'),
+            ]);
+        } elseif ($projectType === Discovery::HTTP_PROJECT) {
+            $filesystem->remove([
+                'cerebro',
+            ]);
+        }
+    }
+
+    /**
      * Create storage folders.
      *
      * @param array                                    $options

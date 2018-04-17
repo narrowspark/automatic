@@ -93,15 +93,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $operations = [];
 
     /**
-     * Get the narrowspark.lock file path.
+     * Get the discovery.lock file path.
      *
      * @return string
      */
-    public static function getNarrowsparkLockFile(): string
+    public static function getDiscoveryLockFile(): string
     {
         return \str_replace(
             'composer.json',
-            'narrowspark.lock',
+            'discovery.lock',
             Factory::getComposerFile()
         );
     }
@@ -134,13 +134,12 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->projectOptions = $this->initProjectOptions();
         $this->vendorDir      = $composer->getConfig()->get('vendor-dir');
         $this->configurator   = new Configurator($this->composer, $this->io, $this->projectOptions);
-        $this->lock           = new Lock(self::getNarrowsparkLockFile());
+        $this->lock           = new Lock(self::getDiscoveryLockFile());
 
         $this->lock->add('_readme', [
             'This file locks the narrowspark information of your project to a known state',
             'This file is @generated automatically',
         ]);
-        $this->lock->add('content-hash', \md5((string) \random_int(100, 999)));
     }
 
     /**
@@ -188,9 +187,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function onPostCreateProject(Event $event): void
     {
-        $json        = new JsonFile(Factory::getComposerFile());
-        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
-
         $answer = $this->io->askAndValidate(
             self::getProjectQuestion(),
             [$this, 'validateProjectQuestionAnswerValue'],
@@ -205,6 +201,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
         GenerateFolderStructureAndFiles::create($this->projectOptions, $mapping[$answer], $this->io);
 
+        $json        = new JsonFile(Factory::getComposerFile());
+        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
         // new projects are most of the time proprietary
         $manipulator->addMainKey('license', 'proprietary');
 
@@ -213,6 +211,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $manipulator->removeProperty('description');
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
+
+        $this->lock->add('project-type', $mapping[$answer]);
+        $this->lock->write();
 
         $this->updateComposerLock();
     }

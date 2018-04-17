@@ -18,7 +18,6 @@ before_install:
   - ./build/travis/configure_php.sh
 
 install:
-  - composer require roave/security-advisories:dev-master
   - composer global require hirak/prestissimo
   - $COMPOSER_UP
 

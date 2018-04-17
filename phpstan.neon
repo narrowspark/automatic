@@ -8,4 +8,3 @@ parameters:
 
     ignoreErrors:
         - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
-        - '#Class Viserio\\Component\\StaticalProxy\\StaticalProxy not found#'

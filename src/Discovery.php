@@ -19,7 +19,6 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
-use Narrowspark\Discovery\Project\GenerateFolderStructureAndFiles;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
@@ -198,8 +197,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             'c' => self::CONSOLE_PROJECT,
             'h' => self::HTTP_PROJECT,
         ];
-
-        GenerateFolderStructureAndFiles::create($this->projectOptions, $mapping[$answer], $this->io);
 
         $json        = new JsonFile(Factory::getComposerFile());
         $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));

@@ -18,6 +18,8 @@ final class GenerateFolderStructureAndFiles
      * @param string                   $projectType
      * @param \Composer\IO\IOInterface $io
      *
+     * @throws \Symfony\Component\Filesystem\Exception\IOException
+     *
      * @return void
      */
     public static function create(array $options, string $projectType, IOInterface $io): void
@@ -33,35 +35,36 @@ final class GenerateFolderStructureAndFiles
         self::createRoutesFolder($options, $filesystem, $projectType, $io);
         self::createResourcesFolders($options, $filesystem, $projectType, $io);
         self::createAppFolders($options, $filesystem, $projectType, $io);
-
-        if (! isset($options['discovery_test']) && \file_exists('README.md')) {
-            \unlink('README.md');
-        }
+        self::removeFilesAndDirsOnProjectType($options, $filesystem, $projectType, $io);
     }
 
     /**
-     * Removes files and dirs on the project type.
+     * Removes files and dirs on project type.
      *
-     * @param array $options
-     * @param string $projectType
+     * @param array                                    $options
      * @param \Symfony\Component\Filesystem\Filesystem $filesystem
-     * @param \Composer\IO\IOInterface $io
+     * @param string                                   $projectType
+     * @param \Composer\IO\IOInterface                 $io
      *
      * @throws \Symfony\Component\Filesystem\Exception\IOException
      *
      * @return void
      */
-    private function removeFilesAndDirsOnProjectType(array $options, string $projectType, Filesystem $filesystem, IOInterface $io): void
+    private static function removeFilesAndDirsOnProjectType(array $options, Filesystem $filesystem, string $projectType, IOInterface $io): void
     {
+        $removes = [];
+
         if ($projectType === Discovery::CONSOLE_PROJECT) {
-            $filesystem->remove([
-                self::expandTargetDir($options, '%PUBLIC_DIR%'),
-            ]);
+            $removes[] = self::expandTargetDir($options, '%PUBLIC_DIR%');
         } elseif ($projectType === Discovery::HTTP_PROJECT) {
-            $filesystem->remove([
-                'cerebro',
-            ]);
+            $removes[] = 'cerebro';
         }
+
+        if (! isset($options['discovery_test']) && \file_exists('README.md')) {
+            $removes[] = 'README.md';
+        }
+
+        $filesystem->remove($removes);
     }
 
     /**

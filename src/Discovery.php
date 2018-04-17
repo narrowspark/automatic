@@ -18,25 +18,11 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
+use Narrowspark\Discovery\Common\Contract\Discovery as DiscoveryContract;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 
-class Discovery implements PluginInterface, EventSubscriberInterface
+class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryContract
 {
-    /**
-     * @var string
-     */
-    public const FULL_PROJECT = 'full';
-
-    /**
-     * @var string
-     */
-    public const HTTP_PROJECT = 'http';
-
-    /**
-     * @var string
-     */
-    public const CONSOLE_PROJECT = 'console';
-
     /**
      * A composer instance.
      *

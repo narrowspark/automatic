@@ -237,10 +237,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
             $this->operations = $operations;
         }
 
-        if (! \file_exists(getcwd() . '/.env') && \file_exists(getcwd() . '/.env.dist')) {
-            \copy(getcwd() . '/.env.dist', getcwd() . '/.env');
-        }
-
         $packages           = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
         $allowInstall       = false;
         $narrowsparkOptions = $this->projectOptions['narrowspark'];

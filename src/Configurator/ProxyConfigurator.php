@@ -47,6 +47,18 @@ class ProxyConfigurator extends AbstractClassConfigurator
     /**
      * {@inheritdoc}
      */
+    public function unconfigure(PackageContract $package): void
+    {
+        if (! \class_exists(StaticalProxy::class)) {
+            return;
+        }
+
+        parent::unconfigure($package);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function generateFileContent(PackageContract $package, string $filePath, array $classes, string $env): string
     {
         if (\file_exists($filePath)) {

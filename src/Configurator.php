@@ -9,6 +9,7 @@ use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Discovery\Configurator\CopyFromPackageConfigurator;
+use Narrowspark\Discovery\Configurator\DependencyConfigurator;
 use Narrowspark\Discovery\Configurator\EnvConfigurator;
 use Narrowspark\Discovery\Configurator\GitIgnoreConfigurator;
 use Narrowspark\Discovery\Configurator\ProxyConfigurator;
@@ -22,6 +23,7 @@ final class Configurator
     public static $configurators = [
         'composer-scripts' => ComposerScriptsConfigurator::class,
         'copy'             => CopyFromPackageConfigurator::class,
+        'dependency'       => DependencyConfigurator::class,
         'env'              => EnvConfigurator::class,
         'gitignore'        => GitIgnoreConfigurator::class,
         'providers'        => ServiceProviderConfigurator::class,

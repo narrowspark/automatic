@@ -424,24 +424,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Returns the questions for package install.
-     *
-     * @param string $url
-     *
-     * @return string
-     */
-    private static function getPackageQuestion(string $url): string
-    {
-        return \sprintf('    Review the package from %s.
-    Do you want to execute this package?
-    [<comment>y</comment>] Yes
-    [<comment>n</comment>] No
-    [<comment>a</comment>] Yes for all packages, only for the current installation session
-    [<comment>p</comment>] Yes permanently, never ask again for this project
-    (defaults to <comment>n</comment>): ', $url);
-    }
-
-    /**
      * Init default options.
      *
      * @return array

@@ -42,14 +42,14 @@ final class Package implements PackageContract
     private $operation;
 
     /**
-     * The package config for narrowspark.
+     * The package config from discovery.
      *
      * @var array
      */
     private $options;
 
     /**
-     * The configurator config for narrowspark.
+     * The configurator config from discovery.
      *
      * @var array
      */

@@ -57,7 +57,7 @@ class OperationsResolver
                 $package = $operation->getPackage();
             }
 
-            if (! isset($package->getExtra()['narrowspark'])) {
+            if (! isset($package->getExtra()['discovery'])) {
                 continue;
             }
 
@@ -98,7 +98,7 @@ class OperationsResolver
     }
 
     /**
-     * Get found narrowspark configuration from packages.
+     * Get found discovery configuration from packages.
      *
      * @param \Composer\Package\PackageInterface $package
      * @param string                             $operation
@@ -114,7 +114,7 @@ class OperationsResolver
                 'type'      => $package->getType(),
                 'operation' => $operation,
             ],
-            $package->getExtra()['narrowspark']
+            $package->getExtra()['discovery']
         );
     }
 }

@@ -56,7 +56,7 @@ class OperationsResolverTest extends MockeryTestCase
         $package1Mock = $this->mock(PackageInterface::class);
         $package1Mock->shouldReceive('getExtra')
             ->times(3)
-            ->andReturn(['narrowspark' =>  []]);
+            ->andReturn(['discovery' =>  []]);
         $package1Mock->shouldReceive('getName')
             ->twice()
             ->andReturn('install');
@@ -77,7 +77,7 @@ class OperationsResolverTest extends MockeryTestCase
         $package3Mock = $this->mock(PackageInterface::class);
         $package3Mock->shouldReceive('getExtra')
             ->times(3)
-            ->andReturn(['branch-alias' => ['dev-master' => '1.0-dev'], 'narrowspark' =>  []]);
+            ->andReturn(['branch-alias' => ['dev-master' => '1.0-dev'], 'discovery' =>  []]);
         $package3Mock->shouldReceive('getName')
             ->twice()
             ->andReturn('uninstall');

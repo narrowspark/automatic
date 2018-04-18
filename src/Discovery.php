@@ -79,6 +79,21 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
     private $operations = [];
 
     /**
+     * Return the composer json file and json manipulator.
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return array
+     */
+    public static function getComposerJsonFileAndManipulator(): array
+    {
+        $json        = new JsonFile(Factory::getComposerFile());
+        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+
+        return [$json, $manipulator];
+    }
+
+    /**
      * Get the discovery.lock file path.
      *
      * @return string
@@ -184,8 +199,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
             'h' => self::HTTP_PROJECT,
         ];
 
-        $json        = new JsonFile(Factory::getComposerFile());
-        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+        [$json, $manipulator] = self::getComposerJsonFileAndManipulator();
+
         // new projects are most of the time proprietary
         $manipulator->addMainKey('license', 'proprietary');
 
@@ -382,14 +397,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
             }
         }
 
-        if (
-            ($operation instanceof InstallOperation && ! $this->lock->has($package->getName())) ||
-            $operation instanceof UninstallOperation
-        ) {
-            return true;
-        }
-
-        return false;
+        return (($operation instanceof InstallOperation && ! $this->lock->has($package->getName())) || $operation instanceof UninstallOperation);
     }
 
     /**
@@ -422,12 +430,14 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
     /**
      * Add extra option "allow-auto-install" to composer.json.
      *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     private function manipulateComposerJsonWithAllowAutoInstall(): void
     {
-        $json        = new JsonFile(Factory::getComposerFile());
-        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+        [$json, $manipulator] = self::getComposerJsonFileAndManipulator();
+
         $manipulator->addSubNode('extra', 'discovery.allow-auto-install', true);
 
         \file_put_contents($json->getPath(), $manipulator->getContents());

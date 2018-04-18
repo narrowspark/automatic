@@ -284,7 +284,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
 
             switch ($package->getOperation()) {
                 case 'install' && ! $this->lock->has($package->getName()):
-                case 'update' && $updateLock:
+                case 'update'  && $updateLock:
                     $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
                     $this->configurator->configure($package);

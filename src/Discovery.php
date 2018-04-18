@@ -19,6 +19,7 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Narrowspark\Discovery\Common\Contract\Discovery as DiscoveryContract;
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 
 class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryContract
@@ -121,7 +122,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
         $this->lock           = new Lock(self::getDiscoveryLockFile());
 
         $this->lock->add('_readme', [
-            'This file locks the narrowspark information of your project to a known state',
+            'This file locks the discovery information of your project to a known state',
             'This file is @generated automatically',
         ]);
     }
@@ -193,7 +194,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
         $manipulator->removeProperty('description');
 
         foreach ($this->projectOptions as $key => $value) {
-            if ($key !== 'narrowspark') {
+            if ($key !== 'discovery') {
                 $manipulator->addSubNode('extra', $key, $value);
             }
         }
@@ -236,18 +237,18 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
             $this->operations = $operations;
         }
 
-        $narrowsparkOptions = $this->projectOptions['narrowspark'];
-        $packages           = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
-        $allowInstall       = $narrowsparkOptions['allow-auto-install'] ?? false;
+        $discoveryOptions = $this->projectOptions['discovery'];
+        $packages         = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
+        $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
 
         $this->io->writeError(\sprintf(
-            '<info>Narrowspark operations: %s package%s</info>',
+            '<info>Discovery operations: %s package%s</info>',
             \count($packages),
             \count($packages) > 1 ? 's' : ''
         ));
 
         foreach ($packages as $package) {
-            if (isset($narrowsparkOptions['dont-discover']) && \array_key_exists($package->getName(), $narrowsparkOptions['dont-discover'])) {
+            if (isset($discoveryOptions['dont-discover']) && \array_key_exists($package->getName(), $discoveryOptions['dont-discover'])) {
                 $this->io->write(\sprintf('<info>Package "%s" was ignored.</info>', $package->getName()));
 
                 return;
@@ -276,32 +277,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
                 }
             }
 
-            $updateLock = true;
-
-            if ($this->lock->has($package->getName())) {
-                $updateLock = $package->getVersion() !== $this->lock->get($package->getName())['version'];
-            }
-
-            switch ($package->getOperation()) {
-                case 'install' && ! $this->lock->has($package->getName()):
-                case 'update'  && $updateLock:
-                    $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
-
-                    $this->configurator->configure($package);
-
-                    $this->lock->add($package->getName(), $package->getOptions());
-
-                    break;
-                case 'uninstall' && $this->lock->has($package->getName()):
-                    $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
-
-                    $this->configurator->unconfigure($package);
-
-                    $this->lock->remove($package->getName());
-                    $this->lock->write();
-
-                    break;
-            }
+            $this->doActionOnPackageOperation($package);
         }
 
         $this->lock->write();
@@ -452,7 +428,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
     {
         $json        = new JsonFile(Factory::getComposerFile());
         $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
-        $manipulator->addSubNode('extra', 'narrowspark.allow-auto-install', true);
+        $manipulator->addSubNode('extra', 'discovery.allow-auto-install', true);
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
     }
@@ -496,7 +472,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
     {
         return \array_merge(
             [
-                'narrowspark' => [
+                'discovery' => [
                     'allow-auto-install' => false,
                     'dont-discover'      => [],
                 ],
@@ -510,5 +486,41 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
             ],
             $this->composer->getPackage()->getExtra()
         );
+    }
+
+    /**
+     * Choose action on package operation.
+     *
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     *
+     * @throws \Exception
+     */
+    private function doActionOnPackageOperation(PackageContract $package): void
+    {
+        $updateLock = true;
+
+        if ($this->lock->has($package->getName())) {
+            $updateLock = $package->getVersion() !== $this->lock->get($package->getName())['version'];
+        }
+
+        switch ($package->getOperation()) {
+            case 'install' && ! $this->lock->has($package->getName()):
+            case 'update'  && $updateLock:
+                $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+
+                $this->configurator->configure($package);
+
+                $this->lock->add($package->getName(), $package->getOptions());
+
+                break;
+            case 'uninstall':
+                $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
+
+                $this->configurator->unconfigure($package);
+
+                $this->lock->remove($package->getName());
+
+                break;
+        }
     }
 }

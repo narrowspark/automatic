@@ -39,7 +39,7 @@ class DiscoveryTest extends MockeryTestCase
 
         self::assertSame(
             [
-                'This file locks the narrowspark information of your project to a known state',
+                'This file locks the discovery information of your project to a known state',
                 'This file is @generated automatically',
             ],
             $disovery->getLock()->get('_readme')

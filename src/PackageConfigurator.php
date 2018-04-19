@@ -25,7 +25,7 @@ final class PackageConfigurator
     private $io;
 
     /**
-     * A array of project options
+     * A array of project options.
      *
      * @var array
      */

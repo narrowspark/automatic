@@ -18,12 +18,14 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
-use Narrowspark\Discovery\Common\Contract\Discovery as DiscoveryContract;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 
-class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryContract
+class Discovery implements PluginInterface, EventSubscriberInterface
 {
+    use ExpandTargetDirTrait;
+
     /**
      * A composer instance.
      *
@@ -32,6 +34,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
     private $composer;
 
     /**
+     * The composer io implementation.
+     *
      * @var \Composer\IO\IOInterface
      */
     private $io;
@@ -77,6 +81,11 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
      * @var array
      */
     private $operations = [];
+
+    /**
+     * @var array
+     */
+    private $postInstallOutput = [''];
 
     /**
      * Return the composer json file and json manipulator.
@@ -280,6 +289,16 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
             $this->doActionOnPackageOperation($package);
         }
 
+        if (\count($packages) !== 0) {
+            \array_unshift(
+                $this->postInstallOutput,
+                '',
+                '<info>Some files may have been created or updated to configure your new packages.</info>',
+                '<comment>The discovery.lock file has all information about the installed packages.</comment>',
+                'Please <comment>review</comment>, <comment>edit</comment> and <comment>commit</comment> them: these files are <comment>yours</comment>.'
+            );
+        }
+
         $this->lock->write();
 
         if ($this->shouldUpdateComposerLock) {
@@ -306,6 +325,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
         foreach ($jsonContents['scripts']['auto-scripts'] as $cmd => $type) {
             $executor->execute($type, $cmd);
         }
+
+        $this->io->write($this->postInstallOutput);
     }
 
     /**
@@ -454,12 +475,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
      */
     private function doActionOnPackageOperation(PackageContract $package): void
     {
-        $updateLock = true;
-
-        if ($this->lock->has($package->getName())) {
-            $updateLock = $package->getVersion() !== $this->lock->get($package->getName())['version'];
-        }
-
         $packageConfigurator = new PackageConfigurator(
             $this->composer,
             $this->io,
@@ -468,15 +483,24 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
         );
 
         switch ($package->getOperation()) {
-            case 'install' && ! $this->lock->has($package->getName()):
-            case 'update'  && $updateLock:
+            case 'install':
                 $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
                 $this->configurator->configure($package);
                 $packageConfigurator->configure($package);
 
+                if ($package->hasConfiguratorKey('post-install-output')) {
+                    foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
+                        $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
+                    }
+
+                    $this->postInstallOutput[] = '';
+                }
+
                 $this->lock->add($package->getName(), $package->getOptions());
 
+                break;
+            case 'update':
                 break;
             case 'uninstall':
                 $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));

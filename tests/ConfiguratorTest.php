@@ -45,7 +45,7 @@ class ConfiguratorTest extends TestCase
         self::assertArrayNotHasKey('mock-configurator', $property->getValue($configurator));
 
         $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
-        $configurator->add('mock-configurator', get_class($mockConfigurator));
+        $configurator->add('mock-configurator', \get_class($mockConfigurator));
 
         self::assertArrayHasKey('mock-configurator', $property->getValue($configurator));
     }
@@ -59,8 +59,8 @@ class ConfiguratorTest extends TestCase
         $configurator = new Configurator($this->composer, $this->nullIo, []);
 
         $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
-        $configurator->add('mock-configurator', get_class($mockConfigurator));
-        $configurator->add('mock-configurator', get_class($mockConfigurator));
+        $configurator->add('mock-configurator', \get_class($mockConfigurator));
+        $configurator->add('mock-configurator', \get_class($mockConfigurator));
     }
 
     /**

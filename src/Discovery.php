@@ -187,18 +187,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
      */
     public function onPostCreateProject(Event $event): void
     {
-        $answer = $this->io->askAndValidate(
-            self::getProjectQuestion(),
-            [$this, 'validateProjectQuestionAnswerValue'],
-            null,
-            'f'
-        );
-        $mapping = [
-            'f' => self::FULL_PROJECT,
-            'c' => self::CONSOLE_PROJECT,
-            'h' => self::HTTP_PROJECT,
-        ];
-
         [$json, $manipulator] = self::getComposerJsonFileAndManipulator();
 
         // new projects are most of the time proprietary
@@ -215,9 +203,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
         }
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
-
-        $this->lock->add('project-type', $mapping[$answer]);
-        $this->lock->write();
 
         $this->updateComposerLock();
     }
@@ -348,30 +333,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
     }
 
     /**
-     * Validate given input answer.
-     *
-     * @param null|string $value
-     *
-     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
-     *
-     * @return string
-     */
-    public function validateProjectQuestionAnswerValue(?string $value): string
-    {
-        if ($value === null) {
-            return 'f';
-        }
-
-        $value = \mb_strtolower($value[0]);
-
-        if (! \in_array($value, ['f', 'h', 'c'], true)) {
-            throw new InvalidArgumentException('Invalid choice');
-        }
-
-        return $value;
-    }
-
-    /**
      * Check which package should be recorded.
      *
      * @param \Composer\Installer\PackageEvent $event
@@ -430,8 +391,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
     /**
      * Add extra option "allow-auto-install" to composer.json.
      *
-     * @throws \InvalidArgumentException
-     *
      * @return void
      */
     private function manipulateComposerJsonWithAllowAutoInstall(): void
@@ -459,18 +418,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
     [<comment>a</comment>] Yes for all packages, only for the current installation session
     [<comment>p</comment>] Yes permanently, never ask again for this project
     (defaults to <comment>n</comment>): ', $url);
-    }
-
-    /**
-     * @return string
-     */
-    private static function getProjectQuestion(): string
-    {
-        return '    Please choose you project type.
-    [<comment>f</comment>] Full Stack framework
-    [<comment>h</comment>] Http framework
-    [<comment>c</comment>] Console framework
-    (defaults to <comment>f</comment>): ';
     }
 
     /**
@@ -513,12 +460,20 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
             $updateLock = $package->getVersion() !== $this->lock->get($package->getName())['version'];
         }
 
+        $packageConfigurator = new PackageConfigurator(
+            $this->composer,
+            $this->io,
+            $this->projectOptions,
+            $package->getConfiguratorOptions('custom-configurators')
+        );
+
         switch ($package->getOperation()) {
             case 'install' && ! $this->lock->has($package->getName()):
             case 'update'  && $updateLock:
                 $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
                 $this->configurator->configure($package);
+                $packageConfigurator->configure($package);
 
                 $this->lock->add($package->getName(), $package->getOptions());
 
@@ -527,6 +482,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryC
                 $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
 
                 $this->configurator->unconfigure($package);
+                $packageConfigurator->unconfigure($package);
 
                 $this->lock->remove($package->getName());
 

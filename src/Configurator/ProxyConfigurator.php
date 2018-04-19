@@ -37,9 +37,11 @@ class ProxyConfigurator extends AbstractClassConfigurator
      */
     public function configure(PackageContract $package): void
     {
+        // @codeCoverageIgnoreStart
         if (! \class_exists(StaticalProxy::class)) {
             return;
         }
+        // @codeCoverageIgnoreEnd
 
         parent::configure($package);
     }
@@ -49,9 +51,11 @@ class ProxyConfigurator extends AbstractClassConfigurator
      */
     public function unconfigure(PackageContract $package): void
     {
+        // @codeCoverageIgnoreStart
         if (! \class_exists(StaticalProxy::class)) {
             return;
         }
+        // @codeCoverageIgnoreEnd
 
         parent::unconfigure($package);
     }

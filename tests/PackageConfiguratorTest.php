@@ -2,14 +2,14 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery\Test;
 
-use Composer\IO\IOInterface;
-use Narrowspark\Discovery\Test\Fixtures\MockConfigurator;
-use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
-use ReflectionClass;
 use Composer\Composer;
+use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Narrowspark\Discovery\Package;
 use Narrowspark\Discovery\PackageConfigurator;
+use Narrowspark\Discovery\Test\Fixtures\MockConfigurator;
+use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use ReflectionClass;
 
 class PackageConfiguratorTest extends MockeryTestCase
 {
@@ -56,22 +56,22 @@ class PackageConfiguratorTest extends MockeryTestCase
         new PackageConfigurator($this->composer, $this->nullIo, [], ['test' => \stdClass::class]);
     }
 
-    public function testConfiguratorWithPackageConfigurator()
+    public function testConfiguratorWithPackageConfigurator(): void
     {
         $package = new Package(
             'test',
             __DIR__,
             [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
+                'version'              => '1',
+                'url'                  => 'example.local',
+                'type'                 => 'library',
+                'operation'            => 'i',
                 'custom-configurators' => [
                     'mock' => MockConfigurator::class,
                 ],
                 'mock' => [
-                    'test'
-                ]
+                    'test',
+                ],
             ]
         );
 
@@ -86,7 +86,7 @@ class PackageConfiguratorTest extends MockeryTestCase
         $configurator->unconfigure($package);
     }
 
-    public function testConfiguratorOutWithPackageConfigurator()
+    public function testConfiguratorOutWithPackageConfigurator(): void
     {
         $package = new Package(
             'test',
@@ -96,9 +96,9 @@ class PackageConfiguratorTest extends MockeryTestCase
                 'url'       => 'example.local',
                 'type'      => 'library',
                 'operation' => 'i',
-                'mock' => [
-                    'test'
-                ]
+                'mock'      => [
+                    'test',
+                ],
             ]
         );
 

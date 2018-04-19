@@ -52,7 +52,7 @@ final class Configurator
     private $io;
 
     /**
-     * A array of project options
+     * A array of project options.
      *
      * @var array
      */

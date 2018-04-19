@@ -7,6 +7,8 @@ use Composer\IO\IOInterface;
 use Narrowspark\Discovery\Configurator\CopyFromPackageConfigurator;
 use Narrowspark\Discovery\Package;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
 
 class CopyFromPackageConfiguratorTest extends MockeryTestCase
 {
@@ -222,6 +224,59 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         \rmdir($dirPath);
     }
 
+    public function testUnconfigureWithAIOException(): void
+    {
+        $toAndFromFileName = '/css/style.css';
+
+        $package = new Package(
+            'Fixtures',
+            __DIR__,
+            [
+                'version'   => '1',
+                'url'       => 'example.local',
+                'type'      => 'library',
+                'operation' => 'i',
+                'copy'      => [
+                    $toAndFromFileName => $toAndFromFileName,
+                ],
+            ]
+        );
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with(['    Copying files'], true, IOInterface::VERBOSE);
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with(['    Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
+
+        $this->configurator->configure($package);
+
+        $filesystem = $this->mock(Filesystem::class);
+        $filesystem->shouldReceive('remove')
+            ->once()
+            ->andThrow(IOException::class);
+
+        $set = $this->setPrivate($this->configurator, 'filesystem');
+        $set($filesystem);
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with(['    Removing files'], true, IOInterface::VERBOSE);
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with(['    <fg=red>Failed to remove "/css/style.css"</>; Error message: '], true, IOInterface::VERBOSE);
+
+        $this->configurator->unconfigure($package);
+
+        $dirPath = \sys_get_temp_dir() . '/css';
+
+        \unlink($dirPath . '/style.css');
+
+        self::assertDirectoryExists($dirPath);
+
+        \rmdir($dirPath);
+    }
+
     public function testCopyFileFromPackageWithConfig(): void
     {
         $toFileName = 'copy_of_copy.txt';
@@ -265,5 +320,14 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         parent::assertPreConditions();
 
         $this->allowMockingNonExistentMethods(true);
+    }
+
+    private function setPrivate($obj, $attribute)
+    {
+        $setter = function ($value) use ($attribute): void {
+            $this->$attribute = $value;
+        };
+
+        return \Closure::bind($setter, $obj, \get_class($obj));
     }
 }

@@ -112,10 +112,11 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
     public function testTryCopyAFileThatIsNotFoundFromPackage(): void
     {
         $toFileName = 'notfound.txt';
+        $dir        = \str_replace('\\', '/', __DIR__);
 
         $package = new Package(
             'Fixtures',
-            __DIR__,
+            $dir,
             [
                 'version'   => '1',
                 'url'       => 'example.local',
@@ -132,7 +133,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . __DIR__ . '/Fixtures/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
+            ->with(['    <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . $dir . '/Fixtures/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 

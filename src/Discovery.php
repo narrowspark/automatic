@@ -18,12 +18,11 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
-use Narrowspark\Discovery\Common\Contract\Discovery as DiscoveryContract;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 
-class Discovery implements PluginInterface, EventSubscriberInterface, DiscoveryContract
+class Discovery implements PluginInterface, EventSubscriberInterface
 {
     use ExpandTargetDirTrait;
 

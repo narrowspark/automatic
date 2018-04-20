@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Configurator;
+namespace Narrowspark\Discovery\Installer;
 
+use Closure;
 use Composer\Composer;
 use Composer\DependencyResolver\Pool;
 use Composer\Installer;
@@ -13,13 +14,10 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
-use Narrowspark\Discovery\Common\Configurator\AbstractConfigurator;
-use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Exception\RuntimeException;
-use Narrowspark\Discovery\Discovery;
 
-class DependencyConfigurator extends AbstractConfigurator
+final class ExtraInstallationManager
 {
     /**
      * All local installed packages.
@@ -43,21 +41,49 @@ class DependencyConfigurator extends AbstractConfigurator
     private $versionSelector;
 
     /**
-     * Get the minimum stability.
+     * A root package implementation.
      *
      * @var \Composer\Package\RootPackageInterface
      */
     private $rootPackage;
 
     /**
-     * {@inheritdoc}
+     * The composer instance.
+     *
+     * @var \Composer\Composer
      */
-    public function __construct(Composer $composer, IOInterface $io, array $options = [])
+    private $composer;
+
+    /**
+     * The composer io implementation.
+     *
+     * @var \Composer\IO\IOInterface
+     */
+    private $io;
+
+    /**
+     * A input implementation.
+     *
+     * @var \Symfony\Component\Console\Input\InputInterface
+     */
+    private $input;
+
+    /**
+     * Create a new ExtraDependencyInstaller instance.
+     *
+     * @param \Composer\Composer       $composer
+     * @param \Composer\IO\IOInterface $io
+     */
+    public function __construct(Composer $composer, IOInterface $io)
     {
-        parent::__construct($composer, $io, $options);
+        $this->composer = $composer;
+        $this->io       = $io;
+
+        $reader      = $this->getGenericPropertyReader();
+        $this->input = $reader($this->io, 'input');
 
         $this->rootPackage = $composer->getPackage();
-        $this->stability = $this->rootPackage->getMinimumStability() ?: 'stable';
+        $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
 
         $pool = new Pool($this->stability);
         $pool->addRepository(
@@ -74,24 +100,47 @@ class DependencyConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritdoc}
+     * Install selected extra dependencies.
+     *
+     * @param array $dependencies
+     *
+     * @throws \Narrowspark\Discovery\Common\Exception\RuntimeException
+     *
+     * @return array
      */
-    public function configure(PackageContract $package): void
+    public function install(array $dependencies): array
     {
         if (! $this->io->isInteractive()) {
             // Do nothing in no-interactive mode
-            return;
+            return [];
         }
-        $this->write('Installing extra dependencies');
+
+        $reader = $this->getGenericPropertyReader();
+
+        $oldInstallManager = $this->composer->getInstallationManager();
+        $installers        = $reader($oldInstallManager, 'installers');
+
+        $narrowsparkInstaller = new InstallationManager();
+
+        foreach ($installers as $installer) {
+            $narrowsparkInstaller->addInstaller($installer);
+        }
+
+        $this->composer->setInstallationManager($narrowsparkInstaller);
 
         $packagesToInstall = [];
 
-        foreach ($package->getConfiguratorOptions('dependency') as $question => $options) {
+        foreach ($dependencies as $question => $options) {
             if (! is_array($options) || count($options) < 2) {
                 throw new RuntimeException('You must provide at least two optional dependencies.');
             }
 
-            foreach ($options as $package) {
+            foreach ($options as $package => $version) {
+                // Check if package variable is a integer
+                if (\is_int($package)) {
+                    $package = $version;
+                }
+
                 // Package has been already prepared to be installed, skipping.
                 // Package from this group has been found in root composer, skipping.
                 if (isset($packagesToInstall[$package]) || isset($this->rootPackage->getRequires()[$package]) || isset($this->rootPackage->getDevRequires()[$package])) {
@@ -99,18 +148,19 @@ class DependencyConfigurator extends AbstractConfigurator
                 }
 
                 // Check if package is currently installed, if so, use installed constraint and skip question.
-                if (! isset($this->installedPackages[$package])) {
+                if (isset($this->installedPackages[$package])) {
                     $packagesToInstall[$package] = $this->installedPackages[$package];
+
                     continue 2;
                 }
             }
 
             $package    = $this->askDependencyQuestion($question, $options);
-            $constraint = $options[$package] ?? $constraint = $this->findBestVersionForPackage($package);
+            $constraint = $options[$package] ?? $constraint = $this->findVersion($package);
 
-            $this->write(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $package));
+            $this->io->writeError(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $package));
 
-            $packages[$package] = $constraint;
+            $packagesToInstall[$package] = $constraint;
         }
 
         if (\count($packagesToInstall) !== 0) {
@@ -121,45 +171,32 @@ class DependencyConfigurator extends AbstractConfigurator
                 \array_keys($packagesToInstall)
             );
         }
+
+        $operations = $this->composer->getInstallationManager()->getOperations();
+
+        // Add the old install manager back.
+        $this->composer->setInstallationManager($oldInstallManager);
+
+        return $operations;
     }
 
     /**
-     * {@inheritdoc}
+     * Uninstall extra dependencies.
+     *
+     * @param array $dependencies
+     *
+     * @return void
      */
-    public function unconfigure(PackageContract $package): void
+    public function uninstall(array $dependencies): void
     {
         if (! $this->io->isInteractive()) {
             // Do nothing in no-interactive mode
             return;
         }
-
-//        foreach ($package->getConfiguratorOptions('dependency') as $question => $options) {
-//
-//        }
-    }
-
-    private function getInstalledPackageConstraint($package)
-    {
-        // Package is currently installed. Add it to root composer.json
-        if (! isset($this->installedPackages[$package])) {
-            return null;
-        }
-
-        $constraint = '^' . $this->installedPackages[$package];
-
-        $this->write(sprintf(
-            'Added package <info>%s</info> to composer.json with constraint <info>%s</info>;' .
-            ' to upgrade, run <info>composer require %s:VERSION</info>',
-            $package,
-            $constraint,
-            $package
-        ));
-
-        return $constraint;
     }
 
     /**
-     *
+     * Build question and ask it.
      *
      * @param string $question
      * @param array  $packages
@@ -170,10 +207,20 @@ class DependencyConfigurator extends AbstractConfigurator
      */
     private function askDependencyQuestion(string $question, array $packages): ?string
     {
-        $ask = \sprintf('<question>%s</question>' . "\n", $question);
+        $ask          = \sprintf('<question>%s</question>' . "\n", $question);
+        $i            = 0;
+        $packageNames = [];
 
-        foreach ($packages as $i => $name) {
-            $ask .= \sprintf('  [<comment>%d</comment>] %s' . "\n", $i + 1, $name);
+        foreach ($packages as $name => $version) {
+            if (\is_int($name)) {
+                $name = $version;
+            }
+
+            $packageNames[] = $name;
+
+            $ask .= \sprintf('  [<comment>%d</comment>] %s%s' . "\n", $i, $name, ($name !== $version ? ' : ' . $version : ''));
+
+            $i++;
         }
 
         $ask .= '  Make your selection: ';
@@ -181,14 +228,10 @@ class DependencyConfigurator extends AbstractConfigurator
         do {
             $package = $this->io->askAndValidate(
                 $ask,
-                function ($input) use ($packages) {
-                    $input = \is_numeric($input) ? (int) \trim($input) : 0;
+                function ($input) use ($packageNames) {
+                    $input = \is_numeric($input) ? (int) \trim($input) : -1;
 
-                    if (isset($packages[$input - 1])) {
-                        return $packages[$input - 1];
-                    }
-
-                    return null;
+                    return $packageNames[$input] ?? null;
                 }
             );
         } while (! $package);
@@ -197,13 +240,15 @@ class DependencyConfigurator extends AbstractConfigurator
     }
 
     /**
+     * Try to find the best version fot the package.
+     *
      * @param string $name
      *
      * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
      *
      * @return string
      */
-    private function findBestVersionForPackage(string $name): string
+    private function findVersion(string $name): string
     {
         // find the latest version allowed in this pool
         $package = $this->versionSelector->findBestCandidate($name, null, null, 'stable');
@@ -231,7 +276,7 @@ class DependencyConfigurator extends AbstractConfigurator
      */
     private function updateRootComposerJson(RootPackageInterface $rootPackage, array $packages, bool $add): RootPackageInterface
     {
-        $this->write('Updating root package');
+        $this->io->writeError('Updating root package');
 
         $requires = $rootPackage->getRequires();
 
@@ -255,13 +300,15 @@ class DependencyConfigurator extends AbstractConfigurator
     }
 
     /**
+     * Manipulate root composer.json with the new packages and dump it.
+     *
      * @param array $packages
      *
      * @return void
      */
     private function updateComposerJson(array $packages): void
     {
-        $this->write('Updating composer.json');
+        $this->io->writeError('Updating composer.json');
 
         [$json, $manipulator] = Discovery::getComposerJsonFileAndManipulator();
 
@@ -286,12 +333,12 @@ class DependencyConfigurator extends AbstractConfigurator
      */
     private function runInstaller(RootPackageInterface $rootPackage, array $packages)
     {
-        $this->write('Running an update to install dependent packages');
+        $this->io->writeError('Running an update to install dependent packages');
 
-        /** @var Installer $installer */
+        $config    = $this->composer->getConfig();
         $installer = new Installer(
             $this->io,
-            $this->composer->getConfig(),
+            $config,
             $rootPackage,
             $this->composer->getDownloadManager(),
             $this->composer->getRepositoryManager(),
@@ -301,9 +348,31 @@ class DependencyConfigurator extends AbstractConfigurator
             $this->composer->getAutoloadGenerator()
         );
 
+        $installer->disablePlugins();
         $installer->setUpdate();
+        $installer->setOptimizeAutoloader($config->get('optimize-autoloader') ?? false);
+        $installer->setDevMode(! $this->input->getOption('no-dev'));
+        $installer->setRunScripts(false);
         $installer->setUpdateWhitelist($packages);
 
         return $installer->run();
+    }
+
+    /**
+     * Returns a callback that can read private variables from object.
+     *
+     * @return Closure
+     */
+    private function getGenericPropertyReader(): Closure
+    {
+        $reader = function &($object, $property) {
+            $value = &Closure::bind(function &() use ($property) {
+                return $this->$property;
+            }, $object, $object)->__invoke();
+
+            return $value;
+        };
+
+        return $reader;
     }
 }

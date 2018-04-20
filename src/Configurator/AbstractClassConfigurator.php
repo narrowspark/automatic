@@ -108,6 +108,10 @@ abstract class AbstractClassConfigurator extends AbstractConfigurator
 
         foreach ($sortedClasses as $env => $classes) {
             foreach ($classes as $class) {
+                if (! isset($contents[$env])) {
+                    continue;
+                }
+
                 $contents[$env] = $this->replaceContent($class, $contents[$env]);
             }
         }

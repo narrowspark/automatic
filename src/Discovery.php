@@ -20,6 +20,7 @@ use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
+use Narrowspark\Discovery\Installer\ExtraInstallationManager;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
@@ -248,6 +249,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $discoveryOptions = $this->projectOptions['discovery'];
         $packages         = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
         $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
+        $extraInstaller   = new ExtraInstallationManager($this->composer, $this->io);
 
         $this->io->writeError(\sprintf(
             '<info>Discovery operations: %s package%s</info>',
@@ -285,7 +287,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 }
             }
 
-            $this->doActionOnPackageOperation($package);
+            $this->doActionOnPackageOperation($package, $extraInstaller);
         }
 
         if (\count($packages) !== 0) {
@@ -352,7 +354,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        return (($operation instanceof InstallOperation && ! $this->lock->has($package->getName())) || $operation instanceof UninstallOperation);
+        return ($operation instanceof InstallOperation && ! $this->lock->has($package->getName())) || $operation instanceof UninstallOperation;
     }
 
     /**
@@ -427,11 +429,12 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     /**
      * Choose action on package operation.
      *
-     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param \Narrowspark\Discovery\Common\Contract\Package            $package
+     * @param \Narrowspark\Discovery\Installer\ExtraInstallationManager $installer
      *
      * @throws \Exception
      */
-    private function doActionOnPackageOperation(PackageContract $package): void
+    private function doActionOnPackageOperation(PackageContract $package, ExtraInstallationManager $installer): void
     {
         $packageConfigurator = new PackageConfigurator(
             $this->composer,
@@ -446,6 +449,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
                 $this->configurator->configure($package);
                 $packageConfigurator->configure($package);
+
+                if ($package->hasConfiguratorKey('dependency')) {
+                    $installer->install($package->getConfiguratorOptions('dependency'));
+                }
 
                 if ($package->hasConfiguratorKey('post-install-output')) {
                     foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
@@ -465,6 +472,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
                 $this->configurator->unconfigure($package);
                 $packageConfigurator->unconfigure($package);
+
+                if ($package->hasConfiguratorKey('dependency')) {
+                    $installer->uninstall($package->getConfiguratorOptions('dependency'));
+                }
 
                 $this->lock->remove($package->getName());
 

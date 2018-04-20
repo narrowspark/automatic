@@ -264,8 +264,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
             if ($package->getOperation() === 'install' && $allowInstall === false) {
                 $answer = $this->io->askAndValidate(
-                    self::getPackageQuestion($package->getUrl()),
-                    [$this, 'validatePackageQuestionAnswerValue'],
+                    QuestionFactory::getPackageQuestion($package->getUrl()),
+                    [QuestionFactory::class, 'validatePackageQuestionAnswer'],
                     null,
                     'n'
                 );

@@ -19,7 +19,6 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
-use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
@@ -316,41 +315,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $event->stopPropagation();
 
         // force reloading scripts as we might have added and removed during this run
-        $json = new JsonFile(Factory::getComposerFile());
-
+        $json         = new JsonFile(Factory::getComposerFile());
         $jsonContents = $json->read();
-
-        $executor = new ScriptExecutor($this->composer, $this->io, $this->projectOptions, new ProcessExecutor());
+        $executor     = new ScriptExecutor($this->composer, $this->io, $this->projectOptions, new ProcessExecutor());
 
         foreach ($jsonContents['scripts']['auto-scripts'] as $cmd => $type) {
             $executor->execute($type, $cmd);
         }
 
         $this->io->write($this->postInstallOutput);
-    }
-
-    /**
-     * Validate given input answer.
-     *
-     * @param null|string $value
-     *
-     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
-     *
-     * @return string
-     */
-    public function validatePackageQuestionAnswerValue(?string $value): string
-    {
-        if ($value === null) {
-            return 'n';
-        }
-
-        $value = \mb_strtolower($value[0]);
-
-        if (! \in_array($value, ['y', 'n', 'a', 'p'], true)) {
-            throw new InvalidArgumentException('Invalid choice');
-        }
-
-        return $value;
     }
 
     /**
@@ -411,6 +384,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
     /**
      * Add extra option "allow-auto-install" to composer.json.
+     *
+     * @throws \InvalidArgumentException
      *
      * @return void
      */

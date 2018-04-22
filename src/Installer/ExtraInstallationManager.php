@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery\Installer;
 
-use Closure;
 use Composer\Composer;
 use Composer\DependencyResolver\Pool;
 use Composer\Installer;
@@ -16,9 +15,15 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Exception\RuntimeException;
+use Narrowspark\Discovery\Discovery;
+use Narrowspark\Discovery\Lock;
+use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
+use Symfony\Component\Console\Input\InputInterface;
 
 final class ExtraInstallationManager
 {
+    use GetGenericPropertyReaderTrait;
+
     /**
      * All local installed packages.
      *
@@ -55,6 +60,13 @@ final class ExtraInstallationManager
     private $composer;
 
     /**
+     * A lock instance.
+     *
+     * @var \Narrowspark\Discovery\Lock
+     */
+    private $lock;
+
+    /**
      * The composer io implementation.
      *
      * @var \Composer\IO\IOInterface
@@ -71,16 +83,17 @@ final class ExtraInstallationManager
     /**
      * Create a new ExtraDependencyInstaller instance.
      *
-     * @param \Composer\Composer       $composer
-     * @param \Composer\IO\IOInterface $io
+     * @param \Composer\Composer                              $composer
+     * @param \Composer\IO\IOInterface                        $io
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Narrowspark\Discovery\Lock                     $lock
      */
-    public function __construct(Composer $composer, IOInterface $io)
+    public function __construct(Composer $composer, IOInterface $io, InputInterface $input, Lock $lock)
     {
         $this->composer = $composer;
         $this->io       = $io;
-
-        $reader      = $this->getGenericPropertyReader();
-        $this->input = $reader($this->io, 'input');
+        $this->input    = $input;
+        $this->lock     = $lock;
 
         $this->rootPackage = $composer->getPackage();
         $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
@@ -203,9 +216,9 @@ final class ExtraInstallationManager
      *
      * @throws \Exception
      *
-     * @return null|string
+     * @return string
      */
-    private function askDependencyQuestion(string $question, array $packages): ?string
+    private function askDependencyQuestion(string $question, array $packages): string
     {
         $ask          = \sprintf('<question>%s</question>' . "\n", $question);
         $i            = 0;
@@ -223,6 +236,9 @@ final class ExtraInstallationManager
             $i++;
         }
 
+//        if (false) {
+//            $ask .= \sprintf("  [<comment>%d</comment>] skip\n", $i + 1);
+//        }
         $ask .= '  Make your selection: ';
 
         do {
@@ -356,23 +372,5 @@ final class ExtraInstallationManager
         $installer->setUpdateWhitelist($packages);
 
         return $installer->run();
-    }
-
-    /**
-     * Returns a callback that can read private variables from object.
-     *
-     * @return Closure
-     */
-    private function getGenericPropertyReader(): Closure
-    {
-        $reader = function &($object, $property) {
-            $value = &Closure::bind(function &() use ($property) {
-                return $this->$property;
-            }, $object, $object)->__invoke();
-
-            return $value;
-        };
-
-        return $reader;
     }
 }

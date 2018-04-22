@@ -18,13 +18,18 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
+use FilesystemIterator;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Discovery\Installer\ExtraInstallationManager;
+use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
     use ExpandTargetDirTrait;
+    use GetGenericPropertyReaderTrait;
 
     /**
      * A composer instance.
@@ -53,6 +58,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      * @var \Narrowspark\Discovery\Configurator
      */
     private $configurator;
+
+    /**
+     * A input implementation.
+     *
+     * @var \Symfony\Component\Console\Input\InputInterface
+     */
+    private $input;
 
     /**
      * A array of project options.
@@ -137,8 +149,18 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
+        // to avoid issues when Discovery is upgraded, we load all PHP classes now
+        // that way, we are sure to use all files from the same version.
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
+            /* @var \SplFileInfo $file */
+            if (\mb_substr($file->getFilename(), -4) === '.php') {
+                require_once $file;
+            }
+        }
+
         $this->composer = $composer;
         $this->io       = $io;
+        $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
 
         $this->projectOptions = $this->initProjectOptions();
         $this->vendorDir      = $composer->getConfig()->get('vendor-dir');
@@ -249,7 +271,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $discoveryOptions = $this->projectOptions['discovery'];
         $packages         = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
         $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
-        $extraInstaller   = new ExtraInstallationManager($this->composer, $this->io);
+        $extraInstaller   = new ExtraInstallationManager($this->composer, $this->io, $this->input, $this->lock);
 
         $this->io->writeError(\sprintf(
             '<info>Discovery operations: %s package%s</info>',

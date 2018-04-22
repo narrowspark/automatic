@@ -367,7 +367,7 @@ final class ExtraInstallationManager
         $installer->disablePlugins();
         $installer->setUpdate();
         $installer->setOptimizeAutoloader($config->get('optimize-autoloader') ?? false);
-        $installer->setDevMode(! $this->input->getOption('no-dev'));
+        $installer->setDevMode(($this->input->hasOption('no-dev') ? ! $this->input->getOption('no-dev') : true));
         $installer->setRunScripts(false);
         $installer->setUpdateWhitelist($packages);
 

@@ -26,12 +26,12 @@ final class ExtraInstallationManager
     use GetGenericPropertyReaderTrait;
 
     /**
-     * @var string
+     * @var int
      */
     private const ADD = 1;
 
     /**
-     * @var string
+     * @var int
      */
     private const REMOVE = 0;
 

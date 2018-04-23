@@ -227,7 +227,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     public function onPostCreateProject(Event $event): void
     {
         [$json, $manipulator] = self::getComposerJsonFileAndManipulator();
-
+      
         // new projects are most of the time proprietary
         $manipulator->addMainKey('license', 'proprietary');
 

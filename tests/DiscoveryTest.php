@@ -9,7 +9,7 @@ use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\RootPackageInterface;
-use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\ScriptEvents;
 use Narrowspark\Discovery\Configurator;
@@ -28,7 +28,7 @@ class DiscoveryTest extends MockeryTestCase
         self::assertSame('./discovery.lock', Discovery::getDiscoveryLockFile());
     }
 
-    public function testgetComposerJsonFileAndManipulator(): void
+    public function testGetComposerJsonFileAndManipulator(): void
     {
         [$json, $manipulator] = Discovery::getComposerJsonFileAndManipulator();
 
@@ -36,7 +36,7 @@ class DiscoveryTest extends MockeryTestCase
         self::assertInstanceOf(JsonManipulator::class, $manipulator);
     }
 
-    public function testGetSubscribedEvents()
+    public function testGetSubscribedEvents(): void
     {
         self::assertSame(
             [
@@ -54,8 +54,6 @@ class DiscoveryTest extends MockeryTestCase
 
     public function testActivate(): void
     {
-        $this->allowMockingNonExistentMethods(true);
-
         $disovery = new Discovery();
         $composer = $this->mock(Composer::class);
         $ioMock   = $this->mock(IOInterface::class);
@@ -83,13 +81,12 @@ class DiscoveryTest extends MockeryTestCase
             ->once()
             ->andReturn($configMock);
 
-        $repositoryMock = $this->mock(RepositoryInterface::class);
-
         $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
         $localRepositoryMock->shouldReceive('getPackages')
             ->once()
             ->andReturn([]);
 
+        $repositoryMock = $this->mock(RepositoryManager::class);
         $repositoryMock->shouldReceive('getLocalRepository')
             ->andReturn($localRepositoryMock);
 
@@ -112,7 +109,5 @@ class DiscoveryTest extends MockeryTestCase
             $disovery->getLock()->get('_readme')
         );
         self::assertInternalType('string', $disovery->getLock()->get('content-hash'));
-
-        $this->allowMockingNonExistentMethods();
     }
 }

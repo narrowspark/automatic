@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class QuestionFactoryTest extends TestCase
 {
-    public function testGetPackageQuestion()
+    public function testGetPackageQuestion(): void
     {
         self::assertSame(
             '    Review the package from www.example.com.
@@ -21,7 +21,7 @@ class QuestionFactoryTest extends TestCase
         );
     }
 
-    public function testValidatePackageQuestionAnswer()
+    public function testValidatePackageQuestionAnswer(): void
     {
         self::assertSame('n', QuestionFactory::validatePackageQuestionAnswer(null));
         self::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('n'));
@@ -34,7 +34,7 @@ class QuestionFactoryTest extends TestCase
      * @expectedException \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid choice
      */
-    public function testValidatePackageQuestionAnswerThrowException()
+    public function testValidatePackageQuestionAnswerThrowException(): void
     {
         self::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));
     }

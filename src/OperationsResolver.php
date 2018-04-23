@@ -23,7 +23,7 @@ class OperationsResolver
     private $vendorDir;
 
     /**
-     * Name of the parent package
+     * Name of the parent package.
      *
      * @var string
      */

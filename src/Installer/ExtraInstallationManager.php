@@ -115,8 +115,7 @@ final class ExtraInstallationManager
         );
 
         $this->versionSelector = new VersionSelector($pool);
-
-        $localPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        $localPackages         = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
 
         foreach ($localPackages as $package) {
             $this->installedPackages[$package->getName()] = $package->getPrettyVersion();

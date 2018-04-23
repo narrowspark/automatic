@@ -227,7 +227,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     public function onPostCreateProject(Event $event): void
     {
         [$json, $manipulator] = self::getComposerJsonFileAndManipulator();
-      
+
         // new projects are most of the time proprietary
         $manipulator->addMainKey('license', 'proprietary');
 
@@ -461,6 +461,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
      *
      * @throws \Exception
+     *
+     * @return void
      */
     private function doActionOnPackageOperation(PackageContract $package): void
     {
@@ -471,50 +473,51 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $package->getConfiguratorOptions('custom-configurators')
         );
 
-        switch ($package->getOperation()) {
-            case 'install':
-                $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+        if ($package->getOperation() === 'install') {
+            $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
-                $this->configurator->configure($package);
-                $packageConfigurator->configure($package);
+            $this->configurator->configure($package);
+            $packageConfigurator->configure($package);
 
-                if ($package->hasConfiguratorKey('extra-dependency')) {
-                    $operations = $this->extraInstaller->install(
-                        $package->getName(),
-                        $package->getConfiguratorOptions('extra-dependency')
-                    );
+            $extraPackages = [];
 
-                    foreach ($operations as $operation) {
-                        $this->doActionOnPackageOperation($operation);
-                    }
+            if ($package->hasConfiguratorKey('extra-dependency')) {
+                $operations = $this->extraInstaller->install(
+                    $package->getName(),
+                    $package->getConfiguratorOptions('extra-dependency')
+                );
+
+                foreach ($operations as $operation) {
+                    $extraPackages[] = $operation->getName();
+
+                    $this->doActionOnPackageOperation($operation);
+                }
+            }
+
+            if ($package->hasConfiguratorKey('post-install-output')) {
+                foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
+                    $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
                 }
 
-                if ($package->hasConfiguratorKey('post-install-output')) {
-                    foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
-                        $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
-                    }
+                $this->postInstallOutput[] = '';
+            }
 
-                    $this->postInstallOutput[] = '';
-                }
+            $options = \array_merge($package->getOptions(), ['chosen-extra-packages' => $extraPackages]);
 
-                $this->lock->add($package->getName(), $package->getOptions());
+            $this->lock->add($package->getName(), $options);
+        } elseif ($package->getOperation() === 'uninstall') {
+            $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
 
-                break;
-            case 'update':
-                break;
-            case 'uninstall':
-                $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
+            $this->configurator->unconfigure($package);
+            $packageConfigurator->unconfigure($package);
 
-                $this->configurator->unconfigure($package);
-                $packageConfigurator->unconfigure($package);
+            if ($package->hasConfiguratorKey('extra-dependency')) {
+                $lockedPackageSettings = $this->lock->get($package->getName());
 
-                if ($package->hasConfiguratorKey('extra-dependency')) {
-                    $this->extraInstaller->uninstall($package->getConfiguratorOptions('extra-dependency'));
-                }
+                $this->extraInstaller->uninstall($lockedPackageSettings['chosen-extra-dependency']);
+            }
 
-                $this->lock->remove($package->getName());
-
-                break;
+            $this->lock->remove($package->getName());
         }
     }
 }

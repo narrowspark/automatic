@@ -23,6 +23,13 @@ class OperationsResolver
     private $vendorDir;
 
     /**
+     * Name of the package where the extra package was installed.
+     *
+     * @var string
+     */
+    private $extraDependencyName;
+
+    /**
      * Create a new OperationsResolver instance.
      *
      * @param \Composer\DependencyResolver\Operation\OperationInterface[] $operations
@@ -32,6 +39,16 @@ class OperationsResolver
     {
         $this->operations = $operations;
         $this->vendorDir  = $vendorDir;
+    }
+
+    /**
+     * @var string
+     *
+     * @param string $name
+     */
+    public function setExtraDependencyName(string $name): void
+    {
+        $this->extraDependencyName = $name;
     }
 
     /**
@@ -109,10 +126,11 @@ class OperationsResolver
     {
         return \array_merge(
             [
-                'version'   => $this->getPackageVersion($package),
-                'url'       => $package->getSourceUrl(),
-                'type'      => $package->getType(),
-                'operation' => $operation,
+                'version'             => $this->getPackageVersion($package),
+                'url'                 => $package->getSourceUrl(),
+                'type'                => $package->getType(),
+                'operation'           => $operation,
+                'extra-dependency-of' => $this->extraDependencyName,
             ],
             $package->getExtra()['discovery']
         );

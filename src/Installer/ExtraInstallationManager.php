@@ -5,6 +5,7 @@ namespace Narrowspark\Discovery\Installer;
 use Composer\Composer;
 use Composer\DependencyResolver\Pool;
 use Composer\Installer;
+use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\Link;
 use Composer\Package\RootPackageInterface;
@@ -16,13 +17,23 @@ use Composer\Repository\RepositoryFactory;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Exception\RuntimeException;
 use Narrowspark\Discovery\Discovery;
-use Narrowspark\Discovery\Lock;
+use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
 
 final class ExtraInstallationManager
 {
     use GetGenericPropertyReaderTrait;
+
+    /**
+     * @var string
+     */
+    private const ADD = 1;
+
+    /**
+     * @var string
+     */
+    private const REMOVE = 0;
 
     /**
      * All local installed packages.
@@ -37,6 +48,13 @@ final class ExtraInstallationManager
      * @var string
      */
     private $stability;
+
+    /**
+     * The composer vendor path.
+     *
+     * @var string
+     */
+    private $vendorPath;
 
     /**
      * A VersionSelector instance.
@@ -60,13 +78,6 @@ final class ExtraInstallationManager
     private $composer;
 
     /**
-     * A lock instance.
-     *
-     * @var \Narrowspark\Discovery\Lock
-     */
-    private $lock;
-
-    /**
      * The composer io implementation.
      *
      * @var \Composer\IO\IOInterface
@@ -86,14 +97,14 @@ final class ExtraInstallationManager
      * @param \Composer\Composer                              $composer
      * @param \Composer\IO\IOInterface                        $io
      * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Narrowspark\Discovery\Lock                     $lock
+     * @param string                                          $vendorPath
      */
-    public function __construct(Composer $composer, IOInterface $io, InputInterface $input, Lock $lock)
+    public function __construct(Composer $composer, IOInterface $io, InputInterface $input, string $vendorPath)
     {
-        $this->composer = $composer;
-        $this->io       = $io;
-        $this->input    = $input;
-        $this->lock     = $lock;
+        $this->composer   = $composer;
+        $this->io         = $io;
+        $this->input      = $input;
+        $this->vendorPath = $vendorPath;
 
         $this->rootPackage = $composer->getPackage();
         $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
@@ -115,36 +126,30 @@ final class ExtraInstallationManager
     /**
      * Install selected extra dependencies.
      *
-     * @param array $dependencies
+     * @param string $name
+     * @param array  $dependencies
      *
      * @throws \Narrowspark\Discovery\Common\Exception\RuntimeException
+     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     * @throws \Exception
      *
-     * @return array
+     * @return \Narrowspark\Discovery\Package[]
      */
-    public function install(array $dependencies): array
+    public function install(string $name, array $dependencies): array
     {
         if (! $this->io->isInteractive()) {
             // Do nothing in no-interactive mode
             return [];
         }
 
-        $reader = $this->getGenericPropertyReader();
-
         $oldInstallManager = $this->composer->getInstallationManager();
-        $installers        = $reader($oldInstallManager, 'installers');
 
-        $narrowsparkInstaller = new InstallationManager();
-
-        foreach ($installers as $installer) {
-            $narrowsparkInstaller->addInstaller($installer);
-        }
-
-        $this->composer->setInstallationManager($narrowsparkInstaller);
+        $this->addDiscoveryInstallationManagerToComposer($oldInstallManager);
 
         $packagesToInstall = [];
 
         foreach ($dependencies as $question => $options) {
-            if (! is_array($options) || count($options) < 2) {
+            if (! \is_array($options) || \count($options) < 2) {
                 throw new RuntimeException('You must provide at least two optional dependencies.');
             }
 
@@ -156,7 +161,10 @@ final class ExtraInstallationManager
 
                 // Package has been already prepared to be installed, skipping.
                 // Package from this group has been found in root composer, skipping.
-                if (isset($packagesToInstall[$package]) || isset($this->rootPackage->getRequires()[$package]) || isset($this->rootPackage->getDevRequires()[$package])) {
+                if (isset($packagesToInstall[$package]) ||
+                    isset($this->rootPackage->getRequires()[$package]) ||
+                    isset($this->rootPackage->getDevRequires()[$package])
+                ) {
                     continue 2;
                 }
 
@@ -177,20 +185,23 @@ final class ExtraInstallationManager
         }
 
         if (\count($packagesToInstall) !== 0) {
-            $this->updateComposerJson($packagesToInstall);
+            $this->updateComposerJson($packagesToInstall, self::ADD);
 
             $this->runInstaller(
-                $this->updateRootComposerJson($this->composer->getPackage(), $packagesToInstall, true),
+                $this->updateRootComposerJson($this->composer->getPackage(), $packagesToInstall, self::ADD),
                 \array_keys($packagesToInstall)
             );
         }
 
         $operations = $this->composer->getInstallationManager()->getOperations();
 
-        // Add the old install manager back.
+        // Revert to the old install manager.
         $this->composer->setInstallationManager($oldInstallManager);
 
-        return $operations;
+        $resolver = new OperationsResolver($operations, $this->vendorPath);
+        $resolver->setExtraDependencyName($name);
+
+        return $resolver->resolve();
     }
 
     /**
@@ -205,6 +216,15 @@ final class ExtraInstallationManager
         if (! $this->io->isInteractive()) {
             // Do nothing in no-interactive mode
             return;
+        }
+
+        if (\count($dependencies) !== 0) {
+            $this->updateComposerJson($dependencies, self::REMOVE);
+
+            $this->runInstaller(
+                $this->updateRootComposerJson($this->composer->getPackage(), $dependencies, self::REMOVE),
+                \array_values($dependencies)
+            );
         }
     }
 
@@ -282,22 +302,22 @@ final class ExtraInstallationManager
     }
 
     /**
-     * Update root composer.json require.
+     * Update the root composer.json require.
      *
      * @param \Composer\Package\RootPackageInterface $rootPackage
      * @param array                                  $packages
-     * @param bool                                   $add
+     * @param int                                    $type
      *
      * @return \Composer\Package\RootPackageInterface
      */
-    private function updateRootComposerJson(RootPackageInterface $rootPackage, array $packages, bool $add): RootPackageInterface
+    private function updateRootComposerJson(RootPackageInterface $rootPackage, array $packages, int $type): RootPackageInterface
     {
         $this->io->writeError('Updating root package');
 
         $requires = $rootPackage->getRequires();
 
-        foreach ($packages as $name => $version) {
-            if ($add) {
+        if ($type === self::ADD) {
+            foreach ($packages as $name => $version) {
                 $requires[$name] = new Link(
                     '__root__',
                     $name,
@@ -305,8 +325,10 @@ final class ExtraInstallationManager
                     'requires',
                     $version
                 );
-            } else {
-                unset($requires[$name]);
+            }
+        } elseif ($type === self::REMOVE) {
+            foreach ($packages as $package) {
+                unset($requires[$package]);
             }
         }
 
@@ -319,19 +341,28 @@ final class ExtraInstallationManager
      * Manipulate root composer.json with the new packages and dump it.
      *
      * @param array $packages
+     * @param int   $type
      *
      * @return void
      */
-    private function updateComposerJson(array $packages): void
+    private function updateComposerJson(array $packages, int $type): void
     {
         $this->io->writeError('Updating composer.json');
 
+        // @var \Composer\Json\JsonManipulator $manipulator
+        // @var \Composer\Json\JsonFile $json
         [$json, $manipulator] = Discovery::getComposerJsonFileAndManipulator();
 
-        foreach ($packages as $name => $version) {
-            $sortPackages = $this->composer->getConfig()->get('sort-packages') ?? false;
+        if ($type === self::ADD) {
+            foreach ($packages as $name => $version) {
+                $sortPackages = $this->composer->getConfig()->get('sort-packages') ?? false;
 
-            $manipulator->addLink('require', $name, $version, $sortPackages);
+                $manipulator->addLink('require', $name, $version, $sortPackages);
+            }
+        } elseif ($type === self::REMOVE) {
+            foreach ($packages as $package) {
+                $manipulator->removeSubNode('require', $package);
+            }
         }
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
@@ -347,7 +378,7 @@ final class ExtraInstallationManager
      *
      * @return int
      */
-    private function runInstaller(RootPackageInterface $rootPackage, array $packages)
+    private function runInstaller(RootPackageInterface $rootPackage, array $packages): int
     {
         $this->io->writeError('Running an update to install dependent packages');
 
@@ -372,5 +403,24 @@ final class ExtraInstallationManager
         $installer->setUpdateWhitelist($packages);
 
         return $installer->run();
+    }
+
+    /**
+     * Adds a modified installation manager to composer.
+     *
+     * @param \Composer\Installer\InstallationManager $oldInstallManager
+     */
+    private function addDiscoveryInstallationManagerToComposer(BaseInstallationManager $oldInstallManager): void
+    {
+        $reader     = $this->getGenericPropertyReader();
+        $installers = $reader($oldInstallManager, 'installers');
+
+        $narrowsparkInstaller = new InstallationManager();
+
+        foreach ($installers as $installer) {
+            $narrowsparkInstaller->addInstaller($installer);
+        }
+
+        $this->composer->setInstallationManager($narrowsparkInstaller);
     }
 }

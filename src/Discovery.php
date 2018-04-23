@@ -60,6 +60,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $configurator;
 
     /**
+     * A extra dependency installation manager instance.
+     *
+     * @var \Narrowspark\Discovery\Installer\ExtraInstallationManager
+     */
+    private $extraInstaller;
+
+    /**
      * A input implementation.
      *
      * @var \Symfony\Component\Console\Input\InputInterface
@@ -78,7 +85,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @var string
      */
-    private $vendorDir;
+    private $vendorPath;
 
     /**
      * Check if composer.lock should be updated.
@@ -152,7 +159,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         // to avoid issues when Discovery is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
-            /* @var \SplFileInfo $file */
+            // @var \SplFileInfo $file
             if (\mb_substr($file->getFilename(), -4) === '.php') {
                 require_once $file;
             }
@@ -163,9 +170,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
 
         $this->projectOptions = $this->initProjectOptions();
-        $this->vendorDir      = $composer->getConfig()->get('vendor-dir');
+        $this->vendorPath     = $composer->getConfig()->get('vendor-dir');
         $this->configurator   = new Configurator($this->composer, $this->io, $this->projectOptions);
         $this->lock           = new Lock(self::getDiscoveryLockFile());
+        $this->extraInstaller = new ExtraInstallationManager($this->composer, $this->io, $this->input, $this->vendorPath);
 
         $this->lock->add('_readme', [
             'This file locks the discovery information of your project to a known state',
@@ -269,9 +277,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $discoveryOptions = $this->projectOptions['discovery'];
-        $packages         = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
+        $packages         = (new OperationsResolver($this->operations, $this->vendorPath))->resolve();
         $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
-        $extraInstaller   = new ExtraInstallationManager($this->composer, $this->io, $this->input, $this->lock);
 
         $this->io->writeError(\sprintf(
             '<info>Discovery operations: %s package%s</info>',
@@ -286,7 +293,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 return;
             }
 
-            if ($package->getOperation() === 'install' && $allowInstall === false) {
+            if ($allowInstall === false && $package->getOperation() === 'install') {
                 $answer = $this->io->askAndValidate(
                     QuestionFactory::getPackageQuestion($package->getUrl()),
                     [QuestionFactory::class, 'validatePackageQuestionAnswer'],
@@ -309,7 +316,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 }
             }
 
-            $this->doActionOnPackageOperation($package, $extraInstaller);
+            $this->doActionOnPackageOperation($package);
         }
 
         if (\count($packages) !== 0) {
@@ -451,12 +458,11 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     /**
      * Choose action on package operation.
      *
-     * @param \Narrowspark\Discovery\Common\Contract\Package            $package
-     * @param \Narrowspark\Discovery\Installer\ExtraInstallationManager $installer
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
      *
      * @throws \Exception
      */
-    private function doActionOnPackageOperation(PackageContract $package, ExtraInstallationManager $installer): void
+    private function doActionOnPackageOperation(PackageContract $package): void
     {
         $packageConfigurator = new PackageConfigurator(
             $this->composer,
@@ -472,8 +478,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 $this->configurator->configure($package);
                 $packageConfigurator->configure($package);
 
-                if ($package->hasConfiguratorKey('dependency')) {
-                    $installer->install($package->getConfiguratorOptions('dependency'));
+                if ($package->hasConfiguratorKey('extra-dependency')) {
+                    $operations = $this->extraInstaller->install(
+                        $package->getName(),
+                        $package->getConfiguratorOptions('extra-dependency')
+                    );
+
+                    foreach ($operations as $operation) {
+                        $this->doActionOnPackageOperation($operation);
+                    }
                 }
 
                 if ($package->hasConfiguratorKey('post-install-output')) {
@@ -495,8 +508,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 $this->configurator->unconfigure($package);
                 $packageConfigurator->unconfigure($package);
 
-                if ($package->hasConfiguratorKey('dependency')) {
-                    $installer->uninstall($package->getConfiguratorOptions('dependency'));
+                if ($package->hasConfiguratorKey('extra-dependency')) {
+                    $this->extraInstaller->uninstall($package->getConfiguratorOptions('extra-dependency'));
                 }
 
                 $this->lock->remove($package->getName());

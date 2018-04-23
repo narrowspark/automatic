@@ -79,7 +79,7 @@ final class Package implements PackageContract
         $this->type       = $options['type'];
         $this->options    = $options;
 
-        unset($options['version'], $options['type'], $options['operation'], $options['url']);
+        unset($options['version'], $options['type'], $options['operation'], $options['url'], $options['extra-dependency-of']);
 
         $this->configuratorOptions = $options;
     }
@@ -129,7 +129,7 @@ final class Package implements PackageContract
      */
     public function getPackagePath(): string
     {
-        return \strtr($this->vendorPath . '/' . $this->name . '/', '\\', '/');
+        return \str_replace('\\', '/', $this->vendorPath . '/' . $this->name . '/');
     }
 
     /**
@@ -150,6 +150,14 @@ final class Package implements PackageContract
         }
 
         return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isExtraDependency(): bool
+    {
+        return isset($this->options['extra-dependency-of']);
     }
 
     /**

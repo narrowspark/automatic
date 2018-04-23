@@ -4,10 +4,14 @@ namespace Narrowspark\Discovery\Test;
 
 use Composer\Composer;
 use Composer\Config;
+use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
+use Composer\Json\JsonManipulator;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\WritableRepositoryInterface;
+use Composer\Script\ScriptEvents;
 use Narrowspark\Discovery\Configurator;
 use Narrowspark\Discovery\Discovery;
 use Narrowspark\Discovery\Lock;
@@ -22,6 +26,30 @@ class DiscoveryTest extends MockeryTestCase
     public function testGetDiscoveryLockFile(): void
     {
         self::assertSame('./discovery.lock', Discovery::getDiscoveryLockFile());
+    }
+
+    public function testgetComposerJsonFileAndManipulator(): void
+    {
+        [$json, $manipulator] = Discovery::getComposerJsonFileAndManipulator();
+
+        self::assertInstanceOf(JsonFile::class, $json);
+        self::assertInstanceOf(JsonManipulator::class, $manipulator);
+    }
+
+    public function testGetSubscribedEvents()
+    {
+        self::assertSame(
+            [
+                'auto-scripts'                        => 'executeAutoScripts',
+                PackageEvents::POST_PACKAGE_INSTALL   => 'record',
+                PackageEvents::POST_PACKAGE_UPDATE    => 'record',
+                PackageEvents::POST_PACKAGE_UNINSTALL => 'record',
+                ScriptEvents::POST_INSTALL_CMD        => 'onPostInstall',
+                ScriptEvents::POST_UPDATE_CMD         => 'onPostUpdate',
+                ScriptEvents::POST_CREATE_PROJECT_CMD => 'onPostCreateProject',
+            ],
+            Discovery::getSubscribedEvents()
+        );
     }
 
     public function testActivate(): void

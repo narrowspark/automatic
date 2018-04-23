@@ -98,6 +98,7 @@ class OperationsResolverTest extends MockeryTestCase
         $this->uninstallOperation->shouldReceive('getPackage')
             ->andReturn($package3Mock);
 
+        $this->resolver->setParentPackageName('foo/bar');
         $packages = $this->resolver->resolve();
 
         $package = $packages['install'];
@@ -107,6 +108,7 @@ class OperationsResolverTest extends MockeryTestCase
         self::assertSame('library', $package->getType());
         self::assertSame('example.local', $package->getUrl());
         self::assertSame('install', $package->getOperation());
+        self::assertTrue($package->isExtraDependency());
 
         $package = $packages['uninstall'];
 
@@ -115,5 +117,13 @@ class OperationsResolverTest extends MockeryTestCase
         self::assertSame('provider', $package->getType());
         self::assertSame('example.local', $package->getUrl());
         self::assertSame('uninstall', $package->getOperation());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowMockingNonExistentMethods($allow = false): void
+    {
+        parent::allowMockingNonExistentMethods(true);
     }
 }

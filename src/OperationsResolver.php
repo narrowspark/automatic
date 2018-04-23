@@ -23,11 +23,11 @@ class OperationsResolver
     private $vendorDir;
 
     /**
-     * Name of the package where the extra package was installed.
+     * Name of the parent package
      *
      * @var string
      */
-    private $extraDependencyName;
+    private $parentName;
 
     /**
      * Create a new OperationsResolver instance.
@@ -42,13 +42,15 @@ class OperationsResolver
     }
 
     /**
-     * @var string
+     * Set the parent package name.
      *
      * @param string $name
+     *
+     * @return void
      */
-    public function setExtraDependencyName(string $name): void
+    public function setParentPackageName(string $name): void
     {
-        $this->extraDependencyName = $name;
+        $this->parentName = $name;
     }
 
     /**
@@ -130,7 +132,7 @@ class OperationsResolver
                 'url'                 => $package->getSourceUrl(),
                 'type'                => $package->getType(),
                 'operation'           => $operation,
-                'extra-dependency-of' => $this->extraDependencyName,
+                'extra-dependency-of' => $this->parentName,
             ],
             $package->getExtra()['discovery']
         );

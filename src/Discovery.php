@@ -479,8 +479,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $this->configurator->configure($package);
             $packageConfigurator->configure($package);
 
-            $extraPackages = [];
-
             if ($package->hasConfiguratorKey('extra-dependency')) {
                 $operations = $this->extraInstaller->install(
                     $package->getName(),
@@ -488,8 +486,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 );
 
                 foreach ($operations as $operation) {
-                    $extraPackages[] = $operation->getName();
-
                     $this->doActionOnPackageOperation($operation);
                 }
             }
@@ -502,9 +498,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 $this->postInstallOutput[] = '';
             }
 
-            $options = \array_merge($package->getOptions(), ['chosen-extra-packages' => $extraPackages]);
-
-            $this->lock->add($package->getName(), $options);
+            $this->lock->add($package->getName(), $package->getOptions());
         } elseif ($package->getOperation() === 'uninstall') {
             $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
 
@@ -512,9 +506,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $packageConfigurator->unconfigure($package);
 
             if ($package->hasConfiguratorKey('extra-dependency')) {
-                $lockedPackageSettings = $this->lock->get($package->getName());
+                $packages = [];
 
-                $this->extraInstaller->uninstall($lockedPackageSettings['chosen-extra-dependency']);
+                foreach ($this->lock->read() as $packageName => $data) {
+                    if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
+                        $packages[] = $packageName;
+                    }
+                }
+
+                $this->extraInstaller->uninstall($packages);
             }
 
             $this->lock->remove($package->getName());

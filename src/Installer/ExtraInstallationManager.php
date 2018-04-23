@@ -199,7 +199,7 @@ final class ExtraInstallationManager
         $this->composer->setInstallationManager($oldInstallManager);
 
         $resolver = new OperationsResolver($operations, $this->vendorPath);
-        $resolver->setExtraDependencyName($name);
+        $resolver->setParentPackageName($name);
 
         return $resolver->resolve();
     }
@@ -409,6 +409,8 @@ final class ExtraInstallationManager
      * Adds a modified installation manager to composer.
      *
      * @param \Composer\Installer\InstallationManager $oldInstallManager
+     *
+     * @return void
      */
     private function addDiscoveryInstallationManagerToComposer(BaseInstallationManager $oldInstallManager): void
     {

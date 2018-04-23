@@ -86,7 +86,7 @@ class PackageTest extends TestCase
         self::assertSame($this->config['type'], $this->package->getType());
     }
 
-    public function isExtraDependency(): void
+    public function testIsExtraDependency(): void
     {
         self::assertTrue($this->package->isExtraDependency());
     }

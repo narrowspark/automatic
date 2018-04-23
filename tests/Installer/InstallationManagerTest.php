@@ -14,7 +14,7 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 class InstallationManagerTest extends MockeryTestCase
 {
-    public function testExecuteWithGetOperations()
+    public function testExecuteWithGetOperations(): void
     {
         $manager = new InstallationManager();
 

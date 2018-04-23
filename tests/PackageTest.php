@@ -32,6 +32,7 @@ class PackageTest extends TestCase
             'copy'      => [
                 'from' => 'to',
             ],
+            'extra-dependency-of' => 'foo/bar',
         ];
         $this->package = new Package('test', __DIR__, $this->config);
     }
@@ -83,5 +84,10 @@ class PackageTest extends TestCase
     public function testGetType(): void
     {
         self::assertSame($this->config['type'], $this->package->getType());
+    }
+
+    public function isExtraDependency(): void
+    {
+        self::assertTrue($this->package->isExtraDependency());
     }
 }

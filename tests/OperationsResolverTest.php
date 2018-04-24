@@ -109,7 +109,7 @@ class OperationsResolverTest extends MockeryTestCase
             ->once()
             ->andReturn([
                 $link1Mock,
-                $link2Mock
+                $link2Mock,
             ]);
 
         $this->installOperation->shouldReceive('getPackage')

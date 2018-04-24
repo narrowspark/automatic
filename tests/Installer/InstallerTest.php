@@ -22,12 +22,12 @@ class InstallerTest extends MockeryTestCase
     /**
      * @var \Composer\Composer|\Mockery\MockInterface
      */
-    private $composerMock;
+    protected $composerMock;
 
     /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
+     * @var \Composer\Config|\Mockery\MockInterface
      */
-    private $ioMock;
+    protected $configMock;
 
     /**
      * @var \Mockery\MockInterface|\Symfony\Component\Console\Input\InputInterface
@@ -35,9 +35,9 @@ class InstallerTest extends MockeryTestCase
     private $inputMock;
 
     /**
-     * @var \Composer\Config|\Mockery\MockInterface
+     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
      */
-    private $configMock;
+    private $ioMock;
 
     /**
      * {@inheritdoc}
@@ -47,8 +47,21 @@ class InstallerTest extends MockeryTestCase
         parent::setUp();
 
         $this->composerMock = $this->mock(Composer::class);
-        $this->configMock   = $this->mock(Config::class);
 
+        $this->composerMock->shouldReceive('getLocker')
+            ->once()
+            ->andReturn($this->mock(Locker::class));
+        $this->composerMock->shouldReceive('getEventDispatcher')
+            ->once()
+            ->andReturn($this->mock(EventDispatcher::class));
+        $this->composerMock->shouldReceive('getAutoloadGenerator')
+            ->once()
+            ->andReturn($this->mock(AutoloadGenerator::class));
+        $this->composerMock->shouldReceive('getDownloadManager')
+            ->once()
+            ->andReturn($this->mock(DownloadManager::class));
+
+        $this->configMock = $this->mock(Config::class);
         $this->composerMock->shouldReceive('getConfig')
             ->twice()
             ->andReturn($this->configMock);
@@ -56,15 +69,9 @@ class InstallerTest extends MockeryTestCase
         $this->composerMock->shouldReceive('getPackage')
             ->once()
             ->andReturn($this->mock(RootPackageInterface::class));
-        $this->composerMock->shouldReceive('getDownloadManager')
-            ->once()
-            ->andReturn($this->mock(DownloadManager::class));
         $this->composerMock->shouldReceive('getRepositoryManager')
             ->once()
             ->andReturn($this->mock(RepositoryManager::class));
-        $this->composerMock->shouldReceive('getLocker')
-            ->once()
-            ->andReturn($this->mock(Locker::class));
 
         $installationManager = $this->mock(InstallationManager::class);
         $installationManager->shouldReceive('disablePlugins')
@@ -73,18 +80,30 @@ class InstallerTest extends MockeryTestCase
         $this->composerMock->shouldReceive('getInstallationManager')
             ->once()
             ->andReturn($installationManager);
-        $this->composerMock->shouldReceive('getEventDispatcher')
-            ->once()
-            ->andReturn($this->mock(EventDispatcher::class));
-        $this->composerMock->shouldReceive('getAutoloadGenerator')
-            ->once()
-            ->andReturn($this->mock(AutoloadGenerator::class));
 
         $this->ioMock    = $this->mock(IOInterface::class);
         $this->inputMock = $this->mock(InputInterface::class);
     }
 
     public function testCreateWithConfigSettings(): void
+    {
+        $this->arrangeInstallerConfig();
+        $this->arrangeInputInstaller();
+
+        $installer = Installer::create($this->ioMock, $this->composerMock, $this->inputMock);
+
+        self::assertInstanceOf(BaseInstaller::class, $installer);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowMockingNonExistentMethods($allow = false): void
+    {
+        parent::allowMockingNonExistentMethods(true);
+    }
+
+    protected function arrangeInstallerConfig(): void
     {
         $this->configMock->shouldReceive('get')
             ->with('optimize-autoloader')
@@ -98,7 +117,10 @@ class InstallerTest extends MockeryTestCase
             ->with('preferred-install')
             ->once()
             ->andReturn('auto');
+    }
 
+    protected function arrangeInputInstaller(): void
+    {
         $this->inputMock->shouldReceive('hasOption')
             ->once()
             ->with('prefer-source')
@@ -135,17 +157,5 @@ class InstallerTest extends MockeryTestCase
             ->once()
             ->with('no-suggest')
             ->andReturn(false);
-
-        $installer = Installer::create($this->ioMock, $this->composerMock, $this->inputMock);
-
-        self::assertInstanceOf(BaseInstaller::class, $installer);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function allowMockingNonExistentMethods($allow = false): void
-    {
-        parent::allowMockingNonExistentMethods(true);
     }
 }

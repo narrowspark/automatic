@@ -4,6 +4,7 @@ namespace Narrowspark\Discovery\Installer;
 
 use Composer\Composer;
 use Composer\DependencyResolver\Pool;
+use Composer\Installer as BaseInstaller;
 use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\Link;
@@ -20,7 +21,7 @@ use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
 
-final class ExtraInstallationManager
+class QuestionInstallationManager
 {
     use GetGenericPropertyReaderTrait;
 
@@ -152,6 +153,11 @@ final class ExtraInstallationManager
         $this->addDiscoveryInstallationManagerToComposer($oldInstallManager);
 
         $packagesToInstall = [];
+        $rootPackages      = [];
+
+        foreach ($this->getRootRequires() as $link) {
+            $rootPackages[$link->getTarget()] = $link->getTarget();
+        }
 
         foreach ($dependencies as $question => $options) {
             if (! \is_array($options) || \count($options) < 2) {
@@ -166,10 +172,7 @@ final class ExtraInstallationManager
 
                 // Package has been already prepared to be installed, skipping.
                 // Package from this group has been found in root composer, skipping.
-                if (isset($packagesToInstall[$package]) ||
-                    isset($this->rootPackage->getRequires()[$package]) ||
-                    isset($this->rootPackage->getDevRequires()[$package])
-                ) {
+                if (isset($packagesToInstall[$package]) || isset($rootPackages[$package])) {
                     continue 2;
                 }
 
@@ -193,7 +196,7 @@ final class ExtraInstallationManager
             $this->updateComposerJson($packagesToInstall, self::ADD);
 
             $this->runInstaller(
-                $this->updateRootComposerJson($this->composer->getPackage(), $packagesToInstall, self::ADD),
+                $this->updateRootComposerJson($packagesToInstall, self::ADD),
                 \array_keys($packagesToInstall)
             );
         }
@@ -246,7 +249,7 @@ final class ExtraInstallationManager
             }
 
             $this->runInstaller(
-                $this->updateRootComposerJson($this->composer->getPackage(), $dependencies, self::REMOVE),
+                $this->updateRootComposerJson($dependencies, self::REMOVE),
                 $whiteList
             );
         }
@@ -260,6 +263,16 @@ final class ExtraInstallationManager
         $resolver->setParentPackageName($name);
 
         return $resolver->resolve();
+    }
+
+    /**
+     * Get configured installer instance.
+     *
+     * @return \Composer\Installer
+     */
+    protected function getInstaller(): BaseInstaller
+    {
+        return Installer::create($this->io, $this->composer, $this->input);
     }
 
     /**
@@ -335,17 +348,17 @@ final class ExtraInstallationManager
     /**
      * Update the root composer.json require.
      *
-     * @param \Composer\Package\RootPackageInterface $rootPackage
-     * @param array                                  $packages
-     * @param int                                    $type
+     * @param array $packages
+     * @param int   $type
      *
      * @return \Composer\Package\RootPackageInterface
      */
-    private function updateRootComposerJson(RootPackageInterface $rootPackage, array $packages, int $type): RootPackageInterface
+    private function updateRootComposerJson(array $packages, int $type): RootPackageInterface
     {
         $this->io->writeError('Updating root package');
 
-        $requires = $rootPackage->getRequires();
+        $rootPackage = $this->composer->getPackage();
+        $requires    = $rootPackage->getRequires();
 
         if ($type === self::ADD) {
             foreach ($packages as $name => $version) {
@@ -417,7 +430,7 @@ final class ExtraInstallationManager
 
         $this->composer->setPackage($rootPackage);
 
-        $installer = Installer::create($this->io, $this->composer, $this->input);
+        $installer = $this->getInstaller();
         $installer->setUpdateWhitelist($whitelistPackages);
 
         $return = $installer->run();
@@ -446,5 +459,15 @@ final class ExtraInstallationManager
         }
 
         $this->composer->setInstallationManager($narrowsparkInstaller);
+    }
+
+    /**
+     * Get merged root requires and dev-requires.
+     *
+     * @return \Composer\Package\Link[]
+     */
+    private function getRootRequires(): array
+    {
+        return $this->rootPackage->getRequires() + $this->rootPackage->getDevRequires();
     }
 }

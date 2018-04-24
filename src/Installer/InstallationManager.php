@@ -9,7 +9,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\Repository\RepositoryInterface;
 
-final class InstallationManager extends BaseInstallationManager
+class InstallationManager extends BaseInstallationManager
 {
     /**
      * The composer operations.

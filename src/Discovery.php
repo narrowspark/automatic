@@ -21,7 +21,7 @@ use Composer\Util\ProcessExecutor;
 use FilesystemIterator;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
-use Narrowspark\Discovery\Installer\ExtraInstallationManager;
+use Narrowspark\Discovery\Installer\QuestionInstallationManager;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -62,7 +62,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     /**
      * A extra dependency installation manager instance.
      *
-     * @var \Narrowspark\Discovery\Installer\ExtraInstallationManager
+     * @var \Narrowspark\Discovery\Installer\QuestionInstallationManager
      */
     private $extraInstaller;
 
@@ -173,7 +173,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->vendorPath     = $composer->getConfig()->get('vendor-dir');
         $this->configurator   = new Configurator($this->composer, $this->io, $this->projectOptions);
         $this->lock           = new Lock(self::getDiscoveryLockFile());
-        $this->extraInstaller = new ExtraInstallationManager($this->composer, $this->io, $this->input, $this->vendorPath);
+        $this->extraInstaller = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->vendorPath);
 
         $this->lock->add('_readme', [
             'This file locks the discovery information of your project to a known state',

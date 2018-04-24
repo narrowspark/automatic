@@ -13,11 +13,7 @@
                 "this is a question": {
                     "viserio/routing": "dev-master",
                     "viserio/view": "dev-master"
-                },
-                "this is a second question": [
-                    "viserio/bus",
-                    "viserio/console"
-                ]
+                }
             }
         }
     }

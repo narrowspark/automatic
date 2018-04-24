@@ -357,8 +357,7 @@ class QuestionInstallationManager
     {
         $this->io->writeError('Updating root package');
 
-        $rootPackage = $this->composer->getPackage();
-        $requires    = $rootPackage->getRequires();
+        $requires = $this->rootPackage->getRequires();
 
         if ($type === self::ADD) {
             foreach ($packages as $name => $version) {
@@ -376,9 +375,9 @@ class QuestionInstallationManager
             }
         }
 
-        $rootPackage->setRequires($requires);
+        $this->rootPackage->setRequires($requires);
 
-        return $rootPackage;
+        return $this->rootPackage;
     }
 
     /**

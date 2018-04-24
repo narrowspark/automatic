@@ -4,7 +4,6 @@ namespace Narrowspark\Discovery\Installer;
 
 use Composer\Composer;
 use Composer\DependencyResolver\Pool;
-use Composer\Installer;
 use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\Link;
@@ -85,6 +84,13 @@ final class ExtraInstallationManager
     private $io;
 
     /**
+     * A repository implementation.
+     *
+     * @var \Composer\Repository\WritableRepositoryInterface
+     */
+    private $localRepository;
+
+    /**
      * A input implementation.
      *
      * @var \Symfony\Component\Console\Input\InputInterface
@@ -115,9 +121,9 @@ final class ExtraInstallationManager
         );
 
         $this->versionSelector = new VersionSelector($pool);
-        $localPackages         = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        $this->localRepository = $composer->getRepositoryManager()->getLocalRepository();
 
-        foreach ($localPackages as $package) {
+        foreach ($this->localRepository->getPackages() as $package) {
             $this->installedPackages[$package->getName()] = $package->getPrettyVersion();
         }
     }
@@ -206,23 +212,38 @@ final class ExtraInstallationManager
     /**
      * Uninstall extra dependencies.
      *
-     * @param array $dependencies
+     * @param string $name
+     * @param array  $dependencies
      *
      * @return void
      */
-    public function uninstall(array $dependencies): void
+    public function uninstall(string $name, array $dependencies): void
     {
-        if (! $this->io->isInteractive()) {
-            // Do nothing in no-interactive mode
-            return;
-        }
-
         if (\count($dependencies) !== 0) {
             $this->updateComposerJson($dependencies, self::REMOVE);
+            $packages = $this->localRepository->getPackages();
+
+            $whiteList = $dependencies;
+
+            foreach ($packages as $package) {
+                if ($package->getName() === $name) {
+                    $whiteList += \array_keys($package->getRequires());
+                }
+            }
+
+            foreach ($packages as $package) {
+                $mixedRequires = \array_keys($package->getRequires()) + \array_keys($package->getDevRequires());
+
+                foreach ($whiteList as $whitelistPackageName) {
+                    if (isset($mixedRequires[$whitelistPackageName])) {
+                        unset($whiteList[$whitelistPackageName]);
+                    }
+                }
+            }
 
             $this->runInstaller(
                 $this->updateRootComposerJson($this->composer->getPackage(), $dependencies, self::REMOVE),
-                \array_values($dependencies)
+                $whiteList
             );
         }
     }
@@ -255,9 +276,7 @@ final class ExtraInstallationManager
             $i++;
         }
 
-//        if (false) {
-//            $ask .= \sprintf("  [<comment>%d</comment>] skip\n", $i + 1);
-//        }
+        $ask .= \sprintf("  [<comment>%d</comment>] skip question\n", $i);
         $ask .= '  Make your selection: ';
 
         do {
@@ -371,37 +390,28 @@ final class ExtraInstallationManager
      * Install selected packages.
      *
      * @param \Composer\Package\RootPackageInterface $rootPackage
-     * @param array                                  $packages
+     * @param array                                  $whitelistPackages
      *
      * @throws \Exception
      *
      * @return int
      */
-    private function runInstaller(RootPackageInterface $rootPackage, array $packages): int
+    private function runInstaller(RootPackageInterface $rootPackage, array $whitelistPackages): int
     {
         $this->io->writeError('Running an update to install dependent packages');
 
-        $config    = $this->composer->getConfig();
-        $installer = new Installer(
-            $this->io,
-            $config,
-            $rootPackage,
-            $this->composer->getDownloadManager(),
-            $this->composer->getRepositoryManager(),
-            $this->composer->getLocker(),
-            $this->composer->getInstallationManager(),
-            $this->composer->getEventDispatcher(),
-            $this->composer->getAutoloadGenerator()
-        );
+        $baseRootPackage = $this->composer->getPackage();
 
-        $installer->disablePlugins();
-        $installer->setUpdate();
-        $installer->setOptimizeAutoloader($config->get('optimize-autoloader') ?? false);
-        $installer->setDevMode(($this->input->hasOption('no-dev') ? ! $this->input->getOption('no-dev') : true));
-        $installer->setRunScripts(false);
-        $installer->setUpdateWhitelist($packages);
+        $this->composer->setPackage($rootPackage);
 
-        return $installer->run();
+        $installer = Installer::create($this->io, $this->composer, $this->input);
+        $installer->setUpdateWhitelist($whitelistPackages);
+
+        $return = $installer->run();
+
+        $this->composer->setPackage($baseRootPackage);
+
+        return $return;
     }
 
     /**
@@ -414,7 +424,7 @@ final class ExtraInstallationManager
     private function addDiscoveryInstallationManagerToComposer(BaseInstallationManager $oldInstallManager): void
     {
         $reader     = $this->getGenericPropertyReader();
-        $installers = $reader($oldInstallManager, 'installers');
+        $installers = (array) $reader($oldInstallManager, 'installers');
 
         $narrowsparkInstaller = new InstallationManager();
 

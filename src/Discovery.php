@@ -506,15 +506,19 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $packageConfigurator->unconfigure($package);
 
             if ($package->hasConfiguratorKey('extra-dependency')) {
-                $packages = [];
+                $extraPackages = [];
 
                 foreach ($this->lock->read() as $packageName => $data) {
                     if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
-                        $packages[] = $packageName;
+                        $extraPackages[] = $packageName;
                     }
                 }
 
-                $this->extraInstaller->uninstall($packages);
+                $this->extraInstaller->uninstall($package->getName(), $extraPackages);
+
+                foreach ($extraPackages as $packageName) {
+                    $this->lock->remove($packageName);
+                }
             }
 
             $this->lock->remove($package->getName());

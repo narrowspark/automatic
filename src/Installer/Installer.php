@@ -8,6 +8,9 @@ use Composer\Installer as BaseInstaller;
 use Composer\IO\IOInterface;
 use Symfony\Component\Console\Input\InputInterface;
 
+/**
+ * @internal
+ */
 final class Installer
 {
     /**

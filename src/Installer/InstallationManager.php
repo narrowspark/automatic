@@ -9,6 +9,9 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\Repository\RepositoryInterface;
 
+/**
+ * @internal
+ */
 class InstallationManager extends BaseInstallationManager
 {
     /**

@@ -5,6 +5,7 @@ namespace Narrowspark\Discovery\Test;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -93,9 +94,23 @@ class OperationsResolverTest extends MockeryTestCase
         $package3Mock->shouldReceive('getType')
             ->once()
             ->andReturn('provider');
+
+        $link1Mock = $this->mock(Link::class);
+        $link1Mock->shouldReceive('getTarget')
+            ->times(3)
+            ->andReturn('foo/bar');
+
+        $link2Mock = $this->mock(Link::class);
+        $link2Mock->shouldReceive('getTarget')
+            ->times(2)
+            ->andReturn('ext-mbstring');
+
         $package3Mock->shouldReceive('getRequires')
             ->once()
-            ->andReturn([]);
+            ->andReturn([
+                $link1Mock,
+                $link2Mock
+            ]);
 
         $this->installOperation->shouldReceive('getPackage')
             ->andReturn($package1Mock);
@@ -123,6 +138,7 @@ class OperationsResolverTest extends MockeryTestCase
         self::assertSame('provider', $package->getType());
         self::assertSame('example.local', $package->getUrl());
         self::assertSame('uninstall', $package->getOperation());
+        self::assertSame(['foo/bar'], $package->getRequires());
     }
 
     /**

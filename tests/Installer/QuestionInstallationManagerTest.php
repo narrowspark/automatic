@@ -227,19 +227,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
 
         $this->questionInstallationManager->setInstaller($this->arrangeInstaller(['viserio/routing']));
 
-        $composerPackage = $this->mock(PackageInterface::class);
-        $composerPackage->shouldReceive('getExtra')
-            ->andReturn($jsonData['extra']);
-        $composerPackage->shouldReceive('getName')
-            ->andReturn('prisis/test');
-        $composerPackage->shouldReceive('getRequires')
-            ->andReturn($jsonData['require']);
-        $composerPackage->shouldReceive('getPrettyVersion')
-            ->andReturn('dev-master');
-        $composerPackage->shouldReceive('getSourceUrl')
-            ->andReturn(null);
-        $composerPackage->shouldReceive('getType')
-            ->andReturn(null);
+        $composerPackage = $this->arrangeComposerPackage($jsonData);
 
         $operation = $this->mock(InstallOperation::class);
         $operation->shouldReceive('getPackage')
@@ -283,5 +271,29 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             ->andReturn(0);
 
         return $installer;
+    }
+
+    /**
+     * @param array $jsonData
+     *
+     * @return \Composer\Package\PackageInterface|\Mockery\MockInterface
+     */
+    private function arrangeComposerPackage(array $jsonData): MockInterface
+    {
+        $composerPackage = $this->mock(PackageInterface::class);
+        $composerPackage->shouldReceive('getExtra')
+            ->andReturn($jsonData['extra']);
+        $composerPackage->shouldReceive('getName')
+            ->andReturn($jsonData['name']);
+        $composerPackage->shouldReceive('getRequires')
+            ->andReturn($jsonData['require']);
+        $composerPackage->shouldReceive('getPrettyVersion')
+            ->andReturn('dev-master');
+        $composerPackage->shouldReceive('getSourceUrl')
+            ->andReturn(null);
+        $composerPackage->shouldReceive('getType')
+            ->andReturn(null);
+
+        return $composerPackage;
     }
 }

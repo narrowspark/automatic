@@ -87,8 +87,8 @@ class InstallerTest extends MockeryTestCase
 
     public function testCreateWithConfigSettings(): void
     {
-        $this->arrangeInstallerConfig();
-        $this->arrangeInputInstaller();
+        $this->arrangeConfig();
+        $this->arrangeInput();
 
         $installer = Installer::create($this->ioMock, $this->composerMock, $this->inputMock);
 
@@ -103,7 +103,7 @@ class InstallerTest extends MockeryTestCase
         parent::allowMockingNonExistentMethods(true);
     }
 
-    protected function arrangeInstallerConfig(): void
+    protected function arrangeConfig(): void
     {
         $this->configMock->shouldReceive('get')
             ->with('optimize-autoloader')
@@ -119,7 +119,7 @@ class InstallerTest extends MockeryTestCase
             ->andReturn('auto');
     }
 
-    protected function arrangeInputInstaller(): void
+    protected function arrangeInput(): void
     {
         $this->inputMock->shouldReceive('hasOption')
             ->once()

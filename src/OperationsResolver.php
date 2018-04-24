@@ -127,6 +127,18 @@ class OperationsResolver
      */
     private function buildPackageConfiguration(PackageInterface $package, string $operation): array
     {
+        $requires = [];
+
+        foreach ($package->getRequires() as $link) {
+            if ($link->getTarget() === 'php' || \mb_substr($link->getTarget(), 0, 4) === 'ext-') {
+                continue;
+            }
+
+            $requires[] = $link->getTarget();
+        }
+
+        \sort($requires, \SORT_STRING);
+
         return \array_merge(
             [
                 'version'             => $this->getPackageVersion($package),
@@ -134,7 +146,7 @@ class OperationsResolver
                 'type'                => $package->getType(),
                 'operation'           => $operation,
                 'extra-dependency-of' => $this->parentName,
-                'require'             => $package->getRequires(),
+                'require'             => $requires,
             ],
             $package->getExtra()['discovery']
         );

@@ -481,6 +481,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * All package configuration and installations happens her.
+     *
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
      * @param \Narrowspark\Discovery\PackageConfigurator     $packageConfigurator
      *
@@ -518,6 +520,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * All package unconfiguration and uninstallations happens her.
+     *
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
      * @param \Narrowspark\Discovery\PackageConfigurator     $packageConfigurator
      *

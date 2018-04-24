@@ -215,10 +215,14 @@ final class ExtraInstallationManager
      * @param string $name
      * @param array  $dependencies
      *
-     * @return void
+     * @return \Narrowspark\Discovery\Package[]
      */
-    public function uninstall(string $name, array $dependencies): void
+    public function uninstall(string $name, array $dependencies): array
     {
+        $oldInstallManager = $this->composer->getInstallationManager();
+
+        $this->addDiscoveryInstallationManagerToComposer($oldInstallManager);
+
         if (\count($dependencies) !== 0) {
             $this->updateComposerJson($dependencies, self::REMOVE);
             $packages = $this->localRepository->getPackages();
@@ -246,6 +250,16 @@ final class ExtraInstallationManager
                 $whiteList
             );
         }
+
+        $operations = $this->composer->getInstallationManager()->getOperations();
+
+        // Revert to the old install manager.
+        $this->composer->setInstallationManager($oldInstallManager);
+
+        $resolver = new OperationsResolver($operations, $this->vendorPath);
+        $resolver->setParentPackageName($name);
+
+        return $resolver->resolve();
     }
 
     /**
@@ -276,7 +290,6 @@ final class ExtraInstallationManager
             $i++;
         }
 
-        $ask .= \sprintf("  [<comment>%d</comment>] skip question\n", $i);
         $ask .= '  Make your selection: ';
 
         do {

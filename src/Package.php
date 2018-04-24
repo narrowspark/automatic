@@ -79,7 +79,14 @@ final class Package implements PackageContract
         $this->type       = $options['type'];
         $this->options    = $options;
 
-        unset($options['version'], $options['type'], $options['operation'], $options['url'], $options['extra-dependency-of']);
+        unset(
+            $options['version'],
+            $options['type'],
+            $options['operation'],
+            $options['url'],
+            $options['extra-dependency-of'],
+            $options['require']
+        );
 
         $this->configuratorOptions = $options;
     }
@@ -158,6 +165,14 @@ final class Package implements PackageContract
     public function isExtraDependency(): bool
     {
         return isset($this->options['extra-dependency-of']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequires(): array
+    {
+        return $this->options['require'];
     }
 
     /**

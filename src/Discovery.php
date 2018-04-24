@@ -474,54 +474,81 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         );
 
         if ($package->getOperation() === 'install') {
-            $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
-
-            $this->configurator->configure($package);
-            $packageConfigurator->configure($package);
-
-            if ($package->hasConfiguratorKey('extra-dependency')) {
-                $operations = $this->extraInstaller->install(
-                    $package->getName(),
-                    $package->getConfiguratorOptions('extra-dependency')
-                );
-
-                foreach ($operations as $operation) {
-                    $this->doActionOnPackageOperation($operation);
-                }
-            }
-
-            if ($package->hasConfiguratorKey('post-install-output')) {
-                foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
-                    $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
-                }
-
-                $this->postInstallOutput[] = '';
-            }
-
-            $this->lock->add($package->getName(), $package->getOptions());
+            $this->doInstall($package, $packageConfigurator);
         } elseif ($package->getOperation() === 'uninstall') {
-            $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
+            $this->doUninstall($package, $packageConfigurator);
+        }
+    }
 
-            $this->configurator->unconfigure($package);
-            $packageConfigurator->unconfigure($package);
+    /**
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param \Narrowspark\Discovery\PackageConfigurator     $packageConfigurator
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    private function doInstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
+    {
+        $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
-            if ($package->hasConfiguratorKey('extra-dependency')) {
-                $extraPackages = [];
+        $this->configurator->configure($package);
+        $packageConfigurator->configure($package);
 
-                foreach ($this->lock->read() as $packageName => $data) {
-                    if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
-                        $extraPackages[] = $packageName;
-                    }
-                }
+        if ($package->hasConfiguratorKey('extra-dependency')) {
+            $operations = $this->extraInstaller->install(
+                $package->getName(),
+                $package->getConfiguratorOptions('extra-dependency')
+            );
 
-                $this->extraInstaller->uninstall($package->getName(), $extraPackages);
+            foreach ($operations as $operation) {
+                $this->doInstall($operation, $packageConfigurator);
+            }
+        }
 
-                foreach ($extraPackages as $packageName) {
-                    $this->lock->remove($packageName);
+        if ($package->hasConfiguratorKey('post-install-output')) {
+            foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
+                $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
+            }
+
+            $this->postInstallOutput[] = '';
+        }
+
+        $this->lock->add($package->getName(), $package->getOptions());
+    }
+
+    /**
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param \Narrowspark\Discovery\PackageConfigurator     $packageConfigurator
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    private function doUninstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
+    {
+        $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
+
+        $this->configurator->unconfigure($package);
+        $packageConfigurator->unconfigure($package);
+
+        if ($package->hasConfiguratorKey('extra-dependency')) {
+            $extraPackages = [];
+
+            foreach ($this->lock->read() as $packageName => $data) {
+                if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
+                    $extraPackages[$packageName] = $packageName;
+                    $extraPackages += $data['require'];
                 }
             }
 
-            $this->lock->remove($package->getName());
+            $operations = $this->extraInstaller->uninstall($package->getName(), $extraPackages);
+
+            foreach ($operations as $operation) {
+                $this->doUninstall($operation, $packageConfigurator);
+            }
         }
+
+        $this->lock->remove($package->getName());
     }
 }

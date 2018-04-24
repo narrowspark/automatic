@@ -49,8 +49,7 @@ final class Installer
             ->setSkipSuggest(self::getOption($input, 'no-suggest', false))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
-            ->setUpdate(true)
-            ->setWhitelistAllDependencies(false);
+            ->setUpdate(true);
 
         return $installer;
     }

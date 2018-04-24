@@ -80,8 +80,9 @@ class OperationsResolver
                 continue;
             }
 
-            $packages[$package->getName()] = new Package(
-                $package->getName(),
+            $name            = \mb_strtolower($package->getName());
+            $packages[$name] = new Package(
+                $name,
                 $this->vendorDir,
                 $this->buildPackageConfiguration($package, $o)
             );
@@ -133,6 +134,7 @@ class OperationsResolver
                 'type'                => $package->getType(),
                 'operation'           => $operation,
                 'extra-dependency-of' => $this->parentName,
+                'require'             => $package->getRequires(),
             ],
             $package->getExtra()['discovery']
         );

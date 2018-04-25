@@ -146,14 +146,10 @@ class QuestionInstallationManager
      */
     public function install(string $name, array $dependencies): array
     {
-        if (! $this->io->isInteractive()) {
+        if (! $this->io->isInteractive() || \count($dependencies) === 0) {
             // Do nothing in no-interactive mode
             return [];
         }
-
-        $oldInstallManager = $this->composer->getInstallationManager();
-
-        $this->addDiscoveryInstallationManagerToComposer($oldInstallManager);
 
         $packagesToInstall = [];
         $rootPackages      = [];
@@ -161,6 +157,10 @@ class QuestionInstallationManager
         foreach ($this->getRootRequires() as $link) {
             $rootPackages[$link->getTarget()] = $link->getTarget();
         }
+
+        $oldInstallManager = $this->composer->getInstallationManager();
+
+        $this->addDiscoveryInstallationManagerToComposer($oldInstallManager);
 
         foreach ($dependencies as $question => $options) {
             if (! \is_array($options) || \count($options) < 2) {
@@ -219,7 +219,7 @@ class QuestionInstallationManager
      * Uninstall extra dependencies.
      *
      * @param string $name
-     * @param array $dependencies
+     * @param array  $dependencies
      *
      * @throws \Exception
      *

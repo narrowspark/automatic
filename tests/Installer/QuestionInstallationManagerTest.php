@@ -112,6 +112,57 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         self::assertCount(0, $packages);
     }
 
+    public function testInstallWithEmptyDependencies(): void
+    {
+        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
+
+        $this->ioMock->shouldReceive('isInteractive')
+            ->once()
+            ->andReturn(true);
+
+        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
+
+        $this->composerMock->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($rootPackageMock);
+
+        $questionInstallationManager = $this->getQuestionInstallationManager();
+
+        $packages = $questionInstallationManager->install($jsonData['name'], []);
+
+        self::assertCount(0, $packages);
+    }
+
+    /**
+     * @expectedException \Narrowspark\Discovery\Common\Exception\RuntimeException
+     * @expectedExceptionMessage You must provide at least two optional dependencies.
+     */
+    public function testInstallWithAEmptyQuestion(): void
+    {
+        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
+
+        $this->ioMock->shouldReceive('isInteractive')
+            ->once()
+            ->andReturn(true);
+
+        $this->composerMock->shouldReceive('getInstallationManager')
+            ->once()
+            ->andReturn($this->mock(BaseInstallationManager::class));
+
+        $this->composerMock->shouldReceive('setInstallationManager')
+            ->once();
+
+        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
+
+        $this->composerMock->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($rootPackageMock);
+
+        $questionInstallationManager = $this->getQuestionInstallationManager();
+
+        $questionInstallationManager->install($jsonData['name'], ['this is a question' => []]);
+    }
+
     public function testInstallOnEnabledInteractiveAndWithKeyValueAnswer(): void
     {
         $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);

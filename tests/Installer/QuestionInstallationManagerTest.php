@@ -133,8 +133,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->composerMock->shouldReceive('setInstallationManager')
             ->twice();
 
-        $this->setupRootPackage([], 'stable', [], []);
-
         $this->ioMock->shouldReceive('askAndValidate')
             ->once()
             ->with(
@@ -195,6 +193,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $installationManager = $this->mock(InstallationManager::class);
         $installationManager->shouldReceive('getOperations')
+            ->once()
             ->andReturn([$operation]);
 
         $this->composerMock->shouldReceive('getInstallationManager')
@@ -202,6 +201,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->andReturn($installationManager);
 
         $this->composerMock->shouldReceive('getConfig')
+            ->once()
             ->andReturn($this->configMock);
 
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);

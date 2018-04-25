@@ -81,13 +81,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $projectOptions;
 
     /**
-     * The composer vendor path.
-     *
-     * @var string
-     */
-    private $vendorPath;
-
-    /**
      * Check if composer.lock should be updated.
      *
      * @var bool
@@ -170,10 +163,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
 
         $this->projectOptions = $this->initProjectOptions();
-        $this->vendorPath     = $composer->getConfig()->get('vendor-dir');
         $this->configurator   = new Configurator($this->composer, $this->io, $this->projectOptions);
         $this->lock           = new Lock(self::getDiscoveryLockFile());
-        $this->extraInstaller = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->vendorPath);
+        $this->extraInstaller = new QuestionInstallationManager($this->composer, $this->io, $this->input);
 
         $this->lock->add('_readme', [
             'This file locks the discovery information of your project to a known state',
@@ -277,7 +269,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $discoveryOptions = $this->projectOptions['discovery'];
-        $packages         = (new OperationsResolver($this->operations, $this->vendorPath))->resolve();
+        $packages         = (new OperationsResolver($this->operations, $this->composer->getConfig()->get('vendor-dir')))->resolve();
         $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
 
         $this->io->writeError(\sprintf(

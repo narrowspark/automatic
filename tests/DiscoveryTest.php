@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Test;
 
 use Composer\Composer;
-use Composer\Config;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -70,16 +69,6 @@ class DiscoveryTest extends MockeryTestCase
         $composer->shouldReceive('getPackage')
             ->twice()
             ->andReturn($rootPackageMock);
-
-        $configMock = $this->mock(Config::class);
-        $configMock->shouldReceive('get')
-            ->once()
-            ->with('vendor-dir')
-            ->andReturn(__DIR__);
-
-        $composer->shouldReceive('getConfig')
-            ->once()
-            ->andReturn($configMock);
 
         $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
         $localRepositoryMock->shouldReceive('getPackages')

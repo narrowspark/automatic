@@ -32,17 +32,37 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     private $composerCachePath;
 
     /**
+     * @var string
+     */
+    private $manipulatedComposerPath;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
         $this->composerCachePath = __DIR__ . '/cache';
+        $this->manipulatedComposerPath = $this->composerCachePath . '/manipulated_composer.json';
 
         \mkdir($this->composerCachePath);
 
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
 
         parent::setUp();
+
+        \file_put_contents(
+            $this->manipulatedComposerPath,
+            '{
+    "name": "manipulated/test",
+    "authors": [
+        {
+            "name": "Daniel Bannert",
+            "email": "d.bannert@anolilab.de"
+        }
+    ],
+    "require": {}
+}'
+        );
 
         $this->ioMock->shouldReceive('hasAuthentication')
             ->andReturn(false);
@@ -92,7 +112,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallOnDisabledInteractive(): void
     {
-        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
+        $jsonData = $this->getComposerJsonData();
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -113,7 +133,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallWithEmptyDependencies(): void
     {
-        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
+        $jsonData = $this->getComposerJsonData();
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -138,7 +158,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     public function testInstallWithAEmptyQuestion(): void
     {
-        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
+        $jsonData = $this->getComposerJsonData();
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -197,8 +217,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallWithPackageNameAndVersionWithStablePackageVersions(): void
     {
-        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
-
+        $jsonData        = $this->getComposerJsonData();
         $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
 
         $this->composerMock->shouldReceive('getPackage')
@@ -278,19 +297,16 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $this->composerMock->shouldReceive('getConfig')
-            ->once()
-            ->andReturn($this->configMock);
+        $this->arrangeVendorConfig();
 
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
-        self::assertCount(1, $packages);
+        $this->assertPackagesInstall($packages, 'dev-master');
     }
 
     public function testInstallSkipPackageInstallIfPackageIsInRootPackage(): void
     {
-        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
-
+        $jsonData = $this->getComposerJsonData();
         $requires = [
             'viserio/routing' => new Link(
                 '__root__',
@@ -356,6 +372,8 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->andReturn($installationManager);
 
         $questionInstallationManager = $this->getQuestionInstallationManager();
+
+        $this->arrangeVendorConfig();
 
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
@@ -452,13 +470,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $this->composerMock->shouldReceive('getConfig')
-            ->once()
-            ->andReturn($this->configMock);
+        $this->arrangeVendorConfig();
 
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
-        self::assertCount(1, $packages);
+        $this->assertPackagesInstall($packages, $routingPackageVersion);
     }
 
     /**
@@ -541,12 +557,15 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     private function getQuestionInstallationManager(): MockedQuestionInstallationManager
     {
-        return new MockedQuestionInstallationManager(
+        $manager = new MockedQuestionInstallationManager(
             $this->composerMock,
             $this->ioMock,
-            $this->inputMock,
-            __DIR__
+            $this->inputMock
         );
+
+        $manager->setComposerFile($this->manipulatedComposerPath);
+
+        return $manager;
     }
 
     private function arrangeDownloadAndWritePackagistData(): void
@@ -577,5 +596,43 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $this->composerMock->shouldReceive('setInstallationManager')
             ->twice();
+    }
+
+    /**
+     * @return array
+     */
+    private function getComposerJsonData(): array
+    {
+        return \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
+    }
+
+    /**
+     * @return array
+     */
+    private function getManipulatedComposerJsonData(): array
+    {
+        return \json_decode(\file_get_contents($this->manipulatedComposerPath), true);
+    }
+
+    private function arrangeVendorConfig(): void
+    {
+        $this->configMock->shouldReceive('get')
+            ->once()
+            ->with('vendor-dir')
+            ->andReturn(__DIR__);
+        $this->composerMock->shouldReceive('getConfig')
+            ->andReturn($this->configMock);
+    }
+
+    /**
+     * @param array $packages
+     * @param string $version
+     */
+    private function assertPackagesInstall(array $packages, string $version): void
+    {
+        $jsonData = $this->getManipulatedComposerJsonData();
+
+        self::assertSame(['viserio/routing' => $version], $jsonData['require']);
+        self::assertCount(1, $packages);
     }
 }

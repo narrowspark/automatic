@@ -4,9 +4,11 @@ namespace Narrowspark\Discovery\Installer;
 
 use Composer\Composer;
 use Composer\DependencyResolver\Pool;
+use Composer\Factory;
 use Composer\Installer as BaseInstaller;
 use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonManipulator;
 use Composer\Package\Link;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -16,7 +18,6 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Exception\RuntimeException;
-use Narrowspark\Discovery\Discovery;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
@@ -46,6 +47,13 @@ class QuestionInstallationManager
     protected $versionSelector;
 
     /**
+     * Path to the composer.json.
+     *
+     * @var string
+     */
+    protected $composerFilePath;
+
+    /**
      * All local installed packages.
      *
      * @var string[]
@@ -58,13 +66,6 @@ class QuestionInstallationManager
      * @var string
      */
     private $stability;
-
-    /**
-     * The composer vendor path.
-     *
-     * @var string
-     */
-    private $vendorPath;
 
     /**
      * A root package implementation.
@@ -107,14 +108,13 @@ class QuestionInstallationManager
      * @param \Composer\Composer                              $composer
      * @param \Composer\IO\IOInterface                        $io
      * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param string                                          $vendorPath
      */
-    public function __construct(Composer $composer, IOInterface $io, InputInterface $input, string $vendorPath)
+    public function __construct(Composer $composer, IOInterface $io, InputInterface $input)
     {
-        $this->composer   = $composer;
-        $this->io         = $io;
-        $this->input      = $input;
-        $this->vendorPath = $vendorPath;
+        $this->composer         = $composer;
+        $this->io               = $io;
+        $this->input            = $input;
+        $this->composerFilePath = Factory::getComposerFile();
 
         $this->rootPackage = $composer->getPackage();
         $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
@@ -211,7 +211,7 @@ class QuestionInstallationManager
         // Revert to the old install manager.
         $this->composer->setInstallationManager($oldInstallManager);
 
-        $resolver = new OperationsResolver($operations, $this->vendorPath);
+        $resolver = new OperationsResolver($operations, $this->composer->getConfig()->get('vendor-dir'));
         $resolver->setParentPackageName($name);
 
         return $resolver->resolve();
@@ -266,7 +266,7 @@ class QuestionInstallationManager
         // Revert to the old install manager.
         $this->composer->setInstallationManager($oldInstallManager);
 
-        $resolver = new OperationsResolver($operations, $this->vendorPath);
+        $resolver = new OperationsResolver($operations, $this->composer->getConfig()->get('vendor-dir'));
         $resolver->setParentPackageName($name);
 
         return $resolver->resolve();
@@ -405,7 +405,7 @@ class QuestionInstallationManager
     {
         $this->io->writeError('Updating composer.json');
 
-        [$json, $manipulator] = Discovery::getComposerJsonFileAndManipulator();
+        $manipulator = new JsonManipulator(\file_get_contents($this->composerFilePath));
 
         if ($type === self::ADD) {
             foreach ($packages as $name => $version) {
@@ -419,7 +419,7 @@ class QuestionInstallationManager
             }
         }
 
-        \file_put_contents($json->getPath(), $manipulator->getContents());
+        \file_put_contents($this->composerFilePath, $manipulator->getContents());
     }
 
     /**

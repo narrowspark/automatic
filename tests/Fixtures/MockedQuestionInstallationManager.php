@@ -10,9 +10,20 @@ class MockedQuestionInstallationManager extends QuestionInstallationManager
 {
     private $installer;
 
+    /**
+     * @param object $installer
+     */
     public function setInstaller($installer): void
     {
         $this->installer = $installer;
+    }
+
+    /**
+     * @param string $composerFilePath
+     */
+    public function setComposerFile(string $composerFilePath): void
+    {
+        $this->composerFilePath = $composerFilePath;
     }
 
     /**

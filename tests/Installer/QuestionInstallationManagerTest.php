@@ -41,7 +41,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     protected function setUp(): void
     {
-        $this->composerCachePath = __DIR__ . '/cache';
+        $this->composerCachePath       = __DIR__ . '/cache';
         $this->manipulatedComposerPath = $this->composerCachePath . '/manipulated_composer.json';
 
         \mkdir($this->composerCachePath);
@@ -625,7 +625,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     }
 
     /**
-     * @param array $packages
+     * @param array  $packages
      * @param string $version
      */
     private function assertPackagesInstall(array $packages, string $version): void

@@ -271,6 +271,8 @@ class QuestionInstallationManager
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * Get configured installer instance.
      *
      * @return \Composer\Installer

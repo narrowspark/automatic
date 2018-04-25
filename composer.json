@@ -22,8 +22,7 @@
         "php": "^7.2",
         "ext-mbstring": "*",
         "composer-plugin-api": "^1.0",
-        "narrowspark/discovery-common": "^0.8.0",
-        "viserio/routing": "dev-master"
+        "narrowspark/discovery-common": "^0.8.0"
     },
     "require-dev": {
         "composer/composer": "^1.0",

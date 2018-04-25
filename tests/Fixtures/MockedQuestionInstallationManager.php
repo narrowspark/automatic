@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Test\Fixtures;
 
 use Composer\Installer as BaseInstaller;
+use Composer\Package\Version\VersionSelector;
 use Narrowspark\Discovery\Installer\QuestionInstallationManager;
 
 class MockedQuestionInstallationManager extends QuestionInstallationManager
@@ -12,6 +13,14 @@ class MockedQuestionInstallationManager extends QuestionInstallationManager
     public function setInstaller($installer): void
     {
         $this->installer = $installer;
+    }
+
+    /**
+     * @return \Composer\Package\Version\VersionSelector
+     */
+    public function getVersionSelector(): VersionSelector
+    {
+        return $this->versionSelector;
     }
 
     /**

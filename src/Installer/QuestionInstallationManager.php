@@ -39,6 +39,13 @@ class QuestionInstallationManager
     private const REMOVE = 0;
 
     /**
+     * A VersionSelector instance.
+     *
+     * @var \Composer\Package\Version\VersionSelector
+     */
+    protected $versionSelector;
+
+    /**
      * All local installed packages.
      *
      * @var string[]
@@ -58,13 +65,6 @@ class QuestionInstallationManager
      * @var string
      */
     private $vendorPath;
-
-    /**
-     * A VersionSelector instance.
-     *
-     * @var \Composer\Package\Version\VersionSelector
-     */
-    private $versionSelector;
 
     /**
      * A root package implementation.
@@ -155,7 +155,9 @@ class QuestionInstallationManager
         $rootPackages      = [];
 
         foreach ($this->getRootRequires() as $link) {
-            $rootPackages[$link->getTarget()] = $link->getTarget();
+            $target = \mb_strtolower($link->getTarget());
+
+            $rootPackages[$target] = $target;
         }
 
         $oldInstallManager = $this->composer->getInstallationManager();

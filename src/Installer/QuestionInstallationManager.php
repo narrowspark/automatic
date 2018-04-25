@@ -188,7 +188,7 @@ class QuestionInstallationManager
             }
 
             $package    = $this->askDependencyQuestion($question, $options);
-            $constraint = $options[$package] ?? $constraint = $this->findVersion($package);
+            $constraint = $options[$package] ?? $this->findVersion($package);
 
             $this->io->writeError(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $package));
 
@@ -296,14 +296,18 @@ class QuestionInstallationManager
         $i            = 0;
         $packageNames = [];
 
-        foreach ($packages as $name => $version) {
-            if (\is_int($name)) {
-                $name = $version;
+        foreach ($packages as $packageName => $version) {
+            if (\is_int($packageName)) {
+                $packageName = $version;
             }
 
-            $packageNames[] = $name;
+            $packageNames[] = $packageName;
 
-            $ask .= \sprintf('  [<comment>%d</comment>] %s%s' . "\n", $i, $name, ($name !== $version ? ' : ' . $version : ''));
+            if ($packageName === $version) {
+                $version = $this->findVersion($packageName);
+            }
+
+            $ask .= \sprintf('  [<comment>%d</comment>] %s%s' . "\n", $i, $packageName,  ' : ' . $version);
 
             $i++;
         }

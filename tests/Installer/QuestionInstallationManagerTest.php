@@ -2,8 +2,6 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery\Test\Installer;
 
-use Composer\Composer;
-use Composer\Config;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Installer;
 use Composer\Installer\InstallationManager as BaseInstallationManager;
@@ -18,40 +16,15 @@ use Composer\Semver\VersionParser;
 use Mockery\MockInterface;
 use Narrowspark\Discovery\Installer\InstallationManager;
 use Narrowspark\Discovery\Test\Fixtures\MockedQuestionInstallationManager;
-use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
-use Symfony\Component\Console\Input\InputInterface;
+use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Filesystem\Filesystem;
 
-class QuestionInstallationManagerTest extends MockeryTestCase
+/**
+ * @runInSeparateProcess
+ */
+class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 {
-    /**
-     * @var \Composer\Config|\Mockery\MockInterface
-     */
-    protected $configMock;
-
-    /**
-     * @var \Composer\Composer|\Mockery\MockInterface
-     */
-    protected $composerMock;
-    /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
-     */
-    private $ioMock;
-
-    /**
-     * @var \Mockery\MockInterface|\Symfony\Component\Console\Input\InputInterface
-     */
-    private $inputMock;
-
-    /**
-     * @var \Composer\Package\RootPackageInterface|\Mockery\MockInterface
-     */
-    private $rootPackageMock;
-
-    /**
-     * @var \Narrowspark\Discovery\Installer\QuestionInstallationManager
-     */
-    private $questionInstallationManager;
+    use GetGenericPropertyReaderTrait;
 
     /**
      * @var string
@@ -63,17 +36,13 @@ class QuestionInstallationManagerTest extends MockeryTestCase
      */
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->composerCachePath = __DIR__ . '/cache';
 
         \mkdir($this->composerCachePath);
 
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
 
-        $this->composerMock = $this->mock(Composer::class);
-        $this->ioMock       = $this->mock(IOInterface::class);
-        $this->inputMock    = $this->mock(InputInterface::class);
+        parent::setUp();
 
         $this->ioMock->shouldReceive('hasAuthentication')
             ->once()
@@ -84,16 +53,6 @@ class QuestionInstallationManagerTest extends MockeryTestCase
         $this->ioMock->shouldReceive('writeError')
             ->once()
             ->with('Writing ' . $this->composerCachePath . '/repo/https---packagist.org/packages.json into cache', true, IOInterface::DEBUG);
-
-        $this->rootPackageMock = $this->mock(RootPackageInterface::class);
-        $this->rootPackageMock->shouldReceive('getExtra')
-            ->andReturn([]);
-        $this->rootPackageMock->shouldReceive('getMinimumStability')
-            ->once()
-            ->andReturn('stable');
-
-        $this->composerMock->shouldReceive('getPackage')
-            ->andReturn($this->rootPackageMock);
 
         $packageMock = $this->mock(Package::class);
         $packageMock->shouldReceive('getName')
@@ -117,15 +76,6 @@ class QuestionInstallationManagerTest extends MockeryTestCase
         $this->composerMock->shouldReceive('getRepositoryManager')
             ->once()
             ->andReturn($repositoryMock);
-
-        $this->configMock = $this->mock(Config::class);
-
-        $this->questionInstallationManager = new MockedQuestionInstallationManager(
-            $this->composerMock,
-            $this->ioMock,
-            $this->inputMock,
-            __DIR__
-        );
     }
 
     /**
@@ -149,7 +99,15 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             ->once()
             ->andReturn(false);
 
-        $packages = $this->questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
+        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
+
+        $this->composerMock->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($rootPackageMock);
+
+        $questionInstallationManager = $this->getQuestionInstallationManager();
+
+        $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
         self::assertCount(0, $packages);
     }
@@ -158,13 +116,16 @@ class QuestionInstallationManagerTest extends MockeryTestCase
     {
         $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
 
+        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
+
+        $this->composerMock->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($rootPackageMock);
+
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
             ->andReturn(true);
 
-        $this->composerMock->shouldReceive('getConfig')
-            ->once()
-            ->andReturn($this->configMock);
         $this->composerMock->shouldReceive('getInstallationManager')
             ->once()
             ->andReturn($this->mock(BaseInstallationManager::class));
@@ -172,12 +133,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
         $this->composerMock->shouldReceive('setInstallationManager')
             ->twice();
 
-        $this->rootPackageMock->shouldReceive('getRequires')
-            ->twice()
-            ->andReturn([]);
-        $this->rootPackageMock->shouldReceive('getDevRequires')
-            ->once()
-            ->andReturn([]);
+        $this->setupRootPackage([], 'stable', [], []);
 
         $this->ioMock->shouldReceive('askAndValidate')
             ->once()
@@ -205,7 +161,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             ->once()
             ->with('Updating root package');
 
-        $this->rootPackageMock->shouldReceive('setRequires')
+        $rootPackageMock->shouldReceive('setRequires')
             ->once()
             ->with([
                 'viserio/routing' => new Link(
@@ -222,10 +178,13 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             ->with('Running an update to install dependent packages');
 
         $this->composerMock->shouldReceive('setPackage')
-            ->twice()
-            ->with($this->rootPackageMock);
+            ->once()
+            ->with($rootPackageMock);
 
-        $this->questionInstallationManager->setInstaller($this->arrangeInstaller(['viserio/routing']));
+        $questionInstallationManager = $this->getQuestionInstallationManager();
+
+        $installer = &$this->getGenericPropertyReader()($questionInstallationManager, 'installer');
+        $installer = $this->arrangeInstaller(['viserio/routing']);
 
         $composerPackage = $this->arrangeComposerPackage($jsonData);
 
@@ -242,7 +201,10 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $packages = $this->questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
+        $this->composerMock->shouldReceive('getConfig')
+            ->andReturn($this->configMock);
+
+        $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
         self::assertCount(1, $packages);
     }
@@ -257,10 +219,11 @@ class QuestionInstallationManagerTest extends MockeryTestCase
 
     /**
      * @param array $with
+     * @param int   $run
      *
      * @return \Composer\Installer|\Mockery\MockInterface
      */
-    private function arrangeInstaller(array $with): MockInterface
+    private function arrangeInstaller(array $with, int $run = 0): MockInterface
     {
         $installer = $this->mock(Installer::class);
         $installer->shouldReceive('setUpdateWhitelist')
@@ -268,7 +231,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             ->with($with);
         $installer->shouldReceive('run')
             ->once()
-            ->andReturn(0);
+            ->andReturn($run);
 
         return $installer;
     }
@@ -295,5 +258,42 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             ->andReturn(null);
 
         return $composerPackage;
+    }
+
+    /**
+     * @param array       $extra
+     * @param null|string $stability
+     * @param array       $requires
+     * @param array       $devRequires
+     *
+     * @return \Composer\Package\RootPackageInterface|\Mockery\MockInterface
+     */
+    private function setupRootPackage(array $extra, ?string $stability, array $requires, array $devRequires): MockInterface
+    {
+        $rootPackageMock = $this->mock(RootPackageInterface::class);
+
+        $rootPackageMock->shouldReceive('getMinimumStability')
+            ->andReturn('stable');
+        $rootPackageMock->shouldReceive('getExtra')
+            ->andReturn($extra);
+        $rootPackageMock->shouldReceive('getRequires')
+            ->andReturn($requires);
+        $rootPackageMock->shouldReceive('getDevRequires')
+            ->andReturn($devRequires);
+
+        return $rootPackageMock;
+    }
+
+    /**
+     * @return \Narrowspark\Discovery\Test\Fixtures\MockedQuestionInstallationManager
+     */
+    private function getQuestionInstallationManager(): MockedQuestionInstallationManager
+    {
+        return new MockedQuestionInstallationManager(
+            $this->composerMock,
+            $this->ioMock,
+            $this->inputMock,
+            __DIR__
+        );
     }
 }

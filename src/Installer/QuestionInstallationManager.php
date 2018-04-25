@@ -219,7 +219,9 @@ class QuestionInstallationManager
      * Uninstall extra dependencies.
      *
      * @param string $name
-     * @param array  $dependencies
+     * @param array $dependencies
+     *
+     * @throws \Exception
      *
      * @return \Narrowspark\Discovery\Package[]
      */
@@ -395,8 +397,6 @@ class QuestionInstallationManager
     {
         $this->io->writeError('Updating composer.json');
 
-        // @var \Composer\Json\JsonManipulator $manipulator
-        // @var \Composer\Json\JsonFile $json
         [$json, $manipulator] = Discovery::getComposerJsonFileAndManipulator();
 
         if ($type === self::ADD) {
@@ -428,18 +428,12 @@ class QuestionInstallationManager
     {
         $this->io->writeError('Running an update to install dependent packages');
 
-        $baseRootPackage = $this->composer->getPackage();
-
         $this->composer->setPackage($rootPackage);
 
         $installer = $this->getInstaller();
         $installer->setUpdateWhitelist($whitelistPackages);
 
-        $return = $installer->run();
-
-        $this->composer->setPackage($baseRootPackage);
-
-        return $return;
+        return $installer->run();
     }
 
     /**
@@ -470,6 +464,6 @@ class QuestionInstallationManager
      */
     private function getRootRequires(): array
     {
-        return $this->rootPackage->getRequires() + $this->rootPackage->getDevRequires();
+        return \array_merge($this->rootPackage->getRequires(), $this->rootPackage->getDevRequires());
     }
 }

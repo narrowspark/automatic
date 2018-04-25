@@ -309,7 +309,7 @@ class QuestionInstallationManager
                 $version = $this->findVersion($packageName);
             }
 
-            $ask .= \sprintf('  [<comment>%d</comment>] %s%s' . "\n", $i, $packageName,  ' : ' . $version);
+            $ask .= \sprintf('  [<comment>%d</comment>] %s%s' . "\n", $i, $packageName, ' : ' . $version);
 
             $i++;
         }

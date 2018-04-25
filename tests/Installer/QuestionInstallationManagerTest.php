@@ -45,7 +45,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         parent::setUp();
 
         $this->ioMock->shouldReceive('hasAuthentication')
-            ->once()
             ->andReturn(false);
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -163,7 +162,55 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $questionInstallationManager->install($jsonData['name'], ['this is a question' => []]);
     }
 
-    public function testInstallOnEnabledInteractiveAndWithKeyValueAnswer(): void
+    /**
+     * @expectedException \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     * @expectedExceptionMessage Could not find package viserio/routing at any version for your minimum-stability (stable). Check the package spelling or your minimum-stability.
+     */
+    public function testInstallThrowsExceptionWhenNoVersionIsFound(): void
+    {
+        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer_without_version.json'), true);
+
+        $this->ioMock->shouldReceive('writeError')
+            ->with(
+                \Mockery::on(function ($argument) {
+                    return \mb_strpos($argument, 'Downloading') !== false;
+                }),
+                true,
+                IOInterface::DEBUG
+            );
+        $this->ioMock->shouldReceive('writeError')
+            ->with(
+                \Mockery::on(function ($argument) {
+                    return \mb_strpos($argument, 'Writing') !== false;
+                }),
+                true,
+                IOInterface::DEBUG
+            );
+
+        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
+
+        $this->composerMock->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($rootPackageMock);
+
+        $this->ioMock->shouldReceive('isInteractive')
+            ->once()
+            ->andReturn(true);
+
+        $this->composerMock->shouldReceive('setInstallationManager')
+            ->once();
+
+        $questionInstallationManager = $this->getQuestionInstallationManager();
+
+        $installationManager = $this->mock(InstallationManager::class);
+        $this->composerMock->shouldReceive('getInstallationManager')
+            ->once()
+            ->andReturn($installationManager);
+
+        $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
+    }
+
+    public function testInstallWithPackageNameAndVersion(): void
     {
         $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
 

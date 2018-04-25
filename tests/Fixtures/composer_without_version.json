@@ -1,0 +1,20 @@
+{
+    "name": "prisis/test",
+    "authors": [
+        {
+            "name": "Daniel Bannert",
+            "email": "d.bannert@anolilab.de"
+        }
+    ],
+    "require": {},
+    "extra": {
+        "discovery": {
+            "extra-dependency": {
+                "this is a question": [
+                    "viserio/routing",
+                    "viserio/view"
+                ]
+            }
+        }
+    }
+}

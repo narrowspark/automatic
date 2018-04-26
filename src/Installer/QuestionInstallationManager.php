@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Installer;
 
 use Composer\Composer;
-use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Installer as BaseInstaller;
@@ -409,7 +408,7 @@ class QuestionInstallationManager
      * Manipulate root composer.json with the new packages and dump it.
      *
      * @param array $packages
-     * @param int $type
+     * @param int   $type
      *
      * @throws \Exception happens in the JsonFile class
      *

@@ -36,7 +36,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     private $composerJsonWithRequiresPath;
 
     /**
-     * @var \Mockery\MockInterface|\Composer\Repository\WritableRepositoryInterface
+     * @var \Composer\Repository\WritableRepositoryInterface|\Mockery\MockInterface
      */
     private $localRepositoryMock;
 
@@ -583,6 +583,37 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     }
 
     /**
+     * @return array
+     */
+    protected function getFixturesComposerJsonWithoutVersionData(): array
+    {
+        return \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer_without_version.json'), true);
+    }
+
+    protected function createComposerJsonWithRequires(): void
+    {
+        $this->composerJsonWithRequiresPath = $this->composerCachePath . '/composer_with_requires.json';
+
+        \file_put_contents(
+            $this->composerJsonWithRequiresPath,
+            '{
+    "name": "requires/test",
+    "authors": [
+        {
+            "name": "Daniel Bannert",
+            "email": "d.bannert@anolilab.de"
+        }
+    ],
+    "require": {
+        "requires/test": "dev-master",
+        "viserio/bus": "dev-master",
+        "viserio/view": "dev-master"
+    }
+}'
+        );
+    }
+
+    /**
      * @param array $with
      * @param int   $run
      *
@@ -725,14 +756,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     /**
      * @return array
      */
-    protected function getFixturesComposerJsonWithoutVersionData(): array
-    {
-        return \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer_without_version.json'), true);
-    }
-
-    /**
-     * @return array
-     */
     private function getComposerJsonWithRequiresData(): array
     {
         return \json_decode(\file_get_contents($this->composerJsonWithRequiresPath), true);
@@ -775,29 +798,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         }
     ],
     "require": {}
-}'
-        );
-    }
-
-    protected function createComposerJsonWithRequires(): void
-    {
-        $this->composerJsonWithRequiresPath = $this->composerCachePath . '/composer_with_requires.json';
-
-        \file_put_contents(
-            $this->composerJsonWithRequiresPath,
-            '{
-    "name": "requires/test",
-    "authors": [
-        {
-            "name": "Daniel Bannert",
-            "email": "d.bannert@anolilab.de"
-        }
-    ],
-    "require": {
-        "requires/test": "dev-master",
-        "viserio/bus": "dev-master",
-        "viserio/view": "dev-master"
-    }
 }'
         );
     }

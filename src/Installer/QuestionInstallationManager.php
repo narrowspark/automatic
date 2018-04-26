@@ -129,7 +129,7 @@ class QuestionInstallationManager
         $this->localRepository = $composer->getRepositoryManager()->getLocalRepository();
 
         foreach ($this->localRepository->getPackages() as $package) {
-            $this->installedPackages[$package->getName()] = $package->getPrettyVersion();
+            $this->installedPackages[\mb_strtolower($package->getName())] = \ltrim($package->getPrettyVersion(), 'v');
         }
     }
 
@@ -156,9 +156,7 @@ class QuestionInstallationManager
         $rootPackages      = [];
 
         foreach ($this->getRootRequires() as $link) {
-            $target = \mb_strtolower($link->getTarget());
-
-            $rootPackages[$target] = $target;
+            $rootPackages[\mb_strtolower($link->getTarget())] = (string) $link->getConstraint();
         }
 
         $oldInstallManager = $this->composer->getInstallationManager();
@@ -333,9 +331,11 @@ class QuestionInstallationManager
             $package = $this->io->askAndValidate(
                 $ask,
                 function ($input) use ($packageNames) {
+                    // @codeCoverageIgnoreStart
                     $input = \is_numeric($input) ? (int) \trim($input) : -1;
 
                     return $packageNames[$input] ?? null;
+                    // @codeCoverageIgnoreEnd
                 }
             );
         } while (! $package);

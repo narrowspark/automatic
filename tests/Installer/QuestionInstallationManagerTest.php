@@ -101,11 +101,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn(false);
 
-        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
-
-        $this->composerMock->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($rootPackageMock);
+        $this->arrangeSimpleRootPackage('stable');
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
@@ -126,11 +122,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn(true);
 
-        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
-
-        $this->composerMock->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($rootPackageMock);
+        $this->arrangeSimpleRootPackage('stable');
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
@@ -162,11 +154,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->composerMock->shouldReceive('setInstallationManager')
             ->once();
 
-        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
-
-        $this->composerMock->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($rootPackageMock);
+        $this->arrangeSimpleRootPackage('stable');
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
@@ -187,11 +175,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $this->arrangeDownloadAndWritePackagistData();
 
-        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
-
-        $this->composerMock->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($rootPackageMock);
+        $this->arrangeSimpleRootPackage('stable');
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -218,11 +202,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn([]);
 
-        $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
-
-        $this->composerMock->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($rootPackageMock);
+        $rootPackageMock = $this->arrangeSimpleRootPackage('stable');
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -384,20 +364,13 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         self::assertCount(0, $packages);
     }
 
-    public function testInstallWithPackageNameAndVersionWithDevPackageVersions(): void
+    public function testInstallWithPackageNameVersionAndDevStability(): void
     {
-        $jsonData = $this->getFixturesComposerJsonWithoutVersionData();
-
         $this->localRepositoryMock->shouldReceive('getPackages')
             ->once()
             ->andReturn([]);
 
-        $rootPackageMock = $this->setupRootPackage([], 'dev', [], []);
-
-        $this->composerMock->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($rootPackageMock);
-
+        $rootPackageMock = $this->arrangeSimpleRootPackage();
         $this->arrangeDownloadAndWritePackagistData();
 
         $this->ioMock->shouldReceive('isInteractive')
@@ -479,6 +452,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $this->arrangeVendorConfig();
 
+        $jsonData = $this->getFixturesComposerJsonWithoutVersionData();
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
         $this->assertPackagesInstall($packages, $routingPackageVersion);
@@ -486,9 +460,10 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testUninstall(): void
     {
+        $filesystemPackage = $this->arrangeComposerPackage(['name' => 'symfony/filesystem', 'version' => '^4.0']);
         $this->localRepositoryMock->shouldReceive('getPackages')
             ->twice()
-            ->andReturn([]);
+            ->andReturn([$filesystemPackage]);
 
         $require = [
             'requires/test' => new Link(
@@ -512,7 +487,15 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
                 'requires',
                 'dev-master'
             ),
+            'symfony/filesystem' => new Link(
+                '__root__',
+                'symfony/filesystem',
+                (new VersionParser())->parseConstraints('^4.0'),
+                'requires',
+                '^4.0.0'
+            ),
         ];
+
         $rootPackageMock = $this->setupRootPackage([], 'dev', $require, []);
 
         $this->composerMock->shouldReceive('getPackage')
@@ -534,7 +517,8 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $rootPackageMock->shouldReceive('setRequires')
             ->once()
             ->with([
-                'viserio/view' => $require['viserio/view'],
+                'viserio/view'       => $require['viserio/view'],
+                'symfony/filesystem' => $require['symfony/filesystem'],
             ]);
 
         $this->ioMock->shouldReceive('writeError')
@@ -585,12 +569,12 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     /**
      * @return array
      */
-    protected function getFixturesComposerJsonWithoutVersionData(): array
+    private function getFixturesComposerJsonWithoutVersionData(): array
     {
         return \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer_without_version.json'), true);
     }
 
-    protected function createComposerJsonWithRequires(): void
+    private function createComposerJsonWithRequires(): void
     {
         $this->composerJsonWithRequiresPath = $this->composerCachePath . '/composer_with_requires.json';
 
@@ -607,7 +591,8 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     "require": {
         "requires/test": "dev-master",
         "viserio/bus": "dev-master",
-        "viserio/view": "dev-master"
+        "viserio/view": "dev-master",
+        "symfony/filesystem": "^4.0"
     }
 }'
         );
@@ -800,5 +785,21 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     "require": {}
 }'
         );
+    }
+
+    /**
+     * @param string $stability
+     *
+     * @return \Composer\Package\RootPackageInterface|\Mockery\MockInterface
+     */
+    private function arrangeSimpleRootPackage(string $stability = 'dev')
+    {
+        $rootPackageMock = $this->setupRootPackage([], $stability, [], []);
+
+        $this->composerMock->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($rootPackageMock);
+
+        return $rootPackageMock;
     }
 }

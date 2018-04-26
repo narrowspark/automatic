@@ -533,7 +533,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
             foreach ($this->lock->read() as $packageName => $data) {
                 if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
-                    $extraPackages[$packageName] = $packageName;
+                    $extraPackages[$packageName] = $data['version'];
                     $extraPackages += $data['require'];
                 }
             }

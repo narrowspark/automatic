@@ -130,7 +130,7 @@ class OperationsResolver
         $requires = [];
 
         foreach ($package->getRequires() as $link) {
-            if ($link->getTarget() === 'php' || \mb_substr($link->getTarget(), 0, 4) === 'ext-') {
+            if ($link->getTarget() === 'php' || mb_strpos($link->getTarget(), 'ext-') === 0) {
                 continue;
             }
 

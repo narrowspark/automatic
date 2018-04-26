@@ -3,11 +3,11 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Test\Installer;
 
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\Installer;
 use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\Link;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
@@ -16,16 +16,10 @@ use Composer\Semver\VersionParser;
 use Mockery\MockInterface;
 use Narrowspark\Discovery\Installer\InstallationManager;
 use Narrowspark\Discovery\Test\Fixtures\MockedQuestionInstallationManager;
-use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Filesystem\Filesystem;
 
-/**
- * @runInSeparateProcess
- */
 class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 {
-    use GetGenericPropertyReaderTrait;
-
     /**
      * @var string
      */
@@ -37,32 +31,29 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     private $manipulatedComposerPath;
 
     /**
+     * @var string
+     */
+    private $composerJsonWithRequiresPath;
+
+    /**
+     * @var \Mockery\MockInterface|\Composer\Repository\WritableRepositoryInterface
+     */
+    private $localRepositoryMock;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
-        $this->composerCachePath       = __DIR__ . '/cache';
-        $this->manipulatedComposerPath = $this->composerCachePath . '/manipulated_composer.json';
+        $this->composerCachePath = __DIR__ . '/cache';
 
         \mkdir($this->composerCachePath);
-
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
 
         parent::setUp();
 
-        \file_put_contents(
-            $this->manipulatedComposerPath,
-            '{
-    "name": "manipulated/test",
-    "authors": [
-        {
-            "name": "Daniel Bannert",
-            "email": "d.bannert@anolilab.de"
-        }
-    ],
-    "require": {}
-}'
-        );
+        $this->createManipulatedComposer();
+        $this->createComposerJsonWithRequires();
 
         $this->ioMock->shouldReceive('hasAuthentication')
             ->andReturn(false);
@@ -73,24 +64,12 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->with('Writing ' . $this->composerCachePath . '/repo/https---packagist.org/packages.json into cache', true, IOInterface::DEBUG);
 
-        $packageMock = $this->mock(Package::class);
-        $packageMock->shouldReceive('getName')
-            ->once()
-            ->andReturn('foo/bar');
-        $packageMock->shouldReceive('getPrettyVersion')
-            ->once()
-            ->andReturn('dev-master');
-        $packageMock->shouldReceive('setRepository');
-
-        $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
-        $localRepositoryMock->shouldReceive('getPackages')
-            ->once()
-            ->andReturn([$packageMock]);
+        $this->localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
 
         $repositoryMock = $this->mock(RepositoryManager::class);
         $repositoryMock->shouldReceive('getLocalRepository')
             ->once()
-            ->andReturn($localRepositoryMock);
+            ->andReturn($this->localRepositoryMock);
 
         $this->composerMock->shouldReceive('getRepositoryManager')
             ->once()
@@ -112,7 +91,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallOnDisabledInteractive(): void
     {
-        $jsonData = $this->getComposerJsonData();
+        $jsonData = $this->getFixturesComposerJsonData();
+
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->once()
+            ->andReturn([]);
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -124,7 +107,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($rootPackageMock);
 
-        $questionInstallationManager = $this->getQuestionInstallationManager();
+        $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
@@ -133,7 +116,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallWithEmptyDependencies(): void
     {
-        $jsonData = $this->getComposerJsonData();
+        $jsonData = $this->getFixturesComposerJsonData();
+
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->once()
+            ->andReturn([]);
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -145,7 +132,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($rootPackageMock);
 
-        $questionInstallationManager = $this->getQuestionInstallationManager();
+        $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
         $packages = $questionInstallationManager->install($jsonData['name'], []);
 
@@ -158,7 +145,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     public function testInstallWithAEmptyQuestion(): void
     {
-        $jsonData = $this->getComposerJsonData();
+        $jsonData = $this->getFixturesComposerJsonData();
+
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->once()
+            ->andReturn([]);
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -177,7 +168,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($rootPackageMock);
 
-        $questionInstallationManager = $this->getQuestionInstallationManager();
+        $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
         $questionInstallationManager->install($jsonData['name'], ['this is a question' => []]);
     }
@@ -188,7 +179,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     public function testInstallThrowsExceptionWhenNoVersionIsFound(): void
     {
-        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer_without_version.json'), true);
+        $jsonData = $this->getFixturesComposerJsonWithoutVersionData();
+
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->once()
+            ->andReturn([]);
 
         $this->arrangeDownloadAndWritePackagistData();
 
@@ -205,7 +200,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->composerMock->shouldReceive('setInstallationManager')
             ->once();
 
-        $questionInstallationManager = $this->getQuestionInstallationManager();
+        $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
         $installationManager = $this->mock(InstallationManager::class);
         $this->composerMock->shouldReceive('getInstallationManager')
@@ -217,7 +212,12 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallWithPackageNameAndVersionWithStablePackageVersions(): void
     {
-        $jsonData        = $this->getComposerJsonData();
+        $jsonData = $this->getFixturesComposerJsonData();
+
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->once()
+            ->andReturn([]);
+
         $rootPackageMock = $this->setupRootPackage([], 'stable', [], []);
 
         $this->composerMock->shouldReceive('getPackage')
@@ -276,12 +276,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->with($rootPackageMock);
 
-        $questionInstallationManager = $this->getQuestionInstallationManager();
+        $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
-        $installer = &$this->getGenericPropertyReader()($questionInstallationManager, 'installer');
-        $installer = $this->arrangeInstaller(['viserio/routing']);
+        $questionInstallationManager->setInstaller($this->arrangeInstaller(['viserio/routing']));
 
-        $composerPackage = $this->arrangeComposerPackage($jsonData);
+        $composerPackage = $this->arrangeComposerPackage(['name' => 'prisis/test', 'version' => 'dev-master']);
 
         $operation = $this->mock(InstallOperation::class);
         $operation->shouldReceive('getPackage')
@@ -306,7 +305,12 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallSkipPackageInstallIfPackageIsInRootPackage(): void
     {
-        $jsonData = $this->getComposerJsonData();
+        $jsonData = $this->getFixturesComposerJsonData();
+
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->once()
+            ->andReturn([]);
+
         $requires = [
             'viserio/routing' => new Link(
                 '__root__',
@@ -371,7 +375,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $questionInstallationManager = $this->getQuestionInstallationManager();
+        $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
         $this->arrangeVendorConfig();
 
@@ -382,15 +386,19 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallWithPackageNameAndVersionWithDevPackageVersions(): void
     {
-        $jsonData = \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer_without_version.json'), true);
+        $jsonData = $this->getFixturesComposerJsonWithoutVersionData();
+
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->once()
+            ->andReturn([]);
 
         $rootPackageMock = $this->setupRootPackage([], 'dev', [], []);
-
-        $this->arrangeDownloadAndWritePackagistData();
 
         $this->composerMock->shouldReceive('getPackage')
             ->once()
             ->andReturn($rootPackageMock);
+
+        $this->arrangeDownloadAndWritePackagistData();
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -398,7 +406,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $this->arrangeInstallationManager();
 
-        $questionInstallationManager = $this->getQuestionInstallationManager();
+        $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
         $versionSelector       = $questionInstallationManager->getVersionSelector();
         $packageName           = 'viserio/routing';
@@ -451,10 +459,9 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->with($rootPackageMock);
 
-        $installer = &$this->getGenericPropertyReader()($questionInstallationManager, 'installer');
-        $installer = $this->arrangeInstaller(['viserio/routing']);
+        $questionInstallationManager->setInstaller($this->arrangeInstaller(['viserio/routing']));
 
-        $composerPackage = $this->arrangeComposerPackage($jsonData);
+        $composerPackage = $this->arrangeComposerPackage(['name' => 'viserio/routing', 'version' => $routingPackageVersion]);
 
         $operation = $this->mock(InstallOperation::class);
         $operation->shouldReceive('getPackage')
@@ -475,6 +482,96 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
         $this->assertPackagesInstall($packages, $routingPackageVersion);
+    }
+
+    public function testUninstall(): void
+    {
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->twice()
+            ->andReturn([]);
+
+        $require = [
+            'requires/test' => new Link(
+                '__root__',
+                'requires/test',
+                (new VersionParser())->parseConstraints('dev-master'),
+                'requires',
+                'dev-master'
+            ),
+            'viserio/bus' => new Link(
+                '__root__',
+                'viserio/bus',
+                (new VersionParser())->parseConstraints('dev-master'),
+                'requires',
+                'dev-master'
+            ),
+            'viserio/view' => new Link(
+                '__root__',
+                'viserio/view',
+                (new VersionParser())->parseConstraints('dev-master'),
+                'requires',
+                'dev-master'
+            ),
+        ];
+        $rootPackageMock = $this->setupRootPackage([], 'dev', $require, []);
+
+        $this->composerMock->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($rootPackageMock);
+
+        $this->arrangeInstallationManager();
+
+        $questionInstallationManager = $this->getQuestionInstallationManager($this->composerJsonWithRequiresPath);
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Updating composer.json');
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Updating root package');
+
+        $rootPackageMock->shouldReceive('setRequires')
+            ->once()
+            ->with([
+                'viserio/view' => $require['viserio/view'],
+            ]);
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Running an update to install dependent packages');
+
+        $this->composerMock->shouldReceive('setPackage')
+            ->once()
+            ->with($rootPackageMock);
+
+        $questionInstallationManager->setInstaller($this->arrangeInstaller(['requires/test' => 'dev-master', 'viserio/bus' => 'dev-master']));
+
+        $operation1 = $this->mock(UninstallOperation::class);
+        $operation1->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($this->arrangeComposerPackage(['name' => 'requires/test', 'version' => 'dev-master']));
+        $operation2 = $this->mock(UninstallOperation::class);
+        $operation2->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($this->arrangeComposerPackage(['name' => 'viserio/bus', 'version' => 'dev-master']));
+
+        $installationManager = $this->mock(InstallationManager::class);
+        $installationManager->shouldReceive('getOperations')
+            ->once()
+            ->andReturn([$operation1, $operation2]);
+
+        $this->composerMock->shouldReceive('getInstallationManager')
+            ->once()
+            ->andReturn($installationManager);
+
+        $this->arrangeVendorConfig();
+
+        $packages = $questionInstallationManager->uninstall('requires/test', ['requires/test' => 'dev-master', 'viserio/bus' => 'dev-master']);
+        $jsonData = $this->getComposerJsonWithRequiresData();
+
+        self::assertArrayHasKey('viserio/view', $jsonData['require']);
+        self::assertCount(2, $packages);
     }
 
     /**
@@ -513,13 +610,15 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     {
         $composerPackage = $this->mock(PackageInterface::class);
         $composerPackage->shouldReceive('getExtra')
-            ->andReturn($jsonData['extra']);
+            ->andReturn($jsonData['extra'] ?? ['discovery' => []]);
         $composerPackage->shouldReceive('getName')
             ->andReturn($jsonData['name']);
         $composerPackage->shouldReceive('getRequires')
-            ->andReturn($jsonData['require']);
+            ->andReturn($jsonData['require'] ?? []);
+        $composerPackage->shouldReceive('getDevRequires')
+            ->andReturn($jsonData['dev-require'] ?? []);
         $composerPackage->shouldReceive('getPrettyVersion')
-            ->andReturn('dev-master');
+            ->andReturn($jsonData['version']);
         $composerPackage->shouldReceive('getSourceUrl')
             ->andReturn(null);
         $composerPackage->shouldReceive('getType')
@@ -553,9 +652,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     }
 
     /**
+     * @param string $composerFilePath
+     *
      * @return \Narrowspark\Discovery\Test\Fixtures\MockedQuestionInstallationManager
      */
-    private function getQuestionInstallationManager(): MockedQuestionInstallationManager
+    private function getQuestionInstallationManager(string $composerFilePath): MockedQuestionInstallationManager
     {
         $manager = new MockedQuestionInstallationManager(
             $this->composerMock,
@@ -563,7 +664,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             $this->inputMock
         );
 
-        $manager->setComposerFile($this->manipulatedComposerPath);
+        $manager->setComposerFile($composerFilePath);
 
         return $manager;
     }
@@ -590,18 +691,25 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     private function arrangeInstallationManager(): void
     {
+        $baseInstallationManager = $this->mock(BaseInstallationManager::class);
+
         $this->composerMock->shouldReceive('getInstallationManager')
             ->once()
-            ->andReturn($this->mock(BaseInstallationManager::class));
+            ->andReturn($baseInstallationManager);
 
         $this->composerMock->shouldReceive('setInstallationManager')
-            ->twice();
+            ->once()
+            ->with(\Mockery::type(InstallationManager::class));
+
+        $this->composerMock->shouldReceive('setInstallationManager')
+            ->once()
+            ->with($baseInstallationManager);
     }
 
     /**
      * @return array
      */
-    private function getComposerJsonData(): array
+    private function getFixturesComposerJsonData(): array
     {
         return \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
     }
@@ -612,6 +720,22 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     private function getManipulatedComposerJsonData(): array
     {
         return \json_decode(\file_get_contents($this->manipulatedComposerPath), true);
+    }
+
+    /**
+     * @return array
+     */
+    protected function getFixturesComposerJsonWithoutVersionData(): array
+    {
+        return \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer_without_version.json'), true);
+    }
+
+    /**
+     * @return array
+     */
+    private function getComposerJsonWithRequiresData(): array
+    {
+        return \json_decode(\file_get_contents($this->composerJsonWithRequiresPath), true);
     }
 
     private function arrangeVendorConfig(): void
@@ -634,5 +758,47 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         self::assertSame(['viserio/routing' => $version], $jsonData['require']);
         self::assertCount(1, $packages);
+    }
+
+    private function createManipulatedComposer(): void
+    {
+        $this->manipulatedComposerPath = $this->composerCachePath . '/manipulated_composer.json';
+
+        \file_put_contents(
+            $this->manipulatedComposerPath,
+            '{
+    "name": "manipulated/test",
+    "authors": [
+        {
+            "name": "Daniel Bannert",
+            "email": "d.bannert@anolilab.de"
+        }
+    ],
+    "require": {}
+}'
+        );
+    }
+
+    protected function createComposerJsonWithRequires(): void
+    {
+        $this->composerJsonWithRequiresPath = $this->composerCachePath . '/composer_with_requires.json';
+
+        \file_put_contents(
+            $this->composerJsonWithRequiresPath,
+            '{
+    "name": "requires/test",
+    "authors": [
+        {
+            "name": "Daniel Bannert",
+            "email": "d.bannert@anolilab.de"
+        }
+    ],
+    "require": {
+        "requires/test": "dev-master",
+        "viserio/bus": "dev-master",
+        "viserio/view": "dev-master"
+    }
+}'
+        );
     }
 }

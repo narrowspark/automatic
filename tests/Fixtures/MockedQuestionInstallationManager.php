@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Test\Fixtures;
 
 use Composer\Installer as BaseInstaller;
+use Composer\Json\JsonFile;
 use Composer\Package\Version\VersionSelector;
 use Narrowspark\Discovery\Installer\QuestionInstallationManager;
 
@@ -23,7 +24,7 @@ class MockedQuestionInstallationManager extends QuestionInstallationManager
      */
     public function setComposerFile(string $composerFilePath): void
     {
-        $this->composerFilePath = $composerFilePath;
+        $this->jsonFile = new JsonFile($composerFilePath);
     }
 
     /**

@@ -3,11 +3,13 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Installer;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Installer as BaseInstaller;
 use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Link;
 use Composer\Package\RootPackageInterface;
@@ -47,11 +49,11 @@ class QuestionInstallationManager
     protected $versionSelector;
 
     /**
-     * Path to the composer.json.
+     * A composer json file instance.
      *
-     * @var string
+     * @var \Composer\Json\JsonFile
      */
-    protected $composerFilePath;
+    protected $jsonFile;
 
     /**
      * All local installed packages.
@@ -111,10 +113,10 @@ class QuestionInstallationManager
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input)
     {
-        $this->composer         = $composer;
-        $this->io               = $io;
-        $this->input            = $input;
-        $this->composerFilePath = Factory::getComposerFile();
+        $this->composer = $composer;
+        $this->io       = $io;
+        $this->input    = $input;
+        $this->jsonFile = new JsonFile(Factory::getComposerFile());
 
         $this->rootPackage = $composer->getPackage();
         $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
@@ -183,7 +185,17 @@ class QuestionInstallationManager
 
                 // Check if package is currently installed, if so, use installed constraint and skip question.
                 if (isset($this->installedPackages[$package])) {
-                    $packagesToInstall[$package] = $this->installedPackages[$package];
+                    $constraint = '^' . $this->installedPackages[$package];
+
+                    $packagesToInstall[$package] = $constraint;
+
+                    $this->io->write(sprintf(
+                        'Added package <info>%s</info> to composer.json with constraint <info>%s</info>;'
+                        . ' to upgrade, run <info>composer require %s:VERSION</info>',
+                        $package,
+                        $constraint,
+                        $package
+                    ));
 
                     continue 2;
                 }
@@ -235,8 +247,8 @@ class QuestionInstallationManager
 
         if (\count($dependencies) !== 0) {
             $this->updateComposerJson($dependencies, self::REMOVE);
-            $packages = $this->localRepository->getPackages();
 
+            $packages  = $this->localRepository->getPackages();
             $whiteList = $dependencies;
 
             foreach ($packages as $package) {
@@ -246,7 +258,7 @@ class QuestionInstallationManager
             }
 
             foreach ($packages as $package) {
-                $mixedRequires = \array_keys($package->getRequires()) + \array_keys($package->getDevRequires());
+                $mixedRequires = \array_merge(\array_keys($package->getRequires()), \array_keys($package->getDevRequires()));
 
                 foreach ($whiteList as $whitelistPackageName) {
                     if (isset($mixedRequires[$whitelistPackageName])) {
@@ -373,18 +385,18 @@ class QuestionInstallationManager
         $requires = $this->rootPackage->getRequires();
 
         if ($type === self::ADD) {
-            foreach ($packages as $name => $version) {
-                $requires[$name] = new Link(
+            foreach ($packages as $packageName => $version) {
+                $requires[$packageName] = new Link(
                     '__root__',
-                    $name,
+                    $packageName,
                     (new VersionParser())->parseConstraints($version),
                     'requires',
                     $version
                 );
             }
         } elseif ($type === self::REMOVE) {
-            foreach ($packages as $package) {
-                unset($requires[$package]);
+            foreach ($packages as $packageName => $version) {
+                unset($requires[$packageName]);
             }
         }
 
@@ -397,7 +409,9 @@ class QuestionInstallationManager
      * Manipulate root composer.json with the new packages and dump it.
      *
      * @param array $packages
-     * @param int   $type
+     * @param int $type
+     *
+     * @throws \Exception happens in the JsonFile class
      *
      * @return void
      */
@@ -405,21 +419,25 @@ class QuestionInstallationManager
     {
         $this->io->writeError('Updating composer.json');
 
-        $manipulator = new JsonManipulator(\file_get_contents($this->composerFilePath));
-
         if ($type === self::ADD) {
+            $jsonManipulator = new JsonManipulator(\file_get_contents($this->jsonFile->getPath()));
+
             foreach ($packages as $name => $version) {
                 $sortPackages = $this->composer->getConfig()->get('sort-packages') ?? false;
 
-                $manipulator->addLink('require', $name, $version, $sortPackages);
+                $jsonManipulator->addLink('require', $name, $version, $sortPackages);
             }
-        } elseif ($type === self::REMOVE) {
-            foreach ($packages as $package) {
-                $manipulator->removeSubNode('require', $package);
-            }
-        }
 
-        \file_put_contents($this->composerFilePath, $manipulator->getContents());
+            \file_put_contents($this->jsonFile->getPath(), $jsonManipulator->getContents());
+        } elseif ($type === self::REMOVE) {
+            $jsonFileContent = $this->jsonFile->read();
+
+            foreach ($packages as $packageName => $version) {
+                unset($jsonFileContent['require'][$packageName]);
+            }
+
+            $this->jsonFile->write($jsonFileContent);
+        }
     }
 
     /**

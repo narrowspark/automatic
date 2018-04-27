@@ -56,7 +56,7 @@ class OperationsResolverTest extends MockeryTestCase
     {
         $package1Mock = $this->mock(PackageInterface::class);
         $package1Mock->shouldReceive('getExtra')
-            ->twice()
+            ->times(3)
             ->andReturn(['discovery' =>  []]);
         $package1Mock->shouldReceive('getName')
             ->once()
@@ -76,26 +76,12 @@ class OperationsResolverTest extends MockeryTestCase
 
         $package2Mock = $this->mock(PackageInterface::class);
         $package2Mock->shouldReceive('getExtra')
-            ->andReturn([]);
-        $package2Mock->shouldReceive('getName')
-            ->once()
-            ->andReturn('no-discovery');
-        $package2Mock->shouldReceive('getPrettyVersion')
-            ->once()
-            ->andReturn('1');
-        $package2Mock->shouldReceive('getSourceUrl')
-            ->once()
-            ->andReturn('example.local');
-        $package2Mock->shouldReceive('getType')
-            ->once()
-            ->andReturn('library');
-        $package2Mock->shouldReceive('getRequires')
             ->once()
             ->andReturn([]);
 
         $package3Mock = $this->mock(PackageInterface::class);
         $package3Mock->shouldReceive('getExtra')
-            ->twice()
+            ->times(3)
             ->andReturn(['branch-alias' => ['dev-master' => '1.0-dev'], 'discovery' =>  []]);
         $package3Mock->shouldReceive('getName')
             ->once()

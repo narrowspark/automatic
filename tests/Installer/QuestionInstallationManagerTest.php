@@ -276,8 +276,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $this->arrangeVendorConfig();
-
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
         $this->assertPackagesInstall($packages, 'dev-master');
@@ -356,8 +354,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->andReturn($installationManager);
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
-
-        $this->arrangeVendorConfig();
 
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
 
@@ -449,8 +445,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->composerMock->shouldReceive('getInstallationManager')
             ->once()
             ->andReturn($installationManager);
-
-        $this->arrangeVendorConfig();
 
         $jsonData = $this->getFixturesComposerJsonWithoutVersionData();
         $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
@@ -548,8 +542,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->composerMock->shouldReceive('getInstallationManager')
             ->once()
             ->andReturn($installationManager);
-
-        $this->arrangeVendorConfig();
 
         $packages = $questionInstallationManager->uninstall('requires/test', ['requires/test' => 'dev-master', 'viserio/bus' => 'dev-master']);
         $jsonData = $this->getComposerJsonWithRequiresData();
@@ -674,6 +666,13 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     private function getQuestionInstallationManager(string $composerFilePath): MockedQuestionInstallationManager
     {
+        $this->configMock->shouldReceive('get')
+            ->once()
+            ->with('vendor-dir')
+            ->andReturn(__DIR__);
+        $this->composerMock->shouldReceive('getConfig')
+            ->andReturn($this->configMock);
+
         $manager = new MockedQuestionInstallationManager(
             $this->composerMock,
             $this->ioMock,
@@ -744,16 +743,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     private function getComposerJsonWithRequiresData(): array
     {
         return \json_decode(\file_get_contents($this->composerJsonWithRequiresPath), true);
-    }
-
-    private function arrangeVendorConfig(): void
-    {
-        $this->configMock->shouldReceive('get')
-            ->once()
-            ->with('vendor-dir')
-            ->andReturn(__DIR__);
-        $this->composerMock->shouldReceive('getConfig')
-            ->andReturn($this->configMock);
     }
 
     /**

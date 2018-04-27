@@ -91,9 +91,4 @@ class PackageTest extends TestCase
     {
         self::assertTrue($this->package->isExtraDependency());
     }
-
-    public function testIsDiscoveryPackage(): void
-    {
-        self::assertTrue($this->package->isDiscoveryPackage());
-    }
 }

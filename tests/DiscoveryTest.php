@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Test;
 
 use Composer\Composer;
+use Composer\Config;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -53,9 +54,17 @@ class DiscoveryTest extends MockeryTestCase
 
     public function testActivate(): void
     {
-        $disovery = new Discovery();
-        $composer = $this->mock(Composer::class);
-        $ioMock   = $this->mock(IOInterface::class);
+        $discovery    = new Discovery();
+        $composerMock = $this->mock(Composer::class);
+        $configMock   = $this->mock(Config::class);
+        $ioMock       = $this->mock(IOInterface::class);
+
+        $configMock->shouldReceive('get')
+            ->once()
+            ->with('vendor-dir')
+            ->andReturn(__DIR__);
+        $composerMock->shouldReceive('getConfig')
+            ->andReturn($configMock);
 
         $ioMock->shouldReceive('writeError');
 
@@ -66,7 +75,7 @@ class DiscoveryTest extends MockeryTestCase
             ->once()
             ->andReturn('stable');
 
-        $composer->shouldReceive('getPackage')
+        $composerMock->shouldReceive('getPackage')
             ->twice()
             ->andReturn($rootPackageMock);
 
@@ -79,23 +88,23 @@ class DiscoveryTest extends MockeryTestCase
         $repositoryMock->shouldReceive('getLocalRepository')
             ->andReturn($localRepositoryMock);
 
-        $composer->shouldReceive('getRepositoryManager')
+        $composerMock->shouldReceive('getRepositoryManager')
             ->andReturn($repositoryMock);
 
         $input = &$this->getGenericPropertyReader()($ioMock, 'input');
         $input = $this->mock(InputInterface::class);
 
-        $disovery->activate($composer, $ioMock);
+        $discovery->activate($composerMock, $ioMock);
 
-        self::assertInstanceOf(Lock::class, $disovery->getLock());
-        self::assertInstanceOf(Configurator::class, $disovery->getConfigurator());
+        self::assertInstanceOf(Lock::class, $discovery->getLock());
+        self::assertInstanceOf(Configurator::class, $discovery->getConfigurator());
 
         self::assertSame(
             [
                 'This file locks the discovery information of your project to a known state',
                 'This file is @generated automatically',
             ],
-            $disovery->getLock()->get('_readme')
+            $discovery->getLock()->get('_readme')
         );
     }
 }

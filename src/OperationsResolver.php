@@ -76,12 +76,14 @@ class OperationsResolver
                 $package = $operation->getPackage();
             }
 
-            $name            = \mb_strtolower($package->getName());
-            $packages[$name] = new Package(
-                $name,
-                $this->vendorDir,
-                $this->buildPackageConfiguration($package, $o)
-            );
+            if (! isset($package->getExtra()['discovery'])) {
+                continue;
+            }
+
+            $name                 = \mb_strtolower($package->getName());
+            $packageConfiguration = $this->buildPackageConfiguration($package, $o);
+
+            $packages[$name] = new Package($name, $this->vendorDir, $packageConfiguration);
         }
 
         return $packages;
@@ -99,7 +101,7 @@ class OperationsResolver
         $version = $package->getPrettyVersion();
         $extra   = $package->getExtra();
 
-        if (\mb_strpos($version, 'dev-') === 0 && isset($extra['branch-alias'])) {
+        if (isset($extra['branch-alias']) && \mb_strpos($version, 'dev-') === 0) {
             $branchAliases = $extra['branch-alias'];
 
             if (
@@ -137,8 +139,6 @@ class OperationsResolver
 
         \sort($requires, \SORT_STRING);
 
-        $discoveryExtra = $package->getExtra()['discovery'] ?? [];
-
         return \array_merge(
             [
                 'version'             => $this->getPackageVersion($package),
@@ -147,9 +147,8 @@ class OperationsResolver
                 'operation'           => $operation,
                 'extra-dependency-of' => $this->parentName,
                 'require'             => $requires,
-                'used-by-discovery'   => \count($discoveryExtra) !== 0,
             ],
-            $discoveryExtra
+            $package->getExtra()['discovery'] ?? []
         );
     }
 }

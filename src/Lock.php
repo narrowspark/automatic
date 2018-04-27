@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery;
 
 use Composer\Json\JsonFile;
-use Composer\Package\Locker;
 
 class Lock
 {

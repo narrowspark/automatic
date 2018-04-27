@@ -268,9 +268,12 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $this->operations = $operations;
         }
 
-        $discoveryOptions = $this->projectOptions['discovery'];
-        $packages         = (new OperationsResolver($this->operations, $this->composer->getConfig()->get('vendor-dir')))->resolve();
-        $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
+        $vendorPath         = $this->composer->getConfig()->get('vendor-dir');
+        $discoveryOptions   = $this->projectOptions['discovery'];
+        $allowInstall       = $discoveryOptions['allow-auto-install'] ?? false;
+
+        $operationsResolver = new OperationsResolver($this->operations, $vendorPath);
+        $packages           = $operationsResolver->resolve();
 
         $this->io->writeError(\sprintf(
             '<info>Discovery operations: %s package%s</info>',
@@ -399,7 +402,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $composerJson
         );
 
-        $lockData                 = $locker->getLockData();
+        $lockData                  = $locker->getLockData();
         $lockData['_content-hash'] = Locker::getContentHash($composerJson);
 
         $lockFile->write($lockData);
@@ -484,33 +487,37 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     private function doInstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
-        if ($package->isDiscoveryPackage()) {
-            $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+        $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
-            $this->configurator->configure($package);
-            $packageConfigurator->configure($package);
+        $this->configurator->configure($package);
+        $packageConfigurator->configure($package);
 
-            if ($package->hasConfiguratorKey('extra-dependency')) {
-                $operations = $this->extraInstaller->install(
-                    $package->getName(),
-                    $package->getConfiguratorOptions('extra-dependency')
-                );
+        if ($package->hasConfiguratorKey('extra-dependency')) {
+            $operations = $this->extraInstaller->install(
+                $package->getName(),
+                $package->getConfiguratorOptions('extra-dependency')
+            );
 
-                foreach ($operations as $operation) {
-                    $this->doInstall($operation, $packageConfigurator);
-                }
-            }
-
-            if ($package->hasConfiguratorKey('post-install-output')) {
-                foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
-                    $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
-                }
-
-                $this->postInstallOutput[] = '';
+            foreach ($operations as $operation) {
+                $this->doInstall($operation, $packageConfigurator);
             }
         }
 
-        $this->lock->add($package->getName(), $package->getOptions());
+        if ($package->hasConfiguratorKey('post-install-output')) {
+            foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
+                $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
+            }
+
+            $this->postInstallOutput[] = '';
+        }
+
+        $options = $package->getOptions();
+
+        if (\count($this->extraInstaller->getPackagesToInstall()) !== 0) {
+            $options = \array_merge($options, ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]);
+        }
+
+        $this->lock->add($package->getName(), $options);
     }
 
     /**
@@ -525,27 +532,29 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     private function doUninstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
-        if ($package->isDiscoveryPackage()) {
-            $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
+        $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
 
-            $this->configurator->unconfigure($package);
-            $packageConfigurator->unconfigure($package);
+        $this->configurator->unconfigure($package);
+        $packageConfigurator->unconfigure($package);
 
-            if ($package->hasConfiguratorKey('extra-dependency')) {
-                $extraPackages = [];
+        if ($package->hasConfiguratorKey('extra-dependency')) {
+            $extraPackages = [];
 
-                foreach ($this->lock->read() as $packageName => $data) {
-                    if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
-                        $extraPackages[$packageName] = $data['version'];
-                        $extraPackages += $data['require'];
-                    }
+            foreach ($this->lock->read() as $packageName => $data) {
+                if ($packageName === $package->getName()) {
+                    $extraPackages += $data['selected-question-packages'];
                 }
 
-                $operations = $this->extraInstaller->uninstall($package->getName(), $extraPackages);
-
-                foreach ($operations as $operation) {
-                    $this->doUninstall($operation, $packageConfigurator);
+                if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
+                    $extraPackages[$packageName] = $data['version'];
+                    $extraPackages += $data['require'];
                 }
+            }
+
+            $operations = $this->extraInstaller->uninstall($package->getName(), $extraPackages);
+
+            foreach ($operations as $operation) {
+                $this->doUninstall($operation, $packageConfigurator);
             }
         }
 

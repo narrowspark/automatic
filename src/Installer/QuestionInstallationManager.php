@@ -55,20 +55,6 @@ class QuestionInstallationManager
     protected $jsonFile;
 
     /**
-     * All local installed packages.
-     *
-     * @var string[]
-     */
-    private $installedPackages;
-
-    /**
-     * Get the minimum stability.
-     *
-     * @var string
-     */
-    private $stability;
-
-    /**
      * A root package implementation.
      *
      * @var \Composer\Package\RootPackageInterface
@@ -81,6 +67,13 @@ class QuestionInstallationManager
      * @var \Composer\Composer
      */
     private $composer;
+
+    /**
+     * Path to the composer vendor folder.
+     *
+     * @var string
+     */
+    private $vendorPath;
 
     /**
      * The composer io implementation.
@@ -104,6 +97,27 @@ class QuestionInstallationManager
     private $input;
 
     /**
+     * All local installed packages.
+     *
+     * @var string[]
+     */
+    private $installedPackages;
+
+    /**
+     * Get the minimum stability.
+     *
+     * @var string
+     */
+    private $stability;
+
+    /**
+     * List of selected question packages to install.
+     *
+     * @var array
+     */
+    private $packagesToInstall = [];
+
+    /**
      * Create a new ExtraDependencyInstaller instance.
      *
      * @param \Composer\Composer                              $composer
@@ -112,10 +126,11 @@ class QuestionInstallationManager
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input)
     {
-        $this->composer = $composer;
-        $this->io       = $io;
-        $this->input    = $input;
-        $this->jsonFile = new JsonFile(Factory::getComposerFile());
+        $this->composer   = $composer;
+        $this->io         = $io;
+        $this->input      = $input;
+        $this->vendorPath = $composer->getConfig()->get('vendor-dir');
+        $this->jsonFile   = new JsonFile(Factory::getComposerFile());
 
         $this->rootPackage = $composer->getPackage();
         $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
@@ -152,8 +167,7 @@ class QuestionInstallationManager
             return [];
         }
 
-        $packagesToInstall = [];
-        $rootPackages      = [];
+        $rootPackages = [];
 
         foreach ($this->getRootRequires() as $link) {
             $rootPackages[\mb_strtolower($link->getTarget())] = (string) $link->getConstraint();
@@ -176,7 +190,7 @@ class QuestionInstallationManager
 
                 // Package has been already prepared to be installed, skipping.
                 // Package from this group has been found in root composer, skipping.
-                if (isset($packagesToInstall[$package]) || isset($rootPackages[$package])) {
+                if (isset($this->packagesToInstall[$package]) || isset($rootPackages[$package])) {
                     continue 2;
                 }
 
@@ -185,7 +199,7 @@ class QuestionInstallationManager
                     $version    = $this->installedPackages[$package];
                     $constraint = (\is_numeric($version) ? '^' : '') . $version;
 
-                    $packagesToInstall[$package] = $constraint;
+                    $this->packagesToInstall[$package] = $constraint;
 
                     $this->io->write(sprintf(
                         'Added package <info>%s</info> to composer.json with constraint <info>%s</info>;'
@@ -204,15 +218,15 @@ class QuestionInstallationManager
 
             $this->io->writeError(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $package));
 
-            $packagesToInstall[$package] = $constraint;
+            $this->packagesToInstall[$package] = $constraint;
         }
 
-        if (\count($packagesToInstall) !== 0) {
-            $this->updateComposerJson($packagesToInstall, self::ADD);
+        if (\count($this->packagesToInstall) !== 0) {
+            $this->updateComposerJson($this->packagesToInstall, self::ADD);
 
             $this->runInstaller(
-                $this->updateRootComposerJson($packagesToInstall, self::ADD),
-                \array_keys($packagesToInstall)
+                $this->updateRootComposerJson($this->packagesToInstall, self::ADD),
+                \array_keys($this->packagesToInstall)
             );
         }
 
@@ -221,10 +235,20 @@ class QuestionInstallationManager
         // Revert to the old install manager.
         $this->composer->setInstallationManager($oldInstallManager);
 
-        $resolver = new OperationsResolver($operations, $this->composer->getConfig()->get('vendor-dir'));
+        $resolver = new OperationsResolver($operations, $this->vendorPath);
         $resolver->setParentPackageName($name);
 
         return $resolver->resolve();
+    }
+
+    /**
+     * Returns selected packages from questions.
+     *
+     * @return array
+     */
+    public function getPackagesToInstall(): array
+    {
+        return $this->packagesToInstall;
     }
 
     /**
@@ -276,7 +300,7 @@ class QuestionInstallationManager
         // Revert to the old install manager.
         $this->composer->setInstallationManager($oldInstallManager);
 
-        $resolver = new OperationsResolver($operations, $this->composer->getConfig()->get('vendor-dir'));
+        $resolver = new OperationsResolver($operations, $this->vendorPath);
         $resolver->setParentPackageName($name);
 
         return $resolver->resolve();

@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery;
 
 use Composer\Json\JsonFile;
+use Composer\Package\Locker;
 
 class Lock
 {
@@ -33,7 +34,7 @@ class Lock
             $this->lock = $this->read();
         }
 
-        $this->add('content-hash', \md5((string) \random_int(100, 999)));
+        $this->add('_content-hash', Locker::getContentHash(\file_get_contents($this->json->getPath())));
     }
 
     /**

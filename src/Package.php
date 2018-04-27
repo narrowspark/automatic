@@ -173,7 +173,7 @@ final class Package implements PackageContract
      */
     public function isDiscoveryPackage(): bool
     {
-        return isset($this->options['used-by-discovery']);
+        return $this->options['used-by-discovery'];
     }
 
     /**

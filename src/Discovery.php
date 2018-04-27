@@ -32,16 +32,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     use GetGenericPropertyReaderTrait;
 
     /**
-     * @var int
-     */
-    private const DISCOVERY = 0;
-
-    /**
-     * @var int
-     */
-    private const DISCOVERY_QUESTION = 1;
-
-    /**
      * A composer instance.
      *
      * @var \Composer\Composer
@@ -282,7 +272,11 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $packages         = (new OperationsResolver($this->operations, $this->composer->getConfig()->get('vendor-dir')))->resolve();
         $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
 
-        $this->writeOperationsText($packages);
+        $this->io->writeError(\sprintf(
+            '<info>Discovery operations: %s package%s</info>',
+            \count($packages),
+            \count($packages) > 1 ? 's' : ''
+        ));
 
         foreach ($packages as $package) {
             if (isset($discoveryOptions['dont-discover']) && \array_key_exists($package->getName(), $discoveryOptions['dont-discover'])) {
@@ -406,7 +400,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         );
 
         $lockData                 = $locker->getLockData();
-        $lockData['content-hash'] = Locker::getContentHash($composerJson);
+        $lockData['_content-hash'] = Locker::getContentHash($composerJson);
 
         $lockFile->write($lockData);
     }
@@ -502,8 +496,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                     $package->getConfiguratorOptions('extra-dependency')
                 );
 
-                $this->writeOperationsText($operations, self::DISCOVERY_QUESTION);
-
                 foreach ($operations as $operation) {
                     $this->doInstall($operation, $packageConfigurator);
                 }
@@ -551,8 +543,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
                 $operations = $this->extraInstaller->uninstall($package->getName(), $extraPackages);
 
-                $this->writeOperationsText($operations, self::DISCOVERY_QUESTION);
-
                 foreach ($operations as $operation) {
                     $this->doUninstall($operation, $packageConfigurator);
                 }
@@ -560,28 +550,5 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->lock->remove($package->getName());
-    }
-
-    /**
-     * Output a message with operations information's.
-     *
-     * @param array $packages
-     * @param int   $textType
-     *
-     * @return void
-     */
-    private function writeOperationsText(array $packages, int $textType = self::DISCOVERY): void
-    {
-        $text = '<info>Discovery operations: %s package%s</info>';
-
-        if ($textType === self::DISCOVERY_QUESTION) {
-            $text = '<info>Discovery extra dependency operations: %s package%s</info>';
-        }
-
-        $this->io->writeError(\sprintf(
-            $text,
-            \count($packages),
-            \count($packages) > 1 ? 's' : ''
-        ));
     }
 }

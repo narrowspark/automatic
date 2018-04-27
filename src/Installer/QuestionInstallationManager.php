@@ -197,7 +197,7 @@ class QuestionInstallationManager
                 // Check if package is currently installed, if so, use installed constraint and skip question.
                 if (isset($this->installedPackages[$package])) {
                     $version    = $this->installedPackages[$package];
-                    $constraint = (\is_numeric($version) ? '^' : '') . $version;
+                    $constraint = \is_numeric($version) ? '^' . $version : $version;
 
                     $this->packagesToInstall[$package] = $constraint;
 

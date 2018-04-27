@@ -492,11 +492,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->configurator->configure($package);
         $packageConfigurator->configure($package);
 
+        $options = $package->getOptions();
+
         if ($package->hasConfiguratorKey('extra-dependency')) {
             $operations = $this->extraInstaller->install(
                 $package->getName(),
                 $package->getConfiguratorOptions('extra-dependency')
             );
+
+            $options = \array_merge($options, ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]);
 
             foreach ($operations as $operation) {
                 $this->doInstall($operation, $packageConfigurator);
@@ -509,12 +513,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             }
 
             $this->postInstallOutput[] = '';
-        }
-
-        $options = $package->getOptions();
-
-        if (\count($this->extraInstaller->getPackagesToInstall()) !== 0) {
-            $options = \array_merge($options, ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]);
         }
 
         $this->lock->add($package->getName(), $options);
@@ -541,7 +539,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $extraPackages = [];
 
             foreach ($this->lock->read() as $packageName => $data) {
-                if ($packageName === $package->getName()) {
+                if (! isset($data['selected-question-packages']) && $packageName === $package->getName()) {
                     $extraPackages += $data['selected-question-packages'];
                 }
 

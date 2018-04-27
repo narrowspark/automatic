@@ -33,8 +33,6 @@ class Lock
         if ($this->json->exists()) {
             $this->lock = $this->read();
         }
-
-        $this->add('_content-hash', Locker::getContentHash(\file_get_contents($this->json->getPath())));
     }
 
     /**

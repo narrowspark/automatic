@@ -97,6 +97,5 @@ class DiscoveryTest extends MockeryTestCase
             ],
             $disovery->getLock()->get('_readme')
         );
-        self::assertInternalType('string', $disovery->getLock()->get('_content-hash'));
     }
 }

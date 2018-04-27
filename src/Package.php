@@ -85,7 +85,8 @@ final class Package implements PackageContract
             $options['operation'],
             $options['url'],
             $options['extra-dependency-of'],
-            $options['require']
+            $options['require'],
+            $options['used-by-discovery']
         );
 
         $this->configuratorOptions = $options;
@@ -165,6 +166,14 @@ final class Package implements PackageContract
     public function isExtraDependency(): bool
     {
         return isset($this->options['extra-dependency-of']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isDiscoveryPackage(): bool
+    {
+        return isset($this->options['used-by-discovery']);
     }
 
     /**

@@ -76,10 +76,6 @@ class OperationsResolver
                 $package = $operation->getPackage();
             }
 
-            if (! isset($package->getExtra()['discovery'])) {
-                continue;
-            }
-
             $name            = \mb_strtolower($package->getName());
             $packages[$name] = new Package(
                 $name,
@@ -130,14 +126,18 @@ class OperationsResolver
         $requires = [];
 
         foreach ($package->getRequires() as $link) {
-            if ($link->getTarget() === 'php' || mb_strpos($link->getTarget(), 'ext-') === 0) {
+            $target = $link->getTarget();
+
+            if ($target === 'php' || \mb_strpos($target, 'ext-') === 0) {
                 continue;
             }
 
-            $requires[] = $link->getTarget();
+            $requires[] = $target;
         }
 
         \sort($requires, \SORT_STRING);
+
+        $discoveryExtra = $package->getExtra()['discovery'] ?? [];
 
         return \array_merge(
             [
@@ -147,8 +147,9 @@ class OperationsResolver
                 'operation'           => $operation,
                 'extra-dependency-of' => $this->parentName,
                 'require'             => $requires,
+                'used-by-discovery'   => \count($discoveryExtra) !== 0,
             ],
-            $package->getExtra()['discovery']
+            $discoveryExtra
         );
     }
 }

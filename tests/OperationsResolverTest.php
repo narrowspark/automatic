@@ -52,11 +52,11 @@ class OperationsResolverTest extends MockeryTestCase
         $this->resolver = new OperationsResolver($operations, __DIR__);
     }
 
-    public function testResolver(): void
+    public function testResolve(): void
     {
         $package1Mock = $this->mock(PackageInterface::class);
         $package1Mock->shouldReceive('getExtra')
-            ->times(3)
+            ->twice()
             ->andReturn(['discovery' =>  []]);
         $package1Mock->shouldReceive('getName')
             ->once()
@@ -77,10 +77,25 @@ class OperationsResolverTest extends MockeryTestCase
         $package2Mock = $this->mock(PackageInterface::class);
         $package2Mock->shouldReceive('getExtra')
             ->andReturn([]);
+        $package2Mock->shouldReceive('getName')
+            ->once()
+            ->andReturn('no-discovery');
+        $package2Mock->shouldReceive('getPrettyVersion')
+            ->once()
+            ->andReturn('1');
+        $package2Mock->shouldReceive('getSourceUrl')
+            ->once()
+            ->andReturn('example.local');
+        $package2Mock->shouldReceive('getType')
+            ->once()
+            ->andReturn('library');
+        $package2Mock->shouldReceive('getRequires')
+            ->once()
+            ->andReturn([]);
 
         $package3Mock = $this->mock(PackageInterface::class);
         $package3Mock->shouldReceive('getExtra')
-            ->times(3)
+            ->twice()
             ->andReturn(['branch-alias' => ['dev-master' => '1.0-dev'], 'discovery' =>  []]);
         $package3Mock->shouldReceive('getName')
             ->once()
@@ -97,12 +112,12 @@ class OperationsResolverTest extends MockeryTestCase
 
         $link1Mock = $this->mock(Link::class);
         $link1Mock->shouldReceive('getTarget')
-            ->times(3)
+            ->once()
             ->andReturn('foo/bar');
 
         $link2Mock = $this->mock(Link::class);
         $link2Mock->shouldReceive('getTarget')
-            ->times(2)
+            ->once()
             ->andReturn('ext-mbstring');
 
         $package3Mock->shouldReceive('getRequires')

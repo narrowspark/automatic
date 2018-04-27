@@ -179,6 +179,14 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
+    public function getOption($key)
+    {
+        return $this->options[$key] ?? null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getOptions(): array
     {
         return $this->options;

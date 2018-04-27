@@ -22,6 +22,7 @@ use Narrowspark\Discovery\Common\Exception\RuntimeException;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 
 /**
  * @internal
@@ -151,8 +152,8 @@ class QuestionInstallationManager
     /**
      * Install selected extra dependencies.
      *
-     * @param string $name
-     * @param array  $dependencies
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param array                                          $dependencies
      *
      * @throws \Narrowspark\Discovery\Common\Exception\RuntimeException
      * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
@@ -160,7 +161,7 @@ class QuestionInstallationManager
      *
      * @return \Narrowspark\Discovery\Package[]
      */
-    public function install(string $name, array $dependencies): array
+    public function install(PackageContract $package, array $dependencies): array
     {
         if (! $this->io->isInteractive() || \count($dependencies) === 0) {
             // Do nothing in no-interactive mode
@@ -182,43 +183,43 @@ class QuestionInstallationManager
                 throw new RuntimeException('You must provide at least two optional dependencies.');
             }
 
-            foreach ($options as $package => $version) {
+            foreach ($options as $packageName => $version) {
                 // Check if package variable is a integer
-                if (\is_int($package)) {
-                    $package = $version;
+                if (\is_int($packageName)) {
+                    $packageName = $version;
                 }
 
                 // Package has been already prepared to be installed, skipping.
                 // Package from this group has been found in root composer, skipping.
-                if (isset($this->packagesToInstall[$package]) || isset($rootPackages[$package])) {
+                if (isset($this->packagesToInstall[$packageName]) || isset($rootPackages[$packageName])) {
                     continue 2;
                 }
 
                 // Check if package is currently installed, if so, use installed constraint and skip question.
-                if (isset($this->installedPackages[$package])) {
-                    $version    = $this->installedPackages[$package];
-                    $constraint = \is_numeric($version) ? '^' . $version : $version;
+                if (isset($this->installedPackages[$packageName])) {
+                    $version    = $this->installedPackages[$packageName];
+                    $constraint = \mb_strpos($version, 'dev-') === false ? '^' . $version : $version;
 
-                    $this->packagesToInstall[$package] = $constraint;
+                    $this->packagesToInstall[$packageName] = $constraint;
 
                     $this->io->write(sprintf(
                         'Added package <info>%s</info> to composer.json with constraint <info>%s</info>;'
                         . ' to upgrade, run <info>composer require %s:VERSION</info>',
-                        $package,
+                        $packageName,
                         $constraint,
-                        $package
+                        $packageName
                     ));
 
                     continue 2;
                 }
             }
 
-            $package    = $this->askDependencyQuestion($question, $options);
-            $constraint = $options[$package] ?? $this->findVersion($package);
+            $packageName    = $this->askDependencyQuestion($question, $options);
+            $constraint = $options[$packageName] ?? $this->findVersion($packageName);
 
-            $this->io->writeError(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $package));
+            $this->io->writeError(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $packageName));
 
-            $this->packagesToInstall[$package] = $constraint;
+            $this->packagesToInstall[$packageName] = $constraint;
         }
 
         if (\count($this->packagesToInstall) !== 0) {
@@ -236,7 +237,7 @@ class QuestionInstallationManager
         $this->composer->setInstallationManager($oldInstallManager);
 
         $resolver = new OperationsResolver($operations, $this->vendorPath);
-        $resolver->setParentPackageName($name);
+        $resolver->setParentPackageName($package->getName());
 
         return $resolver->resolve();
     }
@@ -254,33 +255,31 @@ class QuestionInstallationManager
     /**
      * Uninstall extra dependencies.
      *
-     * @param string $name
-     * @param array  $dependencies
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param array                                          $dependencies
      *
      * @throws \Exception
      *
      * @return \Narrowspark\Discovery\Package[]
      */
-    public function uninstall(string $name, array $dependencies): array
+    public function uninstall(PackageContract $package, array $dependencies): array
     {
         $oldInstallManager = $this->composer->getInstallationManager();
 
         $this->addDiscoveryInstallationManagerToComposer($oldInstallManager);
 
+        if (($selectedPackages = $package->getOption('selected-question-packages')) !== null) {
+            $dependencies = \array_merge($dependencies, $selectedPackages);
+        }
+
+        $this->updateComposerJson($dependencies, self::REMOVE);
+
         if (\count($dependencies) !== 0) {
-            $this->updateComposerJson($dependencies, self::REMOVE);
+            $localPackages = $this->localRepository->getPackages();
+            $whiteList     = \array_merge($package->getRequires(), $dependencies);
 
-            $packages  = $this->localRepository->getPackages();
-            $whiteList = $dependencies;
-
-            foreach ($packages as $package) {
-                if ($package->getName() === $name) {
-                    $whiteList += \array_keys($package->getRequires());
-                }
-            }
-
-            foreach ($packages as $package) {
-                $mixedRequires = \array_merge(\array_keys($package->getRequires()), \array_keys($package->getDevRequires()));
+            foreach ($localPackages as $localPackage) {
+                $mixedRequires = \array_merge($localPackage->getRequires(), $localPackage->getDevRequires());
 
                 foreach ($whiteList as $whitelistPackageName) {
                     if (isset($mixedRequires[$whitelistPackageName])) {
@@ -301,7 +300,7 @@ class QuestionInstallationManager
         $this->composer->setInstallationManager($oldInstallManager);
 
         $resolver = new OperationsResolver($operations, $this->vendorPath);
-        $resolver->setParentPackageName($name);
+        $resolver->setParentPackageName($package->getName());
 
         return $resolver->resolve();
     }

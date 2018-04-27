@@ -495,10 +495,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $options = $package->getOptions();
 
         if ($package->hasConfiguratorKey('extra-dependency')) {
-            $operations = $this->extraInstaller->install(
-                $package->getName(),
-                $package->getConfiguratorOptions('extra-dependency')
-            );
+            $operations = $this->extraInstaller->install($package, $package->getConfiguratorOptions('extra-dependency'));
 
             $options = \array_merge($options, ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]);
 

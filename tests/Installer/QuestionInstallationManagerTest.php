@@ -18,6 +18,7 @@ use Narrowspark\Discovery\Installer\InstallationManager;
 use Narrowspark\Discovery\Lock;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Package;
+use Narrowspark\Discovery\Test\Fixtures\ComposerJsonFactory;
 use Narrowspark\Discovery\Test\Fixtures\MockedQuestionInstallationManager;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -36,7 +37,12 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     /**
      * @var string
      */
-    private $composerJsonWithRequiresPath;
+    private $composerJsonWithVersion;
+
+    /**
+     * @var string
+     */
+    private $composerJsonWithoutVersion;
 
     /**
      * @var \Composer\Repository\WritableRepositoryInterface|\Mockery\MockInterface
@@ -55,15 +61,19 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     {
         $this->composerCachePath = __DIR__ . '/cache';
 
+        $this->manipulatedComposerPath      = $this->composerCachePath . '/manipulated_composer.json';
+        $this->composerJsonWithRequiresPath = $this->composerCachePath . '/composer_with_requires.json';
+        $this->composerJsonWithVersion      = $this->composerCachePath . '/composer_with_version.json';
+        $this->composerJsonWithoutVersion   = $this->composerCachePath . '/composer_without_version.json';
+
         \mkdir($this->composerCachePath);
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
 
         parent::setUp();
 
-        $this->lockMock = $this->mock(Lock::class);
+        $this->createComposerJsonFiles();
 
-        $this->createManipulatedComposer();
-        $this->createComposerJsonWithRequires();
+        $this->lockMock = $this->mock(Lock::class);
 
         $this->ioMock->shouldReceive('hasAuthentication')
             ->andReturn(false);
@@ -113,7 +123,8 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
-        $jsonData = $this->getFixturesComposerJsonData();
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
+
         $packages = $questionInstallationManager->install(
             $this->arrangeInstallPackage($jsonData['name']),
             $jsonData['extra']['discovery']['extra-dependency']
@@ -124,7 +135,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallWithEmptyDependencies(): void
     {
-        $jsonData = $this->getFixturesComposerJsonData();
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
 
         $this->arrangeEmptyLocalRepositoryPackages();
 
@@ -148,7 +159,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     public function testInstallWithAEmptyQuestion(): void
     {
-        $jsonData = $this->getFixturesComposerJsonData();
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
 
         $this->arrangeEmptyLocalRepositoryPackages();
 
@@ -177,7 +188,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     public function testInstallThrowsExceptionWhenNoVersionIsFound(): void
     {
-        $jsonData = $this->getFixturesComposerJsonWithoutVersionData();
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithoutVersion);
 
         $this->arrangeEmptyLocalRepositoryPackages();
         $this->arrangeDownloadAndWritePackagistData();
@@ -203,7 +214,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallWithPackageNameAndVersionWithStablePackageVersions(): void
     {
-        $jsonData = $this->getFixturesComposerJsonData();
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
 
         $this->arrangeEmptyLocalRepositoryPackages();
         $this->arrangeActiveIsInteractive();
@@ -285,7 +296,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallSkipPackageInstallIfPackageIsInRootPackage(): void
     {
-        $jsonData = $this->getFixturesComposerJsonData();
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
 
         $this->arrangeEmptyLocalRepositoryPackages();
 
@@ -445,7 +456,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $jsonData = $this->getFixturesComposerJsonWithoutVersionData();
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithoutVersion);
 
         $packages = $questionInstallationManager->install(
             $this->arrangeInstallPackage($jsonData['name']),
@@ -588,7 +599,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         );
 
         $packages = $questionInstallationManager->uninstall($package, ['viserio/view' => 'dev-master']);
-        $jsonData = $this->getComposerJsonWithRequiresData();
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithRequiresPath);
 
         self::assertArrayHasKey('requires/test', $jsonData['require']);
         self::assertArrayHasKey('viserio/bus', $jsonData['require']);
@@ -601,38 +612,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     protected function allowMockingNonExistentMethods($allow = false): void
     {
         parent::allowMockingNonExistentMethods(true);
-    }
-
-    /**
-     * @return array
-     */
-    private function getFixturesComposerJsonWithoutVersionData(): array
-    {
-        return \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer_without_version.json'), true);
-    }
-
-    private function createComposerJsonWithRequires(): void
-    {
-        $this->composerJsonWithRequiresPath = $this->composerCachePath . '/composer_with_requires.json';
-
-        \file_put_contents(
-            $this->composerJsonWithRequiresPath,
-            '{
-    "name": "requires/test",
-    "authors": [
-        {
-            "name": "Daniel Bannert",
-            "email": "d.bannert@anolilab.de"
-        }
-    ],
-    "require": {
-        "requires/test": "dev-master",
-        "viserio/bus": "dev-master",
-        "viserio/view": "dev-master",
-        "symfony/filesystem": "^4.0"
-    }
-}'
-        );
     }
 
     /**
@@ -761,58 +740,15 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     }
 
     /**
-     * @return array
-     */
-    private function getFixturesComposerJsonData(): array
-    {
-        return \json_decode(\file_get_contents(__DIR__ . '/../Fixtures/composer.json'), true);
-    }
-
-    /**
-     * @return array
-     */
-    private function getManipulatedComposerJsonData(): array
-    {
-        return \json_decode(\file_get_contents($this->manipulatedComposerPath), true);
-    }
-
-    /**
-     * @return array
-     */
-    private function getComposerJsonWithRequiresData(): array
-    {
-        return \json_decode(\file_get_contents($this->composerJsonWithRequiresPath), true);
-    }
-
-    /**
      * @param array  $packages
      * @param string $version
      */
     private function assertPackagesInstall(array $packages, string $version): void
     {
-        $jsonData = $this->getManipulatedComposerJsonData();
+        $jsonData = $jsonData = ComposerJsonFactory::jsonToArray($this->manipulatedComposerPath);
 
         self::assertSame(['viserio/routing' => $version], $jsonData['require']);
         self::assertCount(1, $packages);
-    }
-
-    private function createManipulatedComposer(): void
-    {
-        $this->manipulatedComposerPath = $this->composerCachePath . '/manipulated_composer.json';
-
-        \file_put_contents(
-            $this->manipulatedComposerPath,
-            '{
-    "name": "manipulated/test",
-    "authors": [
-        {
-            "name": "Daniel Bannert",
-            "email": "d.bannert@anolilab.de"
-        }
-    ],
-    "require": {}
-}'
-        );
     }
 
     /**
@@ -877,5 +813,60 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
             ->andReturn(true);
+    }
+
+    private function createComposerJsonFiles(): void
+    {
+        \file_put_contents(
+            $this->manipulatedComposerPath,
+            ComposerJsonFactory::createSimpleComposerJson('manipulated/test')
+        );
+
+        \file_put_contents(
+            $this->composerJsonWithRequiresPath,
+            ComposerJsonFactory::createSimpleComposerJson(
+                'requires/test',
+                [
+                    'requires/test'      => 'dev-master',
+                    'viserio/bus'        => 'dev-master',
+                    'viserio/view'       => 'dev-master',
+                    'symfony/filesystem' => '^4.0',
+                ]
+            )
+        );
+
+        \file_put_contents(
+            $this->composerJsonWithVersion,
+            ComposerJsonFactory::createDiscoveryComposerJson(
+                'prisis/test',
+                [],
+                [],
+                [
+                    'extra-dependency' => [
+                        'this is a question' => [
+                            'viserio/routing' => 'dev-master',
+                            'viserio/view'    => 'dev-master',
+                        ],
+                    ],
+                ]
+            )
+        );
+
+        \file_put_contents(
+            $this->composerJsonWithoutVersion,
+            ComposerJsonFactory::createDiscoveryComposerJson(
+                'prisis/test',
+                [],
+                [],
+                [
+                    'extra-dependency' => [
+                        'this is a question' => [
+                            'viserio/routing',
+                            'viserio/view',
+                        ],
+                    ],
+                ]
+            )
+        );
     }
 }

@@ -46,4 +46,14 @@ class ComposerJsonFactory
 
         return self::createSimpleComposerJson($name, $require, $devRequire, $extendedExtra);
     }
+
+    /**
+     * @param string $jsonFilePath
+     *
+     * @return array
+     */
+    public static function jsonToArray(string $jsonFilePath): array
+    {
+        return \json_decode(\file_get_contents($jsonFilePath), true);
+    }
 }

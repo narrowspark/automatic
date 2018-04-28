@@ -37,12 +37,12 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     /**
      * @var string
      */
-    private $composerJsonWithVersion;
+    private $composerJsonWithVersionPath;
 
     /**
      * @var string
      */
-    private $composerJsonWithoutVersion;
+    private $composerJsonWithoutVersionPath;
 
     /**
      * @var \Composer\Repository\WritableRepositoryInterface|\Mockery\MockInterface
@@ -61,10 +61,10 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     {
         $this->composerCachePath = __DIR__ . '/cache';
 
-        $this->manipulatedComposerPath      = $this->composerCachePath . '/manipulated_composer.json';
-        $this->composerJsonWithRequiresPath = $this->composerCachePath . '/composer_with_requires.json';
-        $this->composerJsonWithVersion      = $this->composerCachePath . '/composer_with_version.json';
-        $this->composerJsonWithoutVersion   = $this->composerCachePath . '/composer_without_version.json';
+        $this->manipulatedComposerPath        = $this->composerCachePath . '/manipulated_composer.json';
+        $this->composerJsonWithRequiresPath   = $this->composerCachePath . '/composer_with_requires.json';
+        $this->composerJsonWithVersionPath    = $this->composerCachePath . '/composer_with_version.json';
+        $this->composerJsonWithoutVersionPath = $this->composerCachePath . '/composer_without_version.json';
 
         \mkdir($this->composerCachePath);
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
@@ -94,6 +94,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->composerMock->shouldReceive('getRepositoryManager')
             ->once()
             ->andReturn($repositoryMock);
+
         $this->composerMock->shouldReceive('getConfig')
             ->andReturn($this->configMock);
     }
@@ -123,7 +124,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
 
         $packages = $questionInstallationManager->install(
             $this->arrangeInstallPackage($jsonData['name']),
@@ -135,7 +136,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallWithEmptyDependencies(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
 
@@ -159,7 +160,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     public function testInstallWithAEmptyQuestion(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
 
@@ -188,12 +189,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     public function testInstallThrowsExceptionWhenNoVersionIsFound(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithoutVersion);
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithoutVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
         $this->arrangeDownloadAndWritePackagistData();
         $this->arrangeSimpleRootPackage('stable');
-
         $this->arrangeActiveIsInteractive();
 
         $this->composerMock->shouldReceive('setInstallationManager')
@@ -214,7 +214,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallWithPackageNameAndVersionWithStablePackageVersions(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
         $this->arrangeActiveIsInteractive();
@@ -230,6 +230,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
                 \Mockery::type(\Closure::class)
             )
             ->andReturn('viserio/routing');
+
         $this->ioMock->shouldReceive('writeError')
             ->once()
             ->with('Using version <info>dev-master</info> for <info>viserio/routing</info>');
@@ -296,7 +297,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallSkipPackageInstallIfPackageIsInRootPackage(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersion);
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
 
@@ -317,7 +318,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->andReturn($rootPackageMock);
 
         $this->arrangeActiveIsInteractive();
-
         $this->arrangeInstallationManager();
 
         $this->ioMock->shouldReceive('askAndValidate')
@@ -380,10 +380,9 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->arrangeEmptyLocalRepositoryPackages();
 
         $rootPackageMock = $this->arrangeSimpleRootPackage();
+
         $this->arrangeDownloadAndWritePackagistData();
-
         $this->arrangeActiveIsInteractive();
-
         $this->arrangeInstallationManager();
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
@@ -456,7 +455,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithoutVersion);
+        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithoutVersionPath);
 
         $packages = $questionInstallationManager->install(
             $this->arrangeInstallPackage($jsonData['name']),
@@ -468,10 +467,12 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testUninstall(): void
     {
-        $filesystemPackage = $this->arrangeComposerPackage(['name' => 'symfony/filesystem', 'version' => '^4.0']);
         $this->localRepositoryMock->shouldReceive('getPackages')
             ->twice()
-            ->andReturn([$filesystemPackage]);
+            ->andReturn([
+                $this->arrangeComposerPackage(['name' => 'symfony/filesystem', 'version' => '^4.0']),
+                $this->arrangeComposerPackage(['name' => 'viserio/bus', 'version' => 'dev-master'])
+            ]);
 
         $require = [
             'requires/test' => new Link(
@@ -836,7 +837,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         );
 
         \file_put_contents(
-            $this->composerJsonWithVersion,
+            $this->composerJsonWithVersionPath,
             ComposerJsonFactory::createDiscoveryComposerJson(
                 'prisis/test',
                 [],
@@ -853,7 +854,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         );
 
         \file_put_contents(
-            $this->composerJsonWithoutVersion,
+            $this->composerJsonWithoutVersionPath,
             ComposerJsonFactory::createDiscoveryComposerJson(
                 'prisis/test',
                 [],

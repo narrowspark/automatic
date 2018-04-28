@@ -7,6 +7,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
+use Narrowspark\Discovery\Lock;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
@@ -20,17 +21,22 @@ class OperationsResolverTest extends MockeryTestCase
     /**
      * @var \Composer\DependencyResolver\Operation\InstallOperation|\Mockery\MockInterface
      */
-    private $installOperation;
+    private $installOperationMock;
 
     /**
      * @var \Composer\DependencyResolver\Operation\UpdateOperation|\Mockery\MockInterface
      */
-    private $updateOperation;
+    private $updateOperationMock;
 
     /**
      * @var \Composer\DependencyResolver\Operation\UninstallOperation|\Mockery\MockInterface
      */
-    private $uninstallOperation;
+    private $uninstallOperationMock;
+
+    /**
+     * @var \Mockery\MockInterface|\Narrowspark\Discovery\Lock
+     */
+    private $lockMock;
 
     /**
      * {@inheritdoc}
@@ -39,17 +45,12 @@ class OperationsResolverTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->installOperation   = $this->mock(InstallOperation::class);
-        $this->updateOperation    = $this->mock(UpdateOperation::class);
-        $this->uninstallOperation = $this->mock(UninstallOperation::class);
+        $this->installOperationMock   = $this->mock(InstallOperation::class);
+        $this->updateOperationMock    = $this->mock(UpdateOperation::class);
+        $this->uninstallOperationMock = $this->mock(UninstallOperation::class);
+        $this->lockMock               = $this->mock(Lock::class);
 
-        $operations = [
-            $this->installOperation,
-            $this->updateOperation,
-            $this->uninstallOperation,
-        ];
-
-        $this->resolver = new OperationsResolver($operations, __DIR__);
+        $this->resolver = new OperationsResolver($this->lockMock, __DIR__);
     }
 
     public function testResolve(): void
@@ -113,15 +114,24 @@ class OperationsResolverTest extends MockeryTestCase
                 $link2Mock,
             ]);
 
-        $this->installOperation->shouldReceive('getPackage')
+        $this->installOperationMock->shouldReceive('getPackage')
             ->andReturn($package1Mock);
-        $this->updateOperation->shouldReceive('getTargetPackage')
+        $this->updateOperationMock->shouldReceive('getTargetPackage')
             ->andReturn($package2Mock);
-        $this->uninstallOperation->shouldReceive('getPackage')
+        $this->uninstallOperationMock->shouldReceive('getPackage')
             ->andReturn($package3Mock);
 
+        $this->lockMock->shouldReceive('has')
+            ->with('uninstall')
+            ->andReturn(false);
+
         $this->resolver->setParentPackageName('foo/bar');
-        $packages = $this->resolver->resolve();
+
+        $packages = $this->resolver->resolve([
+            $this->installOperationMock,
+            $this->updateOperationMock,
+            $this->uninstallOperationMock,
+        ]);
 
         $package = $packages['install'];
 

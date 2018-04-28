@@ -17,12 +17,12 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Exception\RuntimeException;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
-use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 
 /**
  * @internal
@@ -70,18 +70,18 @@ class QuestionInstallationManager
     private $composer;
 
     /**
-     * Path to the composer vendor folder.
-     *
-     * @var string
-     */
-    private $vendorPath;
-
-    /**
      * The composer io implementation.
      *
      * @var \Composer\IO\IOInterface
      */
     private $io;
+
+    /**
+     * A operations resolver instance.
+     *
+     * @var \Narrowspark\Discovery\OperationsResolver
+     */
+    private $operationsResolver;
 
     /**
      * A repository implementation.
@@ -124,16 +124,17 @@ class QuestionInstallationManager
      * @param \Composer\Composer                              $composer
      * @param \Composer\IO\IOInterface                        $io
      * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Narrowspark\Discovery\OperationsResolver       $operationsResolver
      */
-    public function __construct(Composer $composer, IOInterface $io, InputInterface $input)
+    public function __construct(Composer $composer, IOInterface $io, InputInterface $input, OperationsResolver $operationsResolver)
     {
-        $this->composer   = $composer;
-        $this->io         = $io;
-        $this->input      = $input;
-        $this->vendorPath = $composer->getConfig()->get('vendor-dir');
-        $this->jsonFile   = new JsonFile(Factory::getComposerFile());
+        $this->composer           = $composer;
+        $this->io                 = $io;
+        $this->input              = $input;
+        $this->operationsResolver = $operationsResolver;
+        $this->jsonFile           = new JsonFile(Factory::getComposerFile());
 
-        $this->rootPackage = $composer->getPackage();
+        $this->rootPackage = $this->composer->getPackage();
         $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
 
         $pool = new Pool($this->stability);
@@ -142,7 +143,7 @@ class QuestionInstallationManager
         );
 
         $this->versionSelector = new VersionSelector($pool);
-        $this->localRepository = $composer->getRepositoryManager()->getLocalRepository();
+        $this->localRepository = $this->composer->getRepositoryManager()->getLocalRepository();
 
         foreach ($this->localRepository->getPackages() as $package) {
             $this->installedPackages[\mb_strtolower($package->getName())] = \ltrim($package->getPrettyVersion(), 'v');
@@ -159,7 +160,7 @@ class QuestionInstallationManager
      * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
      * @throws \Exception
      *
-     * @return \Narrowspark\Discovery\Package[]
+     * @return \Narrowspark\Discovery\Common\Contract\Package[]
      */
     public function install(PackageContract $package, array $dependencies): array
     {
@@ -215,7 +216,7 @@ class QuestionInstallationManager
             }
 
             $packageName    = $this->askDependencyQuestion($question, $options);
-            $constraint = $options[$packageName] ?? $this->findVersion($packageName);
+            $constraint     = $options[$packageName] ?? $this->findVersion($packageName);
 
             $this->io->writeError(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $packageName));
 
@@ -236,10 +237,9 @@ class QuestionInstallationManager
         // Revert to the old install manager.
         $this->composer->setInstallationManager($oldInstallManager);
 
-        $resolver = new OperationsResolver($operations, $this->vendorPath);
-        $resolver->setParentPackageName($package->getName());
+        $this->operationsResolver->setParentPackageName($package->getName());
 
-        return $resolver->resolve();
+        return $this->operationsResolver->resolve($operations);
     }
 
     /**
@@ -260,7 +260,7 @@ class QuestionInstallationManager
      *
      * @throws \Exception
      *
-     * @return \Narrowspark\Discovery\Package[]
+     * @return \Narrowspark\Discovery\Common\Contract\Package[]
      */
     public function uninstall(PackageContract $package, array $dependencies): array
     {
@@ -268,11 +268,10 @@ class QuestionInstallationManager
 
         $this->addDiscoveryInstallationManagerToComposer($oldInstallManager);
 
-        if (($selectedPackages = $package->getOption('selected-question-packages')) !== null) {
-            $dependencies = \array_merge($dependencies, $selectedPackages);
-        }
-
-        $this->updateComposerJson($dependencies, self::REMOVE);
+        $this->updateComposerJson(
+            \array_merge($dependencies, $package->getOption('selected-question-packages') ?? []),
+            self::REMOVE
+        );
 
         if (\count($dependencies) !== 0) {
             $localPackages = $this->localRepository->getPackages();
@@ -299,10 +298,9 @@ class QuestionInstallationManager
         // Revert to the old install manager.
         $this->composer->setInstallationManager($oldInstallManager);
 
-        $resolver = new OperationsResolver($operations, $this->vendorPath);
-        $resolver->setParentPackageName($package->getName());
+        $this->operationsResolver->setParentPackageName($package->getName());
 
-        return $resolver->resolve();
+        return $this->operationsResolver->resolve($operations);
     }
 
     /**

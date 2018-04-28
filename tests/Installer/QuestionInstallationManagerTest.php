@@ -15,6 +15,9 @@ use Composer\Repository\WritableRepositoryInterface;
 use Composer\Semver\VersionParser;
 use Mockery\MockInterface;
 use Narrowspark\Discovery\Installer\InstallationManager;
+use Narrowspark\Discovery\Lock;
+use Narrowspark\Discovery\OperationsResolver;
+use Narrowspark\Discovery\Package;
 use Narrowspark\Discovery\Test\Fixtures\MockedQuestionInstallationManager;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -41,6 +44,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     private $localRepositoryMock;
 
     /**
+     * @var \Mockery\MockInterface|\Narrowspark\Discovery\Lock
+     */
+    private $lockMock;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
@@ -51,6 +59,8 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
 
         parent::setUp();
+
+        $this->lockMock = $this->mock(Lock::class);
 
         $this->createManipulatedComposer();
         $this->createComposerJsonWithRequires();
@@ -74,6 +84,8 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->composerMock->shouldReceive('getRepositoryManager')
             ->once()
             ->andReturn($repositoryMock);
+        $this->composerMock->shouldReceive('getConfig')
+            ->andReturn($this->configMock);
     }
 
     /**
@@ -91,11 +103,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
     public function testInstallOnDisabledInteractive(): void
     {
-        $jsonData = $this->getFixturesComposerJsonData();
-
-        $this->localRepositoryMock->shouldReceive('getPackages')
-            ->once()
-            ->andReturn([]);
+        $this->arrangeEmptyLocalRepositoryPackages();
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -105,7 +113,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
-        $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
+        $jsonData = $this->getFixturesComposerJsonData();
+        $packages = $questionInstallationManager->install(
+            $this->arrangeInstallPackage($jsonData['name']),
+            $jsonData['extra']['discovery']['extra-dependency']
+        );
 
         self::assertCount(0, $packages);
     }
@@ -114,19 +126,18 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     {
         $jsonData = $this->getFixturesComposerJsonData();
 
-        $this->localRepositoryMock->shouldReceive('getPackages')
-            ->once()
-            ->andReturn([]);
+        $this->arrangeEmptyLocalRepositoryPackages();
 
-        $this->ioMock->shouldReceive('isInteractive')
-            ->once()
-            ->andReturn(true);
+        $this->arrangeActiveIsInteractive();
 
         $this->arrangeSimpleRootPackage('stable');
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
-        $packages = $questionInstallationManager->install($jsonData['name'], []);
+        $packages = $questionInstallationManager->install(
+            $this->arrangeInstallPackage($jsonData['name']),
+            []
+        );
 
         self::assertCount(0, $packages);
     }
@@ -139,13 +150,9 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     {
         $jsonData = $this->getFixturesComposerJsonData();
 
-        $this->localRepositoryMock->shouldReceive('getPackages')
-            ->once()
-            ->andReturn([]);
+        $this->arrangeEmptyLocalRepositoryPackages();
 
-        $this->ioMock->shouldReceive('isInteractive')
-            ->once()
-            ->andReturn(true);
+        $this->arrangeActiveIsInteractive();
 
         $this->composerMock->shouldReceive('getInstallationManager')
             ->once()
@@ -158,7 +165,10 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
-        $questionInstallationManager->install($jsonData['name'], ['this is a question' => []]);
+        $questionInstallationManager->install(
+            $this->arrangeInstallPackage($jsonData['name']),
+            ['this is a question' => []]
+        );
     }
 
     /**
@@ -169,17 +179,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     {
         $jsonData = $this->getFixturesComposerJsonWithoutVersionData();
 
-        $this->localRepositoryMock->shouldReceive('getPackages')
-            ->once()
-            ->andReturn([]);
-
+        $this->arrangeEmptyLocalRepositoryPackages();
         $this->arrangeDownloadAndWritePackagistData();
-
         $this->arrangeSimpleRootPackage('stable');
 
-        $this->ioMock->shouldReceive('isInteractive')
-            ->once()
-            ->andReturn(true);
+        $this->arrangeActiveIsInteractive();
 
         $this->composerMock->shouldReceive('setInstallationManager')
             ->once();
@@ -191,23 +195,18 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
+        $questionInstallationManager->install(
+            $this->arrangeInstallPackage($jsonData['name']),
+            $jsonData['extra']['discovery']['extra-dependency']
+        );
     }
 
     public function testInstallWithPackageNameAndVersionWithStablePackageVersions(): void
     {
         $jsonData = $this->getFixturesComposerJsonData();
 
-        $this->localRepositoryMock->shouldReceive('getPackages')
-            ->once()
-            ->andReturn([]);
-
-        $rootPackageMock = $this->arrangeSimpleRootPackage('stable');
-
-        $this->ioMock->shouldReceive('isInteractive')
-            ->once()
-            ->andReturn(true);
-
+        $this->arrangeEmptyLocalRepositoryPackages();
+        $this->arrangeActiveIsInteractive();
         $this->arrangeInstallationManager();
 
         $this->ioMock->shouldReceive('askAndValidate')
@@ -223,6 +222,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->ioMock->shouldReceive('writeError')
             ->once()
             ->with('Using version <info>dev-master</info> for <info>viserio/routing</info>');
+
         $this->ioMock->shouldReceive('writeError')
             ->once()
             ->with('Updating composer.json');
@@ -236,6 +236,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->with('Updating root package');
 
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Running an update to install dependent packages');
+
+        $rootPackageMock = $this->arrangeSimpleRootPackage('stable');
         $rootPackageMock->shouldReceive('setRequires')
             ->once()
             ->with([
@@ -248,10 +253,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
                 ),
             ]);
 
-        $this->ioMock->shouldReceive('writeError')
-            ->once()
-            ->with('Running an update to install dependent packages');
-
         $this->composerMock->shouldReceive('setPackage')
             ->once()
             ->with($rootPackageMock);
@@ -262,10 +263,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $composerPackage = $this->arrangeComposerPackage(['name' => 'prisis/test', 'version' => 'dev-master']);
 
-        $operation = $this->mock(InstallOperation::class);
-        $operation->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($composerPackage);
+        $operation = $this->arrangeInstallOperation($composerPackage);
 
         $installationManager = $this->mock(InstallationManager::class);
         $installationManager->shouldReceive('getOperations')
@@ -276,18 +274,20 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
+        $packages = $questionInstallationManager->install(
+            $this->arrangeInstallPackage($jsonData['name']),
+            $jsonData['extra']['discovery']['extra-dependency']
+        );
 
         $this->assertPackagesInstall($packages, 'dev-master');
+        self::assertCount(1, $questionInstallationManager->getPackagesToInstall());
     }
 
     public function testInstallSkipPackageInstallIfPackageIsInRootPackage(): void
     {
         $jsonData = $this->getFixturesComposerJsonData();
 
-        $this->localRepositoryMock->shouldReceive('getPackages')
-            ->once()
-            ->andReturn([]);
+        $this->arrangeEmptyLocalRepositoryPackages();
 
         $requires = [
             'viserio/routing' => new Link(
@@ -305,9 +305,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($rootPackageMock);
 
-        $this->ioMock->shouldReceive('isInteractive')
-            ->once()
-            ->andReturn(true);
+        $this->arrangeActiveIsInteractive();
 
         $this->arrangeInstallationManager();
 
@@ -321,9 +319,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
                 \Mockery::type(\Closure::class)
             )
             ->andReturn('viserio/routing');
+
         $this->ioMock->shouldReceive('writeError')
             ->never()
             ->with('Using version <info>dev-master</info> for <info>viserio/routing</info>');
+
         $this->ioMock->shouldReceive('writeError')
             ->never()
             ->with('Updating composer.json');
@@ -355,23 +355,23 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
-        $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
+        $packages = $questionInstallationManager->install(
+            $this->arrangeInstallPackage($jsonData['name']),
+            $jsonData['extra']['discovery']['extra-dependency']
+        );
 
         self::assertCount(0, $packages);
+        self::assertCount(0, $questionInstallationManager->getPackagesToInstall());
     }
 
     public function testInstallWithPackageNameVersionAndDevStability(): void
     {
-        $this->localRepositoryMock->shouldReceive('getPackages')
-            ->once()
-            ->andReturn([]);
+        $this->arrangeEmptyLocalRepositoryPackages();
 
         $rootPackageMock = $this->arrangeSimpleRootPackage();
         $this->arrangeDownloadAndWritePackagistData();
 
-        $this->ioMock->shouldReceive('isInteractive')
-            ->once()
-            ->andReturn(true);
+        $this->arrangeActiveIsInteractive();
 
         $this->arrangeInstallationManager();
 
@@ -392,9 +392,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
                 \Mockery::type(\Closure::class)
             )
             ->andReturn($packageName);
+
         $this->ioMock->shouldReceive('writeError')
             ->once()
             ->with('Using version <info>' . $routingPackageVersion . '</info> for <info>viserio/routing</info>');
+
         $this->ioMock->shouldReceive('writeError')
             ->once()
             ->with('Updating composer.json');
@@ -432,10 +434,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
 
         $composerPackage = $this->arrangeComposerPackage(['name' => 'viserio/routing', 'version' => $routingPackageVersion]);
 
-        $operation = $this->mock(InstallOperation::class);
-        $operation->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($composerPackage);
+        $operation = $this->arrangeInstallOperation($composerPackage);
 
         $installationManager = $this->mock(InstallationManager::class);
         $installationManager->shouldReceive('getOperations')
@@ -447,7 +446,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->andReturn($installationManager);
 
         $jsonData = $this->getFixturesComposerJsonWithoutVersionData();
-        $packages = $questionInstallationManager->install($jsonData['name'], $jsonData['extra']['discovery']['extra-dependency']);
+
+        $packages = $questionInstallationManager->install(
+            $this->arrangeInstallPackage($jsonData['name']),
+            $jsonData['extra']['discovery']['extra-dependency']
+        );
 
         $this->assertPackagesInstall($packages, $routingPackageVersion);
     }
@@ -511,7 +514,8 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $rootPackageMock->shouldReceive('setRequires')
             ->once()
             ->with([
-                'viserio/view'       => $require['viserio/view'],
+                'requires/test'      => $require['requires/test'],
+                'viserio/bus'        => $require['viserio/bus'],
                 'symfony/filesystem' => $require['symfony/filesystem'],
             ]);
 
@@ -523,7 +527,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->with($rootPackageMock);
 
-        $questionInstallationManager->setInstaller($this->arrangeInstaller(['requires/test' => 'dev-master', 'viserio/bus' => 'dev-master']));
+        $questionInstallationManager->setInstaller($this->arrangeInstaller(['viserio/view' => 'dev-master']));
 
         $operation1 = $this->mock(UninstallOperation::class);
         $operation1->shouldReceive('getPackage')
@@ -543,10 +547,51 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $packages = $questionInstallationManager->uninstall('requires/test', ['requires/test' => 'dev-master', 'viserio/bus' => 'dev-master']);
+        $packageOptions = [
+            'version'             => 'dev-master',
+            'url'                 => null,
+            'operation'           => 'install',
+            'type'                => 'library',
+            'extra-dependency-of' => null,
+            'require'             => [
+                'viserio/view' => 'dev-master',
+            ],
+            'extra-dependency' => [
+                'this is a question' => [
+                    'viserio/routing',
+                    'viserio/support',
+                    'symfony/filesystem',
+                ],
+            ],
+            'selected-question-packages' => [
+                'symfony/filesystem' => '^4.0.8',
+            ],
+        ];
+
+        $this->lockMock->shouldReceive('has')
+            ->once()
+            ->with('requires/test')
+            ->andReturn(true);
+        $this->lockMock->shouldReceive('has')
+            ->once()
+            ->with('viserio/bus')
+            ->andReturn(false);
+        $this->lockMock->shouldReceive('get')
+            ->once()
+            ->with('requires/test')
+            ->andReturn($packageOptions);
+
+        $package = new Package(
+            'requires/test',
+            __DIR__,
+            $packageOptions
+        );
+
+        $packages = $questionInstallationManager->uninstall($package, ['viserio/view' => 'dev-master']);
         $jsonData = $this->getComposerJsonWithRequiresData();
 
-        self::assertArrayHasKey('viserio/view', $jsonData['require']);
+        self::assertArrayHasKey('requires/test', $jsonData['require']);
+        self::assertArrayHasKey('viserio/bus', $jsonData['require']);
         self::assertCount(2, $packages);
     }
 
@@ -666,17 +711,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
      */
     private function getQuestionInstallationManager(string $composerFilePath): MockedQuestionInstallationManager
     {
-        $this->configMock->shouldReceive('get')
-            ->once()
-            ->with('vendor-dir')
-            ->andReturn(__DIR__);
-        $this->composerMock->shouldReceive('getConfig')
-            ->andReturn($this->configMock);
-
         $manager = new MockedQuestionInstallationManager(
             $this->composerMock,
             $this->ioMock,
-            $this->inputMock
+            $this->inputMock,
+            new OperationsResolver($this->lockMock, __DIR__)
         );
 
         $manager->setComposerFile($composerFilePath);
@@ -790,5 +829,53 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->andReturn($rootPackageMock);
 
         return $rootPackageMock;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return \Narrowspark\Discovery\Package
+     */
+    private function arrangeInstallPackage(string $name)
+    {
+        return new Package(
+            $name,
+            __DIR__,
+            [
+                'version'   => 'dev-master',
+                'url'       => null,
+                'operation' => 'install',
+                'type'      => 'library',
+            ]
+        );
+    }
+
+    /**
+     * @param \Composer\Package\PackageInterface|\Mockery\MockInterface $composerPackage
+     *
+     * @return \Composer\DependencyResolver\Operation\InstallOperation|\Mockery\MockInterface
+     */
+    private function arrangeInstallOperation($composerPackage): MockInterface
+    {
+        $operation = $this->mock(InstallOperation::class);
+        $operation->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($composerPackage);
+
+        return $operation;
+    }
+
+    private function arrangeEmptyLocalRepositoryPackages(): void
+    {
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->once()
+            ->andReturn([]);
+    }
+
+    private function arrangeActiveIsInteractive(): void
+    {
+        $this->ioMock->shouldReceive('isInteractive')
+            ->once()
+            ->andReturn(true);
     }
 }

@@ -67,6 +67,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $extraInstaller;
 
     /**
+     * A operations resolver instance.
+     *
+     * @var \Narrowspark\Discovery\OperationsResolver
+     */
+    private $operationsResolver;
+
+    /**
      * A input implementation.
      *
      * @var \Symfony\Component\Console\Input\InputInterface
@@ -162,10 +169,11 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->io       = $io;
         $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
 
-        $this->projectOptions = $this->initProjectOptions();
-        $this->configurator   = new Configurator($this->composer, $this->io, $this->projectOptions);
-        $this->lock           = new Lock(self::getDiscoveryLockFile());
-        $this->extraInstaller = new QuestionInstallationManager($this->composer, $this->io, $this->input);
+        $this->projectOptions     = $this->initProjectOptions();
+        $this->configurator       = new Configurator($this->composer, $this->io, $this->projectOptions);
+        $this->lock               = new Lock(self::getDiscoveryLockFile());
+        $this->operationsResolver = new OperationsResolver($this->lock, $this->composer->getConfig()->get('vendor-dir'));
+        $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
 
         $this->lock->add('_readme', [
             'This file locks the discovery information of your project to a known state',
@@ -268,12 +276,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $this->operations = $operations;
         }
 
-        $vendorPath         = $this->composer->getConfig()->get('vendor-dir');
-        $discoveryOptions   = $this->projectOptions['discovery'];
-        $allowInstall       = $discoveryOptions['allow-auto-install'] ?? false;
-
-        $operationsResolver = new OperationsResolver($this->operations, $vendorPath);
-        $packages           = $operationsResolver->resolve();
+        $discoveryOptions = $this->projectOptions['discovery'];
+        $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
+        $packages         = $this->operationsResolver->resolve($this->operations);
 
         $this->io->writeError(\sprintf(
             '<info>Discovery operations: %s package%s</info>',
@@ -496,8 +501,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
         if ($package->hasConfiguratorKey('extra-dependency')) {
             $operations = $this->extraInstaller->install($package, $package->getConfiguratorOptions('extra-dependency'));
-
-            $options = \array_merge($options, ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]);
+            $options    = \array_merge($options, ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]);
 
             foreach ($operations as $operation) {
                 $this->doInstall($operation, $packageConfigurator);

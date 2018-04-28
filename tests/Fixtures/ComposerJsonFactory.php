@@ -6,25 +6,25 @@ class ComposerJsonFactory
 {
     /**
      * @param string $name
-     * @param array $require
-     * @param array $devRequire
-     * @param array $extra
+     * @param array  $require
+     * @param array  $devRequire
+     * @param array  $extra
      *
      * @return string
      */
     public static function createSimpleComposerJson(string $name, array $require = [], array $devRequire = [], array $extra = []): string
     {
         $composerJsonContent = [
-            'name' => $name,
+            'name'    => $name,
             'authors' => [
                 [
-                    "name" => "Daniel Bannert",
-                    "email" => "d.bannert@anolilab.de"
-                ]
+                    'name'  => 'Daniel Bannert',
+                    'email' => 'd.bannert@anolilab.de',
+                ],
             ],
-            'require' => $require,
+            'require'     => $require,
             'dev-require' => $devRequire,
-            'extra' => $extra,
+            'extra'       => $extra,
         ];
 
         return \json_encode($composerJsonContent, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
@@ -32,9 +32,9 @@ class ComposerJsonFactory
 
     /**
      * @param string $name
-     * @param array $require
-     * @param array $devRequire
-     * @param array $discoveryExtra
+     * @param array  $require
+     * @param array  $devRequire
+     * @param array  $discoveryExtra
      *
      * @return string
      */

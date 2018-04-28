@@ -215,8 +215,8 @@ class QuestionInstallationManager
                 }
             }
 
-            $packageName    = $this->askDependencyQuestion($question, $options);
-            $constraint     = $options[$packageName] ?? $this->findVersion($packageName);
+            $packageName = $this->askDependencyQuestion($question, $options);
+            $constraint  = $options[$packageName] ?? $this->findVersion($packageName);
 
             $this->io->writeError(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $packageName));
 

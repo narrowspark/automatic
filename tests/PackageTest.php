@@ -51,7 +51,7 @@ class PackageTest extends TestCase
     public function testGetPackagePath(): void
     {
         self::assertSame(
-            str_replace('\\', '/', __DIR__ . '/test/'),
+            \str_replace('\\', '/', __DIR__ . '/test/'),
             $this->package->getPackagePath()
         );
     }

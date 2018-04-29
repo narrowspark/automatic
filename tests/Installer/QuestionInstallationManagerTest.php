@@ -45,6 +45,11 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     private $composerJsonWithoutVersionPath;
 
     /**
+     * @var string
+     */
+    private $composerJsonWithRequiresPath;
+
+    /**
      * @var \Composer\Repository\WritableRepositoryInterface|\Mockery\MockInterface
      */
     private $localRepositoryMock;
@@ -239,10 +244,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->with('Updating composer.json');
 
-        $this->configMock->shouldReceive('get')
-            ->once()
-            ->with('sort-packages')
-            ->andReturn(true);
+        $this->arrangeConfigSortPackages();
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -411,10 +413,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ->once()
             ->with('Updating composer.json');
 
-        $this->configMock->shouldReceive('get')
-            ->once()
-            ->with('sort-packages')
-            ->andReturn(true);
+        $this->arrangeConfigSortPackages();
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -465,23 +464,18 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $this->assertPackagesInstall($packages, $routingPackageVersion);
     }
 
-    public function testUninstall(): void
+    public function testInstallCanAddQuestionPackageToRootComposerJson(): void
     {
         $this->localRepositoryMock->shouldReceive('getPackages')
-            ->twice()
+            ->once()
             ->andReturn([
-                $this->arrangeComposerPackage(['name' => 'symfony/filesystem', 'version' => '^4.0']),
-                $this->arrangeComposerPackage(['name' => 'viserio/bus', 'version' => 'dev-master'])
+                $this->arrangeComposerPackage(['name' => 'symfony/filesystem', 'version' => '4.0']),
             ]);
 
+        $this->arrangeActiveIsInteractive();
+        $this->arrangeInstallationManager();
+
         $require = [
-            'requires/test' => new Link(
-                '__root__',
-                'requires/test',
-                (new VersionParser())->parseConstraints('dev-master'),
-                'requires',
-                'dev-master'
-            ),
             'viserio/bus' => new Link(
                 '__root__',
                 'viserio/bus',
@@ -496,12 +490,120 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
                 'requires',
                 'dev-master'
             ),
-            'symfony/filesystem' => new Link(
+        ];
+
+        $rootPackageMock = $this->setupRootPackage([], 'dev', $require, []);
+
+        $this->composerMock->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($rootPackageMock);
+
+        $questionInstallationManager = $this->getQuestionInstallationManager($this->composerJsonWithRequiresPath);
+
+        $package = new Package(
+            'requires/test',
+            __DIR__,
+            [
+                'version'             => 'dev-master',
+                'url'                 => null,
+                'operation'           => 'install',
+                'type'                => 'library',
+                'extra-dependency-of' => null,
+                'require'             => [
+                    'viserio/view' => 'dev-master',
+                ],
+                'extra-dependency' => [
+                    'this is a question' => [
+                        'viserio/routing',
+                        'viserio/support',
+                        'symfony/filesystem',
+                    ],
+                ],
+                'selected-question-packages' => [
+                    'symfony/filesystem' => '^4.0.8',
+                ],
+            ]
+        );
+
+        $this->ioMock->shouldReceive('write')
+            ->once()
+            ->with('Added package <info>symfony/filesystem</info> to composer.json with constraint <info>^4.0</info>; to upgrade, run <info>composer require symfony/filesystem:VERSION</info>');
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Updating composer.json');
+
+        $this->arrangeConfigSortPackages();
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Updating root package');
+
+        $rootPackageMock->shouldReceive('setRequires')
+            ->once()
+            ->with([
+                'viserio/bus'        => $require['viserio/bus'],
+                'viserio/view'       => $require['viserio/view'],
+                'symfony/filesystem' => new Link(
+                    '__root__',
+                    'symfony/filesystem',
+                    (new VersionParser())->parseConstraints('^4.0'),
+                    'requires',
+                    '^4.0'
+                ),
+            ]);
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Running an update to install dependent packages');
+
+        $this->composerMock->shouldReceive('setPackage')
+            ->once()
+            ->with($rootPackageMock);
+
+        $operation = $this->arrangeInstallOperation($this->arrangeComposerPackage(['name' => 'symfony/filesystem', 'version' => '^4.0']));
+
+        $installationManager = $this->mock(InstallationManager::class);
+        $installationManager->shouldReceive('getOperations')
+            ->once()
+            ->andReturn([$operation]);
+
+        $this->composerMock->shouldReceive('getInstallationManager')
+            ->once()
+            ->andReturn($installationManager);
+
+        $questionInstallationManager->setInstaller($this->arrangeInstaller(['symfony/filesystem']));
+
+        $packages = $questionInstallationManager->install(
+            $package,
+            $package->getConfiguratorOptions('extra-dependency')
+        );
+
+        self::assertCount(1, $packages);
+    }
+
+    public function testUninstall(): void
+    {
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->twice()
+            ->andReturn([
+                $this->arrangeComposerPackage(['name' => 'symfony/filesystem', 'version' => '^4.0']),
+            ]);
+
+        $require = [
+            'viserio/bus' => new Link(
                 '__root__',
-                'symfony/filesystem',
-                (new VersionParser())->parseConstraints('^4.0'),
+                'viserio/bus',
+                (new VersionParser())->parseConstraints('dev-master'),
                 'requires',
-                '^4.0.0'
+                'dev-master'
+            ),
+            'viserio/view' => new Link(
+                '__root__',
+                'viserio/view',
+                (new VersionParser())->parseConstraints('dev-master'),
+                'requires',
+                'dev-master'
             ),
         ];
 
@@ -526,9 +628,7 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $rootPackageMock->shouldReceive('setRequires')
             ->once()
             ->with([
-                'requires/test'      => $require['requires/test'],
-                'viserio/bus'        => $require['viserio/bus'],
-                'symfony/filesystem' => $require['symfony/filesystem'],
+                'viserio/bus' => $require['viserio/bus'],
             ]);
 
         $this->ioMock->shouldReceive('writeError')
@@ -602,7 +702,6 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         $packages = $questionInstallationManager->uninstall($package, ['viserio/view' => 'dev-master']);
         $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithRequiresPath);
 
-        self::assertArrayHasKey('requires/test', $jsonData['require']);
         self::assertArrayHasKey('viserio/bus', $jsonData['require']);
         self::assertCount(2, $packages);
     }
@@ -613,6 +712,14 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     protected function allowMockingNonExistentMethods($allow = false): void
     {
         parent::allowMockingNonExistentMethods(true);
+    }
+
+    protected function arrangeConfigSortPackages(): void
+    {
+        $this->configMock->shouldReceive('get')
+            ->once()
+            ->with('sort-packages')
+            ->andReturn(true);
     }
 
     /**
@@ -828,10 +935,8 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
             ComposerJsonFactory::createSimpleComposerJson(
                 'requires/test',
                 [
-                    'requires/test'      => 'dev-master',
-                    'viserio/bus'        => 'dev-master',
-                    'viserio/view'       => 'dev-master',
-                    'symfony/filesystem' => '^4.0',
+                    'viserio/bus'  => 'dev-master',
+                    'viserio/view' => 'dev-master',
                 ]
             )
         );

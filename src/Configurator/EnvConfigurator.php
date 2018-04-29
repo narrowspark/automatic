@@ -73,9 +73,11 @@ final class EnvConfigurator extends AbstractConfigurator
                 $count
             );
 
+            // @codeCoverageIgnoreStart
             if (empty($count)) {
                 continue;
             }
+            // @codeCoverageIgnoreEnd
 
             $this->write(sprintf('Removing environment variables from %s', $file));
 

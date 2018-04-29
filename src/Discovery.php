@@ -18,13 +18,18 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
+use FilesystemIterator;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
-use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
+use Narrowspark\Discovery\Installer\QuestionInstallationManager;
+use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
     use ExpandTargetDirTrait;
+    use GetGenericPropertyReaderTrait;
 
     /**
      * A composer instance.
@@ -55,18 +60,32 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $configurator;
 
     /**
+     * A extra dependency installation manager instance.
+     *
+     * @var \Narrowspark\Discovery\Installer\QuestionInstallationManager
+     */
+    private $extraInstaller;
+
+    /**
+     * A operations resolver instance.
+     *
+     * @var \Narrowspark\Discovery\OperationsResolver
+     */
+    private $operationsResolver;
+
+    /**
+     * A input implementation.
+     *
+     * @var \Symfony\Component\Console\Input\InputInterface
+     */
+    private $input;
+
+    /**
      * A array of project options.
      *
      * @var array
      */
     private $projectOptions;
-
-    /**
-     * The composer vendor path.
-     *
-     * @var string
-     */
-    private $vendorDir;
 
     /**
      * Check if composer.lock should be updated.
@@ -86,6 +105,21 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      * @var array
      */
     private $postInstallOutput = [''];
+
+    /**
+     * Return the composer json file and json manipulator.
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return array
+     */
+    public static function getComposerJsonFileAndManipulator(): array
+    {
+        $json        = new JsonFile(Factory::getComposerFile());
+        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+
+        return [$json, $manipulator];
+    }
 
     /**
      * Get the discovery.lock file path.
@@ -122,13 +156,24 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
+        // to avoid issues when Discovery is upgraded, we load all PHP classes now
+        // that way, we are sure to use all files from the same version.
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
+            // @var \SplFileInfo $file
+            if (\mb_substr($file->getFilename(), -4) === '.php') {
+                require_once $file;
+            }
+        }
+
         $this->composer = $composer;
         $this->io       = $io;
+        $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
 
-        $this->projectOptions = $this->initProjectOptions();
-        $this->vendorDir      = $composer->getConfig()->get('vendor-dir');
-        $this->configurator   = new Configurator($this->composer, $this->io, $this->projectOptions);
-        $this->lock           = new Lock(self::getDiscoveryLockFile());
+        $this->projectOptions     = $this->initProjectOptions();
+        $this->configurator       = new Configurator($this->composer, $this->io, $this->projectOptions);
+        $this->lock               = new Lock(self::getDiscoveryLockFile());
+        $this->operationsResolver = new OperationsResolver($this->lock, $this->composer->getConfig()->get('vendor-dir'));
+        $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
 
         $this->lock->add('_readme', [
             'This file locks the discovery information of your project to a known state',
@@ -181,8 +226,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function onPostCreateProject(Event $event): void
     {
-        $json        = new JsonFile(Factory::getComposerFile());
-        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+        [$json, $manipulator] = self::getComposerJsonFileAndManipulator();
+
         // new projects are most of the time proprietary
         $manipulator->addMainKey('license', 'proprietary');
 
@@ -232,8 +277,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $discoveryOptions = $this->projectOptions['discovery'];
-        $packages         = (new OperationsResolver($this->operations, $this->vendorDir))->resolve();
         $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
+        $packages         = $this->operationsResolver->resolve($this->operations);
 
         $this->io->writeError(\sprintf(
             '<info>Discovery operations: %s package%s</info>',
@@ -248,10 +293,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
                 return;
             }
 
-            if ($package->getOperation() === 'install' && $allowInstall === false) {
+            if ($allowInstall === false && $package->getOperation() === 'install') {
                 $answer = $this->io->askAndValidate(
-                    self::getPackageQuestion($package->getUrl()),
-                    [$this, 'validatePackageQuestionAnswerValue'],
+                    QuestionFactory::getPackageQuestion($package->getUrl()),
+                    [QuestionFactory::class, 'validatePackageQuestionAnswer'],
                     null,
                     'n'
                 );
@@ -301,41 +346,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $event->stopPropagation();
 
         // force reloading scripts as we might have added and removed during this run
-        $json = new JsonFile(Factory::getComposerFile());
-
+        $json         = new JsonFile(Factory::getComposerFile());
         $jsonContents = $json->read();
-
-        $executor = new ScriptExecutor($this->composer, $this->io, $this->projectOptions, new ProcessExecutor());
+        $executor     = new ScriptExecutor($this->composer, $this->io, $this->projectOptions, new ProcessExecutor());
 
         foreach ($jsonContents['scripts']['auto-scripts'] as $cmd => $type) {
             $executor->execute($type, $cmd);
         }
 
         $this->io->write($this->postInstallOutput);
-    }
-
-    /**
-     * Validate given input answer.
-     *
-     * @param null|string $value
-     *
-     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
-     *
-     * @return string
-     */
-    public function validatePackageQuestionAnswerValue(?string $value): string
-    {
-        if ($value === null) {
-            return 'n';
-        }
-
-        $value = \mb_strtolower($value[0]);
-
-        if (! \in_array($value, ['y', 'n', 'a', 'p'], true)) {
-            throw new InvalidArgumentException('Invalid choice');
-        }
-
-        return $value;
     }
 
     /**
@@ -364,14 +383,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        if (
-            ($operation instanceof InstallOperation && ! $this->lock->has($package->getName())) ||
-            $operation instanceof UninstallOperation
-        ) {
-            return true;
-        }
-
-        return false;
+        return ($operation instanceof InstallOperation && ! $this->lock->has($package->getName())) || $operation instanceof UninstallOperation;
     }
 
     /**
@@ -395,8 +407,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $composerJson
         );
 
-        $lockData                 = $locker->getLockData();
-        $lockData['content-hash'] = Locker::getContentHash($composerJson);
+        $lockData                  = $locker->getLockData();
+        $lockData['_content-hash'] = Locker::getContentHash($composerJson);
 
         $lockFile->write($lockData);
     }
@@ -404,33 +416,17 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     /**
      * Add extra option "allow-auto-install" to composer.json.
      *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     private function manipulateComposerJsonWithAllowAutoInstall(): void
     {
-        $json        = new JsonFile(Factory::getComposerFile());
-        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+        [$json, $manipulator] = self::getComposerJsonFileAndManipulator();
+
         $manipulator->addSubNode('extra', 'discovery.allow-auto-install', true);
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
-    }
-
-    /**
-     * Returns the questions for package install.
-     *
-     * @param string $url
-     *
-     * @return string
-     */
-    private static function getPackageQuestion(string $url): string
-    {
-        return \sprintf('    Review the package from %s.
-    Do you want to execute this package?
-    [<comment>y</comment>] Yes
-    [<comment>n</comment>] No
-    [<comment>a</comment>] Yes for all packages, only for the current installation session
-    [<comment>p</comment>] Yes permanently, never ask again for this project
-    (defaults to <comment>n</comment>): ', $url);
     }
 
     /**
@@ -465,6 +461,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
      *
      * @throws \Exception
+     *
+     * @return void
      */
     private function doActionOnPackageOperation(PackageContract $package): void
     {
@@ -475,35 +473,86 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $package->getConfiguratorOptions('custom-configurators')
         );
 
-        switch ($package->getOperation()) {
-            case 'install':
-                $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
-
-                $this->configurator->configure($package);
-                $packageConfigurator->configure($package);
-
-                if ($package->hasConfiguratorKey('post-install-output')) {
-                    foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
-                        $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
-                    }
-
-                    $this->postInstallOutput[] = '';
-                }
-
-                $this->lock->add($package->getName(), $package->getOptions());
-
-                break;
-            case 'update':
-                break;
-            case 'uninstall':
-                $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
-
-                $this->configurator->unconfigure($package);
-                $packageConfigurator->unconfigure($package);
-
-                $this->lock->remove($package->getName());
-
-                break;
+        if ($package->getOperation() === 'install') {
+            $this->doInstall($package, $packageConfigurator);
+        } elseif ($package->getOperation() === 'uninstall') {
+            $this->doUninstall($package, $packageConfigurator);
         }
+    }
+
+    /**
+     * All package configuration and installations happens here.
+     *
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param \Narrowspark\Discovery\PackageConfigurator     $packageConfigurator
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    private function doInstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
+    {
+        $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+
+        $this->configurator->configure($package);
+        $packageConfigurator->configure($package);
+
+        $options = $package->getOptions();
+
+        if ($package->hasConfiguratorKey('extra-dependency')) {
+            $operations = $this->extraInstaller->install($package, $package->getConfiguratorOptions('extra-dependency'));
+            $options    = \array_merge($options, ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]);
+
+            foreach ($operations as $operation) {
+                $this->doInstall($operation, $packageConfigurator);
+            }
+        }
+
+        if ($package->hasConfiguratorKey('post-install-output')) {
+            foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
+                $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
+            }
+
+            $this->postInstallOutput[] = '';
+        }
+
+        $this->lock->add($package->getName(), $options);
+    }
+
+    /**
+     * All package unconfiguration and uninstallations happens here.
+     *
+     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param \Narrowspark\Discovery\PackageConfigurator     $packageConfigurator
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    private function doUninstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
+    {
+        $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
+
+        $this->configurator->unconfigure($package);
+        $packageConfigurator->unconfigure($package);
+
+        if ($package->hasConfiguratorKey('extra-dependency')) {
+            $extraDependencies = [];
+
+            foreach ($this->lock->read() as $packageName => $data) {
+                if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
+                    $extraDependencies[$packageName] = $data['version'];
+                    $extraDependencies               = \array_merge($extraDependencies, $data['require']);
+                }
+            }
+
+            $operations = $this->extraInstaller->uninstall($package, $extraDependencies);
+
+            foreach ($operations as $operation) {
+                $this->doUninstall($operation, $packageConfigurator);
+            }
+        }
+
+        $this->lock->remove($package->getName());
     }
 }

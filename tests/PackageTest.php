@@ -32,6 +32,8 @@ class PackageTest extends TestCase
             'copy'      => [
                 'from' => 'to',
             ],
+            'extra-dependency-of' => 'foo/bar',
+            'used-by-discovery'   => true,
         ];
         $this->package = new Package('test', __DIR__, $this->config);
     }
@@ -49,7 +51,7 @@ class PackageTest extends TestCase
     public function testGetPackagePath(): void
     {
         self::assertSame(
-            \strtr(__DIR__ . '/test/', '\\', '/'),
+            \str_replace('\\', '/', __DIR__ . '/test/'),
             $this->package->getPackagePath()
         );
     }
@@ -83,5 +85,10 @@ class PackageTest extends TestCase
     public function testGetType(): void
     {
         self::assertSame($this->config['type'], $this->package->getType());
+    }
+
+    public function testIsExtraDependency(): void
+    {
+        self::assertTrue($this->package->isExtraDependency());
     }
 }

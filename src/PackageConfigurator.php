@@ -77,6 +77,8 @@ final class PackageConfigurator
     }
 
     /**
+     * Configure the application after the package settings.
+     *
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
      *
      * @return void
@@ -91,6 +93,8 @@ final class PackageConfigurator
     }
 
     /**
+     * Unconfigure the application after the package settings.
+     *
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
      *
      * @return void

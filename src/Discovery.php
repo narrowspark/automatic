@@ -168,12 +168,16 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->composer = $composer;
         $this->io       = $io;
         $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
+        $config         = $composer->getConfig();
 
         $this->projectOptions     = $this->initProjectOptions();
         $this->configurator       = new Configurator($this->composer, $this->io, $this->projectOptions);
         $this->lock               = new Lock(self::getDiscoveryLockFile());
-        $this->operationsResolver = new OperationsResolver($this->lock, $this->composer->getConfig()->get('vendor-dir'));
+        $this->operationsResolver = new OperationsResolver($this->lock, $config->get('vendor-dir'));
         $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
+
+        $rfs       = Factory::createRemoteFilesystem($this->io, $config);
+        $this->rfs = new ParallelDownloader($this->io, $config, $rfs->getOptions(), $rfs->isTlsDisabled());
 
         $this->lock->add('_readme', [
             'This file locks the discovery information of your project to a known state',

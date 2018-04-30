@@ -21,6 +21,7 @@ use Composer\Util\ProcessExecutor;
 use FilesystemIterator;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
+use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Installer\QuestionInstallationManager;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use RecursiveDirectoryIterator;
@@ -165,14 +166,16 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        $this->composer = $composer;
-        $this->io       = $io;
-        $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
+        $this->composer       = $composer;
+        $this->io             = $io;
+        $this->input          = $this->getGenericPropertyReader()($this->io, 'input');
+        $this->projectOptions = $this->initProjectOptions();
+        $this->lock           = new Lock(self::getDiscoveryLockFile());
 
-        $this->projectOptions     = $this->initProjectOptions();
+        $this->composer->getInstallationManager()->addInstaller(new ConfiguratorInstaller($this->io, $this->composer, $this->lock));
+
         $this->configurator       = new Configurator($this->composer, $this->io, $this->projectOptions);
-        $this->lock               = new Lock(self::getDiscoveryLockFile());
-        $this->operationsResolver = new OperationsResolver($this->lock, $this->composer->getConfig()->get('vendor-dir'));
+        $this->operationsResolver = new OperationsResolver($this->lock, \rtrim($this->composer->getConfig()->get('vendor-dir'), '/'));
         $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
 
         $this->lock->add('_readme', [
@@ -494,6 +497,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
+        foreach ((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY) as $class) {
+            $this->configurator->add($class::getName(), $class);
+        }
+
         $this->configurator->configure($package);
         $packageConfigurator->configure($package);
 
@@ -533,6 +540,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
 
+        foreach ((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY) as $class) {
+            $this->configurator->add($class::getName(), $class);
+        }
+
         $this->configurator->unconfigure($package);
         $packageConfigurator->unconfigure($package);
 
@@ -542,13 +553,14 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             foreach ($this->lock->read() as $packageName => $data) {
                 if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
                     $extraDependencies[$packageName] = $data['version'];
-                    $extraDependencies               = \array_merge($extraDependencies, $data['require']);
+
+                    foreach ((array) $data['require'] as $name => $version) {
+                        $extraDependencies[$name] = $version;
+                    }
                 }
             }
 
-            $operations = $this->extraInstaller->uninstall($package, $extraDependencies);
-
-            foreach ($operations as $operation) {
+            foreach ($this->extraInstaller->uninstall($package, $extraDependencies) as $operation) {
                 $this->doUninstall($operation, $packageConfigurator);
             }
         }

@@ -29,7 +29,7 @@ class ClassFinderTest extends TestCase
         parent::setUp();
 
         $this->dir       = __DIR__ . '/Fixtures/Finder';
-        $this->namespace = 'Narrowspark\Discovery\Test\Fixtures\Finder';
+        $this->namespace = 'Narrowspark\\Discovery\\Test\\Fixtures\Finder\\';
     }
 
     public function testItFindsAllClassesInDirectoryWithGivenNamespace(): void

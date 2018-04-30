@@ -10,6 +10,14 @@ final class EnvConfigurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
+    public static function getName(): string
+    {
+        return 'env';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function configure(PackageContract $package): void
     {
         $this->write('Added environment variable defaults');

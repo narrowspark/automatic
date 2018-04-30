@@ -29,6 +29,14 @@ final class ServiceProviderConfigurator extends AbstractClassConfigurator
     /**
      * {@inheritdoc}
      */
+    public static function getName(): string
+    {
+        return 'providers';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function generateFileContent(PackageContract $package, string $filePath, array $classes, string $type): string
     {
         if (\file_exists($filePath)) {

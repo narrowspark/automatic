@@ -18,12 +18,12 @@ final class ClassFinder
     {
         $classes = [];
 
-        $finder = Finder::create()->in($directory)->name('*.php');
+        $finder = Finder::create()->files()->in($directory)->name('*.php');
 
         foreach ($finder as $file) {
             $class = self::findClass($file->getRealPath());
 
-            if (\class_exists($class) && \mb_strpos($class, $namespace) !== false) {
+            if (\mb_strpos($class, $namespace) !== false) {
                 $classes[] = $class;
             }
         }

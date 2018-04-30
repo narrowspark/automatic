@@ -36,6 +36,7 @@
     },
     "config": {
         "optimize-autoloader": true,
+        "sort-packages": true,
         "preferred-install": "dist"
     },
     "extra": {

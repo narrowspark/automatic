@@ -82,6 +82,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $input;
 
     /**
+     * The composer vendor path.
+     *
+     * @var string
+     */
+    private $vendorPath;
+
+    /**
      * A array of project options.
      *
      * @var array
@@ -172,13 +179,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->projectOptions = $this->initProjectOptions();
         $this->lock           = new Lock(self::getDiscoveryLockFile());
 
+        $this->vendorPath = \rtrim($this->composer->getConfig()->get('vendor-dir'), '/');
+
         $this->composer->getInstallationManager()->addInstaller(new ConfiguratorInstaller($this->io, $this->composer, $this->lock));
 
         $this->configurator       = new Configurator($this->composer, $this->io, $this->projectOptions);
-        $this->operationsResolver = new OperationsResolver($this->lock, \rtrim($this->composer->getConfig()->get('vendor-dir'), '/'));
+        $this->operationsResolver = new OperationsResolver($this->lock, $this->vendorPath);
         $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
 
-        $this->lock->add('_readme', [
+        $this->lock->add('@readme', [
             'This file locks the discovery information of your project to a known state',
             'This file is @generated automatically',
         ]);
@@ -288,6 +297,12 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             \count($packages),
             \count($packages) > 1 ? 's' : ''
         ));
+
+        foreach ((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY) as $path => $class) {
+            require_once $this->vendorPath . $path;
+
+            $this->configurator->add($class::getName(), $class);
+        }
 
         foreach ($packages as $package) {
             if (isset($discoveryOptions['dont-discover']) && \array_key_exists($package->getName(), $discoveryOptions['dont-discover'])) {
@@ -497,10 +512,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
-        foreach ((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY) as $class) {
-            $this->configurator->add($class::getName(), $class);
-        }
-
         $this->configurator->configure($package);
         $packageConfigurator->configure($package);
 
@@ -539,10 +550,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private function doUninstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
         $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
-
-        foreach ((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY) as $class) {
-            $this->configurator->add($class::getName(), $class);
-        }
 
         $this->configurator->unconfigure($package);
         $packageConfigurator->unconfigure($package);

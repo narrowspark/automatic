@@ -1,31 +1,40 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery;
+namespace Narrowspark\Discovery\Installer;
 
+use Narrowspark\Discovery\Common\Contract\Configurator as ConfiguratorContract;
 use Symfony\Component\Finder\Finder;
 
-final class ClassFinder
+final class ConfiguratorClassFinder
 {
     /**
      * Find all the class and interface names in a given directory.
      *
      * @param string $directory
-     * @param string $namespace
      *
      * @return array
      */
-    public static function find(string $directory, string $namespace): array
+    public static function find(string $directory): array
     {
         $classes = [];
+        $finder  = Finder::create()->files()->in($directory)->name('*.php');
 
-        $finder = Finder::create()->files()->in($directory)->name('*.php');
-
+        /** @var \SplFileInfo $file */
         foreach ($finder as $file) {
-            $class = self::findClass($file->getRealPath());
+            $realPath = $file->getRealPath();
+            $class    = self::findClass($realPath);
 
-            if (\mb_strpos($class, $namespace) !== false) {
-                $classes[] = $class;
+            if ($class === null) {
+                continue;
             }
+
+            require $realPath;
+
+            if (! \in_array(ConfiguratorContract::class, \class_implements($class), true)) {
+                continue;
+            }
+
+            $classes[$realPath] = $class;
         }
 
         \asort($classes);
@@ -42,8 +51,8 @@ final class ClassFinder
      */
     private static function findClass(string $path): ?string
     {
-        $namespace      = null;
-        $tokens         = \token_get_all(\file_get_contents($path));
+        $namespace = null;
+        $tokens    = \token_get_all(\file_get_contents($path));
 
         foreach ($tokens as $key => $token) {
             if (self::tokenIsNamespace($token)) {

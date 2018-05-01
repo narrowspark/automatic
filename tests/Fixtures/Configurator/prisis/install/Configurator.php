@@ -1,30 +1,28 @@
 <?php
-declare(strict_types=1);
-namespace Narrowspark\Discovery\Test\Fixtures\Finder;
+declare(strict_types=1); namespace Test;
 
 use Narrowspark\Discovery\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 
-class DummyClassTwo implements ConfiguratorContract
+class Configurator implements ConfiguratorContract
 {
-    /**
-     * {@inheritdoc}
-     */
+    /**     * {@inheritdoc}     */
+
     public static function getName(): string
     {
-        return 'two';
+        return 'test';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+
+    /**     * {@inheritdoc}     */
+
     public function configure(PackageContract $package): void
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+
+    /**     * {@inheritdoc}     */
+
     public function unconfigure(PackageContract $package): void
     {
     }

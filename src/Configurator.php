@@ -84,7 +84,7 @@ final class Configurator
      */
     public function add(string $name, string $configurator): void
     {
-        if (isset(self::$configurators[$name])) {
+        if ($this->has($name)) {
             throw new InvalidArgumentException(\sprintf('Configurator with the name "%s" already exists.', $name));
         }
 
@@ -93,6 +93,18 @@ final class Configurator
         }
 
         self::$configurators[$name] = $configurator;
+    }
+
+    /**
+     * Check if configurator is registered.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function has(string $name): bool
+    {
+        return isset(self::$configurators[$name]);
     }
 
     /**

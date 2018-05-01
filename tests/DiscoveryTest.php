@@ -4,6 +4,8 @@ namespace Narrowspark\Discovery\Test;
 
 use Composer\Composer;
 use Composer\Config;
+use Composer\Downloader\DownloadManager;
+use Composer\Installer\InstallationManager;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -14,6 +16,7 @@ use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\ScriptEvents;
 use Narrowspark\Discovery\Configurator;
 use Narrowspark\Discovery\Discovery;
+use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Lock;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -60,8 +63,16 @@ class DiscoveryTest extends MockeryTestCase
         $ioMock       = $this->mock(IOInterface::class);
 
         $configMock->shouldReceive('get')
-            ->once()
+            ->twice()
             ->with('vendor-dir')
+            ->andReturn(__DIR__);
+        $configMock->shouldReceive('get')
+            ->once()
+            ->with('bin-dir')
+            ->andReturn(__DIR__);
+        $configMock->shouldReceive('get')
+            ->once()
+            ->with('bin-compat')
             ->andReturn(__DIR__);
         $composerMock->shouldReceive('getConfig')
             ->andReturn($configMock);
@@ -91,6 +102,19 @@ class DiscoveryTest extends MockeryTestCase
         $composerMock->shouldReceive('getRepositoryManager')
             ->andReturn($repositoryMock);
 
+        $installationManager = $this->mock(InstallationManager::class);
+        $installationManager->shouldReceive('addInstaller')
+            ->once()
+            ->with(\Mockery::type(ConfiguratorInstaller::class));
+
+        $composerMock->shouldReceive('getInstallationManager')
+            ->once()
+            ->andReturn($installationManager);
+
+        $composerMock->shouldReceive('getDownloadManager')
+            ->once()
+            ->andReturn($this->mock(DownloadManager::class));
+
         $input = &$this->getGenericPropertyReader()($ioMock, 'input');
         $input = $this->mock(InputInterface::class);
 
@@ -104,7 +128,7 @@ class DiscoveryTest extends MockeryTestCase
                 'This file locks the discovery information of your project to a known state',
                 'This file is @generated automatically',
             ],
-            $discovery->getLock()->get('_readme')
+            $discovery->getLock()->get('@readme')
         );
     }
 }

@@ -7,7 +7,6 @@ use Composer\Installer\LibraryInstaller;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
-use Narrowspark\Discovery\ClassFinder;
 use Narrowspark\Discovery\Lock;
 use UnexpectedValueException;
 
@@ -21,7 +20,7 @@ class ConfiguratorInstaller extends LibraryInstaller
     /**
      * @var string
      */
-    public const LOCK_KEY = '_configurators';
+    public const LOCK_KEY = 'configurators';
 
     /**
      * A lock instance.
@@ -56,7 +55,7 @@ class ConfiguratorInstaller extends LibraryInstaller
         $autoload = $package->getAutoload();
 
         if (\count($autoload['psr-4']) === 0) {
-            throw new UnexpectedValueException('Error while installing ' . $package->getPrettyName() . ', discovery-configurator packages should have a namespace defined in their psr4 key to be usable.');
+            throw new UnexpectedValueException('Error while installing "' . $package->getPrettyName() . '", discovery-configurator packages should have a namespace defined in their psr4 key to be usable.');
         }
 
         parent::install($repo, $package);
@@ -67,7 +66,7 @@ class ConfiguratorInstaller extends LibraryInstaller
             // Rollback installation
             $this->io->writeError('Configurator installation failed, rolling back');
 
-            parent::uninstall($repo, $package);
+            $this->uninstall($repo, $package);
         }
     }
 
@@ -108,19 +107,17 @@ class ConfiguratorInstaller extends LibraryInstaller
         $configurators = [];
         $basePath      = \rtrim($this->vendorDir, '/') . '/' . $name;
 
-        foreach ((array) $psr4Namespaces as $namespace => $path) {
-            $fullPath = \rtrim($basePath . '/' . $path, '/');
+        foreach ((array) $psr4Namespaces as $psr4FolderPath) {
+            $fullPath = \rtrim($basePath . '/' . $psr4FolderPath, '/');
 
-            foreach (ClassFinder::find($fullPath, $namespace) as $class) {
-                if (! \method_exists($class, 'getName')) {
-                    continue;
-                }
-
-                $configurators[$class::getName()] = $class;
+            foreach (ConfiguratorClassFinder::find($fullPath) as $path => $class) {
+                $configurators[\str_replace($this->vendorDir, '', $path)] = $class;
             }
         }
 
-        $configurators = \array_values($configurators);
+        if (\count($configurators) === 0) {
+            return [];
+        }
 
         if ($this->lock->has(self::LOCK_KEY)) {
             $configurators = \array_merge($this->lock->get(self::LOCK_KEY), $configurators);

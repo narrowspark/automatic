@@ -37,8 +37,8 @@ class OperationsResolver
      */
     public function __construct(Lock $lock, string $vendorDir)
     {
-        $this->lock        = $lock;
-        $this->vendorPath  = $vendorDir;
+        $this->lock       = $lock;
+        $this->vendorPath = $vendorDir;
     }
 
     /**

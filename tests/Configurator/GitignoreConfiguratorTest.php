@@ -4,8 +4,8 @@ namespace Narrowspark\Discovery\Test\Configurator;
 
 use Composer\Composer;
 use Composer\IO\NullIO;
+use Narrowspark\Discovery\Common\Package;
 use Narrowspark\Discovery\Configurator\GitIgnoreConfigurator;
-use Narrowspark\Discovery\Package;
 use PHPUnit\Framework\TestCase;
 
 class GitignoreConfiguratorTest extends TestCase

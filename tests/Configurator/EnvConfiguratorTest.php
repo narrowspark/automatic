@@ -4,8 +4,8 @@ namespace Narrowspark\Discovery\Test\Configurator;
 
 use Composer\Composer;
 use Composer\IO\NullIO;
+use Narrowspark\Discovery\Common\Package;
 use Narrowspark\Discovery\Configurator\EnvConfigurator;
-use Narrowspark\Discovery\Package;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 class EnvConfiguratorTest extends MockeryTestCase

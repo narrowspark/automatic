@@ -5,7 +5,7 @@ namespace Narrowspark\Discovery\Test;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
-use Narrowspark\Discovery\Package;
+use Narrowspark\Discovery\Common\Package;
 use Narrowspark\Discovery\PackageConfigurator;
 use Narrowspark\Discovery\Test\Fixtures\MockConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;

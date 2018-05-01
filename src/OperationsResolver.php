@@ -5,6 +5,7 @@ namespace Narrowspark\Discovery;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Package\PackageInterface;
+use Narrowspark\Discovery\Common\Package;
 
 class OperationsResolver
 {
@@ -58,7 +59,7 @@ class OperationsResolver
      *
      * @param \Composer\DependencyResolver\Operation\OperationInterface[] $operations
      *
-     * @return \Narrowspark\Discovery\Package[]
+     * @return \Narrowspark\Discovery\Common\Contract\Package[]
      */
     public function resolve(array $operations): array
     {

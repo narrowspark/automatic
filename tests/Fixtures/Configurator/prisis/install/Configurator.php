@@ -6,23 +6,24 @@ use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 
 class Configurator implements ConfiguratorContract
 {
-    /**     * {@inheritdoc}     */
-
+    /**
+     * {@inheritdoc}
+     */
     public static function getName(): string
     {
         return 'test';
     }
 
-
-    /**     * {@inheritdoc}     */
-
+    /**
+     * {@inheritdoc}
+     */
     public function configure(PackageContract $package): void
     {
     }
 
-
-    /**     * {@inheritdoc}     */
-
+    /**
+     * {@inheritdoc}
+     */
     public function unconfigure(PackageContract $package): void
     {
     }

@@ -11,8 +11,6 @@ use Narrowspark\Discovery\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Discovery\Configurator\CopyFromPackageConfigurator;
 use Narrowspark\Discovery\Configurator\EnvConfigurator;
 use Narrowspark\Discovery\Configurator\GitIgnoreConfigurator;
-use Narrowspark\Discovery\Configurator\ProxyConfigurator;
-use Narrowspark\Discovery\Configurator\ServiceProviderConfigurator;
 
 final class Configurator
 {
@@ -26,8 +24,6 @@ final class Configurator
         'copy'             => CopyFromPackageConfigurator::class,
         'env'              => EnvConfigurator::class,
         'gitignore'        => GitIgnoreConfigurator::class,
-        'providers'        => ServiceProviderConfigurator::class,
-        'proxies'          => ProxyConfigurator::class,
     ];
 
     /**

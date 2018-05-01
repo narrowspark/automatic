@@ -20,7 +20,7 @@ class OperationsResolver
      *
      * @var string
      */
-    private $vendorDir;
+    private $vendorPath;
 
     /**
      * Name of the parent package.
@@ -38,7 +38,7 @@ class OperationsResolver
     public function __construct(Lock $lock, string $vendorDir)
     {
         $this->lock       = $lock;
-        $this->vendorDir  = $vendorDir;
+        $this->vendorPath = $vendorDir;
     }
 
     /**
@@ -91,7 +91,7 @@ class OperationsResolver
                 $packageConfiguration = $this->buildPackageConfiguration($package, $o);
             }
 
-            $packages[$name] = new Package($name, $this->vendorDir, $packageConfiguration);
+            $packages[$name] = new Package($name, $this->vendorPath, $packageConfiguration);
         }
 
         return $packages;

@@ -35,6 +35,14 @@ class ProxyConfigurator extends AbstractClassConfigurator
     /**
      * {@inheritdoc}
      */
+    public static function getName(): string
+    {
+        return 'proxies';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function generateFileContent(PackageContract $package, string $filePath, array $classes, string $env): string
     {
         if (\file_exists($filePath)) {

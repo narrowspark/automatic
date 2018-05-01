@@ -10,6 +10,14 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
+    public static function getName(): string
+    {
+        return 'gitignore';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function configure(PackageContract $package): void
     {
         $this->write('Added entries to .gitignore.');

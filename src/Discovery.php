@@ -21,6 +21,7 @@ use Composer\Util\ProcessExecutor;
 use FilesystemIterator;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
+use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Installer\QuestionInstallationManager;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use RecursiveDirectoryIterator;
@@ -79,6 +80,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      * @var \Symfony\Component\Console\Input\InputInterface
      */
     private $input;
+
+    /**
+     * The composer vendor path.
+     *
+     * @var string
+     */
+    private $vendorPath;
 
     /**
      * A array of project options.
@@ -165,17 +173,21 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        $this->composer = $composer;
-        $this->io       = $io;
-        $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
+        $this->composer       = $composer;
+        $this->io             = $io;
+        $this->input          = $this->getGenericPropertyReader()($this->io, 'input');
+        $this->projectOptions = $this->initProjectOptions();
+        $this->lock           = new Lock(self::getDiscoveryLockFile());
 
-        $this->projectOptions     = $this->initProjectOptions();
+        $this->vendorPath = \rtrim($this->composer->getConfig()->get('vendor-dir'), '/');
+
+        $this->composer->getInstallationManager()->addInstaller(new ConfiguratorInstaller($this->io, $this->composer, $this->lock));
+
         $this->configurator       = new Configurator($this->composer, $this->io, $this->projectOptions);
-        $this->lock               = new Lock(self::getDiscoveryLockFile());
-        $this->operationsResolver = new OperationsResolver($this->lock, $this->composer->getConfig()->get('vendor-dir'));
+        $this->operationsResolver = new OperationsResolver($this->lock, $this->vendorPath);
         $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
 
-        $this->lock->add('_readme', [
+        $this->lock->add('@readme', [
             'This file locks the discovery information of your project to a known state',
             'This file is @generated automatically',
         ]);
@@ -285,6 +297,12 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             \count($packages),
             \count($packages) > 1 ? 's' : ''
         ));
+
+        foreach ((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY) as $path => $class) {
+            require_once $this->vendorPath . $path;
+
+            $this->configurator->add($class::getName(), $class);
+        }
 
         foreach ($packages as $package) {
             if (isset($discoveryOptions['dont-discover']) && \array_key_exists($package->getName(), $discoveryOptions['dont-discover'])) {
@@ -542,13 +560,14 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             foreach ($this->lock->read() as $packageName => $data) {
                 if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
                     $extraDependencies[$packageName] = $data['version'];
-                    $extraDependencies               = \array_merge($extraDependencies, $data['require']);
+
+                    foreach ((array) $data['require'] as $name => $version) {
+                        $extraDependencies[$name] = $version;
+                    }
                 }
             }
 
-            $operations = $this->extraInstaller->uninstall($package, $extraDependencies);
-
-            foreach ($operations as $operation) {
+            foreach ($this->extraInstaller->uninstall($package, $extraDependencies) as $operation) {
                 $this->doUninstall($operation, $packageConfigurator);
             }
         }

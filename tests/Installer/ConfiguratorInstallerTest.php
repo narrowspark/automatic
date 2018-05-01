@@ -91,11 +91,6 @@ class ConfiguratorInstallerTest extends MockeryTestCase
         $this->packageMock    = $this->mock(PackageInterface::class);
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-    }
-
     public function testSupports(): void
     {
         self::assertTrue($this->configuratorInstaller->supports('discovery-configurator'));

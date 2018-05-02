@@ -58,10 +58,11 @@ class OperationsResolver
      * Resolve packages from composer operations;.
      *
      * @param \Composer\DependencyResolver\Operation\OperationInterface[] $operations
+     * @param bool                                                        $onlyDiscovery
      *
      * @return \Narrowspark\Discovery\Common\Contract\Package[]
      */
-    public function resolve(array $operations): array
+    public function resolve(array $operations, bool $onlyDiscovery = true): array
     {
         $packages = [];
 
@@ -79,7 +80,7 @@ class OperationsResolver
                 $package = $operation->getPackage();
             }
 
-            if (! isset($package->getExtra()['discovery'])) {
+            if ($onlyDiscovery === true && ! isset($package->getExtra()['discovery'])) {
                 continue;
             }
 

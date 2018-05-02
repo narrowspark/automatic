@@ -4,5 +4,13 @@ namespace Narrowspark\Discovery;
 
 class PolyfillManager
 {
+    public function __construct()
+    {
 
+    }
+
+    public function replace(): void
+    {
+
+    }
 }

@@ -1,10 +1,12 @@
 dist: trusty
+sudo: required
 language: php
 
 env:
   global:
     - TEST="./vendor/bin/phpunit --verbose"
     - COMPOSER_UP="composer update --no-interaction --prefer-dist --no-progress --profile --no-suggest"
+    - secure: "I9360o6PG5EgHmUsm872qfXWCrdoCQDYb2t/WcgTnD4t2seC40BgQaVFQ6aRt/0q7ajKn7HhYsthLuXC08FpYX10lFwiwtsEdfTDgOaHlMgbqx1LmnXOd7W6UO9JWhLEble2Hwdh7D8S5DCU4Q9+eNJbNFUx5f3zEsLeKQQ2iX8Yn5WIXoeE5FvJrv2VRkiHEH1CHmvjSRnLt65y21nm7ZWzEQcJZ3VbEBYm5Vl5q2Ngc0W2/WSvolJke0U9zYD1iw/C6vM1vb05BlGwpH9nuTnvbjz/Cs2XGAJ/I3AwAsxCexUaYLrKksMvCgaX9jJ+230uaXeqzLgid/pfRkbjAT7dAvpzmTpzZtHBN6js0HYEPJVSy+ynkZydLf+Lx7wsy8Xuu1pySd9/gKYdaM+emSxB32mwm9T63KF/z5vW4c0GDeiL02uN6uOM7RZQfwF7wlraV/tbBHN/GYfON/EmZTSqkTekA+fsAFMXuJyjOuj/HmrZfN7aICd9kTcNayrPqz9BTr7kXUAQwmrWduT/U16wqZu68d+oB4AsgBktZQMHg/x5cq7zWjirYGfbBih1HsPFDGot6LoZNzFderCK8eg2VMIxdcTsZ8nzdBnaiEOgPzie5CdDMTh8W070jN6OZ4xd/yXYHsfGgVpy9Q7hYVRXJZnFaCO/yAQOuQKW+P4="
 
 cache:
   directories:
@@ -13,18 +15,28 @@ cache:
 
 before_install:
   - stty cols 120
-  - chmod a+x ./build/travis/configure_php.sh
+  - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
+  - |
+    chmod a+x ./build/travis/configure_php.sh
+    chmod a+x ./build/travis/script.sh
   - ./build/travis/configure_php.sh
 
 install:
   - composer global require hirak/prestissimo
   - $COMPOSER_UP
 
+before_script:
+  - wget https://cdn.rawgit.com/prisis/43a2a7b137998ac92e24ee4daaa8e296/raw/681b89b8e156750de46558ead661509c468fb9a2/try_catch.sh -P ./build/travis
+  - wget https://cdn.rawgit.com/prisis/e050c4da44c6ee7fa1519912eac19563/raw/7a72a7df7718af30e703c1ef0379cdf7ff24ce10/tfold.sh -P ./build/travis
+
+script:
+  - ./build/travis/script.sh
+
 jobs:
   include:
     - stage: Test
       php: 7.2
-      env: REMOVE_XDEBUG=true
+      env: PHPUNIT=true REMOVE_XDEBUG=true
 
     - stage: Coding standard
       php: 7.2
@@ -44,6 +56,26 @@ jobs:
         - bash -xc "$TEST -c ./phpunit.xml.dist --coverage-clover=coverage.xml"
       after_success:
         - bash <(curl -s https://codecov.io/bash)
+
+    - stage: Subsplit
+      if: (branch = master)
+      php: 7.2
+      before_install:
+        - echo "skip"
+      install:
+        - echo "skip"
+      before_script:
+        - stty cols 120
+        - |
+          chmod a+x ./build/travis/split.sh
+          chmod a+x ./build/travis/set_up_ssh.sh
+        - wget https://cdn.rawgit.com/prisis/43a2a7b137998ac92e24ee4daaa8e296/raw/681b89b8e156750de46558ead661509c468fb9a2/try_catch.sh -P ./build/travis
+        - wget https://cdn.rawgit.com/prisis/e050c4da44c6ee7fa1519912eac19563/raw/7a72a7df7718af30e703c1ef0379cdf7ff24ce10/tfold.sh -P ./build/travis
+        - ./build/travis/set_up_ssh.sh
+        - wget https://github.com/dflydev/git-subsplit/archive/master.tar.gz && tar -zxvf master.tar.gz && rm -rf master.tar.gz
+        - cd ./git-subsplit-master && sudo ./install.sh && cd ..
+      script:
+        - ./build/travis/split.sh
 
 notifications:
   email:

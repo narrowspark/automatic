@@ -1,14 +1,13 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Installer;
+namespace Narrowspark\Discovery;
 
-use Narrowspark\Discovery\Common\Contract\Configurator as ConfiguratorContract;
 use Symfony\Component\Finder\Finder;
 
-final class ConfiguratorClassFinder
+final class ClassFinder
 {
     /**
-     * Find all the class and interface names in a given directory.
+     * Find all the class, traits and interface names in a given directory.
      *
      * @param string $directory
      *
@@ -22,17 +21,13 @@ final class ConfiguratorClassFinder
         /** @var \SplFileInfo $file */
         foreach ($finder as $file) {
             $realPath = $file->getRealPath();
-            $class    = self::findClass($realPath);
+            $class    = self::findClassOrTraitOrInterface($realPath);
 
             if ($class === null) {
                 continue;
             }
 
             require $realPath;
-
-            if (! \in_array(ConfiguratorContract::class, \class_implements($class), true)) {
-                continue;
-            }
 
             $classes[$realPath] = $class;
         }
@@ -43,13 +38,13 @@ final class ConfiguratorClassFinder
     }
 
     /**
-     * Extract the class name from the file at the given path.
+     * Extract the class name or trait name from the file at the given path.
      *
      * @param string $path
      *
      * @return null|string
      */
-    private static function findClass(string $path): ?string
+    private static function findClassOrTraitOrInterface(string $path): ?string
     {
         $namespace = null;
         $tokens    = \token_get_all(\file_get_contents($path));
@@ -57,7 +52,7 @@ final class ConfiguratorClassFinder
         foreach ($tokens as $key => $token) {
             if (self::tokenIsNamespace($token)) {
                 $namespace = self::getNamespace($key + 2, $tokens);
-            } elseif (self::tokenIsClassOrInterface($token)) {
+            } elseif (self::tokenIsClassOrTraitOrInterface($token)) {
                 return \ltrim($namespace . '\\' . self::getClass($key + 2, $tokens), '\\');
             }
         }
@@ -156,9 +151,9 @@ final class ConfiguratorClassFinder
      *
      * @return bool
      */
-    private static function tokenIsClassOrInterface($token): bool
+    private static function tokenIsClassOrTraitOrInterface($token): bool
     {
-        return \is_array($token) && ($token[0] === T_CLASS || $token[0] === T_INTERFACE);
+        return \is_array($token) && ($token[0] === T_CLASS || $token[0] === T_INTERFACE || $token[0] === T_TRAIT);
     }
 
     /**

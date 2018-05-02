@@ -7,6 +7,7 @@ use Composer\Installer\LibraryInstaller;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
+use Narrowspark\Discovery\ClassFinder;
 use Narrowspark\Discovery\Lock;
 use UnexpectedValueException;
 
@@ -110,7 +111,7 @@ class ConfiguratorInstaller extends LibraryInstaller
         foreach ((array) $psr4Namespaces as $psr4FolderPath) {
             $fullPath = \rtrim($basePath . '/' . $psr4FolderPath, '/');
 
-            foreach (ConfiguratorClassFinder::find($fullPath) as $path => $class) {
+            foreach (ClassFinder::find($fullPath) as $path => $class) {
                 $configurators[\str_replace($this->vendorDir, '', $path)] = $class;
             }
         }

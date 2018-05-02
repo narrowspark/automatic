@@ -146,41 +146,6 @@ class ConfiguratorInstallerTest extends MockeryTestCase
         $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
     }
 
-    public function testInstallWithNoFoundConfigurator(): void
-    {
-        $name = 'prisis/no';
-
-        $this->packageMock->shouldReceive('getAutoload')
-            ->once()
-            ->andReturn(['psr-4' => ['Test\\' => '']]);
-        $this->packageMock->shouldReceive('getPrettyName')
-            ->andReturn($name);
-
-        $this->packageMock->shouldReceive('getTargetDir')
-            ->andReturn(null);
-        $this->packageMock->shouldReceive('getBinaries')
-            ->andReturn([]);
-
-        $this->repositoryMock->shouldReceive('hasPackage')
-            ->andReturn(true);
-
-        $this->downloadManagerMock->shouldReceive('download');
-        $this->downloadManagerMock->shouldReceive('remove');
-
-        $this->repositoryMock->shouldReceive('removePackage');
-        $this->packageMock->shouldReceive('getName');
-
-        $this->ioMock->shouldReceive('writeError')
-            ->once()
-            ->with('Configurator installation failed, rolling back');
-
-        $this->lockMock->shouldReceive('remove')
-            ->once()
-            ->with(ConfiguratorInstaller::LOCK_KEY);
-
-        $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
-    }
-
     public function testUpdate(): void
     {
         $name = 'prisis/update';

@@ -11,15 +11,21 @@ use Composer\Package\Locker;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
 use Narrowspark\Discovery\Installer\Installer;
+use Narrowspark\Discovery\Test\Installer\Traits\ArrangeComposerClasses;
+use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
-class InstallerTest extends AbstractInstallerTestCase
+class InstallerTest extends MockeryTestCase
 {
+    use ArrangeComposerClasses;
+
     /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->arrangeComposerClasses();
 
         $this->composerMock->shouldReceive('getLocker')
             ->once()
@@ -68,7 +74,7 @@ class InstallerTest extends AbstractInstallerTestCase
         parent::allowMockingNonExistentMethods(true);
     }
 
-    protected function arrangeInput(): void
+    private function arrangeInput(): void
     {
         $this->inputMock->shouldReceive('hasOption')
             ->once()
@@ -106,5 +112,29 @@ class InstallerTest extends AbstractInstallerTestCase
             ->once()
             ->with('no-suggest')
             ->andReturn(false);
+    }
+
+    /**
+     * @param bool        $optimize
+     * @param bool        $classmap
+     * @param null|string $preferred
+     */
+    private function setupInstallerConfig(bool $optimize, bool $classmap, ?string $preferred): void
+    {
+        $this->configMock->shouldReceive('get')
+            ->with('optimize-autoloader')
+            ->once()
+            ->andReturn($optimize);
+        $this->configMock->shouldReceive('get')
+            ->with('classmap-authoritative')
+            ->once()
+            ->andReturn($classmap);
+        $this->configMock->shouldReceive('get')
+            ->with('preferred-install')
+            ->once()
+            ->andReturn($preferred);
+
+        $this->composerMock->shouldReceive('getConfig')
+            ->andReturn($this->configMock);
     }
 }

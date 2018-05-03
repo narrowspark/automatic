@@ -4,8 +4,8 @@ namespace Narrowspark\Discovery\Test\Configurator;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
+use Narrowspark\Discovery\Common\Package;
 use Narrowspark\Discovery\Configurator\CopyFromPackageConfigurator;
-use Narrowspark\Discovery\Package;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;

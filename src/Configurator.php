@@ -11,8 +11,6 @@ use Narrowspark\Discovery\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Discovery\Configurator\CopyFromPackageConfigurator;
 use Narrowspark\Discovery\Configurator\EnvConfigurator;
 use Narrowspark\Discovery\Configurator\GitIgnoreConfigurator;
-use Narrowspark\Discovery\Configurator\ProxyConfigurator;
-use Narrowspark\Discovery\Configurator\ServiceProviderConfigurator;
 
 final class Configurator
 {
@@ -26,8 +24,6 @@ final class Configurator
         'copy'             => CopyFromPackageConfigurator::class,
         'env'              => EnvConfigurator::class,
         'gitignore'        => GitIgnoreConfigurator::class,
-        'providers'        => ServiceProviderConfigurator::class,
-        'proxies'          => ProxyConfigurator::class,
     ];
 
     /**
@@ -84,7 +80,7 @@ final class Configurator
      */
     public function add(string $name, string $configurator): void
     {
-        if (isset(self::$configurators[$name])) {
+        if ($this->has($name)) {
             throw new InvalidArgumentException(\sprintf('Configurator with the name "%s" already exists.', $name));
         }
 
@@ -93,6 +89,18 @@ final class Configurator
         }
 
         self::$configurators[$name] = $configurator;
+    }
+
+    /**
+     * Check if configurator is registered.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function has(string $name): bool
+    {
+        return isset(self::$configurators[$name]);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Narrowspark\Discovery;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Package\PackageInterface;
+use Narrowspark\Discovery\Common\Package;
 
 class OperationsResolver
 {
@@ -20,7 +21,7 @@ class OperationsResolver
      *
      * @var string
      */
-    private $vendorDir;
+    private $vendorPath;
 
     /**
      * Name of the parent package.
@@ -38,7 +39,7 @@ class OperationsResolver
     public function __construct(Lock $lock, string $vendorDir)
     {
         $this->lock       = $lock;
-        $this->vendorDir  = $vendorDir;
+        $this->vendorPath = $vendorDir;
     }
 
     /**
@@ -58,7 +59,7 @@ class OperationsResolver
      *
      * @param \Composer\DependencyResolver\Operation\OperationInterface[] $operations
      *
-     * @return \Narrowspark\Discovery\Package[]
+     * @return \Narrowspark\Discovery\Common\Contract\Package[]
      */
     public function resolve(array $operations): array
     {
@@ -91,7 +92,7 @@ class OperationsResolver
                 $packageConfiguration = $this->buildPackageConfiguration($package, $o);
             }
 
-            $packages[$name] = new Package($name, $this->vendorDir, $packageConfiguration);
+            $packages[$name] = new Package($name, $this->vendorPath, $packageConfiguration);
         }
 
         return $packages;

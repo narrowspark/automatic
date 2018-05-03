@@ -14,16 +14,20 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Semver\VersionParser;
 use Mockery\MockInterface;
+use Narrowspark\Discovery\Common\Package;
 use Narrowspark\Discovery\Installer\InstallationManager;
 use Narrowspark\Discovery\Lock;
 use Narrowspark\Discovery\OperationsResolver;
-use Narrowspark\Discovery\Package;
 use Narrowspark\Discovery\Test\Fixtures\ComposerJsonFactory;
 use Narrowspark\Discovery\Test\Fixtures\MockedQuestionInstallationManager;
+use Narrowspark\Discovery\Test\Installer\Traits\ArrangeComposerClasses;
+use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class QuestionInstallationManagerTest extends AbstractInstallerTestCase
+class QuestionInstallationManagerTest extends MockeryTestCase
 {
+    use ArrangeComposerClasses;
+
     /**
      * @var string
      */
@@ -75,6 +79,8 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
 
         parent::setUp();
+
+        $this->arrangeComposerClasses();
 
         $this->createComposerJsonFiles();
 
@@ -927,12 +933,12 @@ class QuestionInstallationManagerTest extends AbstractInstallerTestCase
     {
         \file_put_contents(
             $this->manipulatedComposerPath,
-            ComposerJsonFactory::createSimpleComposerJson('manipulated/test')
+            ComposerJsonFactory::createComposerJson('manipulated/test')
         );
 
         \file_put_contents(
             $this->composerJsonWithRequiresPath,
-            ComposerJsonFactory::createSimpleComposerJson(
+            ComposerJsonFactory::createComposerJson(
                 'requires/test',
                 [
                     'viserio/bus'  => 'dev-master',

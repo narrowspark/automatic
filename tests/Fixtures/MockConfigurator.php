@@ -7,6 +7,11 @@ use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 
 class MockConfigurator extends AbstractConfigurator
 {
+    public static function getName(): string
+    {
+        return 'mock';
+    }
+
     public function configure(PackageContract $package): void
     {
         foreach ($package->getConfiguratorOptions('mock') as $message) {

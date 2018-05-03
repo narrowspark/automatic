@@ -13,6 +13,14 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
+    public static function getName(): string
+    {
+        return 'composer-scripts';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function configure(PackageContract $package): void
     {
         [$json, $autoScripts] = $this->getComposerContentAndAutoScripts();

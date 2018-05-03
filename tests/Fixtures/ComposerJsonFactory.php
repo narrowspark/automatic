@@ -8,12 +8,18 @@ class ComposerJsonFactory
      * @param string $name
      * @param array  $require
      * @param array  $devRequire
+     * @param array  $autoload
      * @param array  $extra
      *
      * @return string
      */
-    public static function createSimpleComposerJson(string $name, array $require = [], array $devRequire = [], array $extra = []): string
-    {
+    public static function createComposerJson(
+        string $name,
+        array $require = [],
+        array $devRequire = [],
+        array $autoload = [],
+        array $extra = []
+    ): string {
         $composerJsonContent = [
             'name'    => $name,
             'authors' => [
@@ -22,10 +28,14 @@ class ComposerJsonFactory
                     'email' => 'd.bannert@anolilab.de',
                 ],
             ],
+            'autoload'    => $autoload,
             'require'     => $require,
-            'dev-require' => $devRequire,
             'extra'       => $extra,
         ];
+
+        if (\count($devRequire) !== 0) {
+            $composerJsonContent['require-dev'] = $devRequire;
+        }
 
         return \json_encode($composerJsonContent, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     }
@@ -44,7 +54,33 @@ class ComposerJsonFactory
             'discovery' => $discoveryExtra,
         ];
 
-        return self::createSimpleComposerJson($name, $require, $devRequire, $extendedExtra);
+        return self::createComposerJson($name, $require, $devRequire, [], $extendedExtra);
+    }
+
+    /**
+     * @param string $name
+     * @param array  $require
+     * @param array  $autoload
+     *
+     * @return string
+     */
+    public static function createComposerPluginJson(string $name, array $require = [], array $autoload = []): string
+    {
+        $composerJsonContent = [
+            'name'        => $name,
+            'type'        => 'discovery-configurator',
+            'description' => 'plugin',
+            'authors'     => [
+                [
+                    'name'  => 'Daniel Bannert',
+                    'email' => 'd.bannert@anolilab.de',
+                ],
+            ],
+            'autoload'    => $autoload,
+            'require'     => $require,
+        ];
+
+        return \json_encode($composerJsonContent, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     }
 
     /**

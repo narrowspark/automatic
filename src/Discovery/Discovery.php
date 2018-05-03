@@ -273,10 +273,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 //        }
 
         $this->lock->add('@readme', [
-        $rfs       = Factory::createRemoteFilesystem($this->io, $config);
-        $this->rfs = new ParallelDownloader($this->io, $config, $rfs->getOptions(), $rfs->isTlsDisabled());
-
-        $this->lock->add('_readme', [
             'This file locks the discovery information of your project to a known state',
             'This file is @generated automatically',
         ]);

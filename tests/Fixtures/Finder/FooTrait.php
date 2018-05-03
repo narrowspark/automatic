@@ -4,5 +4,4 @@ namespace Narrowspark\Discovery\Test\Fixtures\Finder;
 
 trait FooTrait
 {
-
 }

@@ -135,7 +135,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
 
         $questionInstallationManager = $this->getQuestionInstallationManager($this->manipulatedComposerPath);
 
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
+        $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithVersionPath);
 
         $packages = $questionInstallationManager->install(
             $this->arrangeInstallPackage($jsonData['name']),
@@ -147,7 +147,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
 
     public function testInstallWithEmptyDependencies(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
+        $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
 
@@ -171,7 +171,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
      */
     public function testInstallWithAEmptyQuestion(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
+        $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
 
@@ -200,7 +200,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
      */
     public function testInstallThrowsExceptionWhenNoVersionIsFound(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithoutVersionPath);
+        $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithoutVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
         $this->arrangeDownloadAndWritePackagistData();
@@ -225,7 +225,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
 
     public function testInstallWithPackageNameAndVersionWithStablePackageVersions(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
+        $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
         $this->arrangeActiveIsInteractive();
@@ -305,7 +305,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
 
     public function testInstallSkipPackageInstallIfPackageIsInRootPackage(): void
     {
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithVersionPath);
+        $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
 
@@ -460,7 +460,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             ->once()
             ->andReturn($installationManager);
 
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithoutVersionPath);
+        $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithoutVersionPath);
 
         $packages = $questionInstallationManager->install(
             $this->arrangeInstallPackage($jsonData['name']),
@@ -706,7 +706,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
         );
 
         $packages = $questionInstallationManager->uninstall($package, ['viserio/view' => 'dev-master']);
-        $jsonData = ComposerJsonFactory::jsonToArray($this->composerJsonWithRequiresPath);
+        $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithRequiresPath);
 
         self::assertArrayHasKey('viserio/bus', $jsonData['require']);
         self::assertCount(2, $packages);
@@ -859,7 +859,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
      */
     private function assertPackagesInstall(array $packages, string $version): void
     {
-        $jsonData = $jsonData = ComposerJsonFactory::jsonToArray($this->manipulatedComposerPath);
+        $jsonData = $jsonData = ComposerJsonFactory::jsonFileToArray($this->manipulatedComposerPath);
 
         self::assertSame(['viserio/routing' => $version], $jsonData['require']);
         self::assertCount(1, $packages);

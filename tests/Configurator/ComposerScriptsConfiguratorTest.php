@@ -72,7 +72,7 @@ class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
     public function testConfigure(): void
     {
-        $composerRootJsonString = ComposerJsonFactory::createComposerJson('', [], [], [], ['scripts' => ['auto-scripts' => []]]);
+        $composerRootJsonString = ComposerJsonFactory::createComposerScriptJson('configure', ['auto-scripts' => []]);
         $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
         $script = ['php -v' => 'script'];
@@ -106,13 +106,35 @@ class ComposerScriptsConfiguratorTest extends MockeryTestCase
         \unlink($composerJsonPath);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function assertPreConditions(): void
+    public function testUnconfigure(): void
     {
-        parent::assertPreConditions();
+        $composerRootJsonString = ComposerJsonFactory::createComposerScriptJson('unconfigure', ['auto-scripts' => ['php -v' => 'script', 'list' => 'cerebro-cmd']]);
+        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
-        $this->allowMockingNonExistentMethods(true);
+        $packageMock = $this->mock(PackageContract::class);
+        $packageMock->shouldReceive('getConfiguratorOptions')
+            ->once()
+            ->with(ComposerScriptsConfigurator::getName())
+            ->andReturn(['php -v' => 'script']);
+
+        $this->jsonMock->shouldReceive('read')
+            ->andReturn($composerRootJsonData);
+
+        $composerJsonPath = __DIR__ . '/composer.json';
+
+        $this->jsonMock->shouldReceive('getPath')
+            ->once()
+            ->andReturn($composerJsonPath);
+
+        $this->jsonManipulatorMock->shouldReceive('addSubNode')
+            ->once()
+            ->with('scripts', 'auto-scripts', ['list' => 'cerebro-cmd']);
+
+        $this->jsonManipulatorMock->shouldReceive('getContents')
+            ->andReturn(ComposerJsonFactory::arrayToJson($composerRootJsonData));
+
+        $this->configurator->unconfigure($packageMock);
+
+        \unlink($composerJsonPath);
     }
 }

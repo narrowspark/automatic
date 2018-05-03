@@ -84,6 +84,31 @@ class ComposerJsonFactory
     }
 
     /**
+     * @param string $name
+     * @param array  $script
+     *
+     * @return string
+     */
+    public static function createComposerScriptJson(string $name, array $script = []): string
+    {
+        $composerJsonContent = [
+            'name'        => $name,
+            'type'        => 'discovery-configurator',
+            'description' => 'plugin',
+            'authors'     => [
+                [
+                    'name'  => 'Daniel Bannert',
+                    'email' => 'd.bannert@anolilab.de',
+                ],
+            ],
+            'require' => [],
+            'scripts' => $script,
+        ];
+
+        return self::arrayToJson($composerJsonContent);
+    }
+
+    /**
      * @param string $jsonFilePath
      *
      * @return array

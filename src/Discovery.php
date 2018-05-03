@@ -440,6 +440,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Execute on composer auto-scripts event.
+     *
      * @param \Composer\Script\Event $event
      *
      * @return void

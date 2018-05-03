@@ -2,14 +2,41 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery\Configurator;
 
-use Composer\Factory;
-use Composer\Json\JsonFile;
-use Composer\Json\JsonManipulator;
+use Composer\Composer;
+use Composer\IO\IOInterface;
 use Narrowspark\Discovery\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
+use Narrowspark\Discovery\Discovery;
 
 final class ComposerScriptsConfigurator extends AbstractConfigurator
 {
+    /**
+     * A json instance.
+     *
+     * @var \Composer\Json\JsonFile
+     */
+    private $json;
+
+    /**
+     * A json manipulator instance.
+     *
+     * @var \Composer\Json\JsonManipulator
+     */
+    private $manipulator;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(Composer $composer, IOInterface $io, array $options = [])
+    {
+        parent::__construct($composer, $io, $options);
+
+        [$json, $manipulator] = Discovery::getComposerJsonFileAndManipulator();
+
+        $this->json        = $json;
+        $this->manipulator = $manipulator;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -23,11 +50,11 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
      */
     public function configure(PackageContract $package): void
     {
-        [$json, $autoScripts] = $this->getComposerContentAndAutoScripts();
+        $autoScripts = $this->getComposerContentAndAutoScripts();
 
         $autoScripts = \array_merge($autoScripts, $package->getConfiguratorOptions('composer-scripts'));
 
-        $this->manipulateAndWrite($json, $autoScripts);
+        $this->manipulateAndWrite($autoScripts);
     }
 
     /**
@@ -35,13 +62,13 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
      */
     public function unconfigure(PackageContract $package): void
     {
-        [$json, $autoScripts] = $this->getComposerContentAndAutoScripts();
+        $autoScripts = $this->getComposerContentAndAutoScripts();
 
         foreach (\array_keys($package->getConfiguratorOptions('composer-scripts')) as $cmd) {
             unset($autoScripts[$cmd]);
         }
 
-        $this->manipulateAndWrite($json, $autoScripts);
+        $this->manipulateAndWrite($autoScripts);
     }
 
     /**
@@ -51,26 +78,20 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
      */
     private function getComposerContentAndAutoScripts(): array
     {
-        $json = new JsonFile(Factory::getComposerFile());
+        $jsonContents = $this->json->read();
 
-        $jsonContents = $json->read();
-
-        $autoScripts = $jsonContents['scripts']['auto-scripts'] ?? [];
-
-        return [$json, $autoScripts];
+        return $jsonContents['scripts']['auto-scripts'] ?? [];
     }
 
     /**
      * Manipulate the root composer.json with given auto-scripts.
      *
-     * @param \Composer\Json\JsonFile $json
-     * @param array                   $autoScripts
+     * @param array $autoScripts
      */
-    private function manipulateAndWrite(JsonFile $json, array $autoScripts): void
+    private function manipulateAndWrite(array $autoScripts): void
     {
-        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
-        $manipulator->addSubNode('scripts', 'auto-scripts', $autoScripts);
+        $this->manipulator->addSubNode('scripts', 'auto-scripts', $autoScripts);
 
-        \file_put_contents($json->getPath(), $manipulator->getContents());
+        \file_put_contents($this->json->getPath(), $this->manipulator->getContents());
     }
 }

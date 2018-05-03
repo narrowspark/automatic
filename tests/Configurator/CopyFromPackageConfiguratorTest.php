@@ -18,7 +18,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
     private $composer;
 
     /**
-     * @var \Composer\IO\NullIo
+     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
      */
     private $ioMock;
 

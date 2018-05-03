@@ -1,19 +1,26 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Downloader;
+namespace Narrowspark\Discovery\Prefetcher;
 
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
 
 /**
- * @author Nicolas Grekas <p@tchwork.com>
+ * Ported from symfony flex, see original.
+ *
+ * @see https://github.com/symfony/flex/blob/master/src/ComposerRepository.php
+ *
+ * (c) Nicolas Grekas <p@tchwork.com>
  */
 class ComposerRepository extends BaseComposerRepository
 {
     private $providerFiles;
 
-    protected function loadProviderListings($data)
+    /**
+     * {@inheritdoc}
+     */
+    protected function loadProviderListings($data): void
     {
-        if (null !== $this->providerFiles) {
+        if ($this->providerFiles !== null) {
             parent::loadProviderListings($data);
 
             return;
@@ -28,17 +35,20 @@ class ComposerRepository extends BaseComposerRepository
                 $this->loadProviderListings($data);
             }
 
-            $loadingFiles = $this->providerFiles;
+            $loadingFiles        = $this->providerFiles;
             $this->providerFiles = null;
 
             $data = [];
 
-            $this->rfs->download($loadingFiles, function (...$args) use (&$data) {
+            $this->rfs->download($loadingFiles, function (...$args) use (&$data): void {
                 $data[] = $this->fetchFile(...$args);
             });
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchFile($filename, $cacheKey = null, $sha256 = null, $storeLastModifiedTime = false)
     {
         if ($this->providerFiles !== null) {

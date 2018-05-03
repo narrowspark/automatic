@@ -2,27 +2,35 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery;
 
+use Closure;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\Downloader\FileDownloader;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Factory;
+use Composer\Installer\InstallerEvent;
+use Composer\Installer\InstallerEvents;
 use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Locker;
+use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginInterface;
+use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use FilesystemIterator;
+use Hirak\Prestissimo\Plugin as PrestissimoPlugin;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Installer\QuestionInstallationManager;
+use Narrowspark\Discovery\Prefetcher\ParallelDownloader;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -75,6 +83,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $operationsResolver;
 
     /**
+     * A ParallelDownloader instance.
+     *
+     * @var \Narrowspark\Discovery\Prefetcher\ParallelDownloader
+     */
+    private $rfs;
+
+    /**
      * A input implementation.
      *
      * @var \Symfony\Component\Console\Input\InputInterface
@@ -115,6 +130,27 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $postInstallOutput = [''];
 
     /**
+     * @var bool
+     */
+    private $cacheDirPopulated = false;
+
+    /**
+     * @var array
+     */
+    private static $repoReadingCommands = [
+        'create-project' => true,
+        'outdated'       => true,
+        'require'        => true,
+        'update'         => true,
+        'install'        => true,
+    ];
+
+    /**
+     * @var \Composer\Config
+     */
+    private $composerConfig;
+
+    /**
      * Return the composer json file and json manipulator.
      *
      * @throws \InvalidArgumentException
@@ -136,11 +172,17 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public static function getDiscoveryLockFile(): string
     {
-        return \str_replace(
-            'composer.json',
-            'discovery.lock',
-            Factory::getComposerFile()
-        );
+        return \str_replace('composer', 'discovery', self::getComposerLockFile());
+    }
+
+    /**
+     * Get the composer.lock file path.
+     *
+     * @return string
+     */
+    public static function getComposerLockFile(): string
+    {
+        return \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
     }
 
     /**
@@ -149,13 +191,17 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            'auto-scripts'                        => 'executeAutoScripts',
-            PackageEvents::POST_PACKAGE_INSTALL   => 'record',
-            PackageEvents::POST_PACKAGE_UPDATE    => 'record',
-            PackageEvents::POST_PACKAGE_UNINSTALL => 'record',
-            ScriptEvents::POST_INSTALL_CMD        => 'onPostInstall',
-            ScriptEvents::POST_UPDATE_CMD         => 'onPostUpdate',
-            ScriptEvents::POST_CREATE_PROJECT_CMD => 'onPostCreateProject',
+            'auto-scripts'                             => 'executeAutoScripts',
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['populateProvidersCacheDir', PHP_INT_MAX]],
+            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_INSTALL        => 'record',
+            PackageEvents::POST_PACKAGE_UPDATE         => 'record',
+            PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
+            ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
+            ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
+            ScriptEvents::POST_CREATE_PROJECT_CMD      => 'onPostCreateProject',
         ];
     }
 
@@ -174,12 +220,12 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->composer       = $composer;
+        $this->composerConfig = $this->composer->getConfig();
         $this->io             = $io;
         $this->input          = $this->getGenericPropertyReader()($this->io, 'input');
         $this->projectOptions = $this->initProjectOptions();
         $this->lock           = new Lock(self::getDiscoveryLockFile());
-
-        $this->vendorPath = \rtrim($this->composer->getConfig()->get('vendor-dir'), '/');
+        $this->vendorPath     = \rtrim($this->composerConfig->get('vendor-dir'), '/');
 
         $this->composer->getInstallationManager()->addInstaller(new ConfiguratorInstaller($this->io, $this->composer, $this->lock));
 
@@ -187,11 +233,46 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->operationsResolver = new OperationsResolver($this->lock, $this->vendorPath);
         $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
 
-        $this->lock->add('@readme', [
-        $rfs       = Factory::createRemoteFilesystem($this->io, $config);
-        $this->rfs = new ParallelDownloader($this->io, $config, $rfs->getOptions(), $rfs->isTlsDisabled());
+        $remoteFilesystem = Factory::createRemoteFilesystem($this->io, $this->composerConfig);
+        $this->rfs        = new ParallelDownloader(
+            $this->io,
+            $this->composerConfig,
+            $remoteFilesystem->getOptions(),
+            $remoteFilesystem->isTlsDisabled()
+        );
 
-        $this->lock->add('_readme', [
+        $populateRepoCacheDir = __CLASS__ === self::class;
+
+        if ($composer->getPluginManager()) {
+            foreach ($composer->getPluginManager()->getPlugins() as $plugin) {
+                if (\mb_strpos(\get_class($plugin), PrestissimoPlugin::class) === 0) {
+                    if (\method_exists($remoteFilesystem, 'getRemoteContents')) {
+                        $plugin->disable();
+                    } else {
+                        $this->cacheDirPopulated = true;
+                    }
+
+                    $populateRepoCacheDir = false;
+
+                    break;
+                }
+            }
+        }
+
+//        try {
+//            $command = $this->input->getFirstArgument();
+//            $command = $command ? $app->find($command)->getName() : null;
+//        } catch (\InvalidArgumentException $e) {
+//        }
+//
+//        if ($populateRepoCacheDir
+//            && isset(self::$repoReadingCommands[$command])
+//            && ($command !== 'install' || (\file_exists(Factory::getComposerFile()) && ! \file_exists(self::getComposerLockFile())))
+//        ) {
+//            $this->populateRepoCacheDir();
+//        }
+
+        $this->lock->add('@readme', [
             'This file locks the discovery information of your project to a known state',
             'This file is @generated automatically',
         ]);
@@ -377,6 +458,184 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->io->write($this->postInstallOutput);
+    }
+
+    public function populateProvidersCacheDir(InstallerEvent $event): void
+    {
+        $listed   = [];
+        $packages = [];
+        $pool     = $event->getPool();
+//        $pool     = \Closure::bind(function () {
+//            foreach ($this->providerRepos as $k => $repo) {
+//                $this->providerRepos[$k] = new class($repo) extends BaseComposerRepository {
+//                    private $repo;
+//
+//                    public function __construct($repo)
+//                    {
+//                        $this->repo = $repo;
+//                    }
+//
+//                    public function whatProvides(Pool $pool, $name, $bypassFilters = false)
+//                    {
+//                        $packages = [];
+//                        foreach ($this->repo->whatProvides($pool, $name, $bypassFilters) as $k => $p) {
+//                            $packages[$k] = clone $p;
+//                        }
+//
+//                        return $packages;
+//                    }
+//                };
+//            }
+//
+//            return $this;
+//        }, clone $pool, $pool)();
+
+        foreach ($event->getRequest()->getJobs() as $job) {
+            if ('install' !== $job['cmd'] || false === mb_strpos($job['packageName'], '/')) {
+                continue;
+            }
+
+            $listed[$job['packageName']] = true;
+            $packages[]                  = [$job['packageName'], $job['constraint']];
+        }
+
+        $this->rfs->download($packages, function ($packageName, $constraint) use (&$listed, &$packages, $pool): void {
+            foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
+                foreach (array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) as $link) {
+                    if (isset($listed[$link->getTarget()]) || false === mb_strpos($link->getTarget(), '/')) {
+                        continue;
+                    }
+                    $listed[$link->getTarget()] = true;
+                    $packages[] = [$link->getTarget(), $link->getConstraint()];
+                }
+            }
+        });
+    }
+
+    public function populateFilesCacheDir(InstallerEvent $event): void
+    {
+        $dryRun = false;
+
+        if ($this->input->hasOption('dry-run')) {
+            $dryRun = $this->input->getOption('dry-run');
+        }
+
+        if ($this->cacheDirPopulated || $dryRun) {
+            return;
+        }
+
+        $this->cacheDirPopulated = true;
+
+        $cacheDir  = \rtrim($this->composerConfig->get('cache-files-dir'), '\/');
+        $downloads = [];
+
+        foreach ($event->getOperations() as $operation) {
+            // @var \Composer\Package\PackageInterface $package
+            switch ($operation->getJobType()) {
+                case 'install':
+                    $package = $operation->getPackage();
+
+                    break;
+                case 'update':
+                    $package = $operation->getTargetPackage();
+
+                    break;
+                default:
+                    continue 2;
+            }
+
+            $url = $this->getUrlFromPackage($package);
+
+            if ($url === null || ! $originUrl = \parse_url($url, PHP_URL_HOST)) {
+                continue;
+            }
+
+            $destination = $cacheDir . DIRECTORY_SEPARATOR . $this->getCacheKey($package, $url);
+
+            if (\file_exists($destination)) {
+                continue;
+            }
+
+            @\mkdir(\dirname($destination), 0775, true);
+
+            if (! \is_dir(\dirname($destination))) {
+                continue;
+            }
+
+            if (\preg_match('#^https://github\.com/#', $package->getSourceUrl()) &&
+                \preg_match('#^https://api\.github\.com/repos(/[^/]++/[^/]++/)zipball(.++)$#', $url, $matches)
+            ) {
+                $url = \sprintf('https://codeload.github.com%slegacy.zip%s', $matches[1], $matches[2]);
+            }
+
+            $downloads[] = [$originUrl, $url, [], $destination, false];
+        }
+
+        if (\count($downloads) < 1) {
+            $progress = true;
+
+            if ($this->input->hasOption('no-progress')) {
+                $progress = ! $this->input->getOption('no-progress');
+            }
+
+            $this->rfs->download($downloads, [$this->rfs, 'get'], false, $progress);
+        }
+    }
+
+    public function onFileDownload(PreFileDownloadEvent $event): void
+    {
+        if ($event->getRemoteFilesystem() !== $this->rfs) {
+            $event->setRemoteFilesystem($this->rfs->setNextOptions($event->getRemoteFilesystem()->getOptions()));
+        }
+    }
+
+    /**
+     * Get the package url.
+     *
+     * @param \Composer\Package\PackageInterface $package
+     *
+     * @return null|string
+     */
+    private static function getUrlFromPackage(PackageInterface $package): ?string
+    {
+        $fileUrl = $package->getDistUrl();
+
+        if (! $fileUrl) {
+            return null;
+        }
+
+        if ($package->getDistMirrors()) {
+            $fileUrl = \current($package->getDistUrls());
+        }
+
+        if (! \preg_match('/^https?:/', $fileUrl)) {
+            return null;
+        }
+
+        return (string) $fileUrl;
+    }
+
+    /**
+     * Get cache key from package and url.
+     *
+     * @param \Composer\Package\PackageInterface $package
+     * @param string                             $url
+     *
+     * @return string
+     */
+    private function getCacheKey(PackageInterface $package, string $url): string
+    {
+        $fileDownloader = $this->composer->getDownloadManager()->getDownloader('file');
+
+        $getCacheKey = Closure::bind(
+            function (PackageInterface $package, $processedUrl) {
+                return $this->getCacheKey($package, $processedUrl);
+            },
+            $fileDownloader,
+            FileDownloader::class
+        );
+
+        return $getCacheKey($package, $url);
     }
 
     /**

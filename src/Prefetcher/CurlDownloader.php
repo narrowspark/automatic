@@ -1,19 +1,35 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Downloader;
+namespace Narrowspark\Discovery\Prefetcher;
 
 use Composer\Downloader\TransportException;
 
-class CurlDownloader
+/**
+ * Ported from symfony flex, see original.
+ *
+ * @see https://github.com/symfony/flex/blob/master/src/CurlDownloader.php
+ *
+ * (c) Nicolas Grekas <p@tchwork.com>
+ */
+final class CurlDownloader
 {
     private $multiHandle;
 
     private $shareHandle;
 
+    /**
+     * @var array
+     */
     private $jobs = [];
 
+    /**
+     * @var array
+     */
     private $exceptions = [];
 
+    /**
+     * @var array
+     */
     private static $options = [
         'http' => [
             'method'  => CURLOPT_CUSTOMREQUEST,
@@ -27,6 +43,9 @@ class CurlDownloader
         ],
     ];
 
+    /**
+     * @var array
+     */
     private static $timeInfo = [
         'total_time'         => true,
         'namelookup_time'    => true,
@@ -36,6 +55,9 @@ class CurlDownloader
         'redirect_time'      => true,
     ];
 
+    /**
+     * Create a new CurlDownloader instance.
+     */
     public function __construct()
     {
         $this->multiHandle = $mh = \curl_multi_init();
@@ -53,7 +75,14 @@ class CurlDownloader
         \curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
     }
 
-    public function get($origin, $url, $context, $file)
+    /**
+     * @param string   $url
+     * @param resource $context
+     * @param string   $file
+     *
+     * @return array
+     */
+    public function get(string $url, $context, $file): array
     {
         $params = \stream_context_get_params($context);
         $ch     = \curl_init();
@@ -197,15 +226,23 @@ class CurlDownloader
         return [$headers, $contents];
     }
 
+    /**
+     * @param resource $ch
+     * @param callable $notify
+     * @param array    $progress
+     * @param array    $previousProgress
+     *
+     * @return void
+     */
     private function onProgress($ch, callable $notify, array $progress, array $previousProgress): void
     {
-        if (300 <= $progress['http_code'] && $progress['http_code'] < 400) {
+        if ($progress['http_code'] <= 300 && $progress['http_code'] < 400) {
             return;
         }
 
-        if (! $previousProgress['http_code'] && $progress['http_code'] && $progress['http_code'] < 200 || 400 <= $progress['http_code']) {
+        if (! $previousProgress['http_code'] && $progress['http_code'] && $progress['http_code'] < 200 || $progress['http_code'] <= 400) {
             $code = 403 === $progress['http_code'] ? STREAM_NOTIFY_AUTH_RESULT : STREAM_NOTIFY_FAILURE;
-            $notify($code, STREAM_NOTIFY_SEVERITY_ERR, curl_error($ch), $progress['http_code'], 0, 0, false);
+            $notify($code, STREAM_NOTIFY_SEVERITY_ERR, \curl_error($ch), $progress['http_code'], 0, 0, false);
         }
 
         if ($previousProgress['download_content_length'] < $progress['download_content_length']) {

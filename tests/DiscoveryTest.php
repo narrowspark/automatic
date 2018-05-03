@@ -6,6 +6,7 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Downloader\DownloadManager;
 use Composer\Installer\InstallationManager;
+use Composer\Installer\InstallerEvents;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -41,18 +42,7 @@ class DiscoveryTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        self::assertSame(
-            [
-                'auto-scripts'                        => 'executeAutoScripts',
-                PackageEvents::POST_PACKAGE_INSTALL   => 'record',
-                PackageEvents::POST_PACKAGE_UPDATE    => 'record',
-                PackageEvents::POST_PACKAGE_UNINSTALL => 'record',
-                ScriptEvents::POST_INSTALL_CMD        => 'onPostInstall',
-                ScriptEvents::POST_UPDATE_CMD         => 'onPostUpdate',
-                ScriptEvents::POST_CREATE_PROJECT_CMD => 'onPostCreateProject',
-            ],
-            Discovery::getSubscribedEvents()
-        );
+        self::assertCount(11, Discovery::getSubscribedEvents());
     }
 
     public function testActivate(): void
@@ -74,6 +64,14 @@ class DiscoveryTest extends MockeryTestCase
             ->once()
             ->with('bin-compat')
             ->andReturn(__DIR__);
+        $configMock->shouldReceive('get')
+            ->once()
+            ->with('disable-tls')
+            ->andReturn(true);
+        $configMock->shouldReceive('get')
+            ->once()
+            ->with('cafile')
+            ->andReturn(null);
         $composerMock->shouldReceive('getConfig')
             ->andReturn($configMock);
 

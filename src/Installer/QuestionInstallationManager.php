@@ -24,9 +24,6 @@ use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
 
-/**
- * @internal
- */
 class QuestionInstallationManager
 {
     use GetGenericPropertyReaderTrait;

@@ -74,10 +74,6 @@ jobs:
         - ./build/travis/set_up_ssh.sh
         - wget https://github.com/dflydev/git-subsplit/archive/master.tar.gz && tar -zxvf master.tar.gz && rm -rf master.tar.gz
         - cd ./git-subsplit-master && sudo ./install.sh && cd ..
-        - |
-          cp ./build/common/composer.json ./src/Common/composer.json
-          cp ./build/common/README.md ./src/Common/README.md
-          cp ./LICENSE ./src/Common/LICENSE
       script:
         - ./build/travis/split.sh
 

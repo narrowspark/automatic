@@ -18,7 +18,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
     private $composer;
 
     /**
-     * @var \Composer\IO\NullIo
+     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
      */
     private $ioMock;
 
@@ -38,6 +38,11 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $this->ioMock   = $this->mock(IOInterface::class);
 
         $this->configurator = new CopyFromPackageConfigurator($this->composer, $this->ioMock, ['self-dir' => 'test']);
+    }
+
+    public function testGetName(): void
+    {
+        self::assertSame('copy', CopyFromPackageConfigurator::getName());
     }
 
     public function testCopyFileFromPackage(): void

@@ -13,6 +13,7 @@ use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Process\PhpExecutableFinder;
+use Viserio\Component\Console\Application;
 
 class ScriptExecutor
 {
@@ -152,7 +153,7 @@ class ScriptExecutor
             return null;
         }
 
-        $console = \escapeshellarg($this->options['root-dir'] . '/cerebro');
+        $console = Application::cerebroBinary();
 
         if ($this->io->isDecorated()) {
             $console .= ' --ansi';

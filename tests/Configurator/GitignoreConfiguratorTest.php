@@ -54,7 +54,12 @@ class GitignoreConfiguratorTest extends TestCase
     {
         parent::tearDown();
 
-        \unlink($this->gitignorePath);
+        @\unlink($this->gitignorePath);
+    }
+
+    public function testGetName(): void
+    {
+        self::assertSame('gitignore', GitIgnoreConfigurator::getName());
     }
 
     public function testConfigureAndUnconfigure(): void

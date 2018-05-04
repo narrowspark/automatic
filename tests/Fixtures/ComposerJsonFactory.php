@@ -37,7 +37,7 @@ class ComposerJsonFactory
             $composerJsonContent['require-dev'] = $devRequire;
         }
 
-        return \json_encode($composerJsonContent, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        return self::arrayToJson($composerJsonContent);
     }
 
     /**
@@ -80,7 +80,32 @@ class ComposerJsonFactory
             'require'     => $require,
         ];
 
-        return \json_encode($composerJsonContent, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        return self::arrayToJson($composerJsonContent);
+    }
+
+    /**
+     * @param string $name
+     * @param array  $script
+     *
+     * @return string
+     */
+    public static function createComposerScriptJson(string $name, array $script = []): string
+    {
+        $composerJsonContent = [
+            'name'        => $name,
+            'type'        => 'discovery-configurator',
+            'description' => 'plugin',
+            'authors'     => [
+                [
+                    'name'  => 'Daniel Bannert',
+                    'email' => 'd.bannert@anolilab.de',
+                ],
+            ],
+            'require' => [],
+            'scripts' => $script,
+        ];
+
+        return self::arrayToJson($composerJsonContent);
     }
 
     /**
@@ -88,8 +113,28 @@ class ComposerJsonFactory
      *
      * @return array
      */
-    public static function jsonToArray(string $jsonFilePath): array
+    public static function jsonFileToArray(string $jsonFilePath): array
     {
         return \json_decode(\file_get_contents($jsonFilePath), true);
+    }
+
+    /**
+     * @param string $jsonContent
+     *
+     * @return array
+     */
+    public static function jsonToArray(string $jsonContent): array
+    {
+        return \json_decode($jsonContent, true);
+    }
+
+    /**
+     * @param array $jsonData
+     *
+     * @return string
+     */
+    public static function arrayToJson(array $jsonData): string
+    {
+        return \json_encode($jsonData, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     }
 }

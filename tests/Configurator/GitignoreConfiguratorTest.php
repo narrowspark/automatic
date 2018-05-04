@@ -57,6 +57,11 @@ class GitignoreConfiguratorTest extends TestCase
         \unlink($this->gitignorePath);
     }
 
+    public function testGetName(): void
+    {
+        self::assertSame('gitignore', GitIgnoreConfigurator::getName());
+    }
+
     public function testConfigureAndUnconfigure(): void
     {
         $package = new Package(

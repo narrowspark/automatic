@@ -64,6 +64,11 @@ class EnvConfiguratorTest extends MockeryTestCase
         \unlink($this->envPath);
     }
 
+    public function testGetName(): void
+    {
+        self::assertSame('env', EnvConfigurator::getName());
+    }
+
     public function testConfigure(): void
     {
         $package = new Package(

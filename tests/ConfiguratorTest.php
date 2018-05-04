@@ -23,31 +23,35 @@ class ConfiguratorTest extends TestCase
     private $nullIo;
 
     /**
+     * @var \Narrowspark\Discovery\Configurator
+     */
+    private $configurator;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->composer = new Composer();
-        $this->nullIo   = new NullIO();
+        $this->composer     = new Composer();
+        $this->nullIo       = new NullIO();
+        $this->configurator = new Configurator($this->composer, $this->nullIo, []);
     }
 
     public function testAdd(): void
     {
-        $configurator = new Configurator($this->composer, $this->nullIo, []);
-
-        $ref = new ReflectionClass($configurator);
+        $ref = new ReflectionClass($this->configurator);
         // @var \ReflectionProperty $property
         $property = $ref->getProperty('configurators');
         $property->setAccessible(true);
 
-        self::assertArrayNotHasKey('mock-configurator', $property->getValue($configurator));
+        self::assertArrayNotHasKey('mock-configurator', $property->getValue($this->configurator));
 
         $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
-        $configurator->add('mock-configurator', \get_class($mockConfigurator));
+        $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
 
-        self::assertArrayHasKey('mock-configurator', $property->getValue($configurator));
+        self::assertArrayHasKey('mock-configurator', $property->getValue($this->configurator));
     }
 
     /**
@@ -56,11 +60,10 @@ class ConfiguratorTest extends TestCase
      */
     public function testAddWithExistingConfiguratorName(): void
     {
-        $configurator = new Configurator($this->composer, $this->nullIo, []);
-
         $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
-        $configurator->add('mock-configurator', \get_class($mockConfigurator));
-        $configurator->add('mock-configurator', \get_class($mockConfigurator));
+
+        $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
+        $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
     }
 
     /**
@@ -69,15 +72,34 @@ class ConfiguratorTest extends TestCase
      */
     public function testAddWithoutConfiguratorContractClass(): void
     {
-        $configurator = new Configurator($this->composer, $this->nullIo, []);
-
-        $configurator->add('foo/mock-configurator', \stdClass::class);
+        $this->configurator->add('foo/mock-configurator', \stdClass::class);
     }
 
     public function testConfigureWithCopy(): void
     {
-        $configurator = new Configurator($this->composer, $this->nullIo, []);
+        [$filePath, $package] = $this->arrangeCopyConfiguratorTest();
 
+        self::assertFileExists($filePath);
+
+        \unlink($filePath);
+    }
+
+    public function testUnconfigureWithCopy(): void
+    {
+        [$filePath, $package] = $this->arrangeCopyConfiguratorTest();
+
+        self::assertFileExists($filePath);
+
+        $this->configurator->unconfigure($package);
+
+        self::assertFileNotExists($filePath);
+    }
+
+    /**
+     * @return array
+     */
+    protected function arrangeCopyConfiguratorTest(): array
+    {
         $toFileName = 'copy_of_copy.txt';
 
         $package = new Package(
@@ -94,12 +116,10 @@ class ConfiguratorTest extends TestCase
             ]
         );
 
-        $configurator->configure($package);
+        $this->configurator->configure($package);
 
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
-        self::assertFileExists($filePath);
-
-        \unlink($filePath);
+        return [$filePath, $package];
     }
 }

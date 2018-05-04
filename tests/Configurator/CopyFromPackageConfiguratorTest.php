@@ -40,6 +40,11 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $this->configurator = new CopyFromPackageConfigurator($this->composer, $this->ioMock, ['self-dir' => 'test']);
     }
 
+    public function testGetName(): void
+    {
+        self::assertSame('copy', CopyFromPackageConfigurator::getName());
+    }
+
     public function testCopyFileFromPackage(): void
     {
         $toFileName = 'copy_of_copy.txt';

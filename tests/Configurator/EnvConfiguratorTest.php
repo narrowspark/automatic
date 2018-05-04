@@ -60,8 +60,8 @@ class EnvConfiguratorTest extends MockeryTestCase
     {
         parent::tearDown();
 
-        \unlink($this->envDistPath);
-        \unlink($this->envPath);
+        @\unlink($this->envDistPath);
+        @\unlink($this->envPath);
     }
 
     public function testGetName(): void

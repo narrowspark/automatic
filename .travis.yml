@@ -22,7 +22,6 @@ before_install:
   - ./build/travis/configure_php.sh
 
 install:
-  - composer require roave/security-advisories:dev-master
   - composer global require hirak/prestissimo
   - $COMPOSER_UP
 
@@ -35,28 +34,28 @@ script:
 
 jobs:
   include:
-    - stage: Test
-      php: 7.2
-      env: PHPUNIT=true REMOVE_XDEBUG=true
-
-    - stage: Coding standard
-      php: 7.2
-      env: REMOVE_XDEBUG=true
-      script:
-        - ./vendor/bin/php-cs-fixer fix --verbose --diff --dry-run
-    - stage: Coding standard
-      php: 7.2
-      env: REMOVE_XDEBUG=false
-      script:
-        - ./vendor/bin/phpstan analyse -c phpstan.neon -l 7 src
-
-    - stage: Coverage
-      php: 7.2
-      env: REMOVE_XDEBUG=false
-      script:
-        - bash -xc "$TEST -c ./phpunit.xml.dist --coverage-clover=coverage.xml"
-      after_success:
-        - bash <(curl -s https://codecov.io/bash)
+#    - stage: Test
+#      php: 7.2
+#      env: PHPUNIT=true REMOVE_XDEBUG=true
+#
+#    - stage: Coding standard
+#      php: 7.2
+#      env: REMOVE_XDEBUG=true
+#      script:
+#        - ./vendor/bin/php-cs-fixer fix --verbose --diff --dry-run
+#    - stage: Coding standard
+#      php: 7.2
+#      env: REMOVE_XDEBUG=false
+#      script:
+#        - ./vendor/bin/phpstan analyse -c phpstan.neon -l 7 src
+#
+#    - stage: Coverage
+#      php: 7.2
+#      env: REMOVE_XDEBUG=false
+#      script:
+#        - bash -xc "$TEST -c ./phpunit.xml.dist --coverage-clover=coverage.xml"
+#      after_success:
+#        - bash <(curl -s https://codecov.io/bash)
 
     - stage: Subsplit
 #      if: (branch = master)

@@ -7,9 +7,9 @@ use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\IO\IOInterface;
 use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Util\ProcessExecutor;
-use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
-use Narrowspark\Discovery\Common\Exception\RuntimeException;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
+use Narrowspark\Discovery\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Exception\RuntimeException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -120,7 +120,7 @@ class ScriptExecutor
      * @param string $type
      * @param string $cmd
      *
-     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
      *
      * @return null|string
      */
@@ -165,7 +165,7 @@ class ScriptExecutor
     /**
      * @param string $cmd
      *
-     * @throws \Narrowspark\Discovery\Common\Exception\RuntimeException
+     * @throws \Narrowspark\Discovery\Exception\RuntimeException
      *
      * @return string
      */

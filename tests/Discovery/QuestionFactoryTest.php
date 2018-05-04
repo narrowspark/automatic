@@ -31,7 +31,7 @@ class QuestionFactoryTest extends TestCase
     }
 
     /**
-     * @expectedException \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     * @expectedException \Narrowspark\Discovery\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid choice
      */
     public function testValidatePackageQuestionAnswerThrowException(): void

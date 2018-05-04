@@ -61,17 +61,16 @@ jobs:
 #      if: (branch = master)
       php: 7.2
       before_install:
+        - echo "skip"
+      install:
+        - echo "skip"
+      before_script:
         - stty cols 120
         - |
           chmod a+x ./build/travis/split.sh
           chmod a+x ./build/travis/set_up_ssh.sh
-      install:
-        - echo "skip"
-      before_script:
         - wget https://cdn.rawgit.com/prisis/43a2a7b137998ac92e24ee4daaa8e296/raw/681b89b8e156750de46558ead661509c468fb9a2/try_catch.sh -P ./build/travis
         - wget https://cdn.rawgit.com/prisis/e050c4da44c6ee7fa1519912eac19563/raw/7a72a7df7718af30e703c1ef0379cdf7ff24ce10/tfold.sh -P ./build/travis
-        - openssl aes-256-cbc -K $encrypted_e749cce2b298_key -iv $encrypted_e749cce2b298_iv -in ./build/travis/github_deploy_key.enc -out ./build/travis/github_deploy_key -d
-      script:
         - ./build/travis/set_up_ssh.sh
         - wget https://github.com/dflydev/git-subsplit/archive/master.tar.gz && tar -zxvf master.tar.gz && rm -rf master.tar.gz
         - cd ./git-subsplit-master && sudo ./install.sh && cd ..
@@ -79,6 +78,7 @@ jobs:
           cp ./build/common/composer.json ./src/Common/composer.json
           cp ./build/common/README.md ./src/Common/README.md
           cp ./LICENSE ./src/Common/LICENSE
+      script:
         - ./build/travis/split.sh
 
 

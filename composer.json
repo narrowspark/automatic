@@ -21,8 +21,8 @@
     "require": {
         "php": "^7.2",
         "symfony/polyfill-mbstring": "^1.8",
-        "composer-plugin-api": "^1.0",
-        "narrowspark/discovery-common": "^0.11.0"
+        "narrowspark/discovery-common": "^0.11.0",
+        "composer-plugin-api": "^1.0"
     },
     "require-dev": {
         "composer/composer": "^1.6",
@@ -36,7 +36,6 @@
     },
     "config": {
         "optimize-autoloader": true,
-        "sort-packages": true,
         "preferred-install": "dist"
     },
     "extra": {

@@ -18,8 +18,8 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
-use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
-use Narrowspark\Discovery\Common\Exception\RuntimeException;
+use Narrowspark\Discovery\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Exception\RuntimeException;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
@@ -153,8 +153,8 @@ class QuestionInstallationManager
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
      * @param array                                          $dependencies
      *
-     * @throws \Narrowspark\Discovery\Common\Exception\RuntimeException
-     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Exception\RuntimeException
+     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
      * @throws \Exception
      *
      * @return \Narrowspark\Discovery\Common\Contract\Package[]
@@ -367,7 +367,7 @@ class QuestionInstallationManager
      *
      * @param string $name
      *
-     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
      *
      * @return string
      */

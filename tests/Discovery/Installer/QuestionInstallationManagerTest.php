@@ -166,7 +166,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
     }
 
     /**
-     * @expectedException \Narrowspark\Discovery\Common\Exception\RuntimeException
+     * @expectedException \Narrowspark\Discovery\Exception\RuntimeException
      * @expectedExceptionMessage You must provide at least two optional dependencies.
      */
     public function testInstallWithAEmptyQuestion(): void
@@ -195,7 +195,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
     }
 
     /**
-     * @expectedException \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     * @expectedException \Narrowspark\Discovery\Exception\InvalidArgumentException
      * @expectedExceptionMessage Could not find package viserio/routing at any version for your minimum-stability (stable). Check the package spelling or your minimum-stability.
      */
     public function testInstallThrowsExceptionWhenNoVersionIsFound(): void

@@ -20,8 +20,7 @@
     ],
     "require": {
         "php": "^7.2",
-        "symfony/polyfill-mbstring": "^1.8",
-        "narrowspark/discovery-common": "^0.11.0",
+        "ext-mbstring": "*",
         "composer-plugin-api": "^1.0"
     },
     "require-dev": {
@@ -46,7 +45,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Narrowspark\\Discovery\\": "src/"
+            "Narrowspark\\Discovery\\Common\\": "src/Common/",
+            "Narrowspark\\Discovery\\": "src/Discovery/"
         },
         "exclude-from-classmap": [
             "/tests/"
@@ -54,10 +54,11 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Narrowspark\\Discovery\\Test\\": "tests/"
+            "Narrowspark\\Discovery\\Common\\Test\\": "tests/Common/",
+            "Narrowspark\\Discovery\\Test\\": "tests/Discovery/"
         },
         "files": [
-            "tests/TmpDirMock.php"
+            "tests/Discovery/TmpDirMock.php"
         ]
     },
     "minimum-stability": "dev",

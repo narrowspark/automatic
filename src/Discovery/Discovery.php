@@ -27,6 +27,7 @@ use Composer\Util\ProcessExecutor;
 use FilesystemIterator;
 use Hirak\Prestissimo\Plugin as PrestissimoPlugin;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
+use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Installer\QuestionInstallationManager;
 use Narrowspark\Discovery\Prefetcher\ParallelDownloader;
@@ -36,6 +37,7 @@ use RecursiveIteratorIterator;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
+    use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
 
     /**
@@ -210,7 +212,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         // to avoid issues when Discovery is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__ . '../', FilesystemIterator::SKIP_DOTS)) as $file) {
             // @var \SplFileInfo $file
             if (\mb_substr($file->getFilename(), -4) === '.php') {
                 require_once $file;
@@ -836,30 +838,5 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->lock->remove($package->getName());
-    }
-
-    /**
-     * @codeCoverageIgnore
-     *
-     * Copy of ExpandTargetDirTrait, because dependency of the plugin loaded after the plugin.
-     *
-     * @link https://github.com/narrowspark/discovery-common/blob/master/src/Traits/ExpandTargetDirTrait.php
-     *
-     * @param array  $options
-     * @param string $target
-     *
-     * @return string
-     */
-    private static function expandTargetDir(array $options, string $target): string
-    {
-        return \preg_replace_callback('{%(.+?)%}', function ($matches) use ($options) {
-            $option = \str_replace('_', '-', \mb_strtolower($matches[1]));
-
-            if (! isset($options[$option])) {
-                return $matches[0];
-            }
-
-            return \rtrim($options[$option], '/');
-        }, $target);
     }
 }

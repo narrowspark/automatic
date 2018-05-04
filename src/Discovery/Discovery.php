@@ -166,7 +166,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         // to avoid issues when Discovery is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__ . '../', FilesystemIterator::SKIP_DOTS)) as $file) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__), FilesystemIterator::SKIP_DOTS)) as $file) {
             // @var \SplFileInfo $file
             if (\mb_substr($file->getFilename(), -4) === '.php') {
                 require_once $file;

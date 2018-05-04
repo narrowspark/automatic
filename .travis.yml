@@ -36,7 +36,7 @@ jobs:
   include:
     - stage: Test
       php: 7.2
-      env: REMOVE_XDEBUG=true
+      env: PHPUNIT=true REMOVE_XDEBUG=true
 
     - stage: Coding standard
       php: 7.2

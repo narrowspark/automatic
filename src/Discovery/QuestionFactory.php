@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery;
 
-use Narrowspark\Discovery\Common\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Exception\InvalidArgumentException;
 
 final class QuestionFactory
 {
@@ -29,7 +29,7 @@ final class QuestionFactory
      *
      * @param null|string $value
      *
-     * @throws \Narrowspark\Discovery\Common\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
      *
      * @return string
      */

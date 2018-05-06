@@ -3,26 +3,63 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Test;
 
 use Composer\Composer;
-use Composer\Config;
+use Composer\Downloader\DownloaderInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\RootPackageInterface;
+use Composer\Plugin\PluginManager;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Narrowspark\Discovery\Configurator;
 use Narrowspark\Discovery\Discovery;
 use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Lock;
+use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 class DiscoveryTest extends MockeryTestCase
 {
     use GetGenericPropertyReaderTrait;
+    use ArrangeComposerClasses;
+
+    /**
+     * @var \Narrowspark\Discovery\Discovery
+     */
+    private $discovery;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->composerCachePath = __DIR__ . '/' . __CLASS__;
+
+        \mkdir($this->composerCachePath);
+        \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
+
+        $this->arrangeComposerClasses();
+
+        $this->discovery = new Discovery();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        \putenv('COMPOSER_CACHE_DIR=');
+        \putenv('COMPOSER_CACHE_DIR');
+
+        (new Filesystem())->remove($this->composerCachePath);
+    }
 
     public function testGetDiscoveryLockFile(): void
     {
@@ -39,40 +76,14 @@ class DiscoveryTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        self::assertCount(11, Discovery::getSubscribedEvents());
+        self::assertCount(12, Discovery::getSubscribedEvents());
     }
 
     public function testActivate(): void
     {
-        $discovery    = new Discovery();
-        $composerMock = $this->mock(Composer::class);
-        $configMock   = $this->mock(Config::class);
-        $ioMock       = $this->mock(IOInterface::class);
+        $this->arrangeDiscoveryConfig();
 
-        $configMock->shouldReceive('get')
-            ->twice()
-            ->with('vendor-dir')
-            ->andReturn(__DIR__);
-        $configMock->shouldReceive('get')
-            ->once()
-            ->with('bin-dir')
-            ->andReturn(__DIR__);
-        $configMock->shouldReceive('get')
-            ->once()
-            ->with('bin-compat')
-            ->andReturn(__DIR__);
-        $configMock->shouldReceive('get')
-            ->once()
-            ->with('disable-tls')
-            ->andReturn(true);
-        $configMock->shouldReceive('get')
-            ->once()
-            ->with('cafile')
-            ->andReturn(null);
-        $composerMock->shouldReceive('getConfig')
-            ->andReturn($configMock);
-
-        $ioMock->shouldReceive('writeError');
+        $this->arrangePackagist();
 
         $rootPackageMock = $this->mock(RootPackageInterface::class);
         $rootPackageMock->shouldReceive('getExtra')
@@ -81,7 +92,7 @@ class DiscoveryTest extends MockeryTestCase
             ->once()
             ->andReturn('stable');
 
-        $composerMock->shouldReceive('getPackage')
+        $this->composerMock->shouldReceive('getPackage')
             ->twice()
             ->andReturn($rootPackageMock);
 
@@ -94,7 +105,7 @@ class DiscoveryTest extends MockeryTestCase
         $repositoryMock->shouldReceive('getLocalRepository')
             ->andReturn($localRepositoryMock);
 
-        $composerMock->shouldReceive('getRepositoryManager')
+        $this->composerMock->shouldReceive('getRepositoryManager')
             ->andReturn($repositoryMock);
 
         $installationManager = $this->mock(InstallationManager::class);
@@ -102,28 +113,96 @@ class DiscoveryTest extends MockeryTestCase
             ->once()
             ->with(\Mockery::type(ConfiguratorInstaller::class));
 
-        $composerMock->shouldReceive('getInstallationManager')
+        $this->composerMock->shouldReceive('getInstallationManager')
             ->once()
             ->andReturn($installationManager);
 
-        $composerMock->shouldReceive('getDownloadManager')
+        $downloaderMock = $this->mock(DownloaderInterface::class);
+
+        $downloadManagerMock = $this->mock(DownloadManager::class);
+        $downloadManagerMock->shouldReceive('getDownloader')
             ->once()
-            ->andReturn($this->mock(DownloadManager::class));
+            ->with('file')
+            ->andReturn($downloaderMock);
 
-        $input = &$this->getGenericPropertyReader()($ioMock, 'input');
-        $input = $this->mock(InputInterface::class);
+        $this->composerMock->shouldReceive('getDownloadManager')
+            ->twice()
+            ->andReturn($downloadManagerMock);
 
-        $discovery->activate($composerMock, $ioMock);
+        $pluginManagerMock = $this->mock(PluginManager::class);
+        $pluginManagerMock->shouldReceive('getPlugins')
+            ->once()
+            ->andReturn([]);
 
-        self::assertInstanceOf(Lock::class, $discovery->getLock());
-        self::assertInstanceOf(Configurator::class, $discovery->getConfigurator());
+        $this->composerMock->shouldReceive('getPluginManager')
+            ->once()
+            ->andReturn($pluginManagerMock);
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);
+
+        $inputMock = $this->mock(InputInterface::class);
+        $inputMock->shouldReceive('getFirstArgument')
+            ->once()
+            ->andReturn(null);
+
+        $input = &$this->getGenericPropertyReader()($this->ioMock, 'input');
+        $input = $inputMock;
+
+        $this->discovery->activate($this->composerMock, $this->ioMock);
+
+        self::assertInstanceOf(Lock::class, $this->discovery->getLock());
+        self::assertInstanceOf(Configurator::class, $this->discovery->getConfigurator());
 
         self::assertSame(
             [
                 'This file locks the discovery information of your project to a known state',
                 'This file is @generated automatically',
             ],
-            $discovery->getLock()->get('@readme')
+            $this->discovery->getLock()->get('@readme')
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowMockingNonExistentMethods($allow = false): void
+    {
+        parent::allowMockingNonExistentMethods(true);
+    }
+
+    private function arrangeDiscoveryConfig(): void
+    {
+        $this->configMock->shouldReceive('get')
+            ->twice()
+            ->with('vendor-dir')
+            ->andReturn(__DIR__);
+        $this->configMock->shouldReceive('get')
+            ->once()
+            ->with('bin-dir')
+            ->andReturn(__DIR__);
+        $this->configMock->shouldReceive('get')
+            ->once()
+            ->with('bin-compat')
+            ->andReturn(__DIR__);
+        $this->configMock->shouldReceive('get')
+            ->once()
+            ->with('disable-tls')
+            ->andReturn(null);
+        $this->configMock->shouldReceive('get')
+            ->once()
+            ->with('cafile')
+            ->andReturn(null);
+        $this->configMock->shouldReceive('get')
+            ->once()
+            ->with('capath')
+            ->andReturn(null);
+        $this->configMock->shouldReceive('get')
+            ->once()
+            ->with('cache-files-dir')
+            ->andReturn(__DIR__);
+        $this->composerMock->shouldReceive('getConfig')
+            ->andReturn($this->configMock);
     }
 }

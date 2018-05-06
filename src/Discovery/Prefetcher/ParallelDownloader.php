@@ -16,8 +16,14 @@ use Composer\Util\RemoteFilesystem;
  */
 class ParallelDownloader extends RemoteFilesystem
 {
+    /**
+     * @var bool
+     */
     public static $cacheNext = false;
 
+    /**
+     * @var array
+     */
     protected static $cache = [];
 
     /**
@@ -34,21 +40,54 @@ class ParallelDownloader extends RemoteFilesystem
      */
     private $downloader;
 
+    /**
+     * Output warnings and comments.
+     *
+     * @var bool
+     */
     private $quiet = true;
 
+    /**
+     * Output download progress.
+     *
+     * @var bool
+     */
     private $progress = true;
 
+    /**
+     * @var null|callable
+     */
     private $nextCallback;
 
+    /**
+     * Count of the downloads.
+     *
+     * @var int
+     */
     private $downloadCount = 0;
 
+    /**
+     * The options for the remote filesystem.
+     *
+     * @var array
+     */
     private $nextOptions = [];
 
-    private $sharedState;
-
+    /**
+     * The local filename.
+     *
+     * @var null|string
+     */
     private $fileName;
 
+    /**
+     * List of the last headers.
+     *
+     * @var null|array
+     */
     private $lastHeaders;
+
+    private $sharedState;
 
     /**
      * Create a new ParallelDownloader instance.
@@ -58,26 +97,32 @@ class ParallelDownloader extends RemoteFilesystem
      * @param array                    $options
      * @param bool                     $disableTls
      */
-    public function __construct(IOInterface $io, Config $config, array $options = [], $disableTls = false)
+    public function __construct(IOInterface $io, Config $config, array $options = [], bool $disableTls = false)
     {
         $this->io = $io;
 
         if (! method_exists(parent::class, 'getRemoteContents')) {
             $this->io->writeError('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);
+        // @codeCoverageIgnoreStart
         } elseif (! extension_loaded('curl')) {
             $this->io->writeError('ext-curl not found, downloads will happen in sequence', true, IOInterface::DEBUG);
         } else {
             $this->downloader = new CurlDownloader();
         }
+        // @codeCoverageIgnoreEnd
 
         parent::__construct($io, $config, $options, $disableTls);
     }
 
     /**
+     * Parallel download for providers.
+     *
      * @param array    $nextArgs
      * @param callable $nextCallback
      * @param bool     $quiet
      * @param bool     $progress
+     *
+     * @return void
      */
     public function download(array &$nextArgs, callable $nextCallback, bool $quiet = true, bool $progress = true): void
     {
@@ -101,7 +146,7 @@ class ParallelDownloader extends RemoteFilesystem
                 $this->io->writeError('<warning>Enable the "cURL" PHP extension for faster downloads</warning>');
             }
 
-            $note = DIRECTORY_SEPARATOR === '\\' ? '' : (false !== \mb_stripos(PHP_OS, 'darwin') ? '🎵' : '🎶');
+            $note = DIRECTORY_SEPARATOR === '\\' ? '' : (\mb_stripos(PHP_OS, 'darwin') !== false ? '🎵' : '🎶');
             $note .= $this->downloader ? (DIRECTORY_SEPARATOR !== '\\' ? ' 💨' : '') : '';
 
             $this->io->writeError('');
@@ -132,7 +177,7 @@ class ParallelDownloader extends RemoteFilesystem
     }
 
     /**
-     * @return array
+     * {@inheritdoc}
      */
     public function getOptions(): array
     {
@@ -143,11 +188,13 @@ class ParallelDownloader extends RemoteFilesystem
     }
 
     /**
+     * Set the next options for the remote filesystem.
+     *
      * @param array $options
      *
      * @return $this
      */
-    public function setNextOptions(array $options)
+    public function setNextOptions(array $options): self
     {
         $this->nextOptions = parent::getOptions() !== $options ? $options : [];
 
@@ -157,15 +204,25 @@ class ParallelDownloader extends RemoteFilesystem
     /**
      * {@inheritdoc}
      */
-    public function getLastHeaders()
+    public function getLastHeaders(): ?array
     {
         return $this->lastHeaders ?? parent::getLastHeaders();
     }
 
     /**
-     * {@inheritdoc}
+     * Copy the remote file in local.
+     *
+     * @param string      $originUrl The origin URL
+     * @param string      $fileUrl   The file URL
+     * @param null|string $fileName  the local filename
+     * @param bool        $progress  Display the progression
+     * @param array       $options   Additional context options
+     *
+     * @throws \Exception
+     *
+     * @return bool
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = [])
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = []): bool
     {
         $options           = \array_replace_recursive($this->nextOptions, $options);
         $this->nextOptions = [];
@@ -174,7 +231,7 @@ class ParallelDownloader extends RemoteFilesystem
         $rfs->progress     = $this->progress && $progress;
 
         try {
-            return $rfs->get($originUrl, $fileUrl, $options, $fileName, $rfs->progress);
+            return (bool) $rfs->get($originUrl, $fileUrl, $options, $fileName, $rfs->progress);
         } finally {
             $rfs->lastHeaders  = null;
             $this->lastHeaders = $rfs->getLastHeaders();
@@ -184,7 +241,7 @@ class ParallelDownloader extends RemoteFilesystem
     /**
      * {@inheritdoc}
      */
-    public function getContents($originUrl, $fileUrl, $progress = true, $options = [])
+    public function getContents($originUrl, $fileUrl, $progress = true, $options = []): bool
     {
         return $this->copy($originUrl, $fileUrl, null, $progress, $options);
     }
@@ -228,7 +285,7 @@ class ParallelDownloader extends RemoteFilesystem
             $state->bytesTransferred += $bytesMax;
         }
 
-        if (null !== $state->nextArgs && ! $this->quiet && $this->progress && 1 <= $progress - $state->lastProgress) {
+        if ($state->nextArgs !== null && ! $this->quiet && $this->progress && 1 <= $progress - $state->lastProgress) {
             $progressTime = \microtime(true);
 
             if (5 <= $progress - $state->lastProgress || 1 <= $progressTime - $state->lastUpdate) {
@@ -289,7 +346,7 @@ class ParallelDownloader extends RemoteFilesystem
         $state->nestingLevel++;
 
         try {
-            while ($state->nextArgs && (! $state->maxNestingReached || 1 === $state->nestingLevel)) {
+            while ($state->nextArgs && (! $state->maxNestingReached || $state->nestingLevel === 1)) {
                 try {
                     $state->maxNestingReached = false;
 

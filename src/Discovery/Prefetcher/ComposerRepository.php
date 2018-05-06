@@ -13,6 +13,9 @@ use Composer\Repository\ComposerRepository as BaseComposerRepository;
  */
 class ComposerRepository extends BaseComposerRepository
 {
+    /**
+     * @var null|array
+     */
     private $providerFiles;
 
     /**
@@ -49,7 +52,7 @@ class ComposerRepository extends BaseComposerRepository
     /**
      * {@inheritdoc}
      */
-    protected function fetchFile($filename, $cacheKey = null, $sha256 = null, $storeLastModifiedTime = false)
+    protected function fetchFile($filename, $cacheKey = null, $sha256 = null, $storeLastModifiedTime = false): array
     {
         if ($this->providerFiles !== null) {
             $this->providerFiles[] = [$filename, $cacheKey, $sha256, $storeLastModifiedTime];

@@ -2,12 +2,11 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery;
 
-use Closure;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
-use Composer\Downloader\FileDownloader;
+use Composer\DependencyResolver\Pool;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Factory;
 use Composer\Installer\InstallerEvent;
@@ -18,19 +17,21 @@ use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Locker;
-use Composer\Package\PackageInterface;
+use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
+use Composer\Repository\ComposerRepository as BaseComposerRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use FilesystemIterator;
-use Hirak\Prestissimo\Plugin as PrestissimoPlugin;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Installer\QuestionInstallationManager;
 use Narrowspark\Discovery\Prefetcher\ParallelDownloader;
+use Narrowspark\Discovery\Prefetcher\Prefetcher;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -90,6 +91,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     private $rfs;
 
     /**
+     * A PreFetcher instance.
+     *
+     * @var \Narrowspark\Discovery\Prefetcher\Prefetcher
+     */
+    private $prefetcher;
+
+    /**
      * A input implementation.
      *
      * @var \Symfony\Component\Console\Input\InputInterface
@@ -128,27 +136,6 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      * @var array
      */
     private $postInstallOutput = [''];
-
-    /**
-     * @var bool
-     */
-    private $cacheDirPopulated = false;
-
-    /**
-     * @var array
-     */
-    private static $repoReadingCommands = [
-        'create-project' => true,
-        'outdated'       => true,
-        'require'        => true,
-        'update'         => true,
-        'install'        => true,
-    ];
-
-    /**
-     * @var \Composer\Config
-     */
-    private $composerConfig;
 
     /**
      * Return the composer json file and json manipulator.
@@ -192,13 +179,14 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         return [
             'auto-scripts'                             => 'executeAutoScripts',
-            InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['populateProvidersCacheDir', PHP_INT_MAX]],
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', PHP_INT_MAX]],
             InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~PHP_INT_MAX]],
             PackageEvents::POST_PACKAGE_INSTALL        => 'record',
             PackageEvents::POST_PACKAGE_UPDATE         => 'record',
             PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
+            PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
             ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
             ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
             ScriptEvents::POST_CREATE_PROJECT_CMD      => 'onPostCreateProject',
@@ -220,12 +208,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->composer       = $composer;
-        $this->composerConfig = $this->composer->getConfig();
         $this->io             = $io;
         $this->input          = $this->getGenericPropertyReader()($this->io, 'input');
-        $this->projectOptions = $this->initProjectOptions();
         $this->lock           = new Lock(self::getDiscoveryLockFile());
-        $this->vendorPath     = \rtrim($this->composerConfig->get('vendor-dir'), '/');
+
+        $this->projectOptions = $this->initProjectOptions();
+        $composerConfig       = $this->composer->getConfig();
+        $this->vendorPath     = \rtrim($composerConfig->get('vendor-dir'), '/');
 
         $this->composer->getInstallationManager()->addInstaller(new ConfiguratorInstaller($this->io, $this->composer, $this->lock));
 
@@ -233,44 +222,12 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->operationsResolver = new OperationsResolver($this->lock, $this->vendorPath);
         $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
 
-        $remoteFilesystem = Factory::createRemoteFilesystem($this->io, $this->composerConfig);
-        $this->rfs        = new ParallelDownloader(
-            $this->io,
-            $this->composerConfig,
-            $remoteFilesystem->getOptions(),
-            $remoteFilesystem->isTlsDisabled()
-        );
+        $rfs       = Factory::createRemoteFilesystem($this->io, $composerConfig);
+        $this->rfs = new ParallelDownloader($this->io, $composerConfig, $rfs->getOptions(), $rfs->isTlsDisabled());
 
-        $populateRepoCacheDir = __CLASS__ === self::class;
+        $this->prefetcher = new Prefetcher($this->composer, $this->io, $this->input, $this->rfs);
 
-        if ($composer->getPluginManager()) {
-            foreach ($composer->getPluginManager()->getPlugins() as $plugin) {
-                if (\mb_strpos(\get_class($plugin), PrestissimoPlugin::class) === 0) {
-                    if (\method_exists($remoteFilesystem, 'getRemoteContents')) {
-                        $plugin->disable();
-                    } else {
-                        $this->cacheDirPopulated = true;
-                    }
-
-                    $populateRepoCacheDir = false;
-
-                    break;
-                }
-            }
-        }
-
-//        try {
-//            $command = $this->input->getFirstArgument();
-//            $command = $command ? $app->find($command)->getName() : null;
-//        } catch (\InvalidArgumentException $e) {
-//        }
-//
-//        if ($populateRepoCacheDir
-//            && isset(self::$repoReadingCommands[$command])
-//            && ($command !== 'install' || (\file_exists(Factory::getComposerFile()) && ! \file_exists(self::getComposerLockFile())))
-//        ) {
-//            $this->populateRepoCacheDir();
-//        }
+        $this->prefetcher->prefetchComposerRepositories($rfs);
 
         $this->lock->add('@readme', [
             'This file locks the discovery information of your project to a known state',
@@ -462,38 +419,61 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->io->write($this->postInstallOutput);
     }
 
-    public function populateProvidersCacheDir(InstallerEvent $event): void
+    /**
+     * Populate the provider cache.
+     *
+     * @param \Composer\Installer\InstallerEvent $event
+     *
+     * @return void
+     */
+    public function onPreDependenciesSolving(InstallerEvent $event): void
     {
         $listed   = [];
         $packages = [];
         $pool     = $event->getPool();
-//        $pool     = \Closure::bind(function () {
-//            foreach ($this->providerRepos as $k => $repo) {
-//                $this->providerRepos[$k] = new class($repo) extends BaseComposerRepository {
-//                    private $repo;
-//
-//                    public function __construct($repo)
-//                    {
-//                        $this->repo = $repo;
-//                    }
-//
-//                    public function whatProvides(Pool $pool, $name, $bypassFilters = false)
-//                    {
-//                        $packages = [];
-//                        foreach ($this->repo->whatProvides($pool, $name, $bypassFilters) as $k => $p) {
-//                            $packages[$k] = clone $p;
-//                        }
-//
-//                        return $packages;
-//                    }
-//                };
-//            }
-//
-//            return $this;
-//        }, clone $pool, $pool)();
+        $pool     = \Closure::bind(function () {
+            foreach ($this->providerRepos as $k => $repo) {
+                $this->providerRepos[$k] = new class($repo) extends BaseComposerRepository {
+                    /**
+                     * A repository implementation.
+                     *
+                     * @var \Composer\Repository\RepositoryInterface
+                     */
+                    private $repo;
+
+                    /**
+                     * @param \Composer\Repository\RepositoryInterface $repo
+                     */
+                    public function __construct(RepositoryInterface $repo)
+                    {
+                        $this->repo = $repo;
+                    }
+
+                    /**
+                     * {@inheritdoc}
+                     */
+                    public function whatProvides(Pool $pool, $name, $bypassFilters = false)
+                    {
+                        $packages = [];
+
+                        if (! \method_exists($this->repo, 'whatProvides')) {
+                            return $packages;
+                        }
+
+                        foreach ($this->repo->whatProvides($pool, $name, $bypassFilters) as $k => $p) {
+                            $packages[$k] = clone $p;
+                        }
+
+                        return $packages;
+                    }
+                };
+            }
+
+            return $this;
+        }, clone $pool, $pool)();
 
         foreach ($event->getRequest()->getJobs() as $job) {
-            if ('install' !== $job['cmd'] || false === mb_strpos($job['packageName'], '/')) {
+            if ($job['cmd'] !== 'install' || \mb_strpos($job['packageName'], '/') === false) {
                 continue;
             }
 
@@ -502,142 +482,47 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->rfs->download($packages, function ($packageName, $constraint) use (&$listed, &$packages, $pool): void {
+            // @var \Composer\Package\PackageInterface $package
             foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
-                foreach (array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) as $link) {
-                    if (isset($listed[$link->getTarget()]) || false === mb_strpos($link->getTarget(), '/')) {
+                // @var \Composer\Package\Link $link
+                foreach (\array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) as $link) {
+                    if (isset($listed[$link->getTarget()]) || \mb_strpos($link->getTarget(), '/') === false) {
                         continue;
                     }
+
                     $listed[$link->getTarget()] = true;
-                    $packages[] = [$link->getTarget(), $link->getConstraint()];
+                    $packages[]                 = [$link->getTarget(), $link->getConstraint()];
                 }
             }
         });
     }
 
+    /**
+     * Wrapper for the fetchAllFromOperations function.
+     *
+     * @see \Narrowspark\Discovery\Prefetcher\Prefetcher::fetchAllFromOperations()
+     *
+     * @param \Composer\Installer\InstallerEvent $event
+     *
+     * @return void
+     */
     public function populateFilesCacheDir(InstallerEvent $event): void
     {
-        $dryRun = false;
-
-        if ($this->input->hasOption('dry-run')) {
-            $dryRun = $this->input->getOption('dry-run');
-        }
-
-        if ($this->cacheDirPopulated || $dryRun) {
-            return;
-        }
-
-        $this->cacheDirPopulated = true;
-
-        $cacheDir  = \rtrim($this->composerConfig->get('cache-files-dir'), '\/');
-        $downloads = [];
-
-        foreach ($event->getOperations() as $operation) {
-            // @var \Composer\Package\PackageInterface $package
-            switch ($operation->getJobType()) {
-                case 'install':
-                    $package = $operation->getPackage();
-
-                    break;
-                case 'update':
-                    $package = $operation->getTargetPackage();
-
-                    break;
-                default:
-                    continue 2;
-            }
-
-            $url = $this->getUrlFromPackage($package);
-
-            if ($url === null || ! $originUrl = \parse_url($url, PHP_URL_HOST)) {
-                continue;
-            }
-
-            $destination = $cacheDir . DIRECTORY_SEPARATOR . $this->getCacheKey($package, $url);
-
-            if (\file_exists($destination)) {
-                continue;
-            }
-
-            @\mkdir(\dirname($destination), 0775, true);
-
-            if (! \is_dir(\dirname($destination))) {
-                continue;
-            }
-
-            if (\preg_match('#^https://github\.com/#', $package->getSourceUrl()) &&
-                \preg_match('#^https://api\.github\.com/repos(/[^/]++/[^/]++/)zipball(.++)$#', $url, $matches)
-            ) {
-                $url = \sprintf('https://codeload.github.com%slegacy.zip%s', $matches[1], $matches[2]);
-            }
-
-            $downloads[] = [$originUrl, $url, [], $destination, false];
-        }
-
-        if (\count($downloads) < 1) {
-            $progress = true;
-
-            if ($this->input->hasOption('no-progress')) {
-                $progress = ! $this->input->getOption('no-progress');
-            }
-
-            $this->rfs->download($downloads, [$this->rfs, 'get'], false, $progress);
-        }
+        $this->prefetcher->fetchAllFromOperations($event);
     }
 
+    /**
+     * Adds the parallel downloader to composer.
+     *
+     * @param \Composer\Plugin\PreFileDownloadEvent $event
+     *
+     * @return void
+     */
     public function onFileDownload(PreFileDownloadEvent $event): void
     {
         if ($event->getRemoteFilesystem() !== $this->rfs) {
             $event->setRemoteFilesystem($this->rfs->setNextOptions($event->getRemoteFilesystem()->getOptions()));
         }
-    }
-
-    /**
-     * Get the package url.
-     *
-     * @param \Composer\Package\PackageInterface $package
-     *
-     * @return null|string
-     */
-    private static function getUrlFromPackage(PackageInterface $package): ?string
-    {
-        $fileUrl = $package->getDistUrl();
-
-        if (! $fileUrl) {
-            return null;
-        }
-
-        if ($package->getDistMirrors()) {
-            $fileUrl = \current($package->getDistUrls());
-        }
-
-        if (! \preg_match('/^https?:/', $fileUrl)) {
-            return null;
-        }
-
-        return (string) $fileUrl;
-    }
-
-    /**
-     * Get cache key from package and url.
-     *
-     * @param \Composer\Package\PackageInterface $package
-     * @param string                             $url
-     *
-     * @return string
-     */
-    private function getCacheKey(PackageInterface $package, string $url): string
-    {
-        $fileDownloader = $this->composer->getDownloadManager()->getDownloader('file');
-
-        $getCacheKey = Closure::bind(
-            function (PackageInterface $package, $processedUrl) {
-                return $this->getCacheKey($package, $processedUrl);
-            },
-            $fileDownloader,
-            FileDownloader::class
-        );
-
-        return $getCacheKey($package, $url);
     }
 
     /**

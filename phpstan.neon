@@ -7,7 +7,20 @@ parameters:
         - %currentWorkingDirectory%/src
 
     ignoreErrors:
-        - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
+        # QuestionInstallationManager
         - '#Call to an undefined method Composer\\Installer\\InstallationManager::getOperations#'
         - '#\$package of method Composer\\Package\\Version\\VersionSelector\:\:findRecommendedRequireVersion\(\) expects Composer\\Package\\PackageInterface, Composer\\Package\\PackageInterface\|true given#'
+        # ScriptExecutor
         - '#Call to static method cerebroBinary\(\) on an unknown class Viserio\\Component\\Console\\Application#'
+
+        - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
+
+        # Prefetcher
+        - '#Class Hirak\\Prestissimo\\Plugin not found#'
+        - '#Variable \$package might not be defined.#'
+        - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getTargetPackage#'
+        - '#Call to an undefined method Composer\\Downloader\\DownloaderInterface\:\:getCacheKey#'
+        # ParallelDownloader
+        - '#Call to an undefined static method Composer\\Util\\RemoteFilesystem\:\:getRemoteContents#'
+        # Discovery
+        - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'

@@ -13,21 +13,37 @@ use Composer\Downloader\TransportException;
  */
 final class CurlDownloader
 {
+    /**
+     * Curl multi resource.
+     *
+     * @var resource
+     */
     private $multiHandle;
 
+    /**
+     * Curl share resource.
+     *
+     * @var resource
+     */
     private $shareHandle;
 
     /**
+     * List of curl jobs.
+     *
      * @var array
      */
     private $jobs = [];
 
     /**
+     * List of curl exceptions.
+     *
      * @var array
      */
     private $exceptions = [];
 
     /**
+     * All curl options.
+     *
      * @var array
      */
     private static $options = [
@@ -44,6 +60,8 @@ final class CurlDownloader
     ];
 
     /**
+     * The curl progress time info.
+     *
      * @var array
      */
     private static $timeInfo = [
@@ -62,10 +80,10 @@ final class CurlDownloader
     {
         $this->multiHandle = $mh = \curl_multi_init();
 
-        \curl_multi_setopt($mh, CURLMOPT_PIPELINING, /*CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX*/ 3);
+        \curl_multi_setopt($mh, CURLMOPT_PIPELINING, CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX);
 
         if (\defined('CURLMOPT_MAX_HOST_CONNECTIONS')) {
-            \curl_multi_setopt($mh, CURLMOPT_MAX_HOST_CONNECTIONS, 8);
+            \curl_multi_setopt($mh, CURLMOPT_MAX_HOST_CONNECTIONS, 10);
         }
 
         $this->shareHandle = $sh = \curl_share_init();
@@ -76,13 +94,15 @@ final class CurlDownloader
     }
 
     /**
-     * @param string   $url
-     * @param resource $context
-     * @param string   $file
+     * Download the package content.
+     *
+     * @param string      $url
+     * @param resource    $context
+     * @param null|string $file
      *
      * @return array
      */
-    public function get(string $url, $context, $file): array
+    public function get(string $url, $context, ?string $file): array
     {
         $params = \stream_context_get_params($context);
         $ch     = \curl_init();
@@ -147,8 +167,7 @@ final class CurlDownloader
                     }
 
                     $progress = array_diff_key(\curl_getinfo($h), self::$timeInfo);
-
-                    $job = $this->jobs[$i];
+                    $job      = $this->jobs[$i];
 
                     unset($this->jobs[$i]);
 
@@ -157,11 +176,11 @@ final class CurlDownloader
                     try {
                         $this->onProgress($h, $job['callback'], $progress, $job['progress']);
 
-                        if ('' !== \curl_error($h)) {
+                        if (\curl_error($h) !== '') {
                             throw new TransportException(\curl_error($h));
                         }
 
-                        if ($job['file'] && CURLE_OK === \curl_errno($h) && ! isset($this->exceptions[$i])) {
+                        if ($job['file'] && \curl_errno($h) === CURLE_OK && ! isset($this->exceptions[$i])) {
                             \fclose($job['fd']);
                             \rename($job['file'] . '~', $job['file']);
                         }
@@ -195,7 +214,7 @@ final class CurlDownloader
                 }
             }
 
-            if ('' !== \curl_error($ch) || CURLE_OK !== \curl_errno($ch)) {
+            if (\curl_error($ch) !== '' || \curl_errno($ch) !== CURLE_OK) {
                 $this->exceptions[(int) $ch] = new TransportException(\curl_error($ch), \curl_getinfo($ch, CURLINFO_HTTP_CODE) ?: 0);
             }
 

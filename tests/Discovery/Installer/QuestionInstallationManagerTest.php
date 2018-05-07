@@ -16,22 +16,16 @@ use Composer\Semver\VersionParser;
 use Mockery\MockInterface;
 use Narrowspark\Discovery\Common\Package;
 use Narrowspark\Discovery\Installer\InstallationManager;
-use Narrowspark\Discovery\Lock;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Test\Fixtures\ComposerJsonFactory;
 use Narrowspark\Discovery\Test\Fixtures\MockedQuestionInstallationManager;
-use Narrowspark\Discovery\Test\Installer\Traits\ArrangeComposerClasses;
+use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
 class QuestionInstallationManagerTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
-
-    /**
-     * @var string
-     */
-    private $composerCachePath;
 
     /**
      * @var string
@@ -59,16 +53,11 @@ class QuestionInstallationManagerTest extends MockeryTestCase
     private $localRepositoryMock;
 
     /**
-     * @var \Mockery\MockInterface|\Narrowspark\Discovery\Lock
-     */
-    private $lockMock;
-
-    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
-        $this->composerCachePath = __DIR__ . '/cache';
+        $this->composerCachePath = __DIR__ . '/' . __CLASS__;
 
         $this->manipulatedComposerPath        = $this->composerCachePath . '/manipulated_composer.json';
         $this->composerJsonWithRequiresPath   = $this->composerCachePath . '/composer_with_requires.json';
@@ -84,16 +73,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
 
         $this->createComposerJsonFiles();
 
-        $this->lockMock = $this->mock(Lock::class);
-
-        $this->ioMock->shouldReceive('hasAuthentication')
-            ->andReturn(false);
-        $this->ioMock->shouldReceive('writeError')
-            ->once()
-            ->with('Downloading https://packagist.org/packages.json', true, IOInterface::DEBUG);
-        $this->ioMock->shouldReceive('writeError')
-            ->once()
-            ->with('Writing ' . $this->composerCachePath . '/repo/https---packagist.org/packages.json into cache', true, IOInterface::DEBUG);
+        $this->arrangePackagist();
 
         $this->localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
 

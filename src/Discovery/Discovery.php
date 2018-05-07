@@ -6,15 +6,23 @@ use Composer\Composer;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Pool;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Factory;
+use Composer\Installer\InstallerEvent;
+use Composer\Installer\InstallerEvents;
 use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Locker;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
+use Composer\Plugin\PreFileDownloadEvent;
+use Composer\Repository\ComposerRepository as BaseComposerRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
@@ -23,6 +31,8 @@ use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Installer\QuestionInstallationManager;
+use Narrowspark\Discovery\Prefetcher\ParallelDownloader;
+use Narrowspark\Discovery\Prefetcher\Prefetcher;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -31,6 +41,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 {
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
+
+    /**
+     * Check if the the plugin is activated.
+     *
+     * @var bool
+     */
+    private static $activated = true;
 
     /**
      * A composer instance.
@@ -73,6 +90,20 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      * @var \Narrowspark\Discovery\OperationsResolver
      */
     private $operationsResolver;
+
+    /**
+     * A ParallelDownloader instance.
+     *
+     * @var \Narrowspark\Discovery\Prefetcher\ParallelDownloader
+     */
+    private $rfs;
+
+    /**
+     * A PreFetcher instance.
+     *
+     * @var \Narrowspark\Discovery\Prefetcher\Prefetcher
+     */
+    private $prefetcher;
 
     /**
      * A input implementation.
@@ -136,11 +167,17 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public static function getDiscoveryLockFile(): string
     {
-        return \str_replace(
-            'composer.json',
-            'discovery.lock',
-            Factory::getComposerFile()
-        );
+        return \str_replace('composer', 'discovery', self::getComposerLockFile());
+    }
+
+    /**
+     * Get the composer.lock file path.
+     *
+     * @return string
+     */
+    public static function getComposerLockFile(): string
+    {
+        return \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
     }
 
     /**
@@ -148,14 +185,24 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public static function getSubscribedEvents(): array
     {
+        if (! self::$activated) {
+            return [];
+        }
+
         return [
-            'auto-scripts'                        => 'executeAutoScripts',
-            PackageEvents::POST_PACKAGE_INSTALL   => 'record',
-            PackageEvents::POST_PACKAGE_UPDATE    => 'record',
-            PackageEvents::POST_PACKAGE_UNINSTALL => 'record',
-            ScriptEvents::POST_INSTALL_CMD        => 'onPostInstall',
-            ScriptEvents::POST_UPDATE_CMD         => 'onPostUpdate',
-            ScriptEvents::POST_CREATE_PROJECT_CMD => 'onPostCreateProject',
+            'auto-scripts'                             => 'executeAutoScripts',
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', PHP_INT_MAX]],
+            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_INSTALL        => 'record',
+            PackageEvents::POST_PACKAGE_UPDATE         => 'record',
+            PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
+            PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
+            PluginEvents::COMMAND                      => 'onCommand',
+            ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
+            ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
+            ScriptEvents::POST_CREATE_PROJECT_CMD      => 'onPostCreateProject',
         ];
     }
 
@@ -164,6 +211,14 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
+        if ($errorMessage = $this->getErrorMessage() !== null) {
+            self::$activated = false;
+
+            $io->writeError('<warning>Narrowspark Discovery has been disabled. ' . $errorMessage . '</warning>');
+
+            return;
+        }
+
         // to avoid issues when Discovery is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__), FilesystemIterator::SKIP_DOTS)) as $file) {
@@ -176,16 +231,24 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->composer       = $composer;
         $this->io             = $io;
         $this->input          = $this->getGenericPropertyReader()($this->io, 'input');
-        $this->projectOptions = $this->initProjectOptions();
         $this->lock           = new Lock(self::getDiscoveryLockFile());
 
-        $this->vendorPath = \rtrim($this->composer->getConfig()->get('vendor-dir'), '/');
+        $this->projectOptions = $this->initProjectOptions();
+        $composerConfig       = $this->composer->getConfig();
+        $this->vendorPath     = \rtrim($composerConfig->get('vendor-dir'), '/');
 
         $this->composer->getInstallationManager()->addInstaller(new ConfiguratorInstaller($this->io, $this->composer, $this->lock));
 
         $this->configurator       = new Configurator($this->composer, $this->io, $this->projectOptions);
         $this->operationsResolver = new OperationsResolver($this->lock, $this->vendorPath);
         $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
+
+        $rfs       = Factory::createRemoteFilesystem($this->io, $composerConfig);
+        $this->rfs = new ParallelDownloader($this->io, $composerConfig, $rfs->getOptions(), $rfs->isTlsDisabled());
+
+        $this->prefetcher = new Prefetcher($this->composer, $this->io, $this->input, $this->rfs);
+
+        $this->prefetcher->prefetchComposerRepositories($rfs);
 
         $this->lock->add('@readme', [
             'This file locks the discovery information of your project to a known state',
@@ -227,6 +290,20 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->operations[] = $event->getOperation();
+    }
+
+    /**
+     * Execute on composer command event.
+     *
+     * @param \Composer\Plugin\CommandEvent $event
+     *
+     * @return void
+     */
+    public function onCommand(CommandEvent $event): void
+    {
+        if ($event->getInput()->hasOption('no-suggest')) {
+            $event->getInput()->setOption('no-suggest', true);
+        }
     }
 
     /**
@@ -375,6 +452,112 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->io->write($this->postInstallOutput);
+    }
+
+    /**
+     * Populate the provider cache.
+     *
+     * @param \Composer\Installer\InstallerEvent $event
+     *
+     * @return void
+     */
+    public function onPreDependenciesSolving(InstallerEvent $event): void
+    {
+        $listed   = [];
+        $packages = [];
+        $pool     = $event->getPool();
+        $pool     = \Closure::bind(function () {
+            foreach ($this->providerRepos as $k => $repo) {
+                $this->providerRepos[$k] = new class($repo) extends BaseComposerRepository {
+                    /**
+                     * A repository implementation.
+                     *
+                     * @var \Composer\Repository\RepositoryInterface
+                     */
+                    private $repo;
+
+                    /**
+                     * @param \Composer\Repository\RepositoryInterface $repo
+                     */
+                    public function __construct(RepositoryInterface $repo)
+                    {
+                        $this->repo = $repo;
+                    }
+
+                    /**
+                     * {@inheritdoc}
+                     */
+                    public function whatProvides(Pool $pool, $name, $bypassFilters = false)
+                    {
+                        $packages = [];
+
+                        if (! \method_exists($this->repo, 'whatProvides')) {
+                            return $packages;
+                        }
+
+                        foreach ($this->repo->whatProvides($pool, $name, $bypassFilters) as $k => $p) {
+                            $packages[$k] = clone $p;
+                        }
+
+                        return $packages;
+                    }
+                };
+            }
+
+            return $this;
+        }, clone $pool, $pool)();
+
+        foreach ($event->getRequest()->getJobs() as $job) {
+            if ($job['cmd'] !== 'install' || \mb_strpos($job['packageName'], '/') === false) {
+                continue;
+            }
+
+            $listed[$job['packageName']] = true;
+            $packages[]                  = [$job['packageName'], $job['constraint']];
+        }
+
+        $this->rfs->download($packages, function ($packageName, $constraint) use (&$listed, &$packages, $pool): void {
+            // @var \Composer\Package\PackageInterface $package
+            foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
+                // @var \Composer\Package\Link $link
+                foreach (\array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) as $link) {
+                    if (isset($listed[$link->getTarget()]) || \mb_strpos($link->getTarget(), '/') === false) {
+                        continue;
+                    }
+
+                    $listed[$link->getTarget()] = true;
+                    $packages[]                 = [$link->getTarget(), $link->getConstraint()];
+                }
+            }
+        });
+    }
+
+    /**
+     * Wrapper for the fetchAllFromOperations function.
+     *
+     * @see \Narrowspark\Discovery\Prefetcher\Prefetcher::fetchAllFromOperations()
+     *
+     * @param \Composer\Installer\InstallerEvent $event
+     *
+     * @return void
+     */
+    public function populateFilesCacheDir(InstallerEvent $event): void
+    {
+        $this->prefetcher->fetchAllFromOperations($event);
+    }
+
+    /**
+     * Adds the parallel downloader to composer.
+     *
+     * @param \Composer\Plugin\PreFileDownloadEvent $event
+     *
+     * @return void
+     */
+    public function onFileDownload(PreFileDownloadEvent $event): void
+    {
+        if ($event->getRemoteFilesystem() !== $this->rfs) {
+            $event->setRemoteFilesystem($this->rfs->setNextOptions($event->getRemoteFilesystem()->getOptions()));
+        }
     }
 
     /**
@@ -575,5 +758,23 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->lock->remove($package->getName());
+    }
+
+    /**
+     * Check if discovery can be activated.
+     *
+     * @return null|string
+     */
+    private function getErrorMessage(): ?string
+    {
+        $errorMessage = null;
+
+        if (! extension_loaded('openssl')) {
+            $errorMessage = 'You must enable the openssl extension in your "php.ini" file.';
+        } elseif (version_compare('1.6', Composer::VERSION, '>')) {
+            $errorMessage = \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
+        }
+
+        return $errorMessage;
     }
 }

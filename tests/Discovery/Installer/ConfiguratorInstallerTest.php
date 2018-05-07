@@ -7,7 +7,7 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Lock;
-use Narrowspark\Discovery\Test\Installer\Traits\ArrangeComposerClasses;
+use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 class ConfiguratorInstallerTest extends MockeryTestCase
@@ -146,6 +146,51 @@ class ConfiguratorInstallerTest extends MockeryTestCase
         $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
     }
 
+    public function testInstallWithNotFoundClasses(): void
+    {
+        $name = 'prisis/empty';
+
+        $this->packageMock->shouldReceive('getAutoload')
+            ->once()
+            ->andReturn(['psr-4' => ['NoTest\\' => '']]);
+        $this->packageMock->shouldReceive('getPrettyName')
+            ->times(6)
+            ->andReturn($name);
+
+        $this->packageMock->shouldReceive('getTargetDir')
+            ->andReturn(null);
+        $this->packageMock->shouldReceive('getBinaries')
+            ->andReturn([]);
+
+        $this->repositoryMock->shouldReceive('hasPackage')
+            ->twice()
+            ->with($this->packageMock)
+            ->andReturn(true);
+
+        $this->downloadManagerMock->shouldReceive('download')
+            ->once();
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Configurator installation failed, rolling back');
+
+        $this->downloadManagerMock->shouldReceive('remove')
+            ->once();
+
+        $this->packageMock->shouldReceive('getName')
+            ->once()
+            ->andReturn($name);
+
+        $this->repositoryMock->shouldReceive('removePackage')
+            ->once();
+
+        $this->lockMock->shouldReceive('remove')
+            ->once()
+            ->with(ConfiguratorInstaller::LOCK_KEY);
+
+        $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
+    }
+
     public function testUpdate(): void
     {
         $name = 'prisis/update';
@@ -189,5 +234,13 @@ class ConfiguratorInstallerTest extends MockeryTestCase
             ->with(ConfiguratorInstaller::LOCK_KEY, \Mockery::type('array'));
 
         $this->configuratorInstaller->update($this->repositoryMock, $this->packageMock, $targetPackage);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowMockingNonExistentMethods($allow = false): void
+    {
+        parent::allowMockingNonExistentMethods(true);
     }
 }

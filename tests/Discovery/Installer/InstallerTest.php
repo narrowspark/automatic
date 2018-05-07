@@ -11,7 +11,7 @@ use Composer\Package\Locker;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
 use Narrowspark\Discovery\Installer\Installer;
-use Narrowspark\Discovery\Test\Installer\Traits\ArrangeComposerClasses;
+use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 class InstallerTest extends MockeryTestCase

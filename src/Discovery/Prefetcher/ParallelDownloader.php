@@ -150,10 +150,10 @@ class ParallelDownloader extends RemoteFilesystem
             $note .= $this->downloader ? (DIRECTORY_SEPARATOR !== '\\' ? ' 💨' : '') : '';
 
             $this->io->writeError('');
-            $this->io->writeError(sprintf('<info>Prefetching %d packages</info> %s', $this->downloadCount, $note));
+            $this->io->writeError(\sprintf('<info>Prefetching %d packages</info> %s', $this->downloadCount, $note));
             $this->io->writeError('  - Downloading', false);
 
-            if ($this->progress) {
+            if ($this->progress === true) {
                 $this->io->writeError(' (<comment>0%</comment>)', false);
             }
         }
@@ -220,9 +220,9 @@ class ParallelDownloader extends RemoteFilesystem
      *
      * @throws \Exception
      *
-     * @return bool
+     * @return bool|string
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = []): bool
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = [])
     {
         $options           = \array_replace_recursive($this->nextOptions, $options);
         $this->nextOptions = [];
@@ -231,7 +231,7 @@ class ParallelDownloader extends RemoteFilesystem
         $rfs->progress     = $this->progress && $progress;
 
         try {
-            return (bool) $rfs->get($originUrl, $fileUrl, $options, $fileName, $rfs->progress);
+            return $rfs->get($originUrl, $fileUrl, $options, $fileName, $rfs->progress);
         } finally {
             $rfs->lastHeaders  = null;
             $this->lastHeaders = $rfs->getLastHeaders();
@@ -241,13 +241,15 @@ class ParallelDownloader extends RemoteFilesystem
     /**
      * {@inheritdoc}
      */
-    public function getContents($originUrl, $fileUrl, $progress = true, $options = []): bool
+    public function getContents($originUrl, $fileUrl, $progress = true, $options = [])
     {
         return $this->copy($originUrl, $fileUrl, null, $progress, $options);
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @internal
      */
     public function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax, $nativeDownload = true): void
     {

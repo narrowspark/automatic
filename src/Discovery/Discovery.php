@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Locker;
+use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
@@ -187,6 +188,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             PackageEvents::POST_PACKAGE_UPDATE         => 'record',
             PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
             PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
+            PluginEvents::COMMAND                      => 'onCommand',
             ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
             ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
             ScriptEvents::POST_CREATE_PROJECT_CMD      => 'onPostCreateProject',
@@ -269,6 +271,20 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->operations[] = $event->getOperation();
+    }
+
+    /**
+     * Execute on composer command event.
+     *
+     * @param \Composer\Plugin\CommandEvent $event
+     *
+     * @return void
+     */
+    public function onCommand(CommandEvent $event)
+    {
+        if ($event->getInput()->hasOption('no-suggest')) {
+            $event->getInput()->setOption('no-suggest', true);
+        }
     }
 
     /**

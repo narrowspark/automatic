@@ -43,6 +43,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     use GetGenericPropertyReaderTrait;
 
     /**
+     * Check if the the plugin is activated.
+     *
+     * @var bool
+     */
+    private static $activated = true;
+
+    /**
      * A composer instance.
      *
      * @var \Composer\Composer
@@ -178,6 +185,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public static function getSubscribedEvents(): array
     {
+        if (! self::$activated) {
+            return [];
+        }
+
         return [
             'auto-scripts'                             => 'executeAutoScripts',
             InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', PHP_INT_MAX]],
@@ -200,6 +211,14 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
+        if ($errorMessage = $this->getErrorMessage() !== null) {
+            self::$activated = false;
+
+            $io->writeError('<warning>Narrowspark Discovery has been disabled. ' . $errorMessage . '</warning>');
+
+            return;
+        }
+
         // to avoid issues when Discovery is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__), FilesystemIterator::SKIP_DOTS)) as $file) {
@@ -739,5 +758,23 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->lock->remove($package->getName());
+    }
+
+    /**
+     * Check if discovery can be activated.
+     *
+     * @return null|string
+     */
+    private function getErrorMessage(): ?string
+    {
+        $errorMessage = null;
+
+        if (! extension_loaded('openssl')) {
+            $errorMessage = 'You must enable the openssl extension in your "php.ini" file.';
+        } elseif (version_compare('1.6', Composer::VERSION, '>')) {
+            $errorMessage = \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
+        }
+
+        return $errorMessage;
     }
 }

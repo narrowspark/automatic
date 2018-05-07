@@ -3,13 +3,19 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Test;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Downloader\DownloaderInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\Installer\InstallationManager;
+use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Composer\Package\Package;
 use Composer\Package\RootPackageInterface;
+use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginManager;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
@@ -162,6 +168,101 @@ class DiscoveryTest extends MockeryTestCase
             ],
             $this->discovery->getLock()->get('@readme')
         );
+    }
+
+    public function testOnCommand(): void
+    {
+        $commandEventMock = $this->mock(CommandEvent::class);
+        $commandEventMock->shouldReceive('getInput->hasOption')
+            ->once()
+            ->with('no-suggest')
+            ->andReturn(true);
+        $commandEventMock->shouldReceive('getInput->setOption')
+            ->once()
+            ->with('no-suggest', true);
+
+        $this->discovery->onCommand($commandEventMock);
+    }
+
+    public function testRecordWithUpdateRecord(): void
+    {
+        $packageEventMock = $this->mock(PackageEvent::class);
+
+        $packageMock = $this->mock(Package::class);
+        $packageMock->shouldReceive('getName')
+            ->andReturn('test');
+
+        $updateOperationMock = $this->mock(UpdateOperation::class);
+        $updateOperationMock->shouldReceive('getTargetPackage')
+            ->andReturn($packageMock);
+
+        $packageEventMock->shouldReceive('getOperation')
+            ->once()
+            ->andReturn($updateOperationMock);
+        $packageEventMock->shouldReceive('isDevMode')
+            ->andReturn(false);
+
+        $this->discovery->record($packageEventMock);
+    }
+
+    public function testRecordWithUninstallRecord(): void
+    {
+        $packageEventMock = $this->mock(PackageEvent::class);
+
+        $packageMock = $this->mock(Package::class);
+        $packageMock->shouldReceive('getName')
+            ->andReturn('test');
+
+        $updateOperationMock = $this->mock(UninstallOperation::class);
+        $updateOperationMock->shouldReceive('getPackage')
+            ->andReturn($packageMock);
+
+        $packageEventMock->shouldReceive('getOperation')
+            ->twice()
+            ->andReturn($updateOperationMock);
+        $packageEventMock->shouldReceive('isDevMode')
+            ->andReturn(false);
+
+        $packageEventMock->shouldReceive('getComposer->getLocker->getLockData')
+            ->once()
+            ->andReturn([
+                'packages-dev' => [
+                    [
+                        'name' => 'uninstall',
+                    ],
+                ],
+            ]);
+
+        $this->discovery->record($packageEventMock);
+    }
+
+    public function testRecordWithInstallRecord(): void
+    {
+        $packageEventMock = $this->mock(PackageEvent::class);
+
+        $packageMock = $this->mock(Package::class);
+        $packageMock->shouldReceive('getName')
+            ->andReturn('test');
+
+        $installerOperationMock = $this->mock(InstallOperation::class);
+        $installerOperationMock->shouldReceive('getPackage')
+            ->andReturn($packageMock);
+
+        $packageEventMock->shouldReceive('getOperation')
+            ->twice()
+            ->andReturn($installerOperationMock);
+        $packageEventMock->shouldReceive('isDevMode')
+            ->andReturn(false);
+
+        $lock = &$this->getGenericPropertyReader()($this->discovery, 'lock');
+        $lock = $this->lockMock;
+
+        $this->lockMock->shouldReceive('has')
+            ->once()
+            ->with('test')
+            ->andReturn(false);
+
+        $this->discovery->record($packageEventMock);
     }
 
     /**

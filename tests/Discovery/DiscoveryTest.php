@@ -76,7 +76,7 @@ class DiscoveryTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        self::assertCount(12, Discovery::getSubscribedEvents());
+        self::assertCount(13, Discovery::getSubscribedEvents());
     }
 
     public function testActivate(): void

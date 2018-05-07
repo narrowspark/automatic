@@ -280,7 +280,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      *
      * @return void
      */
-    public function onCommand(CommandEvent $event)
+    public function onCommand(CommandEvent $event): void
     {
         if ($event->getInput()->hasOption('no-suggest')) {
             $event->getInput()->setOption('no-suggest', true);

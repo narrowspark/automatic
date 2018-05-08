@@ -1,7 +1,7 @@
 {
     "name": "narrowspark/discovery",
     "type": "composer-plugin",
-    "description": "Composer plugin for narrowspark automated configuration.",
+    "description": "Composer plugin for automatic project configuration and creation.",
     "keywords": [
         "narrowspark",
         "composer-plugin",

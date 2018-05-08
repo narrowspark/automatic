@@ -211,7 +211,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
-        if ($errorMessage = $this->getErrorMessage() !== null) {
+        if (($errorMessage = $this->getErrorMessage()) !== null) {
             self::$activated = false;
 
             $io->writeError('<warning>Narrowspark Discovery has been disabled. ' . $errorMessage . '</warning>');
@@ -761,6 +761,8 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * Check if discovery can be activated.
      *
      * @return null|string
@@ -769,9 +771,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         $errorMessage = null;
 
-        if (! extension_loaded('openssl')) {
+        if (! \extension_loaded('openssl')) {
             $errorMessage = 'You must enable the openssl extension in your "php.ini" file.';
-        } elseif (version_compare('1.6', Composer::VERSION, '>')) {
+        } elseif (\version_compare('1.6', Composer::VERSION, '>')) {
             $errorMessage = \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
         }
 

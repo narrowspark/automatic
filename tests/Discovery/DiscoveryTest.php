@@ -44,7 +44,7 @@ class DiscoveryTest extends MockeryTestCase
      */
     protected function setUp(): void
     {
-        $this->composerCachePath = __DIR__ . '/' . __CLASS__;
+        $this->composerCachePath = __DIR__ . '/DiscoveryTest';
 
         \mkdir($this->composerCachePath);
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);

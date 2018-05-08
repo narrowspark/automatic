@@ -57,7 +57,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
      */
     protected function setUp(): void
     {
-        $this->composerCachePath = __DIR__ . '/' . __CLASS__;
+        $this->composerCachePath = __DIR__ . '/QuestionInstallationManagerTest';
 
         $this->manipulatedComposerPath        = $this->composerCachePath . '/manipulated_composer.json';
         $this->composerJsonWithRequiresPath   = $this->composerCachePath . '/composer_with_requires.json';

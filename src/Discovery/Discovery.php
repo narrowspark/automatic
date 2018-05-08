@@ -43,6 +43,11 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     use GetGenericPropertyReaderTrait;
 
     /**
+     * @var string
+     */
+    private const DISCOVERY_NAME = 'discovery';
+
+    /**
      * Check if the the plugin is activated.
      *
      * @var bool
@@ -167,7 +172,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     public static function getDiscoveryLockFile(): string
     {
-        return \str_replace('composer', 'discovery', self::getComposerLockFile());
+        return \str_replace('composer', self::DISCOVERY_NAME, self::getComposerLockFile());
     }
 
     /**
@@ -325,7 +330,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $manipulator->removeProperty('description');
 
         foreach ($this->projectOptions as $key => $value) {
-            if ($key !== 'discovery') {
+            if ($key !== self::DISCOVERY_NAME) {
                 $manipulator->addSubNode('extra', $key, $value);
             }
         }
@@ -365,7 +370,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $this->operations = $operations;
         }
 
-        $discoveryOptions = $this->projectOptions['discovery'];
+        $discoveryOptions = $this->projectOptions[self::DISCOVERY_NAME];
         $allowInstall     = $discoveryOptions['allow-auto-install'] ?? false;
         $packages         = $this->operationsResolver->resolve($this->operations);
 
@@ -641,7 +646,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
     {
         return \array_merge(
             [
-                'discovery' => [
+                self::DISCOVERY_NAME => [
                     'allow-auto-install' => false,
                     'dont-discover'      => [],
                 ],
@@ -703,10 +708,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $options = $package->getOptions();
 
         if ($package->hasConfiguratorKey('extra-dependency')) {
-            $operations = $this->extraInstaller->install($package, $package->getConfiguratorOptions('extra-dependency'));
-            $options    = \array_merge($options, ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]);
+            $extraDependency = $package->getConfiguratorOptions('extra-dependency');
+            $options         = \array_merge(
+                $options,
+                ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]
+            );
 
-            foreach ($operations as $operation) {
+            foreach ($this->extraInstaller->install($package, $extraDependency) as $operation) {
                 $this->doInstall($operation, $packageConfigurator);
             }
         }

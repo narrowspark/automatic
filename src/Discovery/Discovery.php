@@ -36,6 +36,7 @@ use Narrowspark\Discovery\Prefetcher\Prefetcher;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use ReflectionClass;
 
 class Discovery implements PluginInterface, EventSubscriberInterface
 {
@@ -383,7 +384,15 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         foreach ((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY) as $path => $class) {
             require_once $this->vendorPath . $path;
 
-            $this->configurator->add($class::getName(), $class);
+            if (! \class_exists($class)) {
+                continue;
+            }
+
+            $reflectionClass = new ReflectionClass($class);
+
+            if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
+                $this->configurator->add($class::getName(), $class);
+            }
         }
 
         foreach ($packages as $package) {

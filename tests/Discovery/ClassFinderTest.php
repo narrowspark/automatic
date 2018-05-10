@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Test;
 
 use Narrowspark\Discovery\ClassFinder;
+use Narrowspark\Discovery\Test\Fixtures\Finder\AbstractClass;
 use Narrowspark\Discovery\Test\Fixtures\Finder\DummyClass;
 use Narrowspark\Discovery\Test\Fixtures\Finder\DummyClassTwo;
 use Narrowspark\Discovery\Test\Fixtures\Finder\FooTrait;
@@ -19,6 +20,7 @@ class ClassFinderTest extends TestCase
         self::assertContains(DummyClassTwo::class, $classes);
         self::assertContains(DummyClassNested::class, $classes);
         self::assertContains(FooTrait::class, $classes);
+        self::assertContains(AbstractClass::class, $classes);
     }
 
     public function testWithEmptyFolder(): void

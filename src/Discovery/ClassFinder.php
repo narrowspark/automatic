@@ -46,14 +46,25 @@ final class ClassFinder
      */
     private static function findClassOrTraitOrInterface(string $path): ?string
     {
-        $namespace = null;
-        $tokens    = \token_get_all(\file_get_contents($path));
+        $namespace  = null;
+        $tokens     = \token_get_all(\file_get_contents($path));
+        $isAbstract = false;
 
         foreach ($tokens as $key => $token) {
-            if (self::tokenIsNamespace($token)) {
-                $namespace = self::getNamespace($key + 2, $tokens);
-            } elseif (self::tokenIsClassOrTraitOrInterface($token)) {
-                return \ltrim($namespace . '\\' . self::getClass($key + 2, $tokens), '\\');
+            if (\is_array($token)) {
+                if (self::tokeIsAbstractClass($token)) {
+                    $isAbstract = true;
+
+                    continue;
+                } elseif ($isAbstract && self::tokenIsClass($token)) {
+                    $isAbstract = false;
+
+                    continue;
+                } elseif (self::tokenIsNamespace($token)) {
+                    $namespace = self::getNamespace($key + 2, $tokens);
+                } elseif (self::tokenIsClassOrTraitOrInterface($token)) {
+                    return \ltrim($namespace . '\\' . self::getClass($key + 2, $tokens), '\\');
+                }
             }
         }
 
@@ -68,7 +79,7 @@ final class ClassFinder
      *
      * @return null|string
      */
-    private static function getNamespace($key, array $tokens): ?string
+    private static function getNamespace(int $key, array $tokens): ?string
     {
         $namespace  = null;
         $tokenCount = \count($tokens);
@@ -123,13 +134,13 @@ final class ClassFinder
     /**
      * Determine if the given token is a namespace keyword.
      *
-     * @param array|string $token
+     * @param array $token
      *
      * @return bool
      */
-    private static function tokenIsNamespace($token): bool
+    private static function tokenIsNamespace(array $token): bool
     {
-        return \is_array($token) && $token[0] === T_NAMESPACE;
+        return $token[0] === T_NAMESPACE;
     }
 
     /**
@@ -147,13 +158,13 @@ final class ClassFinder
     /**
      * Determine if the given token is a class or interface keyword.
      *
-     * @param array|string $token
+     * @param array $token
      *
      * @return bool
      */
-    private static function tokenIsClassOrTraitOrInterface($token): bool
+    private static function tokenIsClassOrTraitOrInterface(array $token): bool
     {
-        return \is_array($token) && ($token[0] === T_CLASS || $token[0] === T_INTERFACE || $token[0] === T_TRAIT);
+        return self::tokenIsClass($token) || $token[0] === T_INTERFACE || $token[0] === T_TRAIT;
     }
 
     /**
@@ -166,5 +177,29 @@ final class ClassFinder
     private static function isWhitespace($token): bool
     {
         return \is_array($token) && $token[0] === T_WHITESPACE;
+    }
+
+    /**
+     * Determine if the given token is class.
+     *
+     * @param array $token
+     *
+     * @return bool
+     */
+    private static function tokenIsClass(array $token): bool
+    {
+        return $token[0] === T_CLASS;
+    }
+
+    /**
+     * Determine if the given token is abstract class.
+     *
+     * @param array $token
+     *
+     * @return bool
+     */
+    private static function tokeIsAbstractClass(array $token): bool
+    {
+        return $token[0] === T_ABSTRACT;
     }
 }

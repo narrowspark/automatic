@@ -22,6 +22,9 @@ final class ClassFinder
         foreach ($finder as $file) {
             $realPath = $file->getRealPath();
             $class    = self::findClassOrTraitOrInterface($realPath);
+            
+            // PHP 7 memory manager will not release after token_get_all(), see https://bugs.php.net/70098
+            \gc_mem_caches();
 
             if ($class === null) {
                 continue;

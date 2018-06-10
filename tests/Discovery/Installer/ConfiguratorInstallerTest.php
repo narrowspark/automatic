@@ -10,7 +10,10 @@ use Narrowspark\Discovery\Lock;
 use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
-class ConfiguratorInstallerTest extends MockeryTestCase
+/**
+ * @internal
+ */
+final class ConfiguratorInstallerTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
@@ -93,15 +96,14 @@ class ConfiguratorInstallerTest extends MockeryTestCase
 
     public function testSupports(): void
     {
-        self::assertTrue($this->configuratorInstaller->supports('discovery-configurator'));
+        $this->assertTrue($this->configuratorInstaller->supports('discovery-configurator'));
     }
 
-    /**
-     * @expectedException \UnexpectedValueException
-     * @expectedExceptionMessage Error while installing "prisis/test", discovery-configurator packages should have a namespace defined in their psr4 key to be usable.
-     */
     public function testInstallWithEmptyPsr4(): void
     {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Error while installing "prisis/test", discovery-configurator packages should have a namespace defined in their psr4 key to be usable.');
+
         $this->packageMock->shouldReceive('getAutoload')
             ->once()
             ->andReturn(['psr-4' => []]);

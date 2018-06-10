@@ -5,7 +5,10 @@ namespace Narrowspark\Discovery\Common\Test;
 use Narrowspark\Discovery\Common\Package;
 use PHPUnit\Framework\TestCase;
 
-class PackageTest extends TestCase
+/**
+ * @internal
+ */
+final class PackageTest extends TestCase
 {
     /**
      * @var \Narrowspark\Discovery\Common\Package
@@ -40,17 +43,17 @@ class PackageTest extends TestCase
 
     public function testGetName(): void
     {
-        self::assertSame('test', $this->package->getName());
+        $this->assertSame('test', $this->package->getName());
     }
 
     public function testGetVersion(): void
     {
-        self::assertSame('1', $this->package->getVersion());
+        $this->assertSame('1', $this->package->getVersion());
     }
 
     public function testGetPackagePath(): void
     {
-        self::assertSame(
+        $this->assertSame(
             \str_replace('\\', '/', __DIR__ . '/test/'),
             $this->package->getPackagePath()
         );
@@ -60,45 +63,45 @@ class PackageTest extends TestCase
     {
         $options = $this->package->getConfiguratorOptions('copy');
 
-        self::assertEquals(['from' => 'to'], $options);
+        $this->assertEquals(['from' => 'to'], $options);
 
         $options = $this->package->getConfiguratorOptions('test');
 
-        self::assertEquals([], $options);
+        $this->assertEquals([], $options);
     }
 
     public function testGetOptions(): void
     {
-        self::assertEquals($this->config, $this->package->getOptions());
+        $this->assertEquals($this->config, $this->package->getOptions());
     }
 
     public function testGetUrl(): void
     {
-        self::assertSame($this->config['url'], $this->package->getUrl());
+        $this->assertSame($this->config['url'], $this->package->getUrl());
     }
 
     public function testGetOperation(): void
     {
-        self::assertSame($this->config['operation'], $this->package->getOperation());
+        $this->assertSame($this->config['operation'], $this->package->getOperation());
     }
 
     public function testGetType(): void
     {
-        self::assertSame($this->config['type'], $this->package->getType());
+        $this->assertSame($this->config['type'], $this->package->getType());
     }
 
     public function testIsExtraDependency(): void
     {
-        self::assertTrue($this->package->isExtraDependency());
+        $this->assertTrue($this->package->isExtraDependency());
     }
 
     public function testGetRequire(): void
     {
-        self::assertSame([], $this->package->getRequires());
+        $this->assertSame([], $this->package->getRequires());
     }
 
     public function testGetOption(): void
     {
-        self::assertSame('foo/bar', $this->package->getOption('extra-dependency-of'));
+        $this->assertSame('foo/bar', $this->package->getOption('extra-dependency-of'));
     }
 }

@@ -15,7 +15,7 @@ trait GetGenericPropertyReaderTrait
     {
         $reader = function &($object, $property) {
             $value = &Closure::bind(function &() use ($property) {
-                return $this->$property;
+                return $this->{$property};
             }, $object, $object)->__invoke();
 
             return $value;

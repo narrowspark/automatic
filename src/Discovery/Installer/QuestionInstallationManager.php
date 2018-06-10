@@ -200,7 +200,7 @@ class QuestionInstallationManager
 
                     $this->packagesToInstall[$packageName] = $constraint;
 
-                    $this->io->write(sprintf(
+                    $this->io->write(\sprintf(
                         'Added package <info>%s</info> to composer.json with constraint <info>%s</info>;'
                         . ' to upgrade, run <info>composer require %s:VERSION</info>',
                         $packageName,
@@ -350,7 +350,7 @@ class QuestionInstallationManager
             $package = $this->io->askAndValidate(
                 $ask,
                 function ($input) use ($packageNames) {
-                    // @codeCoverageIgnoreStart
+                    /** @codeCoverageIgnoreStart */
                     $input = \is_numeric($input) ? (int) \trim($input) : -1;
 
                     return $packageNames[$input] ?? null;

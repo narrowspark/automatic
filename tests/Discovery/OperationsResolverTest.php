@@ -11,7 +11,10 @@ use Narrowspark\Discovery\Lock;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
-class OperationsResolverTest extends MockeryTestCase
+/**
+ * @internal
+ */
+final class OperationsResolverTest extends MockeryTestCase
 {
     /**
      * @var \Narrowspark\Discovery\OperationsResolver
@@ -135,21 +138,21 @@ class OperationsResolverTest extends MockeryTestCase
 
         $package = $packages['install'];
 
-        self::assertSame('install', $package->getName());
-        self::assertSame('1', $package->getVersion());
-        self::assertSame('library', $package->getType());
-        self::assertSame('example.local', $package->getUrl());
-        self::assertSame('install', $package->getOperation());
-        self::assertTrue($package->isExtraDependency());
+        $this->assertSame('install', $package->getName());
+        $this->assertSame('1', $package->getVersion());
+        $this->assertSame('library', $package->getType());
+        $this->assertSame('example.local', $package->getUrl());
+        $this->assertSame('install', $package->getOperation());
+        $this->assertTrue($package->isExtraDependency());
 
         $package = $packages['uninstall'];
 
-        self::assertSame('uninstall', $package->getName());
-        self::assertSame('1.0-dev', $package->getVersion());
-        self::assertSame('provider', $package->getType());
-        self::assertSame('example.local', $package->getUrl());
-        self::assertSame('uninstall', $package->getOperation());
-        self::assertSame(['foo/bar'], $package->getRequires());
+        $this->assertSame('uninstall', $package->getName());
+        $this->assertSame('1.0-dev', $package->getVersion());
+        $this->assertSame('provider', $package->getType());
+        $this->assertSame('example.local', $package->getUrl());
+        $this->assertSame('uninstall', $package->getOperation());
+        $this->assertSame(['foo/bar'], $package->getRequires());
     }
 
     /**

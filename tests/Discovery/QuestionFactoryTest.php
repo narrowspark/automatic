@@ -5,11 +5,14 @@ namespace Narrowspark\Discovery\Test;
 use Narrowspark\Discovery\QuestionFactory;
 use PHPUnit\Framework\TestCase;
 
-class QuestionFactoryTest extends TestCase
+/**
+ * @internal
+ */
+final class QuestionFactoryTest extends TestCase
 {
     public function testGetPackageQuestion(): void
     {
-        self::assertSame(
+        $this->assertSame(
             '    Review the package from www.example.com.
     Do you want to execute this package?
     [<comment>y</comment>] Yes
@@ -23,19 +26,18 @@ class QuestionFactoryTest extends TestCase
 
     public function testValidatePackageQuestionAnswer(): void
     {
-        self::assertSame('n', QuestionFactory::validatePackageQuestionAnswer(null));
-        self::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('n'));
-        self::assertSame('y', QuestionFactory::validatePackageQuestionAnswer('y'));
-        self::assertSame('a', QuestionFactory::validatePackageQuestionAnswer('a'));
-        self::assertSame('p', QuestionFactory::validatePackageQuestionAnswer('p'));
+        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer(null));
+        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer('n'));
+        $this->assertSame('y', QuestionFactory::validatePackageQuestionAnswer('y'));
+        $this->assertSame('a', QuestionFactory::validatePackageQuestionAnswer('a'));
+        $this->assertSame('p', QuestionFactory::validatePackageQuestionAnswer('p'));
     }
 
-    /**
-     * @expectedException \Narrowspark\Discovery\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Invalid choice
-     */
     public function testValidatePackageQuestionAnswerThrowException(): void
     {
-        self::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));
+        $this->expectException(\Narrowspark\Discovery\Exception\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid choice');
+
+        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));
     }
 }

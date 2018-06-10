@@ -10,7 +10,10 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
-class CopyFromPackageConfiguratorTest extends MockeryTestCase
+/**
+ * @internal
+ */
+final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 {
     /**
      * @var \Composer\Composer
@@ -42,7 +45,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        self::assertSame('copy', CopyFromPackageConfigurator::getName());
+        $this->assertSame('copy', CopyFromPackageConfigurator::getName());
     }
 
     public function testCopyFileFromPackage(): void
@@ -74,7 +77,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
-        self::assertFileExists($filePath);
+        $this->assertFileExists($filePath);
 
         \unlink($filePath);
     }
@@ -109,8 +112,8 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $dirPath  = \sys_get_temp_dir() . '/css';
         $filePath = $dirPath . '/style.css';
 
-        self::assertDirectoryExists($dirPath);
-        self::assertFileExists($filePath);
+        $this->assertDirectoryExists($dirPath);
+        $this->assertFileExists($filePath);
 
         \unlink($filePath);
         \rmdir($dirPath);
@@ -146,7 +149,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
-        self::assertFileNotExists($filePath);
+        $this->assertFileNotExists($filePath);
     }
 
     public function testUnconfigureAFileFromPackage(): void
@@ -224,7 +227,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $dirPath = \sys_get_temp_dir() . '/css';
 
-        self::assertDirectoryExists($dirPath);
+        $this->assertDirectoryExists($dirPath);
 
         \rmdir($dirPath);
     }
@@ -277,7 +280,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         \unlink($dirPath . '/style.css');
 
-        self::assertDirectoryExists($dirPath);
+        $this->assertDirectoryExists($dirPath);
 
         \rmdir($dirPath);
     }
@@ -311,7 +314,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . '/test/' . $toFileName;
 
-        self::assertFileExists($filePath);
+        $this->assertFileExists($filePath);
 
         \unlink($filePath);
         \rmdir(\sys_get_temp_dir() . '/test/');
@@ -330,7 +333,7 @@ class CopyFromPackageConfiguratorTest extends MockeryTestCase
     private function setPrivate($obj, $attribute)
     {
         $setter = function ($value) use ($attribute): void {
-            $this->$attribute = $value;
+            $this->{$attribute} = $value;
         };
 
         return \Closure::bind($setter, $obj, \get_class($obj));

@@ -11,7 +11,10 @@ use Narrowspark\Discovery\Test\Fixtures\MockConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use ReflectionClass;
 
-class PackageConfiguratorTest extends MockeryTestCase
+/**
+ * @internal
+ */
+final class PackageConfiguratorTest extends MockeryTestCase
 {
     /**
      * @var \Composer\Composer
@@ -40,19 +43,18 @@ class PackageConfiguratorTest extends MockeryTestCase
         $configurator = new PackageConfigurator($this->composer, $this->nullIo, [], ['mock' => \get_class($mockConfigurator)]);
 
         $ref = new ReflectionClass($configurator);
-        // @var \ReflectionProperty $property
+        /** @var \ReflectionProperty $property */
         $property = $ref->getProperty('configurators');
         $property->setAccessible(true);
 
-        self::assertArrayHasKey('mock', $property->getValue($configurator));
+        $this->assertArrayHasKey('mock', $property->getValue($configurator));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Configurator class "stdClass" must extend the class "Narrowspark\Discovery\Common\Contract\Configurator".
-     */
     public function testAddWithoutConfiguratorContractClass(): void
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configurator class "stdClass" must extend the class "Narrowspark\\Discovery\\Common\\Contract\\Configurator".');
+
         new PackageConfigurator($this->composer, $this->nullIo, [], ['test' => \stdClass::class]);
     }
 

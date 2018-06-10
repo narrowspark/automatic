@@ -12,7 +12,10 @@ use Narrowspark\Discovery\Test\Fixtures\ComposerJsonFactory;
 use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
-class ComposerScriptsConfiguratorTest extends MockeryTestCase
+/**
+ * @internal
+ */
+final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 {
     use GetGenericPropertyReaderTrait;
 
@@ -67,7 +70,7 @@ class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        self::assertSame('composer-scripts', ComposerScriptsConfigurator::getName());
+        $this->assertSame('composer-scripts', ComposerScriptsConfigurator::getName());
     }
 
     public function testConfigure(): void

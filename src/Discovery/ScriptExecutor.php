@@ -104,7 +104,7 @@ class ScriptExecutor
 
         if ($exitCode !== 0) {
             $this->io->writeError(' <error>[KO]</error>');
-            $this->io->writeError(sprintf('<error>Script %s returned with error code %s</error>', $cmd, $exitCode));
+            $this->io->writeError(\sprintf('<error>Script %s returned with error code %s</error>', $cmd, $exitCode));
 
             \fseek($cmdOutput->getStream(), 0);
 
@@ -148,7 +148,7 @@ class ScriptExecutor
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
 
         if (! $repo->findPackage('viserio/console', new EmptyConstraint())) {
-            $this->io->writeError(sprintf('<warning>Skipping "%s" (needs viserio/console to run).</warning>', $cmd));
+            $this->io->writeError(\sprintf('<warning>Skipping "%s" (needs viserio/console to run).</warning>', $cmd));
 
             return null;
         }

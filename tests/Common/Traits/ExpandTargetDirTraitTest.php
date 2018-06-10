@@ -5,12 +5,15 @@ namespace Narrowspark\Discovery\Common\Test\Traits;
 use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
 use PHPUnit\Framework\TestCase;
 
-class ExpandTargetDirTraitTest extends TestCase
+/**
+ * @internal
+ */
+final class ExpandTargetDirTraitTest extends TestCase
 {
     use ExpandTargetDirTrait;
 
     public function testItCanIdentifyVarsInTargetDir(): void
     {
-        self::assertSame('bar', self::expandTargetDir(['foo' => 'bar/'], '%foo%'));
+        $this->assertSame('bar', self::expandTargetDir(['foo' => 'bar/'], '%foo%'));
     }
 }

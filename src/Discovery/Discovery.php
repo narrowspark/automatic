@@ -197,10 +197,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
 
         return [
             'auto-scripts'                             => 'executeAutoScripts',
-            InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', PHP_INT_MAX]],
-            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~PHP_INT_MAX]],
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', \PHP_INT_MAX]],
+            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
             PackageEvents::POST_PACKAGE_INSTALL        => 'record',
             PackageEvents::POST_PACKAGE_UPDATE         => 'record',
             PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
@@ -228,7 +228,7 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         // to avoid issues when Discovery is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__), FilesystemIterator::SKIP_DOTS)) as $file) {
-            // @var \SplFileInfo $file
+            /** @var \SplFileInfo $file */
             if (\mb_substr($file->getFilename(), -4) === '.php') {
                 require_once $file;
             }
@@ -531,9 +531,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         }
 
         $this->rfs->download($packages, function ($packageName, $constraint) use (&$listed, &$packages, $pool): void {
-            // @var \Composer\Package\PackageInterface $package
+            /** @var \Composer\Package\PackageInterface $package */
             foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
-                // @var \Composer\Package\Link $link
+                /** @var \Composer\Package\Link $link */
                 foreach (\array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) as $link) {
                     if (isset($listed[$link->getTarget()]) || \mb_strpos($link->getTarget(), '/') === false) {
                         continue;

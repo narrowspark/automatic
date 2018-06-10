@@ -188,11 +188,11 @@ class Prefetcher
 
             $url = $this->getUrlFromPackage($package);
 
-            if ($url === null || ! $originUrl = \parse_url($url, PHP_URL_HOST)) {
+            if ($url === null || ! $originUrl = \parse_url($url, \PHP_URL_HOST)) {
                 continue;
             }
 
-            $destination = $this->cacheFilesDir . DIRECTORY_SEPARATOR . $this->getCacheKey($package, $url);
+            $destination = $this->cacheFilesDir . \DIRECTORY_SEPARATOR . $this->getCacheKey($package, $url);
 
             if (\file_exists($destination)) {
                 continue;

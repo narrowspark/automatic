@@ -10,7 +10,10 @@ use Narrowspark\Discovery\Configurator;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
-class ConfiguratorTest extends TestCase
+/**
+ * @internal
+ */
+final class ConfiguratorTest extends TestCase
 {
     /**
      * @var \Composer\Composer
@@ -42,36 +45,34 @@ class ConfiguratorTest extends TestCase
     public function testAdd(): void
     {
         $ref = new ReflectionClass($this->configurator);
-        // @var \ReflectionProperty $property
+        /** @var \ReflectionProperty $property */
         $property = $ref->getProperty('configurators');
         $property->setAccessible(true);
 
-        self::assertArrayNotHasKey('mock-configurator', $property->getValue($this->configurator));
+        $this->assertArrayNotHasKey('mock-configurator', $property->getValue($this->configurator));
 
         $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
         $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
 
-        self::assertArrayHasKey('mock-configurator', $property->getValue($this->configurator));
+        $this->assertArrayHasKey('mock-configurator', $property->getValue($this->configurator));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Configurator with the name "mock-configurator" already exists.
-     */
     public function testAddWithExistingConfiguratorName(): void
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configurator with the name "mock-configurator" already exists.');
+
         $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
 
         $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
         $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Configurator class "stdClass" must extend the class "Narrowspark\Discovery\Common\Contract\Configurator".
-     */
     public function testAddWithoutConfiguratorContractClass(): void
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configurator class "stdClass" must extend the class "Narrowspark\\Discovery\\Common\\Contract\\Configurator".');
+
         $this->configurator->add('foo/mock-configurator', \stdClass::class);
     }
 
@@ -79,7 +80,7 @@ class ConfiguratorTest extends TestCase
     {
         [$filePath, $package] = $this->arrangeCopyConfiguratorTest();
 
-        self::assertFileExists($filePath);
+        $this->assertFileExists($filePath);
 
         \unlink($filePath);
     }
@@ -88,11 +89,11 @@ class ConfiguratorTest extends TestCase
     {
         [$filePath, $package] = $this->arrangeCopyConfiguratorTest();
 
-        self::assertFileExists($filePath);
+        $this->assertFileExists($filePath);
 
         $this->configurator->unconfigure($package);
 
-        self::assertFileNotExists($filePath);
+        $this->assertFileNotExists($filePath);
     }
 
     /**

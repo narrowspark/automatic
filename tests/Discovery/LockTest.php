@@ -5,7 +5,10 @@ namespace Narrowspark\Discovery\Test;
 use Narrowspark\Discovery\Lock;
 use PHPUnit\Framework\TestCase;
 
-class LockTest extends TestCase
+/**
+ * @internal
+ */
+final class LockTest extends TestCase
 {
     /**
      * @var \Narrowspark\Discovery\Lock
@@ -33,7 +36,7 @@ class LockTest extends TestCase
     {
         $this->lock->add('test', ['version' => '1']);
 
-        self::assertTrue($this->lock->has('test'));
+        $this->assertTrue($this->lock->has('test'));
     }
 
     public function testRemove(): void
@@ -42,19 +45,19 @@ class LockTest extends TestCase
 
         $this->lock->remove('testRemove');
 
-        self::assertFalse($this->lock->has('testRemove'));
+        $this->assertFalse($this->lock->has('testRemove'));
     }
 
     public function testWriteAndRead(): void
     {
         $this->lock->write();
 
-        self::assertCount(0, $this->lock->read());
+        $this->assertCount(0, $this->lock->read());
 
         $this->lock->add('tests', ['version' => '3']);
         $this->lock->write();
 
-        self::assertCount(1, $this->lock->read());
+        $this->assertCount(1, $this->lock->read());
     }
 
     public function testGet(): void
@@ -67,8 +70,8 @@ class LockTest extends TestCase
 
         $this->lock->add('hash', $execptedHash);
 
-        self::assertSame($execptedArray, $this->lock->get('test'));
-        self::assertSame($execptedHash, $this->lock->get('hash'));
-        self::assertNull($this->lock->get('test2'));
+        $this->assertSame($execptedArray, $this->lock->get('test'));
+        $this->assertSame($execptedHash, $this->lock->get('hash'));
+        $this->assertNull($this->lock->get('test2'));
     }
 }

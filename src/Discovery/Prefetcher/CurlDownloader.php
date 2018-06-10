@@ -48,14 +48,14 @@ final class CurlDownloader
      */
     private static $options = [
         'http' => [
-            'method'  => CURLOPT_CUSTOMREQUEST,
-            'content' => CURLOPT_POSTFIELDS,
-            'proxy'   => CURLOPT_PROXY,
+            'method'  => \CURLOPT_CUSTOMREQUEST,
+            'content' => \CURLOPT_POSTFIELDS,
+            'proxy'   => \CURLOPT_PROXY,
         ],
         'ssl' => [
-            'ciphers' => CURLOPT_SSL_CIPHER_LIST,
-            'cafile'  => CURLOPT_CAINFO,
-            'capath'  => CURLOPT_CAPATH,
+            'ciphers' => \CURLOPT_SSL_CIPHER_LIST,
+            'cafile'  => \CURLOPT_CAINFO,
+            'capath'  => \CURLOPT_CAPATH,
         ],
     ];
 
@@ -80,17 +80,17 @@ final class CurlDownloader
     {
         $this->multiHandle = $mh = \curl_multi_init();
 
-        \curl_multi_setopt($mh, CURLMOPT_PIPELINING, /*CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX*/ 3);
+        \curl_multi_setopt($mh, \CURLMOPT_PIPELINING, /*CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX*/ 3);
 
         if (\defined('CURLMOPT_MAX_HOST_CONNECTIONS')) {
-            \curl_multi_setopt($mh, CURLMOPT_MAX_HOST_CONNECTIONS, 10);
+            \curl_multi_setopt($mh, \CURLMOPT_MAX_HOST_CONNECTIONS, 10);
         }
 
         $this->shareHandle = $sh = \curl_share_init();
 
-        \curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);
-        \curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);
-        \curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
+        \curl_share_setopt($sh, \CURLSHOPT_SHARE, \CURL_LOCK_DATA_COOKIE);
+        \curl_share_setopt($sh, \CURLSHOPT_SHARE, \CURL_LOCK_DATA_DNS);
+        \curl_share_setopt($sh, \CURLSHOPT_SHARE, \CURL_LOCK_DATA_SSL_SESSION);
     }
 
     /**
@@ -119,18 +119,18 @@ final class CurlDownloader
         $headers = \array_diff($params['options']['http']['header'], ['Connection: close']);
 
         if (! isset($params['options']['http']['protocol_version'])) {
-            \curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+            \curl_setopt($ch, \CURLOPT_HTTP_VERSION, \CURL_HTTP_VERSION_1_0);
         } else {
             $headers[] = 'Connection: keep-alive';
         }
 
-        \curl_setopt($ch, CURLOPT_URL, $url);
-        \curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        \curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        \curl_setopt($ch, CURLOPT_DNS_USE_GLOBAL_CACHE, false);
-        \curl_setopt($ch, CURLOPT_WRITEHEADER, $hd);
-        \curl_setopt($ch, CURLOPT_FILE, $fd);
-        \curl_setopt($ch, CURLOPT_SHARE, $this->shareHandle);
+        \curl_setopt($ch, \CURLOPT_URL, $url);
+        \curl_setopt($ch, \CURLOPT_HTTPHEADER, $headers);
+        \curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);
+        \curl_setopt($ch, \CURLOPT_DNS_USE_GLOBAL_CACHE, false);
+        \curl_setopt($ch, \CURLOPT_WRITEHEADER, $hd);
+        \curl_setopt($ch, \CURLOPT_FILE, $fd);
+        \curl_setopt($ch, \CURLOPT_SHARE, $this->shareHandle);
 
         foreach (self::$options as $type => $options) {
             foreach ($options as $name => $curlopt) {
@@ -152,7 +152,7 @@ final class CurlDownloader
 
         \curl_multi_add_handle($this->multiHandle, $ch);
 
-        $params['notification'](STREAM_NOTIFY_RESOLVE, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, 0, false);
+        $params['notification'](\STREAM_NOTIFY_RESOLVE, \STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, 0, false);
 
         $active = true;
 
@@ -166,7 +166,7 @@ final class CurlDownloader
                         continue;
                     }
 
-                    $progress = array_diff_key(\curl_getinfo($h), self::$timeInfo);
+                    $progress = \array_diff_key(\curl_getinfo($h), self::$timeInfo);
                     $job      = $this->jobs[$i];
 
                     unset($this->jobs[$i]);
@@ -180,7 +180,7 @@ final class CurlDownloader
                             throw new TransportException(\curl_error($h));
                         }
 
-                        if ($job['file'] && \curl_errno($h) === CURLE_OK && ! isset($this->exceptions[$i])) {
+                        if ($job['file'] && \curl_errno($h) === \CURLE_OK && ! isset($this->exceptions[$i])) {
                             \fclose($job['fd']);
                             \rename($job['file'] . '~', $job['file']);
                         }
@@ -214,8 +214,8 @@ final class CurlDownloader
                 }
             }
 
-            if (\curl_error($ch) !== '' || \curl_errno($ch) !== CURLE_OK) {
-                $this->exceptions[(int) $ch] = new TransportException(\curl_error($ch), \curl_getinfo($ch, CURLINFO_HTTP_CODE) ?: 0);
+            if (\curl_error($ch) !== '' || \curl_errno($ch) !== \CURLE_OK) {
+                $this->exceptions[(int) $ch] = new TransportException(\curl_error($ch), \curl_getinfo($ch, \CURLINFO_HTTP_CODE) ?: 0);
             }
 
             if (isset($this->exceptions[(int) $ch])) {
@@ -260,16 +260,16 @@ final class CurlDownloader
         }
 
         if (! $previousProgress['http_code'] && $progress['http_code'] && $progress['http_code'] < 200 || $progress['http_code'] <= 400) {
-            $code = 403 === $progress['http_code'] ? STREAM_NOTIFY_AUTH_RESULT : STREAM_NOTIFY_FAILURE;
-            $notify($code, STREAM_NOTIFY_SEVERITY_ERR, \curl_error($ch), $progress['http_code'], 0, 0, false);
+            $code = 403 === $progress['http_code'] ? \STREAM_NOTIFY_AUTH_RESULT : \STREAM_NOTIFY_FAILURE;
+            $notify($code, \STREAM_NOTIFY_SEVERITY_ERR, \curl_error($ch), $progress['http_code'], 0, 0, false);
         }
 
         if ($previousProgress['download_content_length'] < $progress['download_content_length']) {
-            $notify(STREAM_NOTIFY_FILE_SIZE_IS, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, (int) $progress['download_content_length'], false);
+            $notify(\STREAM_NOTIFY_FILE_SIZE_IS, \STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, (int) $progress['download_content_length'], false);
         }
 
         if ($previousProgress['size_download'] < $progress['size_download']) {
-            $notify(STREAM_NOTIFY_PROGRESS, STREAM_NOTIFY_SEVERITY_INFO, '', 0, (int) $progress['size_download'], (int) $progress['download_content_length'], false);
+            $notify(\STREAM_NOTIFY_PROGRESS, \STREAM_NOTIFY_SEVERITY_INFO, '', 0, (int) $progress['size_download'], (int) $progress['download_content_length'], false);
         }
     }
 }

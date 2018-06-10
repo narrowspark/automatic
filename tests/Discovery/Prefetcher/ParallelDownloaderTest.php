@@ -7,7 +7,10 @@ use Narrowspark\Discovery\Prefetcher\ParallelDownloader;
 use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
-class ParallelDownloaderTest extends MockeryTestCase
+/**
+ * @internal
+ */
+final class ParallelDownloaderTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
@@ -39,14 +42,14 @@ class ParallelDownloaderTest extends MockeryTestCase
         $options = $this->parallelDownloader->getOptions();
 
         // reset to default after call
-        self::assertCount(1, $this->parallelDownloader->getOptions());
+        $this->assertCount(1, $this->parallelDownloader->getOptions());
 
-        self::assertArrayHasKey('ssl', $options);
-        self::assertCount(2, $options);
+        $this->assertArrayHasKey('ssl', $options);
+        $this->assertCount(2, $options);
     }
 
     public function testGetLastHeaders(): void
     {
-        self::assertNull($this->parallelDownloader->getLastHeaders());
+        $this->assertNull($this->parallelDownloader->getLastHeaders());
     }
 }

@@ -5,7 +5,10 @@ namespace Narrowspark\Discovery\Common\Test;
 use Narrowspark\Discovery\Common\Path;
 use PHPUnit\Framework\TestCase;
 
-class PathTest extends TestCase
+/**
+ * @internal
+ */
+final class PathTest extends TestCase
 {
     /**
      * @var \Narrowspark\Discovery\Common\Path
@@ -24,12 +27,12 @@ class PathTest extends TestCase
 
     public function testGetWorkingDir(): void
     {
-        self::assertSame(__DIR__, $this->path->getWorkingDir());
+        $this->assertSame(__DIR__, $this->path->getWorkingDir());
     }
 
     public function testRelativize(): void
     {
-        self::assertSame(
+        $this->assertSame(
             './',
             $this->path->relativize(__DIR__)
         );
@@ -37,7 +40,7 @@ class PathTest extends TestCase
 
     public function testConcatenateOnWindows(): void
     {
-        self::assertEquals(
+        $this->assertEquals(
             'c:\\my-project/src/kernel.php',
             $this->path->concatenate(['c:\\my-project', 'src/', 'kernel.php'])
         );

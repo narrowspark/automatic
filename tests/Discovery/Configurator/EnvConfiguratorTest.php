@@ -8,7 +8,10 @@ use Narrowspark\Discovery\Common\Package;
 use Narrowspark\Discovery\Configurator\EnvConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
-class EnvConfiguratorTest extends MockeryTestCase
+/**
+ * @internal
+ */
+final class EnvConfiguratorTest extends MockeryTestCase
 {
     /**
      * @var \Composer\Composer
@@ -66,7 +69,7 @@ class EnvConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        self::assertSame('env', EnvConfigurator::getName());
+        $this->assertSame('env', EnvConfigurator::getName());
     }
 
     public function testConfigure(): void
@@ -96,11 +99,11 @@ class EnvConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
 
-        $envContents = <<<EOF
+        $envContents = <<<'EOF'
 ###> TEST PACKAGE ###
 APP_ENV="test bar"
 APP_DEBUG=0
-APP_PARAGRAPH="foo\\n\\"bar\\"\\\\t"
+APP_PARAGRAPH="foo\n\"bar\"\\t"
 DATABASE_URL="mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7"
 MAILER_URL=null://localhost
 MAILER_USER=narrow
@@ -115,8 +118,8 @@ EOF;
         // Skip on second call
         $this->configurator->configure($package);
 
-        self::assertStringEqualsFile($this->envDistPath, $envContents);
-        self::assertStringEqualsFile($this->envPath, $envContents);
+        $this->assertStringEqualsFile($this->envDistPath, $envContents);
+        $this->assertStringEqualsFile($this->envPath, $envContents);
     }
 
     public function testUnconfigure(): void
@@ -155,8 +158,8 @@ APP_SECRET=s3cretf0rt3st
 ###< env2 ###
 
 EOF;
-        self::assertStringEqualsFile($this->envDistPath, $envContents);
-        self::assertStringEqualsFile($this->envPath, $envContents);
+        $this->assertStringEqualsFile($this->envDistPath, $envContents);
+        $this->assertStringEqualsFile($this->envPath, $envContents);
 
         $package = new Package(
             'env2',
@@ -172,13 +175,13 @@ EOF;
 
         $this->configurator->unconfigure($package);
 
-        self::assertStringEqualsFile(
+        $this->assertStringEqualsFile(
             $this->envDistPath,
             <<<'EOF'
 
 EOF
         );
-        self::assertStringEqualsFile(
+        $this->assertStringEqualsFile(
             $this->envPath,
             <<<'EOF'
 

@@ -10,17 +10,20 @@ use Narrowspark\Discovery\Test\Fixtures\Finder\FooTrait;
 use Narrowspark\Discovery\Test\Fixtures\Finder\Nested\DummyClassNested;
 use PHPUnit\Framework\TestCase;
 
-class ClassFinderTest extends TestCase
+/**
+ * @internal
+ */
+final class ClassFinderTest extends TestCase
 {
     public function testItFindsAllClassesInDirectoryWithGivenNamespace(): void
     {
         $classes = ClassFinder::find(__DIR__ . '/Fixtures/Finder');
 
-        self::assertContains(DummyClass::class, $classes);
-        self::assertContains(DummyClassTwo::class, $classes);
-        self::assertContains(DummyClassNested::class, $classes);
-        self::assertContains(FooTrait::class, $classes);
-        self::assertContains(AbstractClass::class, $classes);
+        $this->assertContains(DummyClass::class, $classes);
+        $this->assertContains(DummyClassTwo::class, $classes);
+        $this->assertContains(DummyClassNested::class, $classes);
+        $this->assertContains(FooTrait::class, $classes);
+        $this->assertContains(AbstractClass::class, $classes);
     }
 
     public function testWithEmptyFolder(): void
@@ -33,7 +36,7 @@ class ClassFinderTest extends TestCase
 
         $classes = ClassFinder::find($dir);
 
-        self::assertSame([], $classes);
+        $this->assertSame([], $classes);
 
         \unlink($filePath);
         \rmdir($dir);

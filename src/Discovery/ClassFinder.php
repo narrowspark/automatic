@@ -22,7 +22,7 @@ final class ClassFinder
         foreach ($finder as $file) {
             $realPath = $file->getRealPath();
             $class    = self::findClassOrTraitOrInterface($realPath);
-            
+
             // PHP 7 memory manager will not release after token_get_all(), see https://bugs.php.net/70098
             \gc_mem_caches();
 
@@ -98,7 +98,7 @@ final class ClassFinder
      */
     private static function isPartOfNamespace($token): bool
     {
-        return \is_array($token) && ($token[0] === T_STRING || $token[0] === T_NS_SEPARATOR);
+        return \is_array($token) && ($token[0] === \T_STRING || $token[0] === \T_NS_SEPARATOR);
     }
 
     /**
@@ -134,7 +134,7 @@ final class ClassFinder
      */
     private static function tokenIsNamespace(array $token): bool
     {
-        return $token[0] === T_NAMESPACE;
+        return $token[0] === \T_NAMESPACE;
     }
 
     /**
@@ -146,7 +146,7 @@ final class ClassFinder
      */
     private static function isPartOfClass($token): bool
     {
-        return \is_array($token) && $token[0] === T_STRING;
+        return \is_array($token) && $token[0] === \T_STRING;
     }
 
     /**
@@ -158,7 +158,7 @@ final class ClassFinder
      */
     private static function tokenIsClassOrTraitOrInterface(array $token): bool
     {
-        return $token[0] === T_CLASS || $token[0] === T_INTERFACE || $token[0] === T_TRAIT;
+        return $token[0] === \T_CLASS || $token[0] === \T_INTERFACE || $token[0] === \T_TRAIT;
     }
 
     /**
@@ -170,6 +170,6 @@ final class ClassFinder
      */
     private static function isWhitespace($token): bool
     {
-        return \is_array($token) && $token[0] === T_WHITESPACE;
+        return \is_array($token) && $token[0] === \T_WHITESPACE;
     }
 }

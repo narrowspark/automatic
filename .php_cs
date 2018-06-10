@@ -1,7 +1,13 @@
 <?php
 use Narrowspark\CS\Config\Config;
 
-$config = new Config();
+$config = new Config(null, [
+    'native_function_invocation' => [
+        'exclude' => [
+            'getcwd'
+        ],
+    ],
+]);
 $config->getFinder()
     ->files()
     ->in(__DIR__)

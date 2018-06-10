@@ -43,7 +43,7 @@ final class EnvConfigurator extends AbstractConfigurator
                 $value = '"' . \str_replace(['\\', '"', "\t", "\n"], ['\\\\', '\\"', '\t', '\n'], $value) . '"';
             }
 
-            $data .= "$key=$value\n";
+            $data .= "${key}=${value}\n";
         }
 
         if (! \file_exists(getcwd() . '/.env')) {
@@ -70,8 +70,7 @@ final class EnvConfigurator extends AbstractConfigurator
             if (! \file_exists($env)) {
                 continue;
             }
-            // @codeCoverageIgnoreEnd
-
+            /** @codeCoverageIgnoreEnd */
             $count    = 0;
             $contents = \preg_replace(
                 \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getName(), $package->getName(), "\n"),
@@ -87,7 +86,7 @@ final class EnvConfigurator extends AbstractConfigurator
             }
             // @codeCoverageIgnoreEnd
 
-            $this->write(sprintf('Removing environment variables from %s', $file));
+            $this->write(\sprintf('Removing environment variables from %s', $file));
 
             \file_put_contents($env, $contents);
         }

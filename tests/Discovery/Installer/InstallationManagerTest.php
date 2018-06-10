@@ -12,7 +12,10 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Discovery\Installer\InstallationManager;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
-class InstallationManagerTest extends MockeryTestCase
+/**
+ * @internal
+ */
+final class InstallationManagerTest extends MockeryTestCase
 {
     public function testExecuteWithGetOperations(): void
     {
@@ -60,7 +63,7 @@ class InstallationManagerTest extends MockeryTestCase
         $manager->execute($installedRepoMock, $installOperationMock);
         $manager->execute($installedRepoMock, $aliasOperationMock);
 
-        self::assertCount(3, $manager->getOperations());
+        $this->assertCount(3, $manager->getOperations());
     }
 
     /**

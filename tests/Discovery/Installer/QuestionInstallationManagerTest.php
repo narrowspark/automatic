@@ -23,7 +23,10 @@ use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class QuestionInstallationManagerTest extends MockeryTestCase
+/**
+ * @internal
+ */
+final class QuestionInstallationManagerTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
@@ -122,7 +125,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             $jsonData['extra']['discovery']['extra-dependency']
         );
 
-        self::assertCount(0, $packages);
+        $this->assertCount(0, $packages);
     }
 
     public function testInstallWithEmptyDependencies(): void
@@ -142,15 +145,14 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             []
         );
 
-        self::assertCount(0, $packages);
+        $this->assertCount(0, $packages);
     }
 
-    /**
-     * @expectedException \Narrowspark\Discovery\Exception\RuntimeException
-     * @expectedExceptionMessage You must provide at least two optional dependencies.
-     */
     public function testInstallWithAEmptyQuestion(): void
     {
+        $this->expectException(\Narrowspark\Discovery\Exception\RuntimeException::class);
+        $this->expectExceptionMessage('You must provide at least two optional dependencies.');
+
         $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
@@ -174,12 +176,11 @@ class QuestionInstallationManagerTest extends MockeryTestCase
         );
     }
 
-    /**
-     * @expectedException \Narrowspark\Discovery\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Could not find package viserio/routing at any version for your minimum-stability (stable). Check the package spelling or your minimum-stability.
-     */
     public function testInstallThrowsExceptionWhenNoVersionIsFound(): void
     {
+        $this->expectException(\Narrowspark\Discovery\Exception\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Could not find package viserio/routing at any version for your minimum-stability (stable). Check the package spelling or your minimum-stability.');
+
         $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithoutVersionPath);
 
         $this->arrangeEmptyLocalRepositoryPackages();
@@ -280,7 +281,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
         );
 
         $this->assertPackagesInstall($packages, 'dev-master');
-        self::assertCount(1, $questionInstallationManager->getPackagesToInstall());
+        $this->assertCount(1, $questionInstallationManager->getPackagesToInstall());
     }
 
     public function testInstallSkipPackageInstallIfPackageIsInRootPackage(): void
@@ -359,8 +360,8 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             $jsonData['extra']['discovery']['extra-dependency']
         );
 
-        self::assertCount(0, $packages);
-        self::assertCount(0, $questionInstallationManager->getPackagesToInstall());
+        $this->assertCount(0, $packages);
+        $this->assertCount(0, $questionInstallationManager->getPackagesToInstall());
     }
 
     public function testInstallWithPackageNameVersionAndDevStability(): void
@@ -565,7 +566,7 @@ class QuestionInstallationManagerTest extends MockeryTestCase
             $package->getConfiguratorOptions('extra-dependency')
         );
 
-        self::assertCount(1, $packages);
+        $this->assertCount(1, $packages);
     }
 
     public function testUninstall(): void
@@ -688,8 +689,8 @@ class QuestionInstallationManagerTest extends MockeryTestCase
         $packages = $questionInstallationManager->uninstall($package, ['viserio/view' => 'dev-master']);
         $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithRequiresPath);
 
-        self::assertArrayHasKey('viserio/bus', $jsonData['require']);
-        self::assertCount(2, $packages);
+        $this->assertArrayHasKey('viserio/bus', $jsonData['require']);
+        $this->assertCount(2, $packages);
     }
 
     /**
@@ -841,8 +842,8 @@ class QuestionInstallationManagerTest extends MockeryTestCase
     {
         $jsonData = $jsonData = ComposerJsonFactory::jsonFileToArray($this->manipulatedComposerPath);
 
-        self::assertSame(['viserio/routing' => $version], $jsonData['require']);
-        self::assertCount(1, $packages);
+        $this->assertSame(['viserio/routing' => $version], $jsonData['require']);
+        $this->assertCount(1, $packages);
     }
 
     /**

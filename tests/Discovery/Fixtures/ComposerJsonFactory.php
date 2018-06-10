@@ -135,6 +135,6 @@ class ComposerJsonFactory
      */
     public static function arrayToJson(array $jsonData): string
     {
-        return \json_encode($jsonData, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        return \json_encode($jsonData, \JSON_UNESCAPED_SLASHES|\JSON_PRETTY_PRINT|\JSON_UNESCAPED_UNICODE);
     }
 }

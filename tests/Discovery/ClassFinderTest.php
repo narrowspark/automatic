@@ -19,11 +19,11 @@ final class ClassFinderTest extends TestCase
     {
         $classes = ClassFinder::find(__DIR__ . '/Fixtures/Finder');
 
-        $this->assertContains(DummyClass::class, $classes);
-        $this->assertContains(DummyClassTwo::class, $classes);
-        $this->assertContains(DummyClassNested::class, $classes);
-        $this->assertContains(FooTrait::class, $classes);
-        $this->assertContains(AbstractClass::class, $classes);
+        static::assertContains(DummyClass::class, $classes);
+        static::assertContains(DummyClassTwo::class, $classes);
+        static::assertContains(DummyClassNested::class, $classes);
+        static::assertContains(FooTrait::class, $classes);
+        static::assertContains(AbstractClass::class, $classes);
     }
 
     public function testWithEmptyFolder(): void
@@ -36,7 +36,7 @@ final class ClassFinderTest extends TestCase
 
         $classes = ClassFinder::find($dir);
 
-        $this->assertSame([], $classes);
+        static::assertSame([], $classes);
 
         \unlink($filePath);
         \rmdir($dir);

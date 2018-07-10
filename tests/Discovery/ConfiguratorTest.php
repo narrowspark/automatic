@@ -49,12 +49,12 @@ final class ConfiguratorTest extends TestCase
         $property = $ref->getProperty('configurators');
         $property->setAccessible(true);
 
-        $this->assertArrayNotHasKey('mock-configurator', $property->getValue($this->configurator));
+        static::assertArrayNotHasKey('mock-configurator', $property->getValue($this->configurator));
 
         $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
         $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
 
-        $this->assertArrayHasKey('mock-configurator', $property->getValue($this->configurator));
+        static::assertArrayHasKey('mock-configurator', $property->getValue($this->configurator));
     }
 
     public function testAddWithExistingConfiguratorName(): void
@@ -80,7 +80,7 @@ final class ConfiguratorTest extends TestCase
     {
         [$filePath, $package] = $this->arrangeCopyConfiguratorTest();
 
-        $this->assertFileExists($filePath);
+        static::assertFileExists($filePath);
 
         \unlink($filePath);
     }
@@ -89,11 +89,11 @@ final class ConfiguratorTest extends TestCase
     {
         [$filePath, $package] = $this->arrangeCopyConfiguratorTest();
 
-        $this->assertFileExists($filePath);
+        static::assertFileExists($filePath);
 
         $this->configurator->unconfigure($package);
 
-        $this->assertFileNotExists($filePath);
+        static::assertFileNotExists($filePath);
     }
 
     /**

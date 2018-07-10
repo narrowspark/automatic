@@ -44,6 +44,7 @@ class OperationsResolver
 
     /**
      * Set the parent package name.
+     * This is used for the "extra-dependency-of" key.
      *
      * @param string $name
      *

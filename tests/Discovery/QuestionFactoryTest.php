@@ -12,7 +12,7 @@ final class QuestionFactoryTest extends TestCase
 {
     public function testGetPackageQuestion(): void
     {
-        $this->assertSame(
+        static::assertSame(
             '    Review the package from www.example.com.
     Do you want to execute this package?
     [<comment>y</comment>] Yes
@@ -26,11 +26,11 @@ final class QuestionFactoryTest extends TestCase
 
     public function testValidatePackageQuestionAnswer(): void
     {
-        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer(null));
-        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer('n'));
-        $this->assertSame('y', QuestionFactory::validatePackageQuestionAnswer('y'));
-        $this->assertSame('a', QuestionFactory::validatePackageQuestionAnswer('a'));
-        $this->assertSame('p', QuestionFactory::validatePackageQuestionAnswer('p'));
+        static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer(null));
+        static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('n'));
+        static::assertSame('y', QuestionFactory::validatePackageQuestionAnswer('y'));
+        static::assertSame('a', QuestionFactory::validatePackageQuestionAnswer('a'));
+        static::assertSame('p', QuestionFactory::validatePackageQuestionAnswer('p'));
     }
 
     public function testValidatePackageQuestionAnswerThrowException(): void
@@ -38,6 +38,6 @@ final class QuestionFactoryTest extends TestCase
         $this->expectException(\Narrowspark\Discovery\Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid choice');
 
-        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));
+        static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));
     }
 }

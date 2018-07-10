@@ -10,7 +10,7 @@ use Composer\Installer\InstallationManager;
 use Composer\Package\Locker;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
-use Narrowspark\Discovery\Installer\Installer;
+use Narrowspark\Discovery\Common\Installer\Installer;
 use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
@@ -66,7 +66,7 @@ final class InstallerTest extends MockeryTestCase
 
         $installer = Installer::create($this->ioMock, $this->composerMock, $this->inputMock);
 
-        $this->assertInstanceOf(BaseInstaller::class, $installer);
+        static::assertInstanceOf(BaseInstaller::class, $installer);
     }
 
     /**

@@ -43,17 +43,17 @@ final class PackageTest extends TestCase
 
     public function testGetName(): void
     {
-        $this->assertSame('test', $this->package->getName());
+        static::assertSame('test', $this->package->getName());
     }
 
     public function testGetVersion(): void
     {
-        $this->assertSame('1', $this->package->getVersion());
+        static::assertSame('1', $this->package->getVersion());
     }
 
     public function testGetPackagePath(): void
     {
-        $this->assertSame(
+        static::assertSame(
             \str_replace('\\', '/', __DIR__ . '/test/'),
             $this->package->getPackagePath()
         );
@@ -63,45 +63,45 @@ final class PackageTest extends TestCase
     {
         $options = $this->package->getConfiguratorOptions('copy');
 
-        $this->assertEquals(['from' => 'to'], $options);
+        static::assertEquals(['from' => 'to'], $options);
 
         $options = $this->package->getConfiguratorOptions('test');
 
-        $this->assertEquals([], $options);
+        static::assertEquals([], $options);
     }
 
     public function testGetOptions(): void
     {
-        $this->assertEquals($this->config, $this->package->getOptions());
+        static::assertEquals($this->config, $this->package->getOptions());
     }
 
     public function testGetUrl(): void
     {
-        $this->assertSame($this->config['url'], $this->package->getUrl());
+        static::assertSame($this->config['url'], $this->package->getUrl());
     }
 
     public function testGetOperation(): void
     {
-        $this->assertSame($this->config['operation'], $this->package->getOperation());
+        static::assertSame($this->config['operation'], $this->package->getOperation());
     }
 
     public function testGetType(): void
     {
-        $this->assertSame($this->config['type'], $this->package->getType());
+        static::assertSame($this->config['type'], $this->package->getType());
     }
 
     public function testIsExtraDependency(): void
     {
-        $this->assertTrue($this->package->isExtraDependency());
+        static::assertTrue($this->package->isExtraDependency());
     }
 
     public function testGetRequire(): void
     {
-        $this->assertSame([], $this->package->getRequires());
+        static::assertSame([], $this->package->getRequires());
     }
 
     public function testGetOption(): void
     {
-        $this->assertSame('foo/bar', $this->package->getOption('extra-dependency-of'));
+        static::assertSame('foo/bar', $this->package->getOption('extra-dependency-of'));
     }
 }

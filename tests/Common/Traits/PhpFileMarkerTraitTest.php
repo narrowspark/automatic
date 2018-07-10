@@ -35,14 +35,14 @@ final class PhpFileMarkerTraitTest extends TestCase
     {
         \file_put_contents($this->path, "<?php\n\n\$array = [\n/** > marked **/ 'test' /** < marked **/\n];\n");
 
-        $this->assertFalse($this->isFileMarked('test', $this->path));
-        $this->assertTrue($this->isFileMarked('marked', $this->path));
+        static::assertFalse($this->isFileMarked('test', $this->path));
+        static::assertTrue($this->isFileMarked('marked', $this->path));
     }
 
     public function testMarkData(): void
     {
         \file_put_contents($this->path, $this->markData('test', '$arr = [];', 4));
 
-        $this->assertTrue($this->isFileMarked('test', $this->path));
+        static::assertTrue($this->isFileMarked('test', $this->path));
     }
 }

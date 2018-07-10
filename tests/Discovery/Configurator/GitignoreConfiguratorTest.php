@@ -62,7 +62,7 @@ final class GitignoreConfiguratorTest extends TestCase
 
     public function testGetName(): void
     {
-        $this->assertSame('gitignore', GitIgnoreConfigurator::getName());
+        static::assertSame('gitignore', GitIgnoreConfigurator::getName());
     }
 
     public function testConfigureAndUnconfigure(): void
@@ -113,24 +113,24 @@ EOF;
 
         $this->configurator->configure($package);
 
-        $this->assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
 
         $this->configurator->configure($package2);
 
-        $this->assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n\n" . $gitignoreContents2 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n\n" . $gitignoreContents2 . "\n");
 
         $this->configurator->configure($package);
         $this->configurator->configure($package2);
 
-        $this->assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n\n" . $gitignoreContents2 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n\n" . $gitignoreContents2 . "\n");
 
         $this->configurator->unconfigure($package);
 
-        $this->assertStringEqualsFile($this->gitignorePath, $gitignoreContents2 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, $gitignoreContents2 . "\n");
 
         $this->configurator->unconfigure($package2);
 
-        $this->assertStringEqualsFile($this->gitignorePath, '');
+        static::assertStringEqualsFile($this->gitignorePath, '');
     }
 
     public function testUnconfigureWithNotFoundPackage(): void
@@ -175,6 +175,6 @@ EOF;
 /public/css/
 ###< FooBundle ###
 EOF;
-        $this->assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
     }
 }

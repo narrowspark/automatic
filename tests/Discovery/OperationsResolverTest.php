@@ -138,21 +138,21 @@ final class OperationsResolverTest extends MockeryTestCase
 
         $package = $packages['install'];
 
-        $this->assertSame('install', $package->getName());
-        $this->assertSame('1', $package->getVersion());
-        $this->assertSame('library', $package->getType());
-        $this->assertSame('example.local', $package->getUrl());
-        $this->assertSame('install', $package->getOperation());
-        $this->assertTrue($package->isExtraDependency());
+        static::assertSame('install', $package->getName());
+        static::assertSame('1', $package->getVersion());
+        static::assertSame('library', $package->getType());
+        static::assertSame('example.local', $package->getUrl());
+        static::assertSame('install', $package->getOperation());
+        static::assertTrue($package->isExtraDependency());
 
         $package = $packages['uninstall'];
 
-        $this->assertSame('uninstall', $package->getName());
-        $this->assertSame('1.0-dev', $package->getVersion());
-        $this->assertSame('provider', $package->getType());
-        $this->assertSame('example.local', $package->getUrl());
-        $this->assertSame('uninstall', $package->getOperation());
-        $this->assertSame(['foo/bar'], $package->getRequires());
+        static::assertSame('uninstall', $package->getName());
+        static::assertSame('1.0-dev', $package->getVersion());
+        static::assertSame('provider', $package->getType());
+        static::assertSame('example.local', $package->getUrl());
+        static::assertSame('uninstall', $package->getOperation());
+        static::assertSame(['foo/bar'], $package->getRequires());
     }
 
     /**

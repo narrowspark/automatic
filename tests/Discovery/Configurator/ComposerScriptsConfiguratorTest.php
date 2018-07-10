@@ -7,9 +7,9 @@ use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
+use Narrowspark\Discovery\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Discovery\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Discovery\Test\Fixtures\ComposerJsonFactory;
-use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
@@ -70,7 +70,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        $this->assertSame('composer-scripts', ComposerScriptsConfigurator::getName());
+        static::assertSame('composer-scripts', ComposerScriptsConfigurator::getName());
     }
 
     public function testConfigure(): void

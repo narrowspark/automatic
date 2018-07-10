@@ -69,7 +69,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        $this->assertSame('env', EnvConfigurator::getName());
+        static::assertSame('env', EnvConfigurator::getName());
     }
 
     public function testConfigure(): void
@@ -118,8 +118,8 @@ EOF;
         // Skip on second call
         $this->configurator->configure($package);
 
-        $this->assertStringEqualsFile($this->envDistPath, $envContents);
-        $this->assertStringEqualsFile($this->envPath, $envContents);
+        static::assertStringEqualsFile($this->envDistPath, $envContents);
+        static::assertStringEqualsFile($this->envPath, $envContents);
     }
 
     public function testUnconfigure(): void
@@ -158,8 +158,8 @@ APP_SECRET=s3cretf0rt3st
 ###< env2 ###
 
 EOF;
-        $this->assertStringEqualsFile($this->envDistPath, $envContents);
-        $this->assertStringEqualsFile($this->envPath, $envContents);
+        static::assertStringEqualsFile($this->envDistPath, $envContents);
+        static::assertStringEqualsFile($this->envPath, $envContents);
 
         $package = new Package(
             'env2',
@@ -175,13 +175,13 @@ EOF;
 
         $this->configurator->unconfigure($package);
 
-        $this->assertStringEqualsFile(
+        static::assertStringEqualsFile(
             $this->envDistPath,
             <<<'EOF'
 
 EOF
         );
-        $this->assertStringEqualsFile(
+        static::assertStringEqualsFile(
             $this->envPath,
             <<<'EOF'
 

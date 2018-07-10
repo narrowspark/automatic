@@ -18,12 +18,12 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginManager;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
+use Narrowspark\Discovery\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Discovery\Configurator;
 use Narrowspark\Discovery\Discovery;
 use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Lock;
 use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
-use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -71,20 +71,20 @@ final class DiscoveryTest extends MockeryTestCase
 
     public function testGetDiscoveryLockFile(): void
     {
-        $this->assertSame('./discovery.lock', Discovery::getDiscoveryLockFile());
+        static::assertSame('./discovery.lock', Discovery::getDiscoveryLockFile());
     }
 
     public function testGetComposerJsonFileAndManipulator(): void
     {
         [$json, $manipulator] = Discovery::getComposerJsonFileAndManipulator();
 
-        $this->assertInstanceOf(JsonFile::class, $json);
-        $this->assertInstanceOf(JsonManipulator::class, $manipulator);
+        static::assertInstanceOf(JsonFile::class, $json);
+        static::assertInstanceOf(JsonManipulator::class, $manipulator);
     }
 
     public function testGetSubscribedEvents(): void
     {
-        $this->assertCount(13, Discovery::getSubscribedEvents());
+        static::assertCount(13, Discovery::getSubscribedEvents());
     }
 
     public function testActivate(): void
@@ -160,10 +160,10 @@ final class DiscoveryTest extends MockeryTestCase
 
         $this->discovery->activate($this->composerMock, $this->ioMock);
 
-        $this->assertInstanceOf(Lock::class, $this->discovery->getLock());
-        $this->assertInstanceOf(Configurator::class, $this->discovery->getConfigurator());
+        static::assertInstanceOf(Lock::class, $this->discovery->getLock());
+        static::assertInstanceOf(Configurator::class, $this->discovery->getConfigurator());
 
-        $this->assertSame(
+        static::assertSame(
             [
                 'This file locks the discovery information of your project to a known state',
                 'This file is @generated automatically',

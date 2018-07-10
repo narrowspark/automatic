@@ -96,7 +96,7 @@ final class ConfiguratorInstallerTest extends MockeryTestCase
 
     public function testSupports(): void
     {
-        $this->assertTrue($this->configuratorInstaller->supports('discovery-configurator'));
+        static::assertTrue($this->configuratorInstaller->supports('discovery-configurator'));
     }
 
     public function testInstallWithEmptyPsr4(): void

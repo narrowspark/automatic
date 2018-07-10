@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Installer;
+namespace Narrowspark\Discovery\Common\Installer;
 
 use Composer\Composer;
 use Composer\Config;

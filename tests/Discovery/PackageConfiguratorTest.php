@@ -47,7 +47,7 @@ final class PackageConfiguratorTest extends MockeryTestCase
         $property = $ref->getProperty('configurators');
         $property->setAccessible(true);
 
-        $this->assertArrayHasKey('mock', $property->getValue($configurator));
+        static::assertArrayHasKey('mock', $property->getValue($configurator));
     }
 
     public function testAddWithoutConfiguratorContractClass(): void

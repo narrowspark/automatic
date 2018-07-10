@@ -9,7 +9,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Installer\InstallerInterface;
 use Composer\Package\Package;
 use Composer\Repository\InstalledRepositoryInterface;
-use Narrowspark\Discovery\Installer\InstallationManager;
+use Narrowspark\Discovery\Common\Installer\InstallationManager;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
@@ -63,7 +63,7 @@ final class InstallationManagerTest extends MockeryTestCase
         $manager->execute($installedRepoMock, $installOperationMock);
         $manager->execute($installedRepoMock, $aliasOperationMock);
 
-        $this->assertCount(3, $manager->getOperations());
+        static::assertCount(3, $manager->getOperations());
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Traits;
+namespace Narrowspark\Discovery\Common\Traits;
 
 use Closure;
 

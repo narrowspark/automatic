@@ -3,75 +3,21 @@ declare(strict_types=1);
 namespace Narrowspark\Discovery\Installer;
 
 use Composer\Composer;
-use Composer\DependencyResolver\Pool;
-use Composer\Factory;
-use Composer\Installer as BaseInstaller;
-use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\IO\IOInterface;
-use Composer\Json\JsonFile;
-use Composer\Json\JsonManipulator;
-use Composer\Package\Link;
-use Composer\Package\RootPackageInterface;
-use Composer\Package\Version\VersionParser;
-use Composer\Package\Version\VersionSelector;
-use Composer\Repository\CompositeRepository;
-use Composer\Repository\PlatformRepository;
-use Composer\Repository\RepositoryFactory;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
-use Narrowspark\Discovery\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Common\Installer\AbstractInstallationManager;
 use Narrowspark\Discovery\Exception\RuntimeException;
 use Narrowspark\Discovery\OperationsResolver;
-use Narrowspark\Discovery\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
 
-class QuestionInstallationManager
+class QuestionInstallationManager extends AbstractInstallationManager
 {
-    use GetGenericPropertyReaderTrait;
-
     /**
-     * @var int
-     */
-    private const ADD = 1;
-
-    /**
-     * @var int
-     */
-    private const REMOVE = 0;
-
-    /**
-     * A VersionSelector instance.
+     * List of selected question packages to install.
      *
-     * @var \Composer\Package\Version\VersionSelector
+     * @var array
      */
-    protected $versionSelector;
-
-    /**
-     * A composer json file instance.
-     *
-     * @var \Composer\Json\JsonFile
-     */
-    protected $jsonFile;
-
-    /**
-     * A root package implementation.
-     *
-     * @var \Composer\Package\RootPackageInterface
-     */
-    private $rootPackage;
-
-    /**
-     * The composer instance.
-     *
-     * @var \Composer\Composer
-     */
-    private $composer;
-
-    /**
-     * The composer io implementation.
-     *
-     * @var \Composer\IO\IOInterface
-     */
-    private $io;
+    private $packagesToInstall = [];
 
     /**
      * A operations resolver instance.
@@ -79,41 +25,6 @@ class QuestionInstallationManager
      * @var \Narrowspark\Discovery\OperationsResolver
      */
     private $operationsResolver;
-
-    /**
-     * A repository implementation.
-     *
-     * @var \Composer\Repository\WritableRepositoryInterface
-     */
-    private $localRepository;
-
-    /**
-     * A input implementation.
-     *
-     * @var \Symfony\Component\Console\Input\InputInterface
-     */
-    private $input;
-
-    /**
-     * All local installed packages.
-     *
-     * @var string[]
-     */
-    private $installedPackages;
-
-    /**
-     * Get the minimum stability.
-     *
-     * @var string
-     */
-    private $stability;
-
-    /**
-     * List of selected question packages to install.
-     *
-     * @var array
-     */
-    private $packagesToInstall = [];
 
     /**
      * Create a new ExtraDependencyInstaller instance.
@@ -125,26 +36,9 @@ class QuestionInstallationManager
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input, OperationsResolver $operationsResolver)
     {
-        $this->composer           = $composer;
-        $this->io                 = $io;
-        $this->input              = $input;
+        parent::__construct($composer, $io, $input);
+
         $this->operationsResolver = $operationsResolver;
-        $this->jsonFile           = new JsonFile(Factory::getComposerFile());
-
-        $this->rootPackage = $this->composer->getPackage();
-        $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
-
-        $pool = new Pool($this->stability);
-        $pool->addRepository(
-            new CompositeRepository(\array_merge([new PlatformRepository()], RepositoryFactory::defaultRepos($io)))
-        );
-
-        $this->versionSelector = new VersionSelector($pool);
-        $this->localRepository = $this->composer->getRepositoryManager()->getLocalRepository();
-
-        foreach ($this->localRepository->getPackages() as $package) {
-            $this->installedPackages[\mb_strtolower($package->getName())] = \ltrim($package->getPrettyVersion(), 'v');
-        }
     }
 
     /**
@@ -240,16 +134,6 @@ class QuestionInstallationManager
     }
 
     /**
-     * Returns selected packages from questions.
-     *
-     * @return array
-     */
-    public function getPackagesToInstall(): array
-    {
-        return $this->packagesToInstall;
-    }
-
-    /**
      * Uninstall extra dependencies.
      *
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
@@ -301,15 +185,13 @@ class QuestionInstallationManager
     }
 
     /**
-     * @codeCoverageIgnore
+     * Returns selected packages from questions.
      *
-     * Get configured installer instance.
-     *
-     * @return \Composer\Installer
+     * @return array
      */
-    protected function getInstaller(): BaseInstaller
+    public function getPackagesToInstall(): array
     {
-        return Installer::create($this->io, $this->composer, $this->input);
+        return $this->packagesToInstall;
     }
 
     /**
@@ -360,154 +242,5 @@ class QuestionInstallationManager
         } while (! $package);
 
         return $package;
-    }
-
-    /**
-     * Try to find the best version fot the package.
-     *
-     * @param string $name
-     *
-     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
-     *
-     * @return string
-     */
-    private function findVersion(string $name): string
-    {
-        // find the latest version allowed in this pool
-        $package = $this->versionSelector->findBestCandidate($name, null, null, 'stable');
-
-        if ($package === false) {
-            throw new InvalidArgumentException(\sprintf(
-                'Could not find package %s at any version for your minimum-stability (%s).'
-                . ' Check the package spelling or your minimum-stability.',
-                $name,
-                $this->stability
-            ));
-        }
-
-        return $this->versionSelector->findRecommendedRequireVersion($package);
-    }
-
-    /**
-     * Update the root composer.json require.
-     *
-     * @param array $packages
-     * @param int   $type
-     *
-     * @return \Composer\Package\RootPackageInterface
-     */
-    private function updateRootComposerJson(array $packages, int $type): RootPackageInterface
-    {
-        $this->io->writeError('Updating root package');
-
-        $requires = $this->rootPackage->getRequires();
-
-        if ($type === self::ADD) {
-            foreach ($packages as $packageName => $version) {
-                $requires[$packageName] = new Link(
-                    '__root__',
-                    $packageName,
-                    (new VersionParser())->parseConstraints($version),
-                    'requires',
-                    $version
-                );
-            }
-        } elseif ($type === self::REMOVE) {
-            foreach ($packages as $packageName => $version) {
-                unset($requires[$packageName]);
-            }
-        }
-
-        $this->rootPackage->setRequires($requires);
-
-        return $this->rootPackage;
-    }
-
-    /**
-     * Manipulate root composer.json with the new packages and dump it.
-     *
-     * @param array $packages
-     * @param int   $type
-     *
-     * @throws \Exception happens in the JsonFile class
-     *
-     * @return void
-     */
-    private function updateComposerJson(array $packages, int $type): void
-    {
-        $this->io->writeError('Updating composer.json');
-
-        if ($type === self::ADD) {
-            $jsonManipulator = new JsonManipulator(\file_get_contents($this->jsonFile->getPath()));
-
-            foreach ($packages as $name => $version) {
-                $sortPackages = $this->composer->getConfig()->get('sort-packages') ?? false;
-
-                $jsonManipulator->addLink('require', $name, $version, $sortPackages);
-            }
-
-            \file_put_contents($this->jsonFile->getPath(), $jsonManipulator->getContents());
-        } elseif ($type === self::REMOVE) {
-            $jsonFileContent = $this->jsonFile->read();
-
-            foreach ($packages as $packageName => $version) {
-                unset($jsonFileContent['require'][$packageName]);
-            }
-
-            $this->jsonFile->write($jsonFileContent);
-        }
-    }
-
-    /**
-     * Install selected packages.
-     *
-     * @param \Composer\Package\RootPackageInterface $rootPackage
-     * @param array                                  $whitelistPackages
-     *
-     * @throws \Exception
-     *
-     * @return int
-     */
-    private function runInstaller(RootPackageInterface $rootPackage, array $whitelistPackages): int
-    {
-        $this->io->writeError('Running an update to install dependent packages');
-
-        $this->composer->setPackage($rootPackage);
-
-        $installer = $this->getInstaller();
-        $installer->setUpdateWhitelist($whitelistPackages);
-
-        return $installer->run();
-    }
-
-    /**
-     * Adds a modified installation manager to composer.
-     *
-     * @param \Composer\Installer\InstallationManager $oldInstallManager
-     *
-     * @return void
-     */
-    private function addDiscoveryInstallationManagerToComposer(BaseInstallationManager $oldInstallManager): void
-    {
-        $reader     = $this->getGenericPropertyReader();
-        $installers = (array) $reader($oldInstallManager, 'installers');
-
-        $narrowsparkInstaller = new InstallationManager();
-
-        foreach ($installers as $installer) {
-            $narrowsparkInstaller->addInstaller($installer);
-        }
-
-        $this->composer->setInstallationManager($narrowsparkInstaller);
-    }
-
-    /**
-     * Get merged root requires and dev-requires.
-     *
-     * @return \Composer\Package\Link[]
-     */
-    private function getRootRequires(): array
-    {
-        return \array_merge($this->rootPackage->getRequires(), $this->rootPackage->getDevRequires());
     }
 }

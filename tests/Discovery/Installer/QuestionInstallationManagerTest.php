@@ -14,8 +14,8 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Semver\VersionParser;
 use Mockery\MockInterface;
+use Narrowspark\Discovery\Common\Installer\InstallationManager;
 use Narrowspark\Discovery\Common\Package;
-use Narrowspark\Discovery\Installer\InstallationManager;
 use Narrowspark\Discovery\OperationsResolver;
 use Narrowspark\Discovery\Test\Fixtures\ComposerJsonFactory;
 use Narrowspark\Discovery\Test\Fixtures\MockedQuestionInstallationManager;
@@ -125,7 +125,7 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
             $jsonData['extra']['discovery']['extra-dependency']
         );
 
-        $this->assertCount(0, $packages);
+        static::assertCount(0, $packages);
     }
 
     public function testInstallWithEmptyDependencies(): void
@@ -145,7 +145,7 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
             []
         );
 
-        $this->assertCount(0, $packages);
+        static::assertCount(0, $packages);
     }
 
     public function testInstallWithAEmptyQuestion(): void
@@ -281,7 +281,7 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
         );
 
         $this->assertPackagesInstall($packages, 'dev-master');
-        $this->assertCount(1, $questionInstallationManager->getPackagesToInstall());
+        static::assertCount(1, $questionInstallationManager->getPackagesToInstall());
     }
 
     public function testInstallSkipPackageInstallIfPackageIsInRootPackage(): void
@@ -360,8 +360,8 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
             $jsonData['extra']['discovery']['extra-dependency']
         );
 
-        $this->assertCount(0, $packages);
-        $this->assertCount(0, $questionInstallationManager->getPackagesToInstall());
+        static::assertCount(0, $packages);
+        static::assertCount(0, $questionInstallationManager->getPackagesToInstall());
     }
 
     public function testInstallWithPackageNameVersionAndDevStability(): void
@@ -566,7 +566,7 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
             $package->getConfiguratorOptions('extra-dependency')
         );
 
-        $this->assertCount(1, $packages);
+        static::assertCount(1, $packages);
     }
 
     public function testUninstall(): void
@@ -689,8 +689,8 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
         $packages = $questionInstallationManager->uninstall($package, ['viserio/view' => 'dev-master']);
         $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithRequiresPath);
 
-        $this->assertArrayHasKey('viserio/bus', $jsonData['require']);
-        $this->assertCount(2, $packages);
+        static::assertArrayHasKey('viserio/bus', $jsonData['require']);
+        static::assertCount(2, $packages);
     }
 
     /**
@@ -842,8 +842,8 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
     {
         $jsonData = $jsonData = ComposerJsonFactory::jsonFileToArray($this->manipulatedComposerPath);
 
-        $this->assertSame(['viserio/routing' => $version], $jsonData['require']);
-        $this->assertCount(1, $packages);
+        static::assertSame(['viserio/routing' => $version], $jsonData['require']);
+        static::assertCount(1, $packages);
     }
 
     /**

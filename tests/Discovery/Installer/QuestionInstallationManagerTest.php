@@ -14,6 +14,8 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Semver\VersionParser;
 use Mockery\MockInterface;
+use Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Discovery\Common\Installer\InstallationManager;
 use Narrowspark\Discovery\Common\Package;
 use Narrowspark\Discovery\OperationsResolver;
@@ -150,7 +152,7 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
 
     public function testInstallWithAEmptyQuestion(): void
     {
-        $this->expectException(\Narrowspark\Discovery\Exception\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('You must provide at least two optional dependencies.');
 
         $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithVersionPath);
@@ -178,7 +180,7 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
 
     public function testInstallThrowsExceptionWhenNoVersionIsFound(): void
     {
-        $this->expectException(\Narrowspark\Discovery\Exception\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Could not find package viserio/routing at any version for your minimum-stability (stable). Check the package spelling or your minimum-stability.');
 
         $jsonData = ComposerJsonFactory::jsonFileToArray($this->composerJsonWithoutVersionPath);

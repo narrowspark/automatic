@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery\Test;
 
+use Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\QuestionFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -35,7 +36,7 @@ final class QuestionFactoryTest extends TestCase
 
     public function testValidatePackageQuestionAnswerThrowException(): void
     {
-        $this->expectException(\Narrowspark\Discovery\Exception\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid choice');
 
         static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));

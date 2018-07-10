@@ -6,7 +6,7 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Installer\AbstractInstallationManager;
-use Narrowspark\Discovery\Exception\RuntimeException;
+use Narrowspark\Discovery\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Discovery\OperationsResolver;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -47,8 +47,8 @@ class QuestionInstallationManager extends AbstractInstallationManager
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
      * @param array                                          $dependencies
      *
-     * @throws \Narrowspark\Discovery\Exception\RuntimeException
-     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Common\Contract\Exception\RuntimeException
+     * @throws \Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException
      * @throws \Exception
      *
      * @return \Narrowspark\Discovery\Common\Contract\Package[]

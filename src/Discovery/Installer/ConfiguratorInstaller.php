@@ -9,7 +9,7 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Discovery\ClassFinder;
 use Narrowspark\Discovery\Lock;
-use UnexpectedValueException;
+use Narrowspark\Discovery\Common\Contract\Exception\UnexpectedValueException;
 
 class ConfiguratorInstaller extends LibraryInstaller
 {

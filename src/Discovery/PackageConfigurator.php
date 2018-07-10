@@ -6,7 +6,7 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Narrowspark\Discovery\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
-use Narrowspark\Discovery\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException;
 
 final class PackageConfigurator
 {
@@ -63,7 +63,7 @@ final class PackageConfigurator
      * @param string $name
      * @param string $configurator
      *
-     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException
      *
      * @return void
      */

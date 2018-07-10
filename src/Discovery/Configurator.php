@@ -5,12 +5,12 @@ namespace Narrowspark\Discovery;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Narrowspark\Discovery\Common\Contract\Configurator as ConfiguratorContract;
+use Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Discovery\Configurator\CopyFromPackageConfigurator;
 use Narrowspark\Discovery\Configurator\EnvConfigurator;
 use Narrowspark\Discovery\Configurator\GitIgnoreConfigurator;
-use Narrowspark\Discovery\Exception\InvalidArgumentException;
 
 final class Configurator
 {
@@ -74,7 +74,7 @@ final class Configurator
      * @param string $name
      * @param string $configurator
      *
-     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException
      *
      * @return void
      */

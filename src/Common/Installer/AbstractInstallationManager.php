@@ -19,7 +19,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\GetGenericPropertyReaderTrait;
-use Narrowspark\Discovery\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 
 abstract class AbstractInstallationManager
@@ -135,8 +135,8 @@ abstract class AbstractInstallationManager
      * @param \Narrowspark\Discovery\Common\Contract\Package $package
      * @param array                                          $dependencies
      *
-     * @throws \Narrowspark\Discovery\Exception\RuntimeException
-     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Common\Contract\Exception\RuntimeException
+     * @throws \Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException
      * @throws \Exception
      *
      * @return \Narrowspark\Discovery\Common\Contract\Package[]
@@ -172,7 +172,7 @@ abstract class AbstractInstallationManager
      *
      * @param string $name
      *
-     * @throws \Narrowspark\Discovery\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException
      *
      * @return string
      */

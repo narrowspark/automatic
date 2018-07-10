@@ -17,9 +17,9 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
+use Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Traits\GetGenericPropertyReaderTrait;
-use Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 
 abstract class AbstractInstallationManager

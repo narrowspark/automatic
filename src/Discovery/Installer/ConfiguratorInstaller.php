@@ -8,8 +8,8 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Discovery\ClassFinder;
-use Narrowspark\Discovery\Lock;
 use Narrowspark\Discovery\Common\Contract\Exception\UnexpectedValueException;
+use Narrowspark\Discovery\Lock;
 
 class ConfiguratorInstaller extends LibraryInstaller
 {

@@ -4,9 +4,9 @@ namespace Narrowspark\Discovery\Installer;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
+use Narrowspark\Discovery\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Installer\AbstractInstallationManager;
-use Narrowspark\Discovery\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Discovery\OperationsResolver;
 use Symfony\Component\Console\Input\InputInterface;
 

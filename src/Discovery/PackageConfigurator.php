@@ -5,8 +5,8 @@ namespace Narrowspark\Discovery;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Narrowspark\Discovery\Common\Contract\Configurator as ConfiguratorContract;
-use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 use Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException;
+use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
 
 final class PackageConfigurator
 {

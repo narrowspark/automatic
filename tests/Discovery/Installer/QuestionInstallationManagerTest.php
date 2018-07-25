@@ -867,9 +867,9 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
     /**
      * @param string $name
      *
-     * @return \Narrowspark\Discovery\Package
+     * @return \Narrowspark\Discovery\Common\Package
      */
-    private function arrangeInstallPackage(string $name): \Narrowspark\Discovery\Package
+    private function arrangeInstallPackage(string $name): Package
     {
         return new Package(
             $name,

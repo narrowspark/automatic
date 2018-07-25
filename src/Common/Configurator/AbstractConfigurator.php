@@ -110,7 +110,7 @@ abstract class AbstractConfigurator implements ConfiguratorContract
     }
 
     /**
-     * Insert string at specified position.
+     * Insert string before specified position.
      *
      * @param string $string
      * @param string $insertStr

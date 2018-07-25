@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Discovery;
 
+use Closure;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
@@ -22,7 +23,9 @@ use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
+use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositoryManager;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
@@ -34,6 +37,7 @@ use Narrowspark\Discovery\Installer\ConfiguratorInstaller;
 use Narrowspark\Discovery\Installer\QuestionInstallationManager;
 use Narrowspark\Discovery\Prefetcher\ParallelDownloader;
 use Narrowspark\Discovery\Prefetcher\Prefetcher;
+use Narrowspark\Discovery\Prefetcher\TruncatedComposerRepository;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
@@ -253,8 +257,25 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         $this->rfs = new ParallelDownloader($this->io, $composerConfig, $rfs->getOptions(), $rfs->isTlsDisabled());
 
         $this->prefetcher = new Prefetcher($this->composer, $this->io, $this->input, $this->rfs);
-
         $this->prefetcher->prefetchComposerRepositories($rfs);
+
+        $manager         = RepositoryFactory::manager($this->io, $composerConfig, $composer->getEventDispatcher(), $this->rfs);
+        $setRepositories = Closure::bind(function (RepositoryManager $manager) {
+            $manager->repositoryClasses = $this->repositoryClasses;
+            $manager->setRepositoryClass('composer', TruncatedComposerRepository::class);
+            $manager->repositories = $this->repositories;
+
+            $i = 0;
+
+            foreach (RepositoryFactory::defaultRepos(null, $this->config, $manager) as $repo) {
+                $manager->repositories[$i++] = $repo;
+            }
+
+            $manager->setLocalRepository($this->getLocalRepository());
+        }, $composer->getRepositoryManager(), RepositoryManager::class);
+
+        $setRepositories($manager);
+        $composer->setRepositoryManager($manager);
 
         $this->lock->add('@readme', [
             'This file locks the discovery information of your project to a known state',
@@ -794,9 +815,9 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             return 'You must enable the openssl extension in your "php.ini" file.';
         }
 
-        \preg_match_all('/\d+.\d+.\d+/m', Composer::VERSION, $matches, \PREG_SET_ORDER, 0);
+        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
 
-        if ($matches !== null && \version_compare('1.6.0', $matches[0], '<=')) {
+        if ($matches !== null && \version_compare($matches[0], '1.6.0') === -1) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
         }
 

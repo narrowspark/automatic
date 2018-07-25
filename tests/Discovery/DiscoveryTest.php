@@ -7,6 +7,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Downloader\DownloaderInterface;
 use Composer\Downloader\DownloadManager;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
@@ -146,6 +147,14 @@ final class DiscoveryTest extends MockeryTestCase
             ->once()
             ->andReturn($pluginManagerMock);
 
+        $this->composerMock->shouldReceive('getEventDispatcher')
+            ->once()
+            ->andReturn($this->mock(EventDispatcher::class));
+
+        $this->composerMock->shouldReceive('setRepositoryManager')
+            ->with(\Mockery::type(RepositoryManager::class))
+            ->once();
+
         $this->ioMock->shouldReceive('writeError')
             ->once()
             ->with('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);
@@ -182,6 +191,13 @@ final class DiscoveryTest extends MockeryTestCase
         $commandEventMock->shouldReceive('getInput->setOption')
             ->once()
             ->with('no-suggest', true);
+        $commandEventMock->shouldReceive('getInput->hasOption')
+            ->once()
+            ->with('remove-vcs')
+            ->andReturn(true);
+        $commandEventMock->shouldReceive('getInput->setOption')
+            ->once()
+            ->with('remove-vcs', true);
 
         $this->discovery->onCommand($commandEventMock);
     }
@@ -305,6 +321,9 @@ final class DiscoveryTest extends MockeryTestCase
             ->once()
             ->with('cache-files-dir')
             ->andReturn(__DIR__);
+        $this->configMock->shouldReceive('get')
+            ->with('cache-repo-dir')
+            ->andReturn('repo');
         $this->composerMock->shouldReceive('getConfig')
             ->andReturn($this->configMock);
     }

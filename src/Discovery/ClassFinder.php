@@ -20,7 +20,7 @@ final class ClassFinder
 
         /** @var \SplFileInfo $file */
         foreach ($finder as $file) {
-            $realPath = $file->getRealPath();
+            $realPath = (string) $file->getRealPath();
             $class    = self::findClassOrTraitOrInterface($realPath);
 
             // PHP 7 memory manager will not release after token_get_all(), see https://bugs.php.net/70098
@@ -50,7 +50,7 @@ final class ClassFinder
     private static function findClassOrTraitOrInterface(string $path): ?string
     {
         $namespace = null;
-        $tokens    = \token_get_all(\file_get_contents($path));
+        $tokens    = \token_get_all((string) \file_get_contents($path));
 
         foreach ($tokens as $key => $token) {
             if (\is_array($token)) {

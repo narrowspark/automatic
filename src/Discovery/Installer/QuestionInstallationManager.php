@@ -150,7 +150,7 @@ class QuestionInstallationManager extends AbstractInstallationManager
         $this->addDiscoveryInstallationManagerToComposer($oldInstallManager);
 
         $this->updateComposerJson(
-            \array_merge($dependencies, $package->getOption('selected-question-packages') ?? []),
+            \array_merge($dependencies, (array) $package->getOption('selected-question-packages')),
             self::REMOVE
         );
 
@@ -233,7 +233,7 @@ class QuestionInstallationManager extends AbstractInstallationManager
                 $ask,
                 function ($input) use ($packageNames) {
                     /** @codeCoverageIgnoreStart */
-                    $input = \is_numeric($input) ? (int) \trim($input) : -1;
+                    $input = \is_numeric($input) ? (int) \trim((string) $input) : -1;
 
                     return $packageNames[$input] ?? null;
                     // @codeCoverageIgnoreEnd

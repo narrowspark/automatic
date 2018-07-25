@@ -5,8 +5,8 @@ namespace Narrowspark\Discovery\Common\Traits;
 trait ExpandTargetDirTrait
 {
     /**
-     * @param array  $options
-     * @param string $target
+     * @param string[] $options
+     * @param string   $target
      *
      * @return string
      */

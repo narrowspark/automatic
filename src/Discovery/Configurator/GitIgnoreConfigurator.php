@@ -54,7 +54,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
         $contents = \preg_replace(
             \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getName(), $package->getName(), "\n"),
             "\n",
-            \file_get_contents($file),
+            (string) \file_get_contents($file),
             -1,
             $count
         );

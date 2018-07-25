@@ -20,6 +20,7 @@ before_install:
     chmod a+x ./build/travis/configure_php.sh
     chmod a+x ./build/travis/script.sh
   - ./build/travis/configure_php.sh
+  - composer validate
 
 install:
   - composer global require hirak/prestissimo

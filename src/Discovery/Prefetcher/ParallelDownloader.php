@@ -101,7 +101,7 @@ class ParallelDownloader extends RemoteFilesystem
     {
         $this->io = $io;
 
-        if (! \method_exists(parent::class, 'getRemoteContents')) {
+        if (! \method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
             $this->io->writeError('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);
         // @codeCoverageIgnoreStart
         } elseif (! \extension_loaded('curl')) {
@@ -142,12 +142,12 @@ class ParallelDownloader extends RemoteFilesystem
         ];
 
         if (! $this->quiet) {
-            if (! $this->downloader && \method_exists(parent::class, 'getRemoteContents')) {
+            if ($this->downloader !== null && \method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
                 $this->io->writeError('<warning>Enable the "cURL" PHP extension for faster downloads</warning>');
             }
 
             $note = \DIRECTORY_SEPARATOR === '\\' ? '' : (\mb_stripos(\PHP_OS, 'darwin') !== false ? '🎵' : '🎶');
-            $note .= $this->downloader ? (\DIRECTORY_SEPARATOR !== '\\' ? ' 💨' : '') : '';
+            $note .= $this->downloader !== null ? (\DIRECTORY_SEPARATOR !== '\\' ? ' 💨' : '') : '';
 
             $this->io->writeError('');
             $this->io->writeError(\sprintf('<info>Prefetching %d packages</info> %s', $this->downloadCount, $note));
@@ -323,7 +323,7 @@ class ParallelDownloader extends RemoteFilesystem
             return self::$cache[$fileUrl] = $this->getRemoteContents($originUrl, $fileUrl, $context);
         }
 
-        if (! $this->downloader) {
+        if ($this->downloader !== null) {
             return parent::getRemoteContents($originUrl, $fileUrl, $context);
         }
 
@@ -352,7 +352,9 @@ class ParallelDownloader extends RemoteFilesystem
                 try {
                     $state->maxNestingReached = false;
 
-                    ($this->nextCallback)(...\array_shift($state->nextArgs));
+                    if ($this->nextCallback !== null) {
+                        ($this->nextCallback)(...\array_shift($state->nextArgs));
+                    }
                 } catch (TransportException $exception) {
                     $this->io->writeError('Skipping download: ' . $exception->getMessage(), true, IOInterface::DEBUG);
                 }

@@ -310,6 +310,10 @@ class Discovery implements PluginInterface, EventSubscriberInterface
         if ($event->getInput()->hasOption('no-suggest')) {
             $event->getInput()->setOption('no-suggest', true);
         }
+
+        if ($event->getInput()->hasOption('remove-vcs')) {
+            $event->getInput()->setOption('remove-vcs', true);
+        }
     }
 
     /**
@@ -621,11 +625,11 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             $lockFile,
             $this->composer->getRepositoryManager(),
             $this->composer->getInstallationManager(),
-            $composerJson
+            (string) $composerJson
         );
 
         $lockData                  = $locker->getLockData();
-        $lockData['_content-hash'] = Locker::getContentHash($composerJson);
+        $lockData['_content-hash'] = Locker::getContentHash((string) $composerJson);
 
         $lockFile->write($lockData);
     }
@@ -786,14 +790,16 @@ class Discovery implements PluginInterface, EventSubscriberInterface
      */
     private function getErrorMessage(): ?string
     {
-        $errorMessage = null;
-
         if (! \extension_loaded('openssl')) {
-            $errorMessage = 'You must enable the openssl extension in your "php.ini" file.';
-        } elseif (\version_compare('1.6', Composer::VERSION, '>')) {
-            $errorMessage = \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
+            return 'You must enable the openssl extension in your "php.ini" file.';
         }
 
-        return $errorMessage;
+        \preg_match_all('/\d+.\d+.\d+/m', Composer::VERSION, $matches, \PREG_SET_ORDER, 0);
+
+        if ($matches !== null && \version_compare('1.6.0', $matches[0], '<=')) {
+            return \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
+        }
+
+        return null;
     }
 }

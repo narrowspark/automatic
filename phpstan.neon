@@ -1,10 +1,17 @@
 includes:
+#    - vendor/pepakriz/phpstan-exception-rules/extension.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpstan/phpstan-phpunit/rules.neon
+#    - vendor/phpstan/phpstan-strict-rules/rules.neon
+#    - vendor/thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
 
 parameters:
     autoload_directories:
         - %currentWorkingDirectory%/src
+
+    excludes_analyse:
+        - %currentWorkingDirectory%/src/Discovery/Prefetcher/CurlDownloader.php
 
     ignoreErrors:
         # QuestionInstallationManager
@@ -12,6 +19,7 @@ parameters:
         - '#\$package of method Composer\\Package\\Version\\VersionSelector\:\:findRecommendedRequireVersion\(\) expects Composer\\Package\\PackageInterface, Composer\\Package\\PackageInterface\|true given#'
         # ScriptExecutor
         - '#Call to static method cerebroBinary\(\) on an unknown class Viserio\\Component\\Console\\Application#'
+        - '#Parameter \#1 \$stream of class Symfony\\Component\\Console\\Output\\StreamOutput constructor expects resource, resource\|false given#'
 
         - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
 
@@ -22,5 +30,6 @@ parameters:
         - '#Call to an undefined method Composer\\Downloader\\DownloaderInterface\:\:getCacheKey#'
         # ParallelDownloader
         - '#Call to an undefined static method Composer\\Util\\RemoteFilesystem\:\:getRemoteContents#'
+        - '#Call to function method_exists\(\) with #'
         # Discovery
         - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'

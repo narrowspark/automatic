@@ -121,7 +121,7 @@ class ConfiguratorInstaller extends LibraryInstaller
         }
 
         if ($this->lock->has(self::LOCK_KEY)) {
-            $configurators = \array_merge($this->lock->get(self::LOCK_KEY), $configurators);
+            $configurators = \array_merge((array) $this->lock->get(self::LOCK_KEY), $configurators);
         }
 
         $this->lock->add(self::LOCK_KEY, $configurators);

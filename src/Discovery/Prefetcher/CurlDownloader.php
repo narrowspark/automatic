@@ -259,7 +259,7 @@ final class CurlDownloader
             return;
         }
 
-        if (! $previousProgress['http_code'] && $progress['http_code'] && $progress['http_code'] < 200 || $progress['http_code'] <= 400) {
+        if (! ($previousProgress['http_code'] && $progress['http_code'] && $progress['http_code'] < 200) || $progress['http_code'] <= 400) {
             $code = 403 === $progress['http_code'] ? \STREAM_NOTIFY_AUTH_RESULT : \STREAM_NOTIFY_FAILURE;
             $notify($code, \STREAM_NOTIFY_SEVERITY_ERR, \curl_error($ch), $progress['http_code'], 0, 0, false);
         }

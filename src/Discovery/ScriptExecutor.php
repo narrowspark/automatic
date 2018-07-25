@@ -80,8 +80,10 @@ class ScriptExecutor
             return;
         }
 
+        /** @param resource $resource */
+        $resource  = \fopen('php://memory', 'rwb');
         $cmdOutput = new StreamOutput(
-            \fopen('php://memory', 'rw'),
+            $resource,
             OutputInterface::VERBOSITY_VERBOSE,
             $this->io->isDecorated()
         );
@@ -108,7 +110,7 @@ class ScriptExecutor
 
             \fseek($cmdOutput->getStream(), 0);
 
-            foreach (\explode("\n", \stream_get_contents($cmdOutput->getStream())) as $line) {
+            foreach (\explode("\n", (string) \stream_get_contents($cmdOutput->getStream())) as $line) {
                 $this->io->writeError('!!  ' . $line);
             }
 

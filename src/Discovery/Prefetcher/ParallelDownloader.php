@@ -17,11 +17,15 @@ use Composer\Util\RemoteFilesystem;
 class ParallelDownloader extends RemoteFilesystem
 {
     /**
+     * Switch to active the caching.
+     *
      * @var bool
      */
     public static $cacheNext = false;
 
     /**
+     * A static cache for the file url.
+     *
      * @var array
      */
     protected static $cache = [];
@@ -87,6 +91,9 @@ class ParallelDownloader extends RemoteFilesystem
      */
     private $lastHeaders;
 
+    /**
+     * A object with state information.
+     */
     private $sharedState;
 
     /**
@@ -259,7 +266,7 @@ class ParallelDownloader extends RemoteFilesystem
 
         parent::callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax);
 
-        if (! $state = $this->sharedState) {
+        if (($state = $this->sharedState) !== null) {
             return;
         }
 
@@ -311,28 +318,54 @@ class ParallelDownloader extends RemoteFilesystem
     /**
      * {@inheritdoc}
      */
-    protected function getRemoteContents($originUrl, $fileUrl, $context)
+    protected function getRemoteContents($originUrl, $fileUrl, $context, array &$responseHeaders = null)
     {
         if (isset(self::$cache[$fileUrl])) {
-            return self::$cache[$fileUrl];
+            $result = self::$cache[$fileUrl];
+
+            if (3 < \func_num_args()) {
+                [$responseHeaders, $result] = $result;
+            }
+
+            return $result;
         }
 
         if (self::$cacheNext) {
             self::$cacheNext = false;
 
-            return self::$cache[$fileUrl] = $this->getRemoteContents($originUrl, $fileUrl, $context);
+            if (3 < \func_num_args()) {
+                $result = $this->getRemoteContents($originUrl, $fileUrl, $context, $responseHeaders);
+
+                self::$cache[$fileUrl] = [$responseHeaders, $result];
+            } else {
+                $result = $this->getRemoteContents($originUrl, $fileUrl, $context);
+
+                self::$cache[$fileUrl] = $result;
+            }
+
+            return $result;
         }
 
         if ($this->downloader !== null) {
-            return parent::getRemoteContents($originUrl, $fileUrl, $context);
+            return parent::getRemoteContents($originUrl, $fileUrl, $context, $responseHeaders);
         }
 
         try {
-            return $this->downloader->get($fileUrl, $context, $this->fileName);
+            $result = $this->downloader->get($originUrl, $fileUrl, $context, $this->fileName);
+
+            if (3 < \func_num_args()) {
+                [$responseHeaders, $result] = $result;
+            }
+
+            return $result;
         } catch (TransportException $exception) {
             $this->io->writeError('Retrying download: ' . $exception->getMessage(), true, IOInterface::DEBUG);
 
-            return parent::getRemoteContents($originUrl, $fileUrl, $context);
+            return parent::getRemoteContents($originUrl, $fileUrl, $context, $responseHeaders);
+        } catch (\Throwable $e) {
+            $responseHeaders = [];
+
+            throw $e;
         }
     }
 

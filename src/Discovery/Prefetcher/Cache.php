@@ -84,8 +84,8 @@ class Cache extends BaseComposerCache
     {
         $content = parent::read($file);
 
-        if (0 === \mb_strpos($file, 'provider-symfony$')) {
-            $content = \json_encode($this->removeLegacyTags(\json_decode($content, true)));
+        if (\mb_strpos($file, 'provider-symfony$') === 0 && \is_array($data = \json_decode($content, true))) {
+            $content = \json_encode($this->removeLegacyTags($data));
         }
 
         return $content;

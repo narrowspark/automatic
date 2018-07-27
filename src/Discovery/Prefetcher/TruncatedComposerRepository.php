@@ -27,6 +27,6 @@ class TruncatedComposerRepository extends BaseComposerRepository
     {
         $data = parent::fetchFile($filename, $cacheKey, $sha256, $storeLastModifiedTime);
 
-        return $this->cache->removeLegacyTags($data);
+        return \is_array($data) ? $this->cache->removeLegacyTags($data) : $data;
     }
 }

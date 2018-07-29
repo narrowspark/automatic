@@ -140,8 +140,8 @@ class Prefetcher
                 if (! isset($repo['type']) || $repo['type'] !== 'composer' || ! empty($repo['force-lazy-providers'])) {
                     continue;
                 }
-
-                if (! \preg_match('#^https\?://#', $repo['url'])) {
+                /** @see https://github.com/composer/composer/blob/master/src/Composer/Repository/ComposerRepository.php#L74 */
+                if (! \preg_match('#^http(s\??)?://#', $repo['url'])) {
                     continue;
                 }
 

@@ -80,10 +80,8 @@ class ScriptExecutor
             return;
         }
 
-        /** @param resource $resource */
-        $resource  = \fopen('php://memory', 'rwb');
         $cmdOutput = new StreamOutput(
-            $resource,
+            \fopen('php://temp', 'rwb'),
             OutputInterface::VERBOSITY_VERBOSE,
             $this->io->isDecorated()
         );

@@ -3,10 +3,10 @@
 source ./build/travis/try_catch.sh
 source ./build/travis/tfold.sh
 
-git subsplit init git@github.com:narrowspark/discovery.git
+git subsplit init git@github.com:narrowspark/automatic.git
 
 component_array=(
-    'src/Common:git@github.com:narrowspark/discovery-common.git'
+    'src/Common:git@github.com:narrowspark/automatic-common.git'
 )
 
 for i in "${component_array[@]}"

@@ -8,8 +8,6 @@
 
  - [27: Rename discovery to automatic](https://github.com/narrowspark/automatic/issues/27) thanks to @prisis
 
-# Changelog
-
 ## v0.1.0
 
 - Total issues resolved: **6**

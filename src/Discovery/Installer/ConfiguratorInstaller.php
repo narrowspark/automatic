@@ -7,9 +7,9 @@ use Composer\Installer\LibraryInstaller;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
-use Narrowspark\Discovery\ClassFinder;
 use Narrowspark\Discovery\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Discovery\Lock;
+use Narrowspark\Discovery\PathClassLoader;
 
 class ConfiguratorInstaller extends LibraryInstaller
 {
@@ -31,13 +31,21 @@ class ConfiguratorInstaller extends LibraryInstaller
     private $lock;
 
     /**
+     * A path class loader instance.
+     *
+     * @var \Narrowspark\Discovery\PathClassLoader
+     */
+    private $loader;
+
+    /**
      * {@inheritdoc}
      */
     public function __construct(IOInterface $io, Composer $composer, Lock $lock)
     {
         parent::__construct($io, $composer, self::TYPE);
 
-        $this->lock = $lock;
+        $this->lock   = $lock;
+        $this->loader = new PathClassLoader();
     }
 
     /**
@@ -103,17 +111,17 @@ class ConfiguratorInstaller extends LibraryInstaller
      */
     protected function saveConfiguratorsToLockFile(array $autoload, string $name): array
     {
-        $psr4Namespaces = $autoload['psr-4'];
-
         $configurators = [];
         $basePath      = \rtrim($this->vendorDir, '/') . '/' . $name;
 
-        foreach ((array) $psr4Namespaces as $psr4FolderPath) {
-            $fullPath = \rtrim($basePath . '/' . $psr4FolderPath, '/');
+        $psr4 = \array_map(function ($path) use ($basePath) {
+            return \rtrim($basePath . '/' . $path, '/');
+        }, (array) $autoload['psr-4']);
 
-            foreach (ClassFinder::find($fullPath) as $path => $class) {
-                $configurators[\str_replace($this->vendorDir, '', $path)] = $class;
-            }
+        $this->loader->find($psr4);
+
+        foreach ($this->loader->getClasses() as $path => $class) {
+            $configurators[\str_replace($this->vendorDir, '', $path)] = $class;
         }
 
         if (\count($configurators) === 0) {

@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common\Test;
+namespace Narrowspark\Automatic\Common\Test;
 
-use Narrowspark\Discovery\Common\Package;
+use Narrowspark\Automatic\Common\Package;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 final class PackageTest extends TestCase
 {
     /**
-     * @var \Narrowspark\Discovery\Common\Package
+     * @var \Narrowspark\Automatic\Common\Package
      */
     private $package;
 
@@ -36,7 +36,7 @@ final class PackageTest extends TestCase
                 'from' => 'to',
             ],
             'extra-dependency-of' => 'foo/bar',
-            'used-by-discovery'   => true,
+            'used-by-automatic'   => true,
         ];
         $this->package = new Package('test', __DIR__, $this->config);
     }

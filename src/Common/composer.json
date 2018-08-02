@@ -1,15 +1,15 @@
 {
-    "name": "narrowspark/discovery-common",
+    "name": "narrowspark/automatic-common",
     "type": "library",
-    "description": "Common classes for Discovery and new Discovery Configurators.",
+    "description": "Common classes for Automatic and new Automatic Configurators.",
     "keywords": [
         "narrowspark",
         "library",
         "viserio",
-        "discovery",
+        "automatic",
         "common"
     ],
-    "homepage": "http://github.com/narrowspark/discovery-common",
+    "homepage": "http://github.com/narrowspark/automatic-common",
     "license": "MIT",
     "authors": [
         {
@@ -30,11 +30,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Narrowspark\\Discovery\\Common\\": "/"
+            "Narrowspark\\Automatic\\Common\\": "/"
         }
     },
     "support": {
-        "issues": "https://github.com/narrowspark/discovery-common/issues",
-        "source": "https://github.com/narrowspark/discovery-common"
+        "issues": "https://github.com/narrowspark/automatic-common/issues",
+        "source": "https://github.com/narrowspark/automatic-common"
     }
 }

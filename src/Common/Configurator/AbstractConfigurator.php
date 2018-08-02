@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common\Configurator;
+namespace Narrowspark\Automatic\Common\Configurator;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Narrowspark\Discovery\Common\Contract\Configurator as ConfiguratorContract;
-use Narrowspark\Discovery\Common\Path;
-use Narrowspark\Discovery\Common\Traits\ExpandTargetDirTrait;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
+use Narrowspark\Automatic\Common\Path;
+use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Symfony\Component\Filesystem\Filesystem;
 
 abstract class AbstractConfigurator implements ConfiguratorContract
@@ -44,7 +44,7 @@ abstract class AbstractConfigurator implements ConfiguratorContract
     /**
      * A Path instance.
      *
-     * @var \Narrowspark\Discovery\Common\Path
+     * @var \Narrowspark\Automatic\Common\Path
      */
     protected $path;
 

@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common;
+namespace Narrowspark\Automatic\Common;
 
-use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 
 final class Package implements PackageContract
 {
@@ -42,14 +42,14 @@ final class Package implements PackageContract
     private $operation;
 
     /**
-     * The package config from discovery.
+     * The package config from automatic.
      *
      * @var array
      */
     private $options;
 
     /**
-     * The configurator config from discovery.
+     * The configurator config from automatic.
      *
      * @var array
      */

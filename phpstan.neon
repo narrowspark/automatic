@@ -11,7 +11,7 @@ parameters:
         - %currentWorkingDirectory%/src
 
     excludes_analyse:
-        - %currentWorkingDirectory%/src/Discovery/Prefetcher/CurlDownloader.php
+        - %currentWorkingDirectory%/src/Automatic/Prefetcher/CurlDownloader.php
 
     ignoreErrors:
         # QuestionInstallationManager
@@ -31,5 +31,5 @@ parameters:
         # ParallelDownloader
         - '#Call to an undefined static method Composer\\Util\\RemoteFilesystem\:\:getRemoteContents#'
         - '#Call to function method_exists\(\) with #'
-        # Discovery
+        # Automatic
         - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'

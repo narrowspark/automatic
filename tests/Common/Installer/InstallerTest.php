@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common\Test\Installer;
+namespace Narrowspark\Automatic\Common\Test\Installer;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Downloader\DownloadManager;
@@ -10,8 +10,8 @@ use Composer\Installer\InstallationManager;
 use Composer\Package\Locker;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
-use Narrowspark\Discovery\Common\Installer\Installer;
-use Narrowspark\Discovery\Test\Traits\ArrangeComposerClasses;
+use Narrowspark\Automatic\Common\Installer\Installer;
+use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**

@@ -3,7 +3,7 @@ platform:
  - x64
  - x86
 clone_depth: 1
-clone_folder: C:\projects\discovery
+clone_folder: C:\projects\automatic
 
 environment:
   matrix:
@@ -31,7 +31,7 @@ cache:
   # Cache php install
   - C:\tools\php -> .appveyor.yml
   # Cache composer
-  - C:\projects\discovery\vendor -> composer.json
+  - C:\projects\automatic\vendor -> composer.json
   - '%LOCALAPPDATA%\Composer\files -> composer.json'
 
 init:
@@ -64,7 +64,7 @@ install:
   - IF %PHP%==1 echo opcache.enable_cli=1 >> php.ini
   - IF %PHP%==1 echo apc.enable_cli=1 >> php.ini
   - IF %APPVEYOR_REPO_BRANCH%==master (SET COMPOSER_ROOT_VERSION=dev-master) ELSE (SET COMPOSER_ROOT_VERSION=%APPVEYOR_REPO_BRANCH%.x-dev)
-  - cd C:\projects\discovery
+  - cd C:\projects\automatic
   - php -r "readfile('https://getcomposer.org/installer');" | php
   # Matrix
   - php composer.phar global require hirak/prestissimo
@@ -75,5 +75,5 @@ install:
   - appveyor DownloadFile https://cdn.rawgit.com/prisis/43a2a7b137998ac92e24ee4daaa8e296/raw/681b89b8e156750de46558ead661509c468fb9a2/try_catch.sh
 
 test_script:
-  - cd C:\projects\discovery
+  - cd C:\projects\automatic
   - sh ./build/appveyor/script.sh

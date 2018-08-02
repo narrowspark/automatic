@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common\Test\Installer;
+namespace Narrowspark\Automatic\Common\Test\Installer;
 
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
@@ -9,7 +9,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Installer\InstallerInterface;
 use Composer\Package\Package;
 use Composer\Repository\InstalledRepositoryInterface;
-use Narrowspark\Discovery\Common\Installer\InstallationManager;
+use Narrowspark\Automatic\Common\Installer\InstallationManager;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**

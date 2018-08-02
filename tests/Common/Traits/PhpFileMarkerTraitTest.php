@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common\Test\Traits;
+namespace Narrowspark\Automatic\Common\Test\Traits;
 
-use Narrowspark\Discovery\Common\Traits\PhpFileMarkerTrait;
+use Narrowspark\Automatic\Common\Traits\PhpFileMarkerTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

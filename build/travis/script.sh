@@ -9,9 +9,9 @@ if [[ "$PHPUNIT" = true ]]; then
             TYPE="$(basename "$f")";
 
             if [[ "$TYPE" = "Common" ]]; then
-                TESTSUITE="Narrowspark Discovery Common Test Suite";
-            elif [[ "$TYPE" = "Discovery" ]]; then
-                TESTSUITE="Narrowspark Discovery Test Suite";
+                TESTSUITE="Narrowspark Automatic Common Test Suite";
+            elif [[ "$TYPE" = "Automatic" ]]; then
+                TESTSUITE="Narrowspark Automatic Test Suite";
             fi
 
             try

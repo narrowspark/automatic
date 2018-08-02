@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common\Test;
+namespace Narrowspark\Automatic\Common\Test;
 
-use Narrowspark\Discovery\Common\Path;
+use Narrowspark\Automatic\Common\Path;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 final class PathTest extends TestCase
 {
     /**
-     * @var \Narrowspark\Discovery\Common\Path
+     * @var \Narrowspark\Automatic\Common\Path
      */
     private $path;
 

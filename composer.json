@@ -1,14 +1,15 @@
 {
-    "name": "narrowspark/discovery",
+    "name": "narrowspark/automatic",
     "type": "composer-plugin",
-    "description": "Composer plugin for automatic project configuration and creation.",
+    "description": "Composer plugin for automatically project configuration and creation.",
     "keywords": [
         "narrowspark",
         "composer-plugin",
         "viserio",
-        "discovery"
+        "discovery",
+        "automatic"
     ],
-    "homepage": "http://github.com/narrowspark/discovery",
+    "homepage": "http://github.com/narrowspark/automatic",
     "license": "MIT",
     "authors": [
         {
@@ -40,12 +41,12 @@
         "branch-alias": {
             "dev-master": "1.0-dev"
         },
-        "class": "Narrowspark\\Discovery\\Discovery"
+        "class": "Narrowspark\\Automatic\\Automatic"
     },
     "autoload": {
         "psr-4": {
-            "Narrowspark\\Discovery\\Common\\": "src/Common/",
-            "Narrowspark\\Discovery\\": "src/Discovery/"
+            "Narrowspark\\Automatic\\Common\\": "src/Common/",
+            "Narrowspark\\Automatic\\": "src/Automatic/"
         },
         "exclude-from-classmap": [
             "/tests/"
@@ -53,11 +54,11 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Narrowspark\\Discovery\\Common\\Test\\": "tests/Common/",
-            "Narrowspark\\Discovery\\Test\\": "tests/Discovery/"
+            "Narrowspark\\Automatic\\Common\\Test\\": "tests/Common/",
+            "Narrowspark\\Automatic\\Test\\": "tests/Automatic/"
         },
         "files": [
-            "tests/Discovery/TmpDirMock.php"
+            "tests/Automatic/TmpDirMock.php"
         ]
     },
     "minimum-stability": "dev",
@@ -69,7 +70,7 @@
         "test": "phpunit"
     },
     "support": {
-        "issues": "https://github.com/narrowspark/discovery/issues",
-        "source": "https://github.com/narrowspark/discovery"
+        "issues": "https://github.com/narrowspark/automatic/issues",
+        "source": "https://github.com/narrowspark/automatic"
     }
 }

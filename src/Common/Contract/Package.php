@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common\Contract;
+namespace Narrowspark\Automatic\Common\Contract;
 
 interface Package
 {
@@ -47,7 +47,7 @@ interface Package
     public function getPackagePath(): string;
 
     /**
-     * Checks if configurator key exits in extra discovery config.
+     * Checks if configurator key exits in extra automatic config.
      *
      * @param string $key
      *

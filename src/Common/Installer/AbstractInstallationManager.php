@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common\Installer;
+namespace Narrowspark\Automatic\Common\Installer;
 
 use Composer\Composer;
 use Composer\DependencyResolver\Pool;
@@ -17,9 +17,9 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
-use Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException;
-use Narrowspark\Discovery\Common\Contract\Package as PackageContract;
-use Narrowspark\Discovery\Common\Traits\GetGenericPropertyReaderTrait;
+use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
+use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
 
 abstract class AbstractInstallationManager
@@ -132,26 +132,26 @@ abstract class AbstractInstallationManager
     /**
      * Install extra dependencies.
      *
-     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param \Narrowspark\Automatic\Common\Contract\Package $package
      * @param array                                          $dependencies
      *
-     * @throws \Narrowspark\Discovery\Common\Contract\Exception\RuntimeException
-     * @throws \Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
+     * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
      * @throws \Exception
      *
-     * @return \Narrowspark\Discovery\Common\Contract\Package[]
+     * @return \Narrowspark\Automatic\Common\Contract\Package[]
      */
     abstract public function install(PackageContract $package, array $dependencies): array;
 
     /**
      * Uninstall extra dependencies.
      *
-     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param \Narrowspark\Automatic\Common\Contract\Package $package
      * @param array                                          $dependencies
      *
      * @throws \Exception
      *
-     * @return \Narrowspark\Discovery\Common\Contract\Package[]
+     * @return \Narrowspark\Automatic\Common\Contract\Package[]
      */
     abstract public function uninstall(PackageContract $package, array $dependencies): array;
 
@@ -172,7 +172,7 @@ abstract class AbstractInstallationManager
      *
      * @param string $name
      *
-     * @throws \Narrowspark\Discovery\Common\Contract\Exception\InvalidArgumentException
+     * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
      *
      * @return string
      */
@@ -292,7 +292,7 @@ abstract class AbstractInstallationManager
      *
      * @return void
      */
-    protected function addDiscoveryInstallationManagerToComposer(BaseInstallationManager $oldInstallManager): void
+    protected function addAutomaticInstallationManagerToComposer(BaseInstallationManager $oldInstallManager): void
     {
         $reader     = $this->getGenericPropertyReader();
         $installers = (array) $reader($oldInstallManager, 'installers');

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Discovery\Common\Contract;
+namespace Narrowspark\Automatic\Common\Contract;
 
 interface Configurator
 {
@@ -14,7 +14,7 @@ interface Configurator
     /**
      * Configure the application after the package settings.
      *
-     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param \Narrowspark\Automatic\Common\Contract\Package $package
      *
      * @return void
      */
@@ -23,7 +23,7 @@ interface Configurator
     /**
      * Unconfigure the application after the package settings.
      *
-     * @param \Narrowspark\Discovery\Common\Contract\Package $package
+     * @param \Narrowspark\Automatic\Common\Contract\Package $package
      *
      * @return void
      */

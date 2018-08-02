@@ -316,7 +316,13 @@ class Discovery implements PluginInterface, EventSubscriberInterface
             return;
         }
 
-        $this->operations[] = $event->getOperation();
+        $operation = $event->getOperation();
+
+        if ($operation instanceof InstallOperation && $operation->getPackage()->getName() === 'narrowspark/discovery') {
+            array_unshift($this->operations, $operation);
+        } else {
+            $this->operations[] = $operation;
+        }
     }
 
     /**

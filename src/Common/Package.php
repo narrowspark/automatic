@@ -74,7 +74,7 @@ final class Package implements PackageContract
         $this->name       = $name;
         $this->vendorPath = $vendorDirPath;
         $this->version    = $options['version'];
-        $this->url        = $options['url'];
+        $this->url        = $options['url'] ?? '';
         $this->operation  = $options['operation'];
         $this->type       = $options['type'];
         $this->options    = $options;

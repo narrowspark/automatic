@@ -29,7 +29,6 @@ parameters:
         - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getTargetPackage#'
         - '#Call to an undefined method Composer\\Downloader\\DownloaderInterface\:\:getCacheKey#'
         # ParallelDownloader
-        - '#Call to an undefined static method Composer\\Util\\RemoteFilesystem\:\:getRemoteContents#'
         - '#Call to function method_exists\(\) with #'
         # Automatic
         - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'

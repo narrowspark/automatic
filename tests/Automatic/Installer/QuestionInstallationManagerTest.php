@@ -13,7 +13,6 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Semver\VersionParser;
-use Composer\Util\RemoteFilesystem;
 use Mockery\MockInterface;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;

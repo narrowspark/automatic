@@ -19,6 +19,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginManager;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
+use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Configurator;
@@ -155,9 +156,11 @@ final class AutomaticTest extends MockeryTestCase
             ->with(\Mockery::type(RepositoryManager::class))
             ->once();
 
-        $this->ioMock->shouldReceive('writeError')
-            ->once()
-            ->with('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);
+        if (! \method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
+            $this->ioMock->shouldReceive('writeError')
+                ->once()
+                ->with('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);
+        }
 
         $inputMock = $this->mock(InputInterface::class);
         $inputMock->shouldReceive('getFirstArgument')

@@ -24,7 +24,14 @@ before_install:
 
 install:
   - composer global require hirak/prestissimo
-  - $COMPOSER_UP
+  - |
+    if [[ "$SETUP" = "high" ]]; then
+      $COMPOSER_UP
+    elif [[ "$SETUP" = "lowest" ]]; then
+      $COMPOSER_UP --prefer-lowest --prefer-stable;
+    else
+      $COMPOSER_UP
+    fi
 
 before_script:
   - wget https://cdn.rawgit.com/prisis/43a2a7b137998ac92e24ee4daaa8e296/raw/681b89b8e156750de46558ead661509c468fb9a2/try_catch.sh -P ./build/travis
@@ -34,10 +41,19 @@ script:
   - ./build/travis/script.sh
 
 jobs:
+  fast_finish: true
+  allow_failures:
+    - php: nightly
   include:
     - stage: Test
       php: 7.2
-      env: PHPUNIT=true REMOVE_XDEBUG=true
+      env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true
+    - stage: Test
+      php: 7.2
+      env: PHPUNIT=true SETUP=lowest REMOVE_XDEBUG=true
+    - stage: Test
+      php: nightly
+      env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true
 
     - stage: Coding standard
       php: 7.2

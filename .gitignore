@@ -3,8 +3,8 @@
 # they will never get commited within any project you have.
 
 .php_cs.cache
-
 composer.phar
+composer.lock
 
 /build/logs
 /vendor

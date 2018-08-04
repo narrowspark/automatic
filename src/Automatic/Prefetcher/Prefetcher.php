@@ -13,7 +13,7 @@ use Composer\Plugin\PluginManager;
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
 use Composer\Util\RemoteFilesystem;
 use Hirak\Prestissimo\Plugin as PrestissimoPlugin;
-use Narrowspark\Automatic\Automatic;
+use Narrowspark\Automatic\Common\Util;
 use Symfony\Component\Console\Input\InputInterface;
 
 class Prefetcher
@@ -132,7 +132,7 @@ class Prefetcher
 
         if ($populateRepoCacheDir === true &&
             isset(self::$repoReadingCommands[$command]) &&
-            ('install' !== $command || (\file_exists(Factory::getComposerFile()) && ! \file_exists(Automatic::getComposerLockFile())))
+            ('install' !== $command || (\file_exists(Factory::getComposerFile()) && ! \file_exists(Util::getComposerLockFile())))
         ) {
             $repos = [];
 

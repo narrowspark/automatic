@@ -11,8 +11,6 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
-use Composer\Json\JsonFile;
-use Composer\Json\JsonManipulator;
 use Composer\Package\Package;
 use Composer\Package\RootPackageInterface;
 use Composer\Plugin\CommandEvent;
@@ -24,6 +22,7 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
+use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -71,19 +70,6 @@ final class AutomaticTest extends MockeryTestCase
         (new Filesystem())->remove($this->composerCachePath);
     }
 
-    public function testGetAutomaticLockFile(): void
-    {
-        static::assertSame('./automatic.lock', Automatic::getAutomaticLockFile());
-    }
-
-    public function testGetComposerJsonFileAndManipulator(): void
-    {
-        [$json, $manipulator] = Automatic::getComposerJsonFileAndManipulator();
-
-        static::assertInstanceOf(JsonFile::class, $json);
-        static::assertInstanceOf(JsonManipulator::class, $manipulator);
-    }
-
     public function testGetSubscribedEvents(): void
     {
         static::assertCount(13, Automatic::getSubscribedEvents());
@@ -122,6 +108,9 @@ final class AutomaticTest extends MockeryTestCase
         $installationManager->shouldReceive('addInstaller')
             ->once()
             ->with(\Mockery::type(ConfiguratorInstaller::class));
+        $installationManager->shouldReceive('addInstaller')
+            ->once()
+            ->with(\Mockery::type(SkeletonInstaller::class));
 
         $this->composerMock->shouldReceive('getInstallationManager')
             ->once()
@@ -136,7 +125,7 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn($downloaderMock);
 
         $this->composerMock->shouldReceive('getDownloadManager')
-            ->twice()
+            ->times(3)
             ->andReturn($downloadManagerMock);
 
         $pluginManagerMock = $this->mock(PluginManager::class);
@@ -297,17 +286,18 @@ final class AutomaticTest extends MockeryTestCase
     private function arrangeAutomaticConfig(): void
     {
         $this->configMock->shouldReceive('get')
-            ->twice()
+            ->times(3)
             ->with('vendor-dir')
             ->andReturn(__DIR__);
         $this->configMock->shouldReceive('get')
-            ->once()
+            ->twice()
             ->with('bin-dir')
             ->andReturn(__DIR__);
         $this->configMock->shouldReceive('get')
-            ->once()
+            ->twice()
             ->with('bin-compat')
             ->andReturn(__DIR__);
+
         $this->configMock->shouldReceive('get')
             ->once()
             ->with('disable-tls')

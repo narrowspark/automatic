@@ -39,7 +39,7 @@ trait ArrangeComposerClasses
     /**
      * @var \Mockery\MockInterface|\Narrowspark\Automatic\Lock
      */
-    private $lockMock;
+    protected $lockMock;
 
     protected function arrangeComposerClasses(): void
     {

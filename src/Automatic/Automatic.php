@@ -16,7 +16,6 @@ use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
-use Composer\Json\JsonManipulator;
 use Composer\Package\Locker;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -33,8 +32,10 @@ use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
+use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\QuestionInstallationManager;
+use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\Prefetcher\TruncatedComposerRepository;
@@ -46,11 +47,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 {
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
-
-    /**
-     * @var string
-     */
-    private const AUTOMATIC_NAME = 'automatic';
 
     /**
      * Check if the the plugin is activated.
@@ -156,41 +152,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     private $postInstallOutput = [''];
 
     /**
-     * Return the composer json file and json manipulator.
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return array
-     */
-    public static function getComposerJsonFileAndManipulator(): array
-    {
-        $json        = new JsonFile(Factory::getComposerFile());
-        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
-
-        return [$json, $manipulator];
-    }
-
-    /**
-     * Get the automatic.lock file path.
-     *
-     * @return string
-     */
-    public static function getAutomaticLockFile(): string
-    {
-        return \str_replace('composer', self::AUTOMATIC_NAME, self::getComposerLockFile());
-    }
-
-    /**
-     * Get the composer.lock file path.
-     *
-     * @return string
-     */
-    public static function getComposerLockFile(): string
-    {
-        return \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
-    }
-
-    /**
      * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
@@ -231,23 +192,36 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         // to avoid issues when Automatic is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__), FilesystemIterator::SKIP_DOTS)) as $file) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
             /** @var \SplFileInfo $file */
             if (\mb_substr($file->getFilename(), -4) === '.php') {
                 require_once $file;
             }
         }
 
-        $this->composer       = $composer;
-        $this->io             = $io;
-        $this->input          = $this->getGenericPropertyReader()($this->io, 'input');
-        $this->lock           = new Lock(self::getAutomaticLockFile());
+        $this->composer = $composer;
+        $this->io       = $io;
+        $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
+        $this->lock     = new Lock(Util::getAutomaticLockFile());
 
-        $this->projectOptions = $this->initProjectOptions();
-        $composerConfig       = $this->composer->getConfig();
-        $this->vendorPath     = \rtrim($composerConfig->get('vendor-dir'), '/');
+        $this->projectOptions = \array_merge(
+            [
+                Util::AUTOMATIC => [
+                    'allow-auto-install' => false,
+                    'dont-discover'      => [],
+                ],
+            ],
+            $this->composer->getPackage()->getExtra()
+        );
 
-        $this->composer->getInstallationManager()->addInstaller(new ConfiguratorInstaller($this->io, $this->composer, $this->lock));
+        $composerConfig   = $this->composer->getConfig();
+        $this->vendorPath = \rtrim($composerConfig->get('vendor-dir'), '/');
+
+        $pathLoader           = new PathClassLoader();
+        $installationManager  = $this->composer->getInstallationManager();
+
+        $installationManager->addInstaller(new ConfiguratorInstaller($this->io, $this->composer, $this->lock, $pathLoader));
+        $installationManager->addInstaller(new SkeletonInstaller($this->io, $this->composer, $this->lock, $pathLoader));
 
         $this->configurator       = new Configurator($this->composer, $this->io, $this->projectOptions);
         $this->operationsResolver = new OperationsResolver($this->lock, $this->vendorPath);
@@ -352,7 +326,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function onPostCreateProject(Event $event): void
     {
-        [$json, $manipulator] = self::getComposerJsonFileAndManipulator();
+        [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
         // new projects are most of the time proprietary
         $manipulator->addMainKey('license', 'proprietary');
@@ -362,9 +336,17 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $manipulator->removeProperty('description');
 
         foreach ($this->projectOptions as $key => $value) {
-            if ($key !== self::AUTOMATIC_NAME) {
+            if ($key !== Util::AUTOMATIC) {
                 $manipulator->addSubNode('extra', $key, $value);
             }
+        }
+
+        if ($this->lock->has(SkeletonInstaller::LOCK_KEY)) {
+            $skeletonGenerator = new SkeletonGenerator($this->projectOptions, $this->lock->get(SkeletonInstaller::LOCK_KEY), $this->io);
+
+            $skeletonGenerator->run();
+
+            $this->lock->remove(SkeletonInstaller::LOCK_KEY);
         }
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
@@ -402,7 +384,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $this->operations = $operations;
         }
 
-        $automaticOptions = $this->projectOptions[self::AUTOMATIC_NAME];
+        $automaticOptions = $this->projectOptions[Util::AUTOMATIC];
         $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
         $packages         = $this->operationsResolver->resolve($this->operations);
 
@@ -670,37 +652,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function manipulateComposerJsonWithAllowAutoInstall(): void
     {
-        [$json, $manipulator] = self::getComposerJsonFileAndManipulator();
+        [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
         $manipulator->addSubNode('extra', 'automatic.allow-auto-install', true);
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
-    }
-
-    /**
-     * Init default options.
-     *
-     * @return array
-     */
-    private function initProjectOptions(): array
-    {
-        return \array_merge(
-            [
-                self::AUTOMATIC_NAME => [
-                    'allow-auto-install' => false,
-                    'dont-discover'      => [],
-                ],
-                'app-dir'       => 'app',
-                'config-dir'    => 'config',
-                'database-dir'  => 'database',
-                'public-dir'    => 'public',
-                'resources-dir' => 'resources',
-                'routes-dir'    => 'routes',
-                'tests-dir'     => 'tests',
-                'storage-dir'   => 'storage',
-            ],
-            $this->composer->getPackage()->getExtra()
-        );
     }
 
     /**

@@ -4,9 +4,9 @@ namespace Narrowspark\Automatic\Configurator;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Common\Util;
 
 final class ComposerScriptsConfigurator extends AbstractConfigurator
 {
@@ -31,7 +31,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         parent::__construct($composer, $io, $options);
 
-        [$json, $manipulator] = Automatic::getComposerJsonFileAndManipulator();
+        [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
         $this->json        = $json;
         $this->manipulator = $manipulator;

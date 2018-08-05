@@ -173,7 +173,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             PluginEvents::COMMAND                      => 'onCommand',
             ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
             ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
-            ScriptEvents::POST_CREATE_PROJECT_CMD      => 'onPostCreateProject',
+            ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX]],
         ];
     }
 
@@ -326,6 +326,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function onPostCreateProject(Event $event): void
     {
+        /** @var \Composer\Json\JsonFile $json */
+        /** @var \Composer\Json\JsonManipulator $manipulator */
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
         // new projects are most of the time proprietary
@@ -341,12 +343,23 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
+        $this->lock->read();
+
         if ($this->lock->has(SkeletonInstaller::LOCK_KEY)) {
-            $skeletonGenerator = new SkeletonGenerator($this->projectOptions, $this->lock->get(SkeletonInstaller::LOCK_KEY), $this->io);
+            foreach (Util::flattenArray(\array_values((array) $this->lock->get(SkeletonInstaller::LOCK_KEY_CLASSMAP))) as $path) {
+                require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
+            }
+
+            $skeletonGenerator = new SkeletonGenerator(
+                $this->projectOptions,
+                (array) $this->lock->get(SkeletonInstaller::LOCK_KEY),
+                $this->io
+            );
 
             $skeletonGenerator->run();
+            $skeletonGenerator->remove($manipulator, $this->lock);
 
-            $this->lock->remove(SkeletonInstaller::LOCK_KEY);
+            $this->lock->clear();
         }
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
@@ -394,17 +407,15 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             \count($packages) > 1 ? 's' : ''
         ));
 
-        foreach ((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY) as $path => $class) {
-            require_once $this->vendorPath . $path;
+        foreach (Util::flattenArray(\array_values((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY_CLASSMAP))) as $path) {
+            require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
+        }
 
-            if (! \class_exists($class)) {
-                continue;
-            }
-
+        foreach (Util::flattenArray(\array_values((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY))) as $class) {
             $reflectionClass = new ReflectionClass($class);
 
             if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
-                $this->configurator->add($class::getName(), $class);
+                $this->configurator->add($class::getName(), $reflectionClass->getName());
             }
         }
 
@@ -617,7 +628,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Update composer.lock file the composer.json do change.
+     * Update composer.lock file with the composer.json change.
      *
      * @throws \Exception
      *
@@ -638,7 +649,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         );
 
         $lockData                  = $locker->getLockData();
-        $lockData['_content-hash'] = Locker::getContentHash((string) $composerJson);
+        $lockData['content-hash']  = Locker::getContentHash((string) $composerJson);
 
         $lockFile->write($lockData);
     }

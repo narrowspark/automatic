@@ -89,6 +89,12 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn($this->downloadManagerMock);
 
+        $this->lockMock->shouldReceive('add')
+            ->with($this->installerClass::LOCK_KEY, []);
+
+        $this->lockMock->shouldReceive('add')
+            ->with($this->installerClass::LOCK_KEY_CLASSMAP, []);
+
         $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new PathClassLoader());
 
         $this->repositoryMock = $this->mock(InstalledRepositoryInterface::class);
@@ -138,15 +144,44 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 
         $this->downloadManagerMock->shouldReceive('download');
 
-        $this->lockMock->shouldReceive('has')
-            ->once()
-            ->with($this->installerClass::LOCK_KEY)
-            ->andReturn(false);
-        $this->lockMock->shouldReceive('add')
-            ->once()
-            ->with($this->installerClass::LOCK_KEY, \Mockery::type('array'));
+        $this->arrangeAddToLock();
 
         $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
+    }
+
+    public function testUpdate(): void
+    {
+        $name = 'prisis/update';
+
+        $targetPackage = $this->mock(PackageInterface::class);
+
+        $this->repositoryMock->shouldReceive('hasPackage')
+            ->andReturn(true);
+
+        $this->packageMock->shouldReceive('getBinaries')
+            ->andReturn([]);
+        $this->packageMock->shouldReceive('getPrettyName')
+            ->andReturn($name);
+        $this->packageMock->shouldReceive('getTargetDir')
+            ->andReturn('');
+
+        $targetPackage->shouldReceive('getPrettyName')
+            ->andReturn($name);
+        $targetPackage->shouldReceive('getTargetDir')
+            ->andReturn('');
+        $targetPackage->shouldReceive('getBinaries')
+            ->andReturn([]);
+
+        $this->downloadManagerMock->shouldReceive('update');
+
+        $this->repositoryMock->shouldReceive('removePackage');
+
+        $targetPackage->shouldReceive('getAutoload')
+            ->andReturn(['psr-4' => ['Test\\' => '']]);
+
+        $this->arrangeAddToLock();
+
+        $this->configuratorInstaller->update($this->repositoryMock, $this->packageMock, $targetPackage);
     }
 
     public function testInstallWithNotFoundClasses(): void
@@ -183,57 +218,16 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->packageMock->shouldReceive('getName')
             ->once()
             ->andReturn($name);
+        $this->packageMock->shouldReceive('getPrettyName')
+            ->once()
+            ->andReturn($name);
 
         $this->repositoryMock->shouldReceive('removePackage')
             ->once();
 
-        $this->lockMock->shouldReceive('remove')
-            ->once()
-            ->with($this->installerClass::LOCK_KEY);
+        $this->arrangeAddToLock();
 
         $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
-    }
-
-    public function testUpdate(): void
-    {
-        $name = 'prisis/update';
-
-        $targetPackage = $this->mock(PackageInterface::class);
-
-        $this->repositoryMock->shouldReceive('hasPackage')
-            ->andReturn(true);
-
-        $this->packageMock->shouldReceive('getBinaries')
-            ->andReturn([]);
-        $this->packageMock->shouldReceive('getPrettyName')
-            ->andReturn($name);
-        $this->packageMock->shouldReceive('getTargetDir')
-            ->andReturn('');
-
-        $targetPackage->shouldReceive('getPrettyName')
-            ->andReturn($name);
-        $targetPackage->shouldReceive('getTargetDir')
-            ->andReturn('');
-        $targetPackage->shouldReceive('getBinaries')
-            ->andReturn([]);
-
-        $this->downloadManagerMock->shouldReceive('update');
-
-        $this->repositoryMock->shouldReceive('removePackage');
-
-        $targetPackage->shouldReceive('getAutoload')
-            ->andReturn(['psr-4' => ['Test\\' => '']]);
-
-        $this->lockMock->shouldReceive('has')
-            ->once()
-            ->with($this->installerClass::LOCK_KEY)
-            ->andReturn(false);
-
-        $this->lockMock->shouldReceive('add')
-            ->once()
-            ->with($this->installerClass::LOCK_KEY, \Mockery::type('array'));
-
-        $this->configuratorInstaller->update($this->repositoryMock, $this->packageMock, $targetPackage);
     }
 
     /**
@@ -242,5 +236,19 @@ abstract class AbstractInstallerTest extends MockeryTestCase
     protected function allowMockingNonExistentMethods($allow = false): void
     {
         parent::allowMockingNonExistentMethods(true);
+    }
+
+    private function arrangeAddToLock(): void
+    {
+        $this->lockMock->shouldReceive('get')
+            ->with($this->installerClass::LOCK_KEY)
+            ->andReturn([]);
+        $this->lockMock->shouldReceive('get')
+            ->with($this->installerClass::LOCK_KEY_CLASSMAP)
+            ->andReturn([]);
+        $this->lockMock->shouldReceive('add')
+            ->with($this->installerClass::LOCK_KEY, \Mockery::type('array'));
+        $this->lockMock->shouldReceive('add')
+            ->with($this->installerClass::LOCK_KEY_CLASSMAP, \Mockery::type('array'));
     }
 }

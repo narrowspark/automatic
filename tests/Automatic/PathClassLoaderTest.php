@@ -36,11 +36,11 @@ final class PathClassLoaderTest extends TestCase
     {
         $this->loader->find(__DIR__ . '/Fixtures/Finder');
 
-        static::assertContains(DummyClass::class, $this->loader->getClasses());
-        static::assertContains(DummyClassTwo::class, $this->loader->getClasses());
-        static::assertContains(DummyClassNested::class, $this->loader->getClasses());
-        static::assertContains(FooTrait::class, $this->loader->getTraits());
-        static::assertContains(AbstractClass::class, $this->loader->getAbstractClasses());
+        static::assertArrayHasKey(DummyClass::class, $this->loader->getClasses());
+        static::assertArrayHasKey(DummyClassTwo::class, $this->loader->getClasses());
+        static::assertArrayHasKey(DummyClassNested::class, $this->loader->getClasses());
+        static::assertArrayHasKey(FooTrait::class, $this->loader->getTraits());
+        static::assertArrayHasKey(AbstractClass::class, $this->loader->getAbstractClasses());
     }
 
     public function testWithEmptyFolder(): void

@@ -9,28 +9,28 @@ final class PathClassLoader
     /**
      * List of traits.
      *
-     * @var array
+     * @var array|string[]
      */
     private $traits = [];
 
     /**
      * List of interfaces.
      *
-     * @var array
+     * @var array|string[]
      */
     private $interfaces = [];
 
     /**
      * List of abstract classes.
      *
-     * @var array
+     * @var array|string[]
      */
     private $abstractClasses = [];
 
     /**
      * List of classes.
      *
-     * @var array
+     * @var array|string[]
      */
     private $classes = [];
 
@@ -60,15 +60,15 @@ final class PathClassLoader
                     if ($token[0] === \T_NAMESPACE) {
                         $namespace = self::getNamespace($key + 2, $tokens);
                     } elseif ($token[0] === \T_INTERFACE) {
-                        $this->interfaces[$realPath] = \ltrim($namespace . '\\' . self::getName($key + 2, $tokens), '\\');
+                        $this->interfaces[\ltrim($namespace . '\\' . self::getName($key + 2, $tokens), '\\')] = $realPath;
                     } elseif ($token[0] === \T_TRAIT) {
-                        $this->traits[$realPath] = \ltrim($namespace . '\\' . self::getName($key + 2, $tokens), '\\');
+                        $this->traits[\ltrim($namespace . '\\' . self::getName($key + 2, $tokens), '\\')] = $realPath;
                     } elseif ($token[0] === \T_ABSTRACT) {
-                        $this->abstractClasses[$realPath] = \ltrim($namespace . '\\' . self::getName($key + 4, $tokens), '\\');
+                        $this->abstractClasses[\ltrim($namespace . '\\' . self::getName($key + 4, $tokens), '\\')] = $realPath;
 
                         continue 2;
                     } elseif ($token[0] === \T_CLASS) {
-                        $this->classes[$realPath] = \ltrim($namespace . '\\' . self::getName($key + 2, $tokens), '\\');
+                        $this->classes[\ltrim($namespace . '\\' . self::getName($key + 2, $tokens), '\\')] = $realPath;
                     }
                 }
             }
@@ -81,7 +81,7 @@ final class PathClassLoader
     /**
      * Returns a list with found abstract classes.
      *
-     * @return array
+     * @return array|string[]
      */
     public function getAbstractClasses(): array
     {
@@ -91,7 +91,7 @@ final class PathClassLoader
     /**
      * Returns a list with found classes.
      *
-     * @return array
+     * @return array|string[]
      */
     public function getClasses(): array
     {
@@ -101,7 +101,7 @@ final class PathClassLoader
     /**
      * Returns a list with found interfaces.
      *
-     * @return array
+     * @return array|string[]
      */
     public function getInterfaces(): array
     {
@@ -111,7 +111,7 @@ final class PathClassLoader
     /**
      * Returns a list with found traits.
      *
-     * @return array
+     * @return array|string[]
      */
     public function getTraits(): array
     {
@@ -125,17 +125,24 @@ final class PathClassLoader
      */
     public function load(): void
     {
-        $includes = \array_merge(
-            [],
-            \array_keys($this->interfaces),
-            \array_keys($this->traits),
-            \array_keys($this->abstractClasses),
-            \array_keys($this->classes)
-        );
-
-        foreach ($includes as $path) {
+        foreach ($this->getAll() as $path) {
             includeFile($path);
         }
+    }
+
+    /**
+     * Returns a array of all found classes, interface and traits.
+     *
+     * @return array
+     */
+    public function getAll(): array
+    {
+        return \array_merge(
+            $this->interfaces,
+            $this->traits,
+            $this->abstractClasses,
+            $this->classes
+        );
     }
 
     /**

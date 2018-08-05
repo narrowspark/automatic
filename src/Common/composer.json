@@ -1,12 +1,14 @@
 {
     "name": "narrowspark/automatic-common",
     "type": "library",
-    "description": "Common classes for Automatic and new Automatic Configurators.",
+    "description": "Common classes for Automatic and Automatic configurators.",
     "keywords": [
         "narrowspark",
         "library",
         "viserio",
         "automatic",
+        "configurators",
+        "composer",
         "common"
     ],
     "homepage": "http://github.com/narrowspark/automatic-common",

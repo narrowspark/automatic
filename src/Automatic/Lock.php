@@ -30,7 +30,7 @@ class Lock
         $this->json = new JsonFile($lockFile);
 
         if ($this->json->exists()) {
-            $this->lock = $this->read();
+            $this->read();
         }
     }
 
@@ -102,6 +102,16 @@ class Lock
      */
     public function read(): array
     {
-        return $this->json->read() ?? [];
+        return $this->lock = $this->json->read() ?? [];
+    }
+
+    /**
+     * Clear the lock.
+     *
+     * @return void
+     */
+    public function clear(): void
+    {
+        $this->lock = [];
     }
 }

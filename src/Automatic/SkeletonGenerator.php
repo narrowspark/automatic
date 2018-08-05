@@ -5,7 +5,8 @@ namespace Narrowspark\Automatic;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonManipulator;
 use Narrowspark\Automatic\Common\Contract\Generator\DefaultGenerator as DefaultGeneratorContract;
-use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Installer\AbstractInstaller;
+use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -26,6 +27,13 @@ final class SkeletonGenerator
     private $io;
 
     /**
+     * A InstallationManager instance.
+     *
+     * @var \Narrowspark\Automatic\Installer\InstallationManager
+     */
+    private $installationManager;
+
+    /**
      * The skeleton package name.
      *
      * @var string
@@ -35,23 +43,25 @@ final class SkeletonGenerator
     /**
      * Create a new SkeletonGenerator instance.
      *
-     * @param array                    $options
-     * @param string[]                 $generators
-     * @param \Composer\IO\IOInterface $io
+     * @param array                                                $options
+     * @param string[]                                             $generators
+     * @param \Composer\IO\IOInterface                             $io
+     * @param \Narrowspark\Automatic\Installer\InstallationManager $installationManager
      */
-    public function __construct(array $options, array $generators, IOInterface $io)
+    public function __construct(array $options, array $generators, IOInterface $io, InstallationManager $installationManager)
     {
         $this->packageName = (string) \key($generators);
 
-        $generators = Util::flattenArray(\array_values($generators));
+        $generators = $generators[$this->packageName];
 
         \array_walk($generators, static function (&$class) use ($options) {
             /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $class */
             $class = new $class(new Filesystem(), $options);
         });
 
-        $this->generators = $generators;
-        $this->io         = $io;
+        $this->generators          = $generators;
+        $this->io                  = $io;
+        $this->installationManager = $installationManager;
     }
 
     /**
@@ -86,11 +96,7 @@ final class SkeletonGenerator
 
         $this->io->write(\sprintf('%sGenerating [%s] skeleton.%s', "\n", $generatorTypes[$answer], "\n"));
 
-        foreach ($generator->getDependencies() as $dependency => $version) {
-        }
-
-        foreach ($generator->getDevDependencies() as $dependency => $version) {
-        }
+        $this->installationManager->install($generator->getDependencies(), $generator->getDevDependencies());
 
         $generator->generate();
     }
@@ -111,7 +117,13 @@ final class SkeletonGenerator
         $manipulator->removeSubNode('require-dev', $this->packageName);
 
         $lock->remove(SkeletonInstaller::LOCK_KEY);
-        $lock->remove(SkeletonInstaller::LOCK_KEY_CLASSMAP);
+
+        $classmap = $lock->get(Automatic::LOCK_CLASSMAP);
+
+        unset($classmap[$this->packageName]);
+
+        $lock->add(Automatic::LOCK_CLASSMAP, $classmap);
+
         $lock->write();
     }
 }

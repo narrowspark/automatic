@@ -17,11 +17,6 @@ final class ConfiguratorInstaller extends AbstractInstaller
     /**
      * {@inheritdoc}
      */
-    public const LOCK_KEY_CLASSMAP = 'configurators_package_classmap';
-
-    /**
-     * {@inheritdoc}
-     */
     protected function saveConfiguratorsToLockFile(array $autoload, string $name): array
     {
         $configurators = parent::saveConfiguratorsToLockFile($autoload, $name);

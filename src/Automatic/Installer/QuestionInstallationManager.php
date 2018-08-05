@@ -45,7 +45,7 @@ class QuestionInstallationManager extends AbstractInstallationManager
      * Install selected extra dependencies.
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param array                                          $dependencies
+     * @param array                                          $questionMarkedDependencies
      *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
@@ -53,9 +53,9 @@ class QuestionInstallationManager extends AbstractInstallationManager
      *
      * @return \Narrowspark\Automatic\Common\Contract\Package[]
      */
-    public function install(PackageContract $package, array $dependencies): array
+    public function install(PackageContract $package, array $questionMarkedDependencies): array
     {
-        if (! $this->io->isInteractive() || \count($dependencies) === 0) {
+        if (! $this->io->isInteractive() || \count($questionMarkedDependencies) === 0) {
             // Do nothing in no-interactive mode
             return [];
         }
@@ -70,7 +70,7 @@ class QuestionInstallationManager extends AbstractInstallationManager
 
         $this->addAutomaticInstallationManagerToComposer($oldInstallManager);
 
-        foreach ($dependencies as $question => $options) {
+        foreach ($questionMarkedDependencies as $question => $options) {
             if (! \is_array($options) || \count($options) < 2) {
                 throw new RuntimeException('You must provide at least two optional dependencies.');
             }
@@ -115,10 +115,10 @@ class QuestionInstallationManager extends AbstractInstallationManager
         }
 
         if (\count($this->packagesToInstall) !== 0) {
-            $this->updateComposerJson($this->packagesToInstall, self::ADD);
+            $this->updateComposerJson($this->packagesToInstall, [], self::ADD);
 
             $this->runInstaller(
-                $this->updateRootComposerJson($this->packagesToInstall, self::ADD),
+                $this->updateRootComposerJson($this->packagesToInstall, [], self::ADD),
                 \array_keys($this->packagesToInstall)
             );
         }
@@ -137,26 +137,27 @@ class QuestionInstallationManager extends AbstractInstallationManager
      * Uninstall extra dependencies.
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param array                                          $dependencies
+     * @param array                                          $questionMarkedDependencies
      *
      * @throws \Exception
      *
      * @return \Narrowspark\Automatic\Common\Contract\Package[]
      */
-    public function uninstall(PackageContract $package, array $dependencies): array
+    public function uninstall(PackageContract $package, array $questionMarkedDependencies): array
     {
         $oldInstallManager = $this->composer->getInstallationManager();
 
         $this->addAutomaticInstallationManagerToComposer($oldInstallManager);
 
         $this->updateComposerJson(
-            \array_merge($dependencies, (array) $package->getOption('selected-question-packages')),
+            \array_merge($questionMarkedDependencies, (array) $package->getOption('selected-question-packages')),
+            [],
             self::REMOVE
         );
 
-        if (\count($dependencies) !== 0) {
+        if (\count($questionMarkedDependencies) !== 0) {
             $localPackages = $this->localRepository->getPackages();
-            $whiteList     = \array_merge($package->getRequires(), $dependencies);
+            $whiteList     = \array_merge($package->getRequires(), $questionMarkedDependencies);
 
             foreach ($localPackages as $localPackage) {
                 $mixedRequires = \array_merge($localPackage->getRequires(), $localPackage->getDevRequires());
@@ -169,7 +170,7 @@ class QuestionInstallationManager extends AbstractInstallationManager
             }
 
             $this->runInstaller(
-                $this->updateRootComposerJson($dependencies, self::REMOVE),
+                $this->updateRootComposerJson($questionMarkedDependencies, [], self::REMOVE),
                 $whiteList
             );
         }

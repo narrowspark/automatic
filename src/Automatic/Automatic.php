@@ -4,6 +4,7 @@ namespace Narrowspark\Automatic;
 
 use Closure;
 use Composer\Composer;
+use Composer\Config;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
@@ -27,13 +28,13 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
-use Composer\Util\ProcessExecutor;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
+use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\QuestionInstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
@@ -49,6 +50,16 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     use GetGenericPropertyReaderTrait;
 
     /**
+     * @var string
+     */
+    public const LOCK_CLASSMAP = 'classmap';
+
+    /**
+     * @var string
+     */
+    public const PACKAGE_NAME = 'narrowspark/automatic';
+
+    /**
      * Check if the the plugin is activated.
      *
      * @var bool
@@ -56,81 +67,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     private static $activated = true;
 
     /**
-     * A composer instance.
+     * A Container instance.
      *
-     * @var \Composer\Composer
+     * @var \Narrowspark\Automatic\Container
      */
-    private $composer;
-
-    /**
-     * The composer io implementation.
-     *
-     * @var \Composer\IO\IOInterface
-     */
-    private $io;
-
-    /**
-     * A lock instance.
-     *
-     * @var \Narrowspark\Automatic\Lock
-     */
-    private $lock;
-
-    /**
-     * A configurator instance.
-     *
-     * @var \Narrowspark\Automatic\Configurator
-     */
-    private $configurator;
-
-    /**
-     * A extra dependency installation manager instance.
-     *
-     * @var \Narrowspark\Automatic\Installer\QuestionInstallationManager
-     */
-    private $extraInstaller;
-
-    /**
-     * A operations resolver instance.
-     *
-     * @var \Narrowspark\Automatic\OperationsResolver
-     */
-    private $operationsResolver;
-
-    /**
-     * A ParallelDownloader instance.
-     *
-     * @var \Narrowspark\Automatic\Prefetcher\ParallelDownloader
-     */
-    private $rfs;
-
-    /**
-     * A PreFetcher instance.
-     *
-     * @var \Narrowspark\Automatic\Prefetcher\Prefetcher
-     */
-    private $prefetcher;
-
-    /**
-     * A input implementation.
-     *
-     * @var \Symfony\Component\Console\Input\InputInterface
-     */
-    private $input;
-
-    /**
-     * The composer vendor path.
-     *
-     * @var string
-     */
-    private $vendorPath;
-
-    /**
-     * A array of project options.
-     *
-     * @var array
-     */
-    private $projectOptions;
+    private $container;
 
     /**
      * Check if composer.lock should be updated.
@@ -199,41 +140,21 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        $this->composer = $composer;
-        $this->io       = $io;
-        $this->input    = $this->getGenericPropertyReader()($this->io, 'input');
-        $this->lock     = new Lock(Util::getAutomaticLockFile());
+        $this->container = new Container($composer, $io);
 
-        $this->projectOptions = \array_merge(
-            [
-                Util::AUTOMATIC => [
-                    'allow-auto-install' => false,
-                    'dont-discover'      => [],
-                ],
-            ],
-            $this->composer->getPackage()->getExtra()
+        $this->container->get(Lock::class)->add(self::LOCK_CLASSMAP, []);
+
+        /** @var \Composer\Installer\InstallationManager $installationManager */
+        $installationManager = $this->container->get(Composer::class)->getInstallationManager();
+        $installationManager->addInstaller($this->container->get(ConfiguratorInstaller::class));
+        $installationManager->addInstaller($this->container->get(SkeletonInstaller::class));
+
+        $manager = RepositoryFactory::manager(
+            $this->container->get(IOInterface::class),
+            $this->container->get(Config::class),
+            $this->container->get(Composer::class)->getEventDispatcher(),
+            $this->container->get(ParallelDownloader::class)
         );
-
-        $composerConfig   = $this->composer->getConfig();
-        $this->vendorPath = \rtrim($composerConfig->get('vendor-dir'), '/');
-
-        $pathLoader           = new PathClassLoader();
-        $installationManager  = $this->composer->getInstallationManager();
-
-        $installationManager->addInstaller(new ConfiguratorInstaller($this->io, $this->composer, $this->lock, $pathLoader));
-        $installationManager->addInstaller(new SkeletonInstaller($this->io, $this->composer, $this->lock, $pathLoader));
-
-        $this->configurator       = new Configurator($this->composer, $this->io, $this->projectOptions);
-        $this->operationsResolver = new OperationsResolver($this->lock, $this->vendorPath);
-        $this->extraInstaller     = new QuestionInstallationManager($this->composer, $this->io, $this->input, $this->operationsResolver);
-
-        $rfs       = Factory::createRemoteFilesystem($this->io, $composerConfig);
-        $this->rfs = new ParallelDownloader($this->io, $composerConfig, $rfs->getOptions(), $rfs->isTlsDisabled());
-
-        $this->prefetcher = new Prefetcher($this->composer, $this->io, $this->input, $this->rfs);
-        $this->prefetcher->prefetchComposerRepositories($rfs);
-
-        $manager         = RepositoryFactory::manager($this->io, $composerConfig, $composer->getEventDispatcher(), $this->rfs);
         $setRepositories = Closure::bind(function (RepositoryManager $manager) {
             $manager->repositoryClasses = $this->repositoryClasses;
             $manager->setRepositoryClass('composer', TruncatedComposerRepository::class);
@@ -249,32 +170,23 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }, $composer->getRepositoryManager(), RepositoryManager::class);
 
         $setRepositories($manager);
+
         $composer->setRepositoryManager($manager);
 
-        $this->lock->add('@readme', [
+        $this->container->get(Lock::class)->add('@readme', [
             'This file locks the automatic information of your project to a known state',
             'This file is @generated automatically',
         ]);
     }
 
     /**
-     * Get the Configurator instance.
+     * Get the Container instance.
      *
-     * @return \Narrowspark\Automatic\Configurator
+     * @return \Narrowspark\Automatic\Container
      */
-    public function getConfigurator(): Configurator
+    public function getContainer(): Container
     {
-        return $this->configurator;
-    }
-
-    /**
-     * Get the Lock instance.
-     *
-     * @return \Narrowspark\Automatic\Lock
-     */
-    public function getLock(): Lock
-    {
-        return $this->lock;
+        return $this->container;
     }
 
     /**
@@ -292,7 +204,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         $operation = $event->getOperation();
 
-        if ($operation instanceof InstallOperation && $operation->getPackage()->getName() === 'narrowspark/automatic') {
+        if ($operation instanceof InstallOperation && $operation->getPackage()->getName() === self::PACKAGE_NAME) {
             \array_unshift($this->operations, $operation);
         } else {
             $this->operations[] = $operation;
@@ -326,6 +238,34 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function onPostCreateProject(Event $event): void
     {
+        /** @var \Narrowspark\Automatic\Lock $lock */
+        $lock = $this->container->get(Lock::class);
+        /** @var \Composer\IO\IOInterface $io */
+        $io = $this->container->get(IOInterface::class);
+
+        $lock->read();
+
+        if ($lock->has(SkeletonInstaller::LOCK_KEY) && $io->isInteractive()) {
+            $generators = (array) $lock->get(SkeletonInstaller::LOCK_KEY);
+            $classMap   = (array) $lock->get(self::LOCK_CLASSMAP);
+
+            foreach ($classMap[\key($generators)] as $class => $path) {
+                require_once \str_replace('%vendor_path%', $this->container->get('vendor_path'), $path);
+            }
+
+            $skeletonGenerator = new SkeletonGenerator(
+                $this->container->get('composer_extra'),
+                $generators,
+                $io,
+                $this->container->get(InstallationManager::class)
+            );
+
+            $skeletonGenerator->run();
+//            $skeletonGenerator->remove($manipulator, $this->lock);
+        }
+
+        $lock->clear();
+
         /** @var \Composer\Json\JsonFile $json */
         /** @var \Composer\Json\JsonManipulator $manipulator */
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
@@ -337,29 +277,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $manipulator->removeProperty('name');
         $manipulator->removeProperty('description');
 
-        foreach ($this->projectOptions as $key => $value) {
+        foreach ($this->container->get('composer_extra') as $key => $value) {
             if ($key !== Util::AUTOMATIC) {
                 $manipulator->addSubNode('extra', $key, $value);
             }
-        }
-
-        $this->lock->read();
-
-        if ($this->lock->has(SkeletonInstaller::LOCK_KEY)) {
-            foreach (Util::flattenArray(\array_values((array) $this->lock->get(SkeletonInstaller::LOCK_KEY_CLASSMAP))) as $path) {
-                require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
-            }
-
-            $skeletonGenerator = new SkeletonGenerator(
-                $this->projectOptions,
-                (array) $this->lock->get(SkeletonInstaller::LOCK_KEY),
-                $this->io
-            );
-
-            $skeletonGenerator->run();
-            $skeletonGenerator->remove($manipulator, $this->lock);
-
-            $this->lock->clear();
         }
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
@@ -397,37 +318,45 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $this->operations = $operations;
         }
 
-        $automaticOptions = $this->projectOptions[Util::AUTOMATIC];
+        $automaticOptions = $this->container->get('composer_extra')[Util::AUTOMATIC];
         $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
-        $packages         = $this->operationsResolver->resolve($this->operations);
+        $packages         = $this->container->get(OperationsResolver::class)->resolve($this->operations);
+        $lock             = $this->container->get(Lock::class);
+        $io               = $this->container->get(IOInterface::class);
 
-        $this->io->writeError(\sprintf(
+        $io->writeError(\sprintf(
             '<info>Automatic operations: %s package%s</info>',
             \count($packages),
             \count($packages) > 1 ? 's' : ''
         ));
 
-        foreach (Util::flattenArray(\array_values((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY_CLASSMAP))) as $path) {
-            require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
-        }
+        $configurators         = (array) $lock->get(ConfiguratorInstaller::LOCK_KEY);
+        $configuratorsClassmap = (array) $lock->get(self::LOCK_CLASSMAP);
 
-        foreach (Util::flattenArray(\array_values((array) $this->lock->get(ConfiguratorInstaller::LOCK_KEY))) as $class) {
-            $reflectionClass = new ReflectionClass($class);
+        foreach ($configurators as $packageName => $classList) {
+            foreach ($configuratorsClassmap[$packageName] as $path) {
+                require_once \str_replace('%vendor_path%', $this->container->get('vendor_path'), $path);
+            }
 
-            if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
-                $this->configurator->add($class::getName(), $reflectionClass->getName());
+            foreach ($classList as $class) {
+                $reflectionClass = new ReflectionClass($class);
+
+                if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
+                    $this->container->get(Configurator::class)->add($class::getName(), $reflectionClass->getName());
+                }
             }
         }
 
+        /** @var \Narrowspark\Automatic\Common\Contract\Package $package */
         foreach ($packages as $package) {
             if (isset($automaticOptions['dont-discover']) && \array_key_exists($package->getName(), $automaticOptions['dont-discover'])) {
-                $this->io->write(\sprintf('<info>Package "%s" was ignored.</info>', $package->getName()));
+                $io->write(\sprintf('<info>Package "%s" was ignored.</info>', $package->getName()));
 
                 return;
             }
 
             if ($allowInstall === false && $package->getOperation() === 'install') {
-                $answer = $this->io->askAndValidate(
+                $answer = $io->askAndValidate(
                     QuestionFactory::getPackageQuestion($package->getUrl()),
                     [QuestionFactory::class, 'validatePackageQuestionAnswer'],
                     null,
@@ -462,7 +391,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             );
         }
 
-        $this->lock->write();
+        $lock->write();
 
         if ($this->shouldUpdateComposerLock) {
             $this->updateComposerLock();
@@ -483,13 +412,12 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         // force reloading scripts as we might have added and removed during this run
         $json         = new JsonFile(Factory::getComposerFile());
         $jsonContents = $json->read();
-        $executor     = new ScriptExecutor($this->composer, $this->io, $this->projectOptions, new ProcessExecutor());
 
         foreach ($jsonContents['scripts']['auto-scripts'] as $cmd => $type) {
-            $executor->execute($type, $cmd);
+            $this->container->get(ScriptExecutor::class)->execute($type, $cmd);
         }
 
-        $this->io->write($this->postInstallOutput);
+        $this->container->get(IOInterface::class)->write($this->postInstallOutput);
     }
 
     /**
@@ -554,7 +482,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $packages[]                  = [$job['packageName'], $job['constraint']];
         }
 
-        $this->rfs->download($packages, function ($packageName, $constraint) use (&$listed, &$packages, $pool): void {
+        $this->container->get(ParallelDownloader::class)->download($packages, function ($packageName, $constraint) use (&$listed, &$packages, $pool): void {
             /** @var \Composer\Package\PackageInterface $package */
             foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
                 /** @var \Composer\Package\Link $link */
@@ -581,7 +509,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function populateFilesCacheDir(InstallerEvent $event): void
     {
-        $this->prefetcher->fetchAllFromOperations($event);
+        $this->container->get(Prefetcher::class)->fetchAllFromOperations($event);
     }
 
     /**
@@ -593,8 +521,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function onFileDownload(PreFileDownloadEvent $event): void
     {
-        if ($event->getRemoteFilesystem() !== $this->rfs) {
-            $event->setRemoteFilesystem($this->rfs->setNextOptions($event->getRemoteFilesystem()->getOptions()));
+        $rfs = $this->container->get(ParallelDownloader::class);
+
+        if ($event->getRemoteFilesystem() !== $rfs) {
+            $event->setRemoteFilesystem($rfs->setNextOptions($event->getRemoteFilesystem()->getOptions()));
         }
     }
 
@@ -624,7 +554,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        return ($operation instanceof InstallOperation && ! $this->lock->has($package->getName())) || $operation instanceof UninstallOperation;
+        return ($operation instanceof InstallOperation && ! $this->container->get(Lock::class)->has($package->getName())) || $operation instanceof UninstallOperation;
     }
 
     /**
@@ -638,13 +568,14 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     {
         $composerLockPath = \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
         $composerJson     = \file_get_contents(Factory::getComposerFile());
+        $composer         = $this->container->get(Composer::class);
 
-        $lockFile = new JsonFile($composerLockPath, null, $this->io);
+        $lockFile = new JsonFile($composerLockPath, null, $this->container->get(IOInterface::class));
         $locker   = new Locker(
-            $this->io,
+            $this->container->get(IOInterface::class),
             $lockFile,
-            $this->composer->getRepositoryManager(),
-            $this->composer->getInstallationManager(),
+            $composer->getRepositoryManager(),
+            $composer->getInstallationManager(),
             (string) $composerJson
         );
 
@@ -663,6 +594,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function manipulateComposerJsonWithAllowAutoInstall(): void
     {
+        /** @var \Composer\Json\JsonFile $json */
+        /** @var \Composer\Json\JsonManipulator $manipulator */
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
         $manipulator->addSubNode('extra', 'automatic.allow-auto-install', true);
@@ -682,9 +615,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     private function doActionOnPackageOperation(PackageContract $package): void
     {
         $packageConfigurator = new PackageConfigurator(
-            $this->composer,
-            $this->io,
-            $this->projectOptions,
+            $this->container->get(Composer::class),
+            $this->container->get(IOInterface::class),
+            $this->container->get('composer_extra'),
             $package->getConfiguratorOptions('custom-configurators')
         );
 
@@ -707,34 +640,35 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function doInstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
-        $this->io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+        $this->container->get(IOInterface::class)->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
-        $this->configurator->configure($package);
+        $this->container->get(Configurator::class)->configure($package);
         $packageConfigurator->configure($package);
 
-        $options = $package->getOptions();
+        $options                     = $package->getOptions();
+        $questionInstallationManager = $this->container->get(QuestionInstallationManager::class);
 
         if ($package->hasConfiguratorKey('extra-dependency')) {
             $extraDependency = $package->getConfiguratorOptions('extra-dependency');
             $options         = \array_merge(
                 $options,
-                ['selected-question-packages' => $this->extraInstaller->getPackagesToInstall()]
+                ['selected-question-packages' => $questionInstallationManager->getPackagesToInstall()]
             );
 
-            foreach ($this->extraInstaller->install($package, $extraDependency) as $operation) {
+            foreach ($questionInstallationManager->install($package, $extraDependency) as $operation) {
                 $this->doInstall($operation, $packageConfigurator);
             }
         }
 
         if ($package->hasConfiguratorKey('post-install-output')) {
             foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
-                $this->postInstallOutput[] = self::expandTargetDir($this->projectOptions, $line);
+                $this->postInstallOutput[] = self::expandTargetDir($this->container->get('composer_extra'), $line);
             }
 
             $this->postInstallOutput[] = '';
         }
 
-        $this->lock->add($package->getName(), $options);
+        $this->container->get(Lock::class)->add($package->getName(), $options);
     }
 
     /**
@@ -749,15 +683,17 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function doUninstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
-        $this->io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
+        $this->container->get(IOInterface::class)->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
 
-        $this->configurator->unconfigure($package);
+        $this->container->get(Configurator::class)->unconfigure($package);
         $packageConfigurator->unconfigure($package);
+
+        $lock = $this->container->get(Lock::class);
 
         if ($package->hasConfiguratorKey('extra-dependency')) {
             $extraDependencies = [];
 
-            foreach ($this->lock->read() as $packageName => $data) {
+            foreach ($lock->read() as $packageName => $data) {
                 if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
                     $extraDependencies[$packageName] = $data['version'];
 
@@ -767,12 +703,12 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 }
             }
 
-            foreach ($this->extraInstaller->uninstall($package, $extraDependencies) as $operation) {
+            foreach ($this->container->get(QuestionInstallationManager::class)->uninstall($package, $extraDependencies) as $operation) {
                 $this->doUninstall($operation, $packageConfigurator);
             }
         }
 
-        $this->lock->remove($package->getName());
+        $lock->remove($package->getName());
     }
 
     /**

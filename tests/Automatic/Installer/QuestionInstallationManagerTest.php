@@ -13,6 +13,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Semver\VersionParser;
+use Composer\Util\RemoteFilesystem;
 use Mockery\MockInterface;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
@@ -69,12 +70,24 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
         $this->composerJsonWithVersionPath    = $this->composerCachePath . '/composer_with_version.json';
         $this->composerJsonWithoutVersionPath = $this->composerCachePath . '/composer_without_version.json';
 
-        \mkdir($this->composerCachePath);
+        @\mkdir($this->composerCachePath);
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
 
         parent::setUp();
 
         $this->arrangeComposerClasses();
+
+        if (! \method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
+            $this->ioMock->shouldReceive('writeError')
+                ->once()
+                ->with('Writing ' . $this->composerCachePath . '/repo/https---packagist.org/packages.json into cache', true, IOInterface::DEBUG);
+        } else {
+            $this->ioMock->shouldReceive('writeError')
+                ->with('Downloading https://repo.packagist.org/packages.json', true, IOInterface::DEBUG);
+            $this->ioMock->shouldReceive('writeError')
+                ->once()
+                ->with('Writing ' . $this->composerCachePath . '/repo/https---repo.packagist.org/packages.json into cache', true, IOInterface::DEBUG);
+        }
 
         $this->createComposerJsonFiles();
 
@@ -251,10 +264,13 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
                     '__root__',
                     'viserio/routing',
                     (new VersionParser())->parseConstraints('dev-master'),
-                    'requires',
+                    'relates to',
                     'dev-master'
                 ),
             ]);
+        $rootPackageMock->shouldReceive('setDevRequires')
+            ->once()
+            ->with([]);
 
         $this->composerMock->shouldReceive('setPackage')
             ->once()
@@ -297,7 +313,7 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
                 '__root__',
                 'viserio/routing',
                 (new VersionParser())->parseConstraints('dev-master'),
-                'requires',
+                'relates to',
                 'dev-master'
             ),
         ];
@@ -415,10 +431,13 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
                     '__root__',
                     'viserio/routing',
                     (new VersionParser())->parseConstraints($routingPackageVersion),
-                    'requires',
+                    'relates to',
                     $routingPackageVersion
                 ),
             ]);
+        $rootPackageMock->shouldReceive('setDevRequires')
+            ->once()
+            ->with([]);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -469,14 +488,14 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
                 '__root__',
                 'viserio/bus',
                 (new VersionParser())->parseConstraints('dev-master'),
-                'requires',
+                'relates to',
                 'dev-master'
             ),
             'viserio/view' => new Link(
                 '__root__',
                 'viserio/view',
                 (new VersionParser())->parseConstraints('dev-master'),
-                'requires',
+                'relates to',
                 'dev-master'
             ),
         ];
@@ -537,10 +556,13 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
                     '__root__',
                     'symfony/filesystem',
                     (new VersionParser())->parseConstraints('^4.0'),
-                    'requires',
+                    'relates to',
                     '^4.0'
                 ),
             ]);
+        $rootPackageMock->shouldReceive('setDevRequires')
+            ->once()
+            ->with([]);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -584,14 +606,14 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
                 '__root__',
                 'viserio/bus',
                 (new VersionParser())->parseConstraints('dev-master'),
-                'requires',
+                'relates to',
                 'dev-master'
             ),
             'viserio/view' => new Link(
                 '__root__',
                 'viserio/view',
                 (new VersionParser())->parseConstraints('dev-master'),
-                'requires',
+                'relates to',
                 'dev-master'
             ),
         ];
@@ -619,6 +641,9 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
             ->with([
                 'viserio/bus' => $require['viserio/bus'],
             ]);
+        $rootPackageMock->shouldReceive('setDevRequires')
+            ->once()
+            ->with([]);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()

@@ -7,6 +7,7 @@ use Composer\Installer\LibraryInstaller;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
+use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\PathClassLoader;
@@ -22,11 +23,6 @@ abstract class AbstractInstaller extends LibraryInstaller
      * @var string
      */
     public const LOCK_KEY = null;
-
-    /**
-     * @var string
-     */
-    public const LOCK_KEY_CLASSMAP = null;
 
     /**
      * Overwrite found automatic.lock values.
@@ -61,11 +57,12 @@ abstract class AbstractInstaller extends LibraryInstaller
     {
         parent::__construct($io, $composer, static::TYPE);
 
-        $this->lock      = $lock;
-        $this->loader    = $loader;
+        $this->lock   = $lock;
+        $this->loader = $loader;
 
-        $this->lock->add(static::LOCK_KEY, []);
-        $this->lock->add(static::LOCK_KEY_CLASSMAP, []);
+        if (! $this->lock->has(static::LOCK_KEY)) {
+            $this->lock->add(static::LOCK_KEY, []);
+        }
     }
 
     /**
@@ -93,9 +90,9 @@ abstract class AbstractInstaller extends LibraryInstaller
 
         parent::install($repo, $package);
 
-        $configurators = $this->saveConfiguratorsToLockFile($autoload, $package->getPrettyName());
+        $classes = $this->saveConfiguratorsToLockFile($autoload, $package->getPrettyName());
 
-        if (empty($configurators)) {
+        if (\count($classes) === 0) {
             // Rollback installation
             $this->io->writeError('Installation failed, rolling back');
 
@@ -123,7 +120,7 @@ abstract class AbstractInstaller extends LibraryInstaller
         parent::uninstall($repo, $package);
 
         $lockKeyArray         = (array) $this->lock->get(static::LOCK_KEY);
-        $lockKeyClassmapArray = (array) $this->lock->get(static::LOCK_KEY);
+        $lockKeyClassmapArray = (array) $this->lock->get(Automatic::LOCK_CLASSMAP);
         $name                 = $package->getPrettyName();
 
         if (\array_key_exists($name, $lockKeyArray)) {
@@ -135,7 +132,7 @@ abstract class AbstractInstaller extends LibraryInstaller
         }
 
         $this->lock->add(static::LOCK_KEY, $lockKeyArray);
-        $this->lock->add(static::LOCK_KEY_CLASSMAP, $lockKeyClassmapArray);
+        $this->lock->add(Automatic::LOCK_CLASSMAP, $lockKeyClassmapArray);
     }
 
     /**
@@ -148,7 +145,7 @@ abstract class AbstractInstaller extends LibraryInstaller
      */
     protected function saveConfiguratorsToLockFile(array $autoload, string $name): array
     {
-        $configurators = [];
+        $classes = [];
 
         $psr4 = \array_map(function ($path) use ($name) {
             return \rtrim(\rtrim($this->vendorDir, '/') . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $path, '/');
@@ -157,35 +154,30 @@ abstract class AbstractInstaller extends LibraryInstaller
         $this->loader->find($psr4);
 
         foreach ($this->loader->getClasses() as $class => $path) {
-            $configurators[] = $class;
+            $classes[] = $class;
         }
 
-        if (\count($configurators) === 0) {
+        if (\count($classes) === 0) {
             return [];
         }
-
-        $lockKeyArray         = $this->lock->get(static::LOCK_KEY);
-        $lockKeyClassmapArray = $this->lock->get(static::LOCK_KEY);
 
         $classMap = \array_map(function (string $value) {
             return \str_replace($this->vendorDir, '%vendor_path%', $value);
         }, $this->loader->getAll());
 
-        if (static::OVERWRITE_LOCK) {
-            $this->io->writeError(\sprintf('Automatic lock key [%s] was overwritten.', static::LOCK_KEY));
-        } else {
-            if ($lockKeyArray !== null && \array_key_exists($name, (array) $lockKeyArray)) {
-                $configurators = \array_merge((array) $lockKeyArray[$name], $configurators);
-            }
+        $classes  = [$name => $classes];
+        $classMap = [$name => $classMap];
 
-            if ($lockKeyClassmapArray !== null && \array_key_exists($name, (array) $lockKeyClassmapArray)) {
-                $classMap = \array_merge((array) $lockKeyClassmapArray[$name], $classMap);
-            }
+        if (static::OVERWRITE_LOCK) {
+            $this->io->writeError(\sprintf('Automatic lock keys [%s], [%s] were overwritten.', static::LOCK_KEY, Automatic::LOCK_CLASSMAP));
+        } else {
+            $classes  = \array_merge((array) $this->lock->get(static::LOCK_KEY), $classes);
+            $classMap = \array_merge((array) $this->lock->get(Automatic::LOCK_CLASSMAP), $classMap);
         }
 
-        $this->lock->add(static::LOCK_KEY, [$name => $configurators]);
-        $this->lock->add(static::LOCK_KEY_CLASSMAP, [$name => $classMap]);
+        $this->lock->add(static::LOCK_KEY, $classes);
+        $this->lock->add(Automatic::LOCK_CLASSMAP, $classMap);
 
-        return $configurators;
+        return $classes;
     }
 }

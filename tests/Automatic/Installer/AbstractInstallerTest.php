@@ -5,6 +5,7 @@ namespace Narrowspark\Automatic\Test\Installer;
 use Composer\Downloader\DownloadManager;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
+use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\PathClassLoader;
@@ -89,11 +90,11 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn($this->downloadManagerMock);
 
+        $this->lockMock->shouldReceive('has')
+            ->with($this->installerClass::LOCK_KEY)
+            ->andReturn(true);
         $this->lockMock->shouldReceive('add')
             ->with($this->installerClass::LOCK_KEY, []);
-
-        $this->lockMock->shouldReceive('add')
-            ->with($this->installerClass::LOCK_KEY_CLASSMAP, []);
 
         $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new PathClassLoader());
 
@@ -244,11 +245,11 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->with($this->installerClass::LOCK_KEY)
             ->andReturn([]);
         $this->lockMock->shouldReceive('get')
-            ->with($this->installerClass::LOCK_KEY_CLASSMAP)
+            ->with(Automatic::LOCK_CLASSMAP)
             ->andReturn([]);
         $this->lockMock->shouldReceive('add')
             ->with($this->installerClass::LOCK_KEY, \Mockery::type('array'));
         $this->lockMock->shouldReceive('add')
-            ->with($this->installerClass::LOCK_KEY_CLASSMAP, \Mockery::type('array'));
+            ->with(Automatic::LOCK_CLASSMAP, \Mockery::type('array'));
     }
 }

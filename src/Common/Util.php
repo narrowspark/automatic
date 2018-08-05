@@ -47,22 +47,4 @@ final class Util
     {
         return \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
     }
-
-    /**
-     * Flatten a multi-dimensional associative array.
-     *
-     * @param array $array
-     *
-     * @return array
-     */
-    public static function flattenArray(array $array): array
-    {
-        $return = [];
-
-        \array_walk_recursive($array, function ($a) use (&$return) {
-            $return[] = $a;
-        });
-
-        return $return;
-    }
 }

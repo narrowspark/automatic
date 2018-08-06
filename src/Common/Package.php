@@ -14,6 +14,13 @@ final class Package implements PackageContract
     private $name;
 
     /**
+     * The pretty package name.
+     *
+     * @var string
+     */
+    private $prettyName;
+
+    /**
      * The package version.
      *
      * @var string
@@ -65,13 +72,15 @@ final class Package implements PackageContract
     /**
      * Create a new Package instance.
      *
-     * @param string $name
-     * @param string $vendorDirPath
-     * @param array  $options
+     * @param string   $name
+     * @param string   $prettyName
+     * @param string   $vendorDirPath
+     * @param string[] $options
      */
-    public function __construct(string $name, string $vendorDirPath, array $options)
+    public function __construct(string $name, string $prettyName, string $vendorDirPath, array $options)
     {
-        $this->name       = $name;
+        $this->name       = \mb_strtolower($name);
+        $this->prettyName = $prettyName;
         $this->vendorPath = $vendorDirPath;
         $this->version    = $options['version'];
         $this->url        = $options['url'] ?? '';
@@ -98,6 +107,14 @@ final class Package implements PackageContract
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPrettyName(): string
+    {
+        return $this->prettyName;
     }
 
     /**
@@ -137,7 +154,7 @@ final class Package implements PackageContract
      */
     public function getPackagePath(): string
     {
-        return \str_replace('\\', '/', $this->vendorPath . '/' . $this->name . '/');
+        return \str_replace('\\', '/', $this->vendorPath . '/' . $this->prettyName . '/');
     }
 
     /**
@@ -190,5 +207,20 @@ final class Package implements PackageContract
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toJson(): string
+    {
+        return \json_encode(\array_merge(
+            [
+                'name'         => $this->name,
+                'pretty_name'  => $this->prettyName,
+                'package_path' => $this->getPackagePath(),
+            ],
+            $this->options
+        ));
     }
 }

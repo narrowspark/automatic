@@ -24,7 +24,7 @@ final class EnvConfigurator extends AbstractConfigurator
 
         $distenv = getcwd() . '/.env.dist';
 
-        if (! \is_file($distenv) || $this->isFileMarked($package->getName(), $distenv)) {
+        if (! \is_file($distenv) || $this->isFileMarked($package->getPrettyName(), $distenv)) {
             return;
         }
 
@@ -50,7 +50,7 @@ final class EnvConfigurator extends AbstractConfigurator
             \copy($distenv, getcwd() . '/.env');
         }
 
-        $data = $this->markData($package->getName(), $data);
+        $data = $this->markData($package->getPrettyName(), $data);
 
         \file_put_contents($distenv, $data, \FILE_APPEND);
         \file_put_contents(getcwd() . '/.env', $data, \FILE_APPEND);
@@ -73,7 +73,7 @@ final class EnvConfigurator extends AbstractConfigurator
             /** @codeCoverageIgnoreEnd */
             $count    = 0;
             $contents = \preg_replace(
-                \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getName(), $package->getName(), "\n"),
+                \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getPrettyName(), $package->getPrettyName(), "\n"),
                 '',
                 (string) \file_get_contents($env),
                 -1,

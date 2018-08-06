@@ -5,6 +5,7 @@ namespace Narrowspark\Automatic\Test;
 use Composer\Composer;
 use Composer\IO\NullIO;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
+use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator;
 use PHPUnit\Framework\TestCase;
@@ -59,7 +60,7 @@ final class ConfiguratorTest extends TestCase
 
     public function testAddWithExistingConfiguratorName(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Configurator with the name "mock-configurator" already exists.');
 
         $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
@@ -70,7 +71,7 @@ final class ConfiguratorTest extends TestCase
 
     public function testAddWithoutConfiguratorContractClass(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Configurator class "stdClass" must extend the class "Narrowspark\\Automatic\\Common\\Contract\\Configurator".');
 
         $this->configurator->add('foo/mock-configurator', \stdClass::class);
@@ -104,7 +105,8 @@ final class ConfiguratorTest extends TestCase
         $toFileName = 'copy_of_copy.txt';
 
         $package = new Package(
-            'Fixtures',
+            'fixtures',
+            'Fixtures/stub',
             __DIR__,
             [
                 'version'   => '1',

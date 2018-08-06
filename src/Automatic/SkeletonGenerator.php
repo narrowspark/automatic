@@ -3,9 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic;
 
 use Composer\IO\IOInterface;
-use Composer\Json\JsonManipulator;
 use Narrowspark\Automatic\Common\Contract\Generator\DefaultGenerator as DefaultGeneratorContract;
-use Narrowspark\Automatic\Installer\AbstractInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Symfony\Component\Filesystem\Filesystem;
@@ -34,26 +32,19 @@ final class SkeletonGenerator
     private $installationManager;
 
     /**
-     * The skeleton package name.
-     *
-     * @var string
-     */
-    private $packageName;
-
-    /**
      * Create a new SkeletonGenerator instance.
      *
-     * @param array                                                $options
-     * @param string[]                                             $generators
      * @param \Composer\IO\IOInterface                             $io
      * @param \Narrowspark\Automatic\Installer\InstallationManager $installationManager
+     * @param string[]                                             $options
+     * @param string[]                                             $generators
      */
-    public function __construct(array $options, array $generators, IOInterface $io, InstallationManager $installationManager)
-    {
-        $this->packageName = (string) \key($generators);
-
-        $generators = $generators[$this->packageName];
-
+    public function __construct(
+        IOInterface $io,
+        InstallationManager $installationManager,
+        array $options,
+        array $generators
+    ) {
         \array_walk($generators, static function (&$class) use ($options) {
             /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $class */
             $class = new $class(new Filesystem(), $options);
@@ -104,23 +95,22 @@ final class SkeletonGenerator
     /**
      * Removes all information about the skeleton package.
      *
-     * @param \Composer\Json\JsonManipulator $manipulator
-     * @param \Narrowspark\Automatic\Lock    $lock
+     * @param \Narrowspark\Automatic\Lock $lock
+     * @param array                       $package
      *
      * @throws \Exception
      *
      * @return void
      */
-    public function remove(JsonManipulator $manipulator, Lock $lock): void
+    public function remove(Lock $lock, array $package): void
     {
-        $manipulator->removeSubNode('require', $this->packageName);
-        $manipulator->removeSubNode('require-dev', $this->packageName);
-
         $lock->remove(SkeletonInstaller::LOCK_KEY);
+
+        $this->installationManager->uninstall($package, []);
 
         $classmap = $lock->get(Automatic::LOCK_CLASSMAP);
 
-        unset($classmap[$this->packageName]);
+        unset($classmap[\key($package)]);
 
         $lock->add(Automatic::LOCK_CLASSMAP, $classmap);
 

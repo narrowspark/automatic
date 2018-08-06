@@ -53,7 +53,8 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $toFileName = 'copy_of_copy.txt';
 
         $package = new Package(
-            'Fixtures',
+            'fixtures',
+            'Stub/stub',
             __DIR__,
             [
                 'version'          => '1',
@@ -87,7 +88,8 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $toAndFromFileName = '/css/style.css';
 
         $package = new Package(
-            'Fixtures',
+            'fixtures',
+            'Stub/stub',
             __DIR__,
             [
                 'version'          => '1',
@@ -125,7 +127,8 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $dir        = \str_replace('\\', '/', __DIR__);
 
         $package = new Package(
-            'Fixtures',
+            'fixtures',
+            'Stub/stub',
             $dir,
             [
                 'version'   => '1',
@@ -143,7 +146,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . $dir . '/Fixtures/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
+            ->with(['    <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . $dir . '/Stub/stub/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -157,7 +160,8 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $toFileName = 'copy_of_copy.txt';
 
         $package = new Package(
-            'Fixtures',
+            'fixtures',
+            'Stub/stub',
             __DIR__,
             [
                 'version'   => '1',
@@ -194,7 +198,8 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $toAndFromFileName = '/css/style.css';
 
         $package = new Package(
-            'Fixtures',
+            'fixtures',
+            'Stub/stub',
             __DIR__,
             [
                 'version'   => '1',
@@ -237,7 +242,8 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $toAndFromFileName = '/css/style.css';
 
         $package = new Package(
-            'Fixtures',
+            'fixtures',
+            'Stub/stub',
             __DIR__,
             [
                 'version'   => '1',
@@ -290,7 +296,8 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $toFileName = 'copy_of_copy.txt';
 
         $package = new Package(
-            'Fixtures',
+            'fixtures',
+            'Stub/stub',
             __DIR__,
             [
                 'version'   => '1',

@@ -75,7 +75,8 @@ final class EnvConfiguratorTest extends MockeryTestCase
     public function testConfigure(): void
     {
         $package = new Package(
-            'TEST PACKAGE',
+            'test',
+            'fixtures/test',
             __DIR__,
             [
                 'version'   => '1',
@@ -100,7 +101,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
         $this->configurator->configure($package);
 
         $envContents = <<<'EOF'
-###> TEST PACKAGE ###
+###> fixtures/test ###
 APP_ENV="test bar"
 APP_DEBUG=0
 APP_PARAGRAPH="foo\n\"bar\"\\t"
@@ -111,7 +112,7 @@ MAILER_USER=narrow
 # Comment 3
 #TRUSTED_SECRET="s3cretf0rt3st\"<>"
 APP_SECRET="s3cretf0rt3st\"<>"
-###< TEST PACKAGE ###
+###< fixtures/test ###
 
 EOF;
 
@@ -135,6 +136,7 @@ EOF;
 
         $package = new Package(
             'env2',
+            'fixtures/env2',
             __DIR__,
             [
                 'version'   => '1',
@@ -148,14 +150,14 @@ EOF;
         $this->configurator->configure($package);
 
         $envContents = <<<'EOF'
-###> env2 ###
+###> fixtures/env2 ###
 APP_ENV=test
 APP_DEBUG=0
 # Comment 1
 # Comment 3
 #TRUSTED_SECRET=s3cretf0rt3st
 APP_SECRET=s3cretf0rt3st
-###< env2 ###
+###< fixtures/env2 ###
 
 EOF;
         static::assertStringEqualsFile($this->envDistPath, $envContents);
@@ -163,6 +165,7 @@ EOF;
 
         $package = new Package(
             'env2',
+            'fixtures/env2',
             __DIR__,
             [
                 'version'   => '1',

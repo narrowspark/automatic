@@ -38,7 +38,7 @@ final class PackageTest extends TestCase
             'extra-dependency-of' => 'foo/bar',
             'used-by-automatic'   => true,
         ];
-        $this->package = new Package('test', __DIR__, $this->config);
+        $this->package = new Package('test', 'test/test', __DIR__, $this->config);
     }
 
     public function testGetName(): void

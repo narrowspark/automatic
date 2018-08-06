@@ -108,8 +108,7 @@ final class Container
                 return new InstallationManager(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
-                    $container->get(InputInterface::class),
-                    $container->get(OperationsResolver::class)
+                    $container->get(InputInterface::class)
                 );
             },
             QuestionInstallationManager::class => function (Container $container) {

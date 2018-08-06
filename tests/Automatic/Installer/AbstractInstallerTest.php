@@ -30,6 +30,11 @@ abstract class AbstractInstallerTest extends MockeryTestCase
     protected $packageMock;
 
     /**
+     * @var \Composer\Package\PackageInterface|\Mockery\MockInterface
+     */
+    protected $targetPackageMock;
+
+    /**
      * @var \Narrowspark\Automatic\Installer\AbstractInstaller
      */
     protected $configuratorInstaller;
@@ -98,8 +103,9 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 
         $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new PathClassLoader());
 
-        $this->repositoryMock = $this->mock(InstalledRepositoryInterface::class);
-        $this->packageMock    = $this->mock(PackageInterface::class);
+        $this->repositoryMock    = $this->mock(InstalledRepositoryInterface::class);
+        $this->packageMock       = $this->mock(PackageInterface::class);
+        $this->targetPackageMock = $this->mock(PackageInterface::class);
     }
 
     public function testSupports(): void
@@ -130,7 +136,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn(['psr-4' => ['Test\\' => '']]);
         $this->packageMock->shouldReceive('getPrettyName')
-            ->times(4)
+            ->times(6)
             ->andReturn($name);
 
         $this->packageMock->shouldReceive('getTargetDir')
@@ -154,8 +160,6 @@ abstract class AbstractInstallerTest extends MockeryTestCase
     {
         $name = 'prisis/update';
 
-        $targetPackage = $this->mock(PackageInterface::class);
-
         $this->repositoryMock->shouldReceive('hasPackage')
             ->andReturn(true);
 
@@ -165,24 +169,26 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->andReturn($name);
         $this->packageMock->shouldReceive('getTargetDir')
             ->andReturn('');
+        $this->packageMock->shouldReceive('getName')
+            ->andReturn(\trim($name, '/'));
 
-        $targetPackage->shouldReceive('getPrettyName')
+        $this->targetPackageMock->shouldReceive('getPrettyName')
             ->andReturn($name);
-        $targetPackage->shouldReceive('getTargetDir')
+        $this->targetPackageMock->shouldReceive('getTargetDir')
             ->andReturn('');
-        $targetPackage->shouldReceive('getBinaries')
+        $this->targetPackageMock->shouldReceive('getBinaries')
             ->andReturn([]);
 
         $this->downloadManagerMock->shouldReceive('update');
 
         $this->repositoryMock->shouldReceive('removePackage');
 
-        $targetPackage->shouldReceive('getAutoload')
+        $this->targetPackageMock->shouldReceive('getAutoload')
             ->andReturn(['psr-4' => ['Test\\' => '']]);
 
         $this->arrangeAddToLock();
 
-        $this->configuratorInstaller->update($this->repositoryMock, $this->packageMock, $targetPackage);
+        $this->configuratorInstaller->update($this->repositoryMock, $this->packageMock, $this->targetPackageMock);
     }
 
     public function testInstallWithNotFoundClasses(): void
@@ -193,13 +199,14 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn(['psr-4' => ['NoTest\\' => '']]);
         $this->packageMock->shouldReceive('getPrettyName')
-            ->times(6)
             ->andReturn($name);
 
         $this->packageMock->shouldReceive('getTargetDir')
             ->andReturn(null);
         $this->packageMock->shouldReceive('getBinaries')
             ->andReturn([]);
+        $this->packageMock->shouldReceive('getName')
+            ->andReturn(\trim($name, '/'));
 
         $this->repositoryMock->shouldReceive('hasPackage')
             ->twice()
@@ -215,13 +222,6 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 
         $this->downloadManagerMock->shouldReceive('remove')
             ->once();
-
-        $this->packageMock->shouldReceive('getName')
-            ->once()
-            ->andReturn($name);
-        $this->packageMock->shouldReceive('getPrettyName')
-            ->once()
-            ->andReturn($name);
 
         $this->repositoryMock->shouldReceive('removePackage')
             ->once();

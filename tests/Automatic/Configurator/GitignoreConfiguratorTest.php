@@ -69,6 +69,7 @@ final class GitignoreConfiguratorTest extends TestCase
     {
         $package = new Package(
             'FooBundle',
+            'Foo/Bundle',
             \sys_get_temp_dir(),
             [
                 'version'    => '1',
@@ -83,14 +84,15 @@ final class GitignoreConfiguratorTest extends TestCase
         );
 
         $gitignoreContents1 = <<<'EOF'
-###> FooBundle ###
+###> Foo/Bundle ###
 .env
 /public/css/
-###< FooBundle ###
+###< Foo/Bundle ###
 EOF;
 
         $package2 = new Package(
             'BarBundle',
+            'Bar/Bundle',
             \sys_get_temp_dir(),
             [
                 'version'    => '1',
@@ -105,10 +107,10 @@ EOF;
         );
 
         $gitignoreContents2 = <<<'EOF'
-###> BarBundle ###
+###> Bar/Bundle ###
 /var/
 /vendor/
-###< BarBundle ###
+###< Bar/Bundle ###
 EOF;
 
         $this->configurator->configure($package);
@@ -137,6 +139,7 @@ EOF;
     {
         $package = new Package(
             'FooBundle',
+            'Foo/Bundle',
             \sys_get_temp_dir(),
             [
                 'version'    => '1',
@@ -154,6 +157,7 @@ EOF;
 
         $package = new Package(
             'BarBundle',
+            'Bar/Bundle',
             \sys_get_temp_dir(),
             [
                 'version'    => '1',
@@ -170,10 +174,10 @@ EOF;
         $this->configurator->unconfigure($package);
 
         $gitignoreContents1 = <<<'EOF'
-###> FooBundle ###
+###> Foo/Bundle ###
 .env
 /public/css/
-###< FooBundle ###
+###< Foo/Bundle ###
 EOF;
         static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
     }

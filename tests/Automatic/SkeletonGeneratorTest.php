@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
-use Composer\Json\JsonManipulator;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
@@ -24,9 +23,9 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     private $ioMock;
 
     /**
-     * @var \Narrowspark\Automatic\Installer\InstallationManager|\Mockery\MockInterface
+     * @var \Mockery\MockInterface|\Narrowspark\Automatic\Installer\InstallationManager
      */
-    private $installationManager;
+    private $installationManagerMock;
 
     /**
      * {@inheritdoc}
@@ -35,21 +34,21 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->ioMock = $this->mock(IOInterface::class);
-        $this->installationManager = $this->mock(InstallationManager::class);
+        $this->ioMock                  = $this->mock(IOInterface::class);
+        $this->installationManagerMock = $this->mock(InstallationManager::class);
     }
 
     public function testRun(): void
     {
-        $this->installationManager->shouldReceive('install')
+        $this->installationManagerMock->shouldReceive('install')
             ->once()
             ->with([], []);
 
         $skeletonGenerator = new SkeletonGenerator(
-            [],
-            ['narrowspark/skeleton' => [ConsoleFixtureGenerator::class]],
             $this->ioMock,
-            $this->installationManager
+            $this->installationManagerMock,
+            [],
+            [ConsoleFixtureGenerator::class]
         );
 
         $this->ioMock->shouldReceive('select')
@@ -64,15 +63,15 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
     public function testRunWithDefault(): void
     {
-        $this->installationManager->shouldReceive('install')
+        $this->installationManagerMock->shouldReceive('install')
             ->once()
             ->with([], []);
 
         $skeletonGenerator = new SkeletonGenerator(
-            [],
-            ['narrowspark/skeleton' => [ConsoleFixtureGenerator::class, FrameworkDefaultFixtureGenerator::class]],
             $this->ioMock,
-            $this->installationManager
+            $this->installationManagerMock,
+            [],
+            [ConsoleFixtureGenerator::class, FrameworkDefaultFixtureGenerator::class]
         );
 
         $this->ioMock->shouldReceive('select')
@@ -87,25 +86,24 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
     public function testRemove(): void
     {
-        $packageName       = 'narrowspark/skeleton';
         $skeletonGenerator = new SkeletonGenerator(
-            [],
-            [$packageName => [ConsoleFixtureGenerator::class]],
             $this->ioMock,
-            $this->installationManager
+            $this->installationManagerMock,
+            [],
+            [ConsoleFixtureGenerator::class]
         );
 
-        $manipulatorMock = $this->mock(JsonManipulator::class);
-        $lockMock        = $this->mock(Lock::class);
-
-        $manipulatorMock->shouldReceive('removeSubNode')
-            ->with('require', $packageName);
-        $manipulatorMock->shouldReceive('removeSubNode')
-            ->with('require-dev', $packageName);
+        $package  = ['narrowspark/skeleton' => 'dev-master'];
+        $lockMock = $this->mock(Lock::class);
 
         $lockMock->shouldReceive('remove')
             ->once()
             ->with(SkeletonInstaller::LOCK_KEY);
+
+        $this->installationManagerMock->shouldReceive('uninstall')
+            ->once()
+            ->with($package);
+
         $lockMock->shouldReceive('get')
             ->once()
             ->with(Automatic::LOCK_CLASSMAP)
@@ -116,7 +114,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
         $lockMock->shouldReceive('write')
             ->once();
 
-        $skeletonGenerator->remove($manipulatorMock, $lockMock);
+        $skeletonGenerator->remove($lockMock, $package);
     }
 
     /**

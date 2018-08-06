@@ -5,7 +5,6 @@ namespace Narrowspark\Automatic\Test\Traits;
 use Composer\Composer;
 use Composer\Config;
 use Composer\IO\IOInterface;
-use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Lock;
 use Symfony\Component\Console\Input\InputInterface;
 

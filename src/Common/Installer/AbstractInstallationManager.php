@@ -99,6 +99,13 @@ abstract class AbstractInstallationManager
     protected $stability;
 
     /**
+     * A backup of the original composer.json content.
+     *
+     * @var string
+     */
+    protected $composerBackup;
+
+    /**
      * Create a new ExtraDependencyInstaller instance.
      *
      * @param \Composer\Composer                              $composer
@@ -107,10 +114,11 @@ abstract class AbstractInstallationManager
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input)
     {
-        $this->composer = $composer;
-        $this->io       = $io;
-        $this->input    = $input;
-        $this->jsonFile = new JsonFile(Factory::getComposerFile());
+        $this->composer       = $composer;
+        $this->io             = $io;
+        $this->input          = $input;
+        $this->jsonFile       = new JsonFile(Factory::getComposerFile());
+        $this->composerBackup = (string) \file_get_contents($this->jsonFile->getPath());
 
         $this->rootPackage = $this->composer->getPackage();
         $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';

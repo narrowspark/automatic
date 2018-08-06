@@ -68,6 +68,7 @@ class ComposerJsonFactory
     {
         $composerJsonContent = [
             'name'        => $name,
+            'pretty-name' => $name . '/' . $name,
             'type'        => 'automatic-configurator',
             'description' => 'plugin',
             'authors'     => [
@@ -93,6 +94,7 @@ class ComposerJsonFactory
     {
         $composerJsonContent = [
             'name'        => $name,
+            'pretty-name' => $name . '/' . $name,
             'type'        => 'automatic-configurator',
             'description' => 'plugin',
             'authors'     => [

@@ -12,6 +12,13 @@ interface Package
     public function getName(): string;
 
     /**
+     * Get the pretty package name.
+     *
+     * @return string
+     */
+    public function getPrettyName(): string;
+
+    /**
      * Get the package version.
      *
      * @return string
@@ -86,4 +93,11 @@ interface Package
      * @return array
      */
     public function getOptions(): array;
+
+    /**
+     * Transforms the package object to a json string.
+     *
+     * @return string
+     */
+    public function toJson(): string;
 }

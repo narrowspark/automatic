@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Test\Installer;
 
-use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 
 /**
@@ -17,18 +16,18 @@ final class SkeletonInstallerTest extends AbstractInstallerTest
 
     public function testInstall(): void
     {
-        $this->ioMock->shouldReceive('writeError')
+        $this->packageMock->shouldReceive('getPrettyVersion')
             ->once()
-            ->with(\sprintf('Automatic lock keys [%s], [%s] were overwritten.', $this->installerClass::LOCK_KEY, Automatic::LOCK_CLASSMAP));
+            ->andReturn('dev-master');
 
         parent::testInstall();
     }
 
     public function testUpdate(): void
     {
-        $this->ioMock->shouldReceive('writeError')
+        $this->targetPackageMock->shouldReceive('getPrettyVersion')
             ->once()
-            ->with(\sprintf('Automatic lock keys [%s], [%s] were overwritten.', $this->installerClass::LOCK_KEY, Automatic::LOCK_CLASSMAP));
+            ->andReturn('dev-master');
 
         parent::testUpdate();
     }

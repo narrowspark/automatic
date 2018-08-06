@@ -2,49 +2,24 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Installer;
 
-use Composer\Composer;
-use Composer\IO\IOInterface;
+use Composer\Factory;
 use Narrowspark\Automatic\Common\Installer\AbstractInstallationManager;
-use Narrowspark\Automatic\OperationsResolver;
-use Symfony\Component\Console\Input\InputInterface;
 
 class InstallationManager extends AbstractInstallationManager
 {
     /**
-     * A operations resolver instance.
-     *
-     * @var \Narrowspark\Automatic\OperationsResolver
-     */
-    private $operationsResolver;
-
-    /**
-     * Create a new ExtraDependencyInstaller instance.
-     *
-     * @param \Composer\Composer                              $composer
-     * @param \Composer\IO\IOInterface                        $io
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Narrowspark\Automatic\OperationsResolver       $operationsResolver
-     */
-    public function __construct(Composer $composer, IOInterface $io, InputInterface $input, OperationsResolver $operationsResolver)
-    {
-        parent::__construct($composer, $io, $input);
-
-        $this->operationsResolver = $operationsResolver;
-    }
-
-    /**
      * Install required and required-dev packages.
      *
-     * @param array $requires
-     * @param array $devRequires
+     * @param \Narrowspark\Automatic\Common\Contract\Package[] $requires
+     * @param \Narrowspark\Automatic\Common\Contract\Package[] $devRequires
      *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
      * @throws \Exception
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package[]
+     * @return void
      */
-    public function install(array $requires, array $devRequires = []): array
+    public function install(array $requires, array $devRequires = []): void
     {
         $rootPackages = [];
 
@@ -52,44 +27,74 @@ class InstallationManager extends AbstractInstallationManager
             $rootPackages[\mb_strtolower($link->getTarget())] = (string) $link->getConstraint();
         }
 
-        $oldInstallManager = $this->composer->getInstallationManager();
-
-        $this->addAutomaticInstallationManagerToComposer($oldInstallManager);
-
         $requiresToInstall    = $this->preparePackage($requires, $rootPackages);
         $devRequiresToInstall = $this->preparePackage($devRequires, $rootPackages);
 
         if ((\count($requiresToInstall) + \count($devRequiresToInstall)) !== 0) {
             $this->updateComposerJson($requiresToInstall, $devRequiresToInstall, self::ADD);
 
-            $this->runInstaller(
-                $this->updateRootComposerJson($requiresToInstall, $devRequiresToInstall, self::ADD),
-                \array_keys(\array_merge($requiresToInstall, $devRequiresToInstall))
-            );
+            $this->updateRootComposerJson($requiresToInstall, $devRequiresToInstall, self::ADD);
+
+            $this->whiteList = \array_keys(\array_merge($requiresToInstall, $devRequiresToInstall));
         }
-
-        $operations = $this->composer->getInstallationManager()->getOperations();
-
-        // Revert to the old install manager.
-        $this->composer->setInstallationManager($oldInstallManager);
-
-        return $this->operationsResolver->resolve($operations);
     }
 
     /**
      * Install required and required-dev packages.
      *
-     * @param array $requires
-     * @param array $devRequires
+     * @param \Narrowspark\Automatic\Common\Contract\Package[] $requires
+     * @param \Narrowspark\Automatic\Common\Contract\Package[] $devRequires
      *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
      * @throws \Exception
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package[]
+     * @return void
      */
-    public function uninstall(array $requires, array $devRequires = []): array
+    public function uninstall(array $requires, array $devRequires): void
     {
+        $this->updateComposerJson(
+            $requires,
+            $devRequires,
+            self::REMOVE
+        );
+
+        $whiteList = \array_merge($requires, $devRequires);
+
+        foreach ($this->localRepository->getPackages() as $localPackage) {
+            $mixedRequires = \array_merge($localPackage->getRequires(), $localPackage->getDevRequires());
+
+            foreach ($whiteList as $whitelistPackageName => $version) {
+                if (isset($mixedRequires[$whitelistPackageName])) {
+                    unset($whiteList[$whitelistPackageName]);
+                }
+            }
+        }
+
+        $this->whiteList = $whiteList;
+
+        $this->updateRootComposerJson($requires, $devRequires, self::REMOVE);
+    }
+
+    /**
+     * @throws \Exception
+     *
+     * @return int
+     */
+    public function run(): int
+    {
+        $status = $this->runInstaller(
+            $this->rootPackage,
+            $this->whiteList
+        );
+
+        if ($status !== 0) {
+            $this->io->writeError("\n" . '<error>Removal failed, reverting ' . Factory::getComposerFile() . ' to its original content.</error>');
+
+            \file_put_contents($this->jsonFile->getPath(), $this->composerBackup);
+        }
+
+        return $status;
     }
 
     /**

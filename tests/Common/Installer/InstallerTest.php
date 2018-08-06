@@ -115,6 +115,22 @@ final class InstallerTest extends MockeryTestCase
             ->once()
             ->with('no-suggest')
             ->andReturn(false);
+        $this->inputMock->shouldReceive('hasOption')
+            ->once()
+            ->with('apcu-autoloader')
+            ->andReturn(false);
+        $this->inputMock->shouldReceive('hasOption')
+            ->once()
+            ->with('no-autoloader')
+            ->andReturn(false);
+        $this->inputMock->shouldReceive('hasOption')
+            ->once()
+            ->with('no-scripts')
+            ->andReturn(false);
+        $this->inputMock->shouldReceive('hasOption')
+            ->once()
+            ->with('ignore-platform-reqs')
+            ->andReturn(false);
     }
 
     /**
@@ -136,6 +152,10 @@ final class InstallerTest extends MockeryTestCase
             ->with('preferred-install')
             ->once()
             ->andReturn($preferred);
+        $this->configMock->shouldReceive('get')
+            ->with('apcu-autoloader')
+            ->once()
+            ->andReturn(false);
 
         $this->composerMock->shouldReceive('getConfig')
             ->andReturn($this->configMock);

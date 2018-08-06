@@ -149,13 +149,13 @@ class QuestionInstallationManager extends AbstractInstallationManager
 
         $this->addAutomaticInstallationManagerToComposer($oldInstallManager);
 
-        $this->updateComposerJson(
-            \array_merge($questionMarkedDependencies, (array) $package->getOption('selected-question-packages')),
-            [],
-            self::REMOVE
-        );
-
         if (\count($questionMarkedDependencies) !== 0) {
+            $this->updateComposerJson(
+                \array_merge($questionMarkedDependencies, (array) $package->getOption('selected-question-packages')),
+                [],
+                self::REMOVE
+            );
+
             $localPackages = $this->localRepository->getPackages();
             $whiteList     = \array_merge($package->getRequires(), $questionMarkedDependencies);
 

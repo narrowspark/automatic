@@ -62,6 +62,7 @@ final class PackageConfiguratorTest extends MockeryTestCase
     {
         $package = new Package(
             'test',
+            'test/test',
             __DIR__,
             [
                 'version'              => '1',
@@ -92,6 +93,7 @@ final class PackageConfiguratorTest extends MockeryTestCase
     {
         $package = new Package(
             'test',
+            'test/test',
             __DIR__,
             [
                 'version'   => '1',

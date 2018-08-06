@@ -84,7 +84,7 @@ class OperationsResolver
                 continue;
             }
 
-            $name = \mb_strtolower($package->getName());
+            $name = $package->getName();
 
             if ($operation instanceof UninstallOperation && $this->lock->has($name)) {
                 $packageConfiguration              = (array) $this->lock->get($name);
@@ -93,7 +93,7 @@ class OperationsResolver
                 $packageConfiguration = $this->buildPackageConfiguration($package, $o);
             }
 
-            $packages[$name] = new Package($name, $this->vendorPath, $packageConfiguration);
+            $packages[$name] = new Package($name, $package->getPrettyName(), $this->vendorPath, $packageConfiguration);
         }
 
         return $packages;

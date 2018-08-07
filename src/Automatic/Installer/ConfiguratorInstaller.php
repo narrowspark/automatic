@@ -31,7 +31,7 @@ final class ConfiguratorInstaller extends AbstractInstaller
             $key,
             \array_merge(
                 (array) $this->lock->get($key),
-                [$package->getPrettyName() => $classes]
+                [$package->getName() => $classes]
             )
         );
 
@@ -46,7 +46,7 @@ final class ConfiguratorInstaller extends AbstractInstaller
     protected function removeFromLock(PackageInterface $package, string $key): void
     {
         $lockKeyArray = (array) $this->lock->get($key);
-        $name         = $package->getPrettyName();
+        $name         = $package->getName();
 
         if (isset($lockKeyArray[$name])) {
             unset($lockKeyArray[$name]);

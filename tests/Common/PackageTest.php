@@ -35,8 +35,9 @@ final class PackageTest extends TestCase
             'copy'      => [
                 'from' => 'to',
             ],
-            'extra-dependency-of' => 'foo/bar',
+            'extraDependencyOf' => 'foo/bar',
             'used-by-automatic'   => true,
+            'isDev' => false,
         ];
         $this->package = new Package('test', 'test/test', __DIR__, $this->config);
     }
@@ -46,15 +47,25 @@ final class PackageTest extends TestCase
         static::assertSame('test', $this->package->getName());
     }
 
-    public function testGetVersion(): void
+    public function testGetPrettyName(): void
     {
-        static::assertSame('1', $this->package->getVersion());
+        static::assertSame('test/test', $this->package->getPrettyName());
+    }
+
+    public function testIsDev(): void
+    {
+        static::assertFalse($this->package->isDev());
+    }
+
+    public function testGetPrettyVersion(): void
+    {
+        static::assertSame('1', $this->package->getPrettyVersion());
     }
 
     public function testGetPackagePath(): void
     {
         static::assertSame(
-            \str_replace('\\', '/', __DIR__ . '/test/'),
+            \str_replace('\\', '/', __DIR__ . '/test/test/'),
             $this->package->getPackagePath()
         );
     }
@@ -102,6 +113,20 @@ final class PackageTest extends TestCase
 
     public function testGetOption(): void
     {
-        static::assertSame('foo/bar', $this->package->getOption('extra-dependency-of'));
+        static::assertSame('foo/bar', $this->package->getOption('extraDependencyOf'));
+    }
+
+    public function testToJson(): void
+    {
+        $json = $this->package->toJson();
+
+        self::assertJson($json);
+        self::assertSame(
+            array_merge(
+                ['name' => 'test', 'prettyName' => 'test/test', 'packagePath' => \str_replace('\\', '/', __DIR__ . '/test/test/')],
+                $this->config
+            ),
+            json_decode($json, true)
+        );
     }
 }

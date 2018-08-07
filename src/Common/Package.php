@@ -70,30 +70,47 @@ final class Package implements PackageContract
     private $vendorPath;
 
     /**
+     * Check if this package is a dev require.
+     *
+     * @var bool
+     */
+    private $isDev;
+
+    /**
+     * Timestamp of the object creation.
+     *
+     * @var string
+     */
+    private $created;
+
+    /**
      * Create a new Package instance.
      *
      * @param string   $name
      * @param string   $prettyName
      * @param string   $vendorDirPath
+     * @param bool     $isDev
      * @param string[] $options
      */
-    public function __construct(string $name, string $prettyName, string $vendorDirPath, array $options)
+    public function __construct(string $name, string $prettyName, string $vendorDirPath, bool $isDev, array $options)
     {
         $this->name       = \mb_strtolower($name);
         $this->prettyName = $prettyName;
         $this->vendorPath = $vendorDirPath;
+        $this->isDev      = $isDev;
         $this->version    = $options['version'];
         $this->url        = $options['url'] ?? '';
         $this->operation  = $options['operation'];
         $this->type       = $options['type'];
         $this->options    = $options;
+        $this->created    = (new \DateTimeImmutable())->getTimestamp();
 
         unset(
             $options['version'],
             $options['type'],
             $options['operation'],
             $options['url'],
-            $options['extra-dependency-of'],
+            $options['extraDependencyOf'],
             $options['selected-question-packages'],
             $options['require']
         );
@@ -112,6 +129,14 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
+    public function isDev(): bool
+    {
+        return $this->isDev;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getPrettyName(): string
     {
         return $this->prettyName;
@@ -120,7 +145,7 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function getVersion(): string
+    public function getPrettyVersion(): string
     {
         return $this->version;
     }
@@ -182,7 +207,7 @@ final class Package implements PackageContract
      */
     public function isExtraDependency(): bool
     {
-        return isset($this->options['extra-dependency-of']);
+        return isset($this->options['extraDependencyOf']);
     }
 
     /**
@@ -212,13 +237,22 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
+    public function getTimestamp(): string
+    {
+        return $this->created;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function toJson(): string
     {
         return \json_encode(\array_merge(
             [
                 'name'         => $this->name,
-                'pretty_name'  => $this->prettyName,
-                'package_path' => $this->getPackagePath(),
+                'prettyName'  => $this->prettyName,
+                'packagePath' => $this->getPackagePath(),
+                'created'     => $this->created
             ],
             $this->options
         ));

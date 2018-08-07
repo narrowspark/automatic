@@ -139,7 +139,7 @@ final class OperationsResolverTest extends MockeryTestCase
         $package = $packages['install'];
 
         static::assertSame('install', $package->getName());
-        static::assertSame('1', $package->getVersion());
+        static::assertSame('1', $package->getPrettyVersion());
         static::assertSame('library', $package->getType());
         static::assertSame('example.local', $package->getUrl());
         static::assertSame('install', $package->getOperation());
@@ -148,7 +148,7 @@ final class OperationsResolverTest extends MockeryTestCase
         $package = $packages['uninstall'];
 
         static::assertSame('uninstall', $package->getName());
-        static::assertSame('1.0-dev', $package->getVersion());
+        static::assertSame('1.0-dev', $package->getPrettyVersion());
         static::assertSame('provider', $package->getType());
         static::assertSame('example.local', $package->getUrl());
         static::assertSame('uninstall', $package->getOperation());

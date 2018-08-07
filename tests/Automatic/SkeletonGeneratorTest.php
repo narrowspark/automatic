@@ -4,6 +4,7 @@ namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
 use Narrowspark\Automatic\Automatic;
+use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Lock;
@@ -93,7 +94,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
             [ConsoleFixtureGenerator::class]
         );
 
-        $package  = ['narrowspark/skeleton' => 'dev-master'];
+        $package  = $this->mock(PackageContract::class);
         $lockMock = $this->mock(Lock::class);
 
         $lockMock->shouldReceive('remove')
@@ -102,7 +103,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
         $this->installationManagerMock->shouldReceive('uninstall')
             ->once()
-            ->with($package);
+            ->with([$package], []);
 
         $lockMock->shouldReceive('get')
             ->once()

@@ -55,10 +55,10 @@ final class Container
             IOInterface::class => function () use ($io) {
                 return $io;
             },
-            'vendor_path' => function (Container $container) {
+            'vendorPath' => function (Container $container) {
                 return \rtrim($container->get(Config::class)->get('vendor-dir'), '/');
             },
-            'composer_extra' => function (Container $container) {
+            'composerExtra' => function (Container $container) {
                 return \array_merge(
                     [
                         Util::AUTOMATIC => [
@@ -98,11 +98,11 @@ final class Container
                 return new Configurator(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
-                    $container->get('composer_extra')
+                    $container->get('composerExtra')
                 );
             },
             OperationsResolver::class => function (Container $container) {
-                return new OperationsResolver($container->get(Lock::class), $container->get('vendor_path'));
+                return new OperationsResolver($container->get(Lock::class), $container->get('vendorPath'));
             },
             InstallationManager::class => function (Container $container) {
                 return new InstallationManager(
@@ -147,7 +147,7 @@ final class Container
                 return new ScriptExecutor(
                     $container->get(Container::class),
                     $container->get(IOInterface::class),
-                    $container->get('composer_extra'),
+                    $container->get('composerExtra'),
                     new ProcessExecutor()
                 );
             },

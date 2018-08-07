@@ -88,6 +88,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     private $operations = [];
 
     /**
+     * The composer skeletons.
+     *
+     * @var array
+     */
+    private $skeletons = [];
+
+    /**
      * @var array
      */
     private $postInstallOutput = [''];
@@ -206,6 +213,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         if ($operation instanceof InstallOperation && $operation->getPackage()->getName() === self::PACKAGE_NAME) {
             \array_unshift($this->operations, $operation);
+        } elseif ($operation instanceof InstallOperation && $operation->getPackage()->getType() === SkeletonInstaller::TYPE) {
+            $this->skeletons[] = $operation;
         } else {
             $this->operations[] = $operation;
         }
@@ -250,14 +259,16 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $classMap = (array) $lock->get(self::LOCK_CLASSMAP);
 
             foreach ($classMap[$skeleton['name']] as $class => $path) {
-                require_once \str_replace('%vendor_path%', $this->container->get('vendor_path'), $path);
+                require_once \str_replace('%vendor_path%', $this->container->get('vendorPath'), $path);
             }
 
             $skeletonGenerator = new SkeletonGenerator(
                 $io,
                 $this->container->get(InstallationManager::class),
-                $this->container->get('composer_extra'),
-                $skeleton['generators']
+                $this->container->get(Lock::class),
+                $this->skeletons,
+                $this->container->get('composerExtra'),
+                $this->container->get('vendorPath')
             );
 
             $skeletonGenerator->run();
@@ -280,7 +291,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $manipulator->removeProperty('name');
         $manipulator->removeProperty('description');
 
-        foreach ($this->container->get('composer_extra') as $key => $value) {
+        foreach ($this->container->get('composerExtra') as $key => $value) {
             if ($key !== Util::AUTOMATIC) {
                 $manipulator->addSubNode('extra', $key, $value);
             }
@@ -321,7 +332,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $this->operations = $operations;
         }
 
-        $automaticOptions = $this->container->get('composer_extra')[Util::AUTOMATIC];
+        $automaticOptions = $this->container->get('composerExtra')[Util::AUTOMATIC];
         $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
         $packages         = $this->container->get(OperationsResolver::class)->resolve($this->operations);
         $lock             = $this->container->get(Lock::class);
@@ -338,7 +349,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         foreach ($configurators as $packageName => $classList) {
             foreach ($configuratorsClassmap[$packageName] as $path) {
-                require_once \str_replace('%vendor_path%', $this->container->get('vendor_path'), $path);
+                require_once \str_replace('%vendor_path%', $this->container->get('vendorPath'), $path);
             }
 
             foreach ($classList as $class) {
@@ -620,7 +631,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $packageConfigurator = new PackageConfigurator(
             $this->container->get(Composer::class),
             $this->container->get(IOInterface::class),
-            $this->container->get('composer_extra'),
+            $this->container->get('composerExtra'),
             $package->getConfiguratorOptions('custom-configurators')
         );
 
@@ -665,7 +676,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         if ($package->hasConfiguratorKey('post-install-output')) {
             foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
-                $this->postInstallOutput[] = self::expandTargetDir($this->container->get('composer_extra'), $line);
+                $this->postInstallOutput[] = self::expandTargetDir($this->container->get('composerExtra'), $line);
             }
 
             $this->postInstallOutput[] = '';
@@ -697,7 +708,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $extraDependencies = [];
 
             foreach ($lock->read() as $packageName => $data) {
-                if (isset($data['extra-dependency-of']) && $data['extra-dependency-of'] === $package->getName()) {
+                if (isset($data['extraDependencyOf']) && $data['extraDependencyOf'] === $package->getName()) {
                     $extraDependencies[$packageName] = $data['version'];
 
                     foreach ((array) $data['require'] as $name => $version) {

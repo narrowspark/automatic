@@ -44,7 +44,7 @@ class OperationsResolver
 
     /**
      * Set the parent package name.
-     * This is used for the "extra-dependency-of" key.
+     * This is used for the "extraDependencyOf" key.
      *
      * @param string $name
      *
@@ -93,7 +93,13 @@ class OperationsResolver
                 $packageConfiguration = $this->buildPackageConfiguration($package, $o);
             }
 
-            $packages[$name] = new Package($name, $package->getPrettyName(), $this->vendorPath, $packageConfiguration);
+            $packages[$name] = new Package(
+                $name,
+                $package->getPrettyName(),
+                $this->vendorPath,
+                $package->isDev(),
+                $packageConfiguration
+            );
         }
 
         return $packages;
@@ -151,12 +157,12 @@ class OperationsResolver
 
         return \array_merge(
             [
-                'version'             => $this->getPackageVersion($package),
-                'url'                 => $package->getSourceUrl(),
-                'type'                => $package->getType(),
-                'operation'           => $operation,
-                'extra-dependency-of' => $this->parentName,
-                'require'             => $requires,
+                'version'           => $this->getPackageVersion($package),
+                'url'               => $package->getSourceUrl(),
+                'type'              => $package->getType(),
+                'operation'         => $operation,
+                'extraDependencyOf' => $this->parentName,
+                'require'           => $requires
             ],
             $package->getExtra()['automatic'] ?? []
         );

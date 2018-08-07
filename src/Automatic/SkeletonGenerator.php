@@ -11,13 +11,6 @@ use Symfony\Component\Filesystem\Filesystem;
 final class SkeletonGenerator
 {
     /**
-     * The skeleton generators.
-     *
-     * @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator[]
-     */
-    private $generators;
-
-    /**
      * The composer io implementation.
      *
      * @var \Composer\IO\IOInterface
@@ -32,27 +25,52 @@ final class SkeletonGenerator
     private $installationManager;
 
     /**
+     * A lock instance.
+     *
+     * @var \Narrowspark\Automatic\Lock
+     */
+    private $lock;
+
+    /**
+     * List of skeleton packages.
+     *
+     * @var \Narrowspark\Automatic\Common\Contract\Package[]
+     */
+    private $skeletons;
+
+    /**
+     * List of composer extra options.
+     *
+     * @var \Narrowspark\Automatic\Common\Contract\Package[]
+     */
+    private $options;
+
+    private $vendorPath;
+
+    /**
      * Create a new SkeletonGenerator instance.
      *
      * @param \Composer\IO\IOInterface                             $io
      * @param \Narrowspark\Automatic\Installer\InstallationManager $installationManager
+     * @param \Narrowspark\Automatic\Lock                          $lock
+     * @param \Narrowspark\Automatic\Common\Contract\Package[]     $packages
      * @param string[]                                             $options
-     * @param string[]                                             $generators
+     * @param string                                               $vendorPath
      */
     public function __construct(
         IOInterface $io,
         InstallationManager $installationManager,
+        Lock $lock,
+        array $packages,
         array $options,
-        array $generators
+        string $vendorPath
     ) {
-        \array_walk($generators, static function (&$class) use ($options) {
-            /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $class */
-            $class = new $class(new Filesystem(), $options);
-        });
-
-        $this->generators          = $generators;
         $this->io                  = $io;
         $this->installationManager = $installationManager;
+        $this->lock                = $lock;
+        $this->skeletons            = $packages;
+        $this->options             = $options;
+        $this->vendorPath          = $vendorPath;
     }
 
     /**
@@ -62,13 +80,15 @@ final class SkeletonGenerator
      */
     public function run(): void
     {
+        $generators = $this->prepareGenerators();
+
         $generatorTypes   = [];
         $defaultGenerator = null;
 
-        foreach ($this->generators as $key => $generator) {
+        foreach ($generators as $key => $generator) {
             $type = $generator->getSkeletonType();
 
-            if ($generator instanceof DefaultGeneratorContract) {
+            if ($defaultGenerator === null && $generator instanceof DefaultGeneratorContract) {
                 $defaultGenerator = $type;
             }
 
@@ -95,25 +115,51 @@ final class SkeletonGenerator
     /**
      * Removes all information about the skeleton package.
      *
-     * @param \Narrowspark\Automatic\Lock $lock
-     * @param array                       $package
-     *
      * @throws \Exception
      *
      * @return void
      */
-    public function remove(Lock $lock, array $package): void
+    public function remove(): void
     {
-        $lock->remove(SkeletonInstaller::LOCK_KEY);
+        $this->lock->remove(SkeletonInstaller::LOCK_KEY);
 
-        $this->installationManager->uninstall($package, []);
+        $requires = [];
+        $names = [];
 
-        $classmap = $lock->get(Automatic::LOCK_CLASSMAP);
+        foreach ($this->skeletons as $package) {
+            $names[] = $package->getName();
+            $requires[] = $package;
+        }
 
-        unset($classmap[\key($package)]);
+        $this->installationManager->uninstall($requires, []);
 
-        $lock->add(Automatic::LOCK_CLASSMAP, $classmap);
+        $classmap = $this->lock->get(Automatic::LOCK_CLASSMAP);
 
-        $lock->write();
+        foreach ($names as $name) {
+            unset($classmap[$name]);
+        }
+
+        $this->lock->add(Automatic::LOCK_CLASSMAP, $classmap);
+
+        $this->lock->write();
+    }
+
+    /**
+     * @return \Narrowspark\Automatic\Common\Generator\AbstractGenerator[]
+     */
+    private function prepareGenerators(): array
+    {
+        $generators = [];
+
+        foreach ($this->skeletons as $skeleton) {
+
+        }
+
+        \array_walk($generators, static function (&$class) {
+            /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $class */
+            $class = new $class(new Filesystem(), $this->options);
+        });
+
+        return $generators;
     }
 }

@@ -516,7 +516,7 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
                 'url'                 => null,
                 'operation'           => 'install',
                 'type'                => 'library',
-                'extra-dependency-of' => null,
+                'extraDependencyOf' => null,
                 'require'             => [
                     'viserio/view' => 'dev-master',
                 ],
@@ -678,7 +678,7 @@ final class QuestionInstallationManagerTest extends MockeryTestCase
             'url'                 => null,
             'operation'           => 'install',
             'type'                => 'library',
-            'extra-dependency-of' => null,
+            'extraDependencyOf' => null,
             'require'             => [
                 'viserio/view' => 'dev-master',
             ],

@@ -27,14 +27,7 @@ class SkeletonInstaller extends AbstractInstaller
             return false;
         }
 
-        $this->lock->add(
-            $key,
-            [
-                'name'       => $package->getName(),
-                'version'    => $package->getPrettyVersion(),
-                'generators' => $classes,
-            ]
-        );
+        $this->lock->add($key, [$package->getName() => $classes]);
 
         return true;
     }
@@ -44,6 +37,6 @@ class SkeletonInstaller extends AbstractInstaller
      */
     protected function removeFromLock(PackageInterface $package, string $key): void
     {
-        $this->lock->add($key, []);
+        $this->lock->remove($key);
     }
 }

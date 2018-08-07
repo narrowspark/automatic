@@ -52,10 +52,6 @@ abstract class AbstractInstaller extends LibraryInstaller
 
         $this->lock   = $lock;
         $this->loader = $loader;
-
-        if (! $this->lock->has(static::LOCK_KEY)) {
-            $this->lock->add(static::LOCK_KEY, []);
-        }
     }
 
     /**
@@ -114,7 +110,7 @@ abstract class AbstractInstaller extends LibraryInstaller
         $this->removeFromLock($package, static::LOCK_KEY);
 
         $lockKeyClassmapArray = (array) $this->lock->get(Automatic::LOCK_CLASSMAP);
-        $name                 = $package->getPrettyName();
+        $name                 = $package->getName();
 
         if (isset($lockKeyClassmapArray[$name])) {
             unset($lockKeyClassmapArray[$name]);
@@ -191,7 +187,7 @@ abstract class AbstractInstaller extends LibraryInstaller
             Automatic::LOCK_CLASSMAP,
             \array_merge(
                 (array) $this->lock->get(Automatic::LOCK_CLASSMAP),
-                [$package->getPrettyName() => $classMap]
+                [$package->getName() => $classMap]
             )
         );
     }

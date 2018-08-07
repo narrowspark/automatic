@@ -23,7 +23,7 @@ interface Package
      *
      * @return string
      */
-    public function getVersion(): string;
+    public function getPrettyVersion(): string;
 
     /**
      * Get the package url.
@@ -88,11 +88,18 @@ interface Package
     public function getOption(string $key);
 
     /**
-     * Returns the package config for narrowspark.
+     * Returns the package config for automatic.
      *
      * @return array
      */
     public function getOptions(): array;
+
+    /**
+     * Returns the object creation timestamp.
+     *
+     * @return string
+     */
+    public function getTimestamp(): string;
 
     /**
      * Transforms the package object to a json string.

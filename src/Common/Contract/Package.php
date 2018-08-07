@@ -4,6 +4,12 @@ namespace Narrowspark\Automatic\Common\Contract;
 
 interface Package
 {
+    public const INSTALL_OPERATION = 'install';
+
+    public const UNINSTALL_OPERATION = 'uninstall';
+
+    public const UPDATE_OPERATION = 'update';
+
     /**
      * Get the package name.
      *

@@ -15,7 +15,6 @@ class InstallationManager extends AbstractInstallationManager
      *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
-     * @throws \Exception
      *
      * @return void
      */
@@ -109,7 +108,7 @@ class InstallationManager extends AbstractInstallationManager
     {
         $toInstall = [];
 
-        foreach ($requires as $packageName => $version) {
+        foreach ($requires as $package) {
             // Check if package variable is a integer
             if (\is_int($packageName)) {
                 $packageName = $version;

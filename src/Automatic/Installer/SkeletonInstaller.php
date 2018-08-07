@@ -27,7 +27,13 @@ class SkeletonInstaller extends AbstractInstaller
             return false;
         }
 
-        $this->lock->add($key, [$package->getName() => $classes]);
+        $this->lock->add(
+            $key,
+            \array_merge(
+                (array) $this->lock->get($key),
+                [$package->getName() => $classes]
+            )
+        );
 
         return true;
     }

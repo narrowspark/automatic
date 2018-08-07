@@ -255,27 +255,17 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $lock->read();
 
         if ($lock->has(SkeletonInstaller::LOCK_KEY) && $io->isInteractive()) {
-            $skeleton = (array) $lock->get(SkeletonInstaller::LOCK_KEY);
-            $classMap = (array) $lock->get(self::LOCK_CLASSMAP);
-
-            foreach ($classMap[$skeleton['name']] as $class => $path) {
-                require_once \str_replace('%vendor_path%', $this->container->get('vendorPath'), $path);
-            }
-
             $skeletonGenerator = new SkeletonGenerator(
                 $io,
                 $this->container->get(InstallationManager::class),
-                $this->container->get(Lock::class),
+                $lock,
+                $this->container->get('vendorPath'),
                 $this->skeletons,
-                $this->container->get('composerExtra'),
-                $this->container->get('vendorPath')
+                $this->container->get('composerExtra')
             );
 
             $skeletonGenerator->run();
-            $skeletonGenerator->remove(
-                $this->container->get(Lock::class),
-                [$skeleton['name'] => $skeleton['version']]
-            );
+            $skeletonGenerator->remove();
         }
 
         $lock->clear();

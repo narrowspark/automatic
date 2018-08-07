@@ -64,6 +64,7 @@ final class PackageConfiguratorTest extends MockeryTestCase
             'test',
             'test/test',
             __DIR__,
+            false,
             [
                 'version'              => '1',
                 'url'                  => 'example.local',
@@ -95,6 +96,7 @@ final class PackageConfiguratorTest extends MockeryTestCase
             'test',
             'test/test',
             __DIR__,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',

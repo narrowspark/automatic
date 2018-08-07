@@ -136,8 +136,11 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn(['psr-4' => ['Test\\' => '']]);
         $this->packageMock->shouldReceive('getPrettyName')
-            ->times(6)
+            ->times(4)
             ->andReturn($name);
+        $this->packageMock->shouldReceive('getName')
+            ->times(2)
+            ->andReturn(trim($name, '/'));
 
         $this->packageMock->shouldReceive('getTargetDir')
             ->andReturn(null);
@@ -165,15 +168,17 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 
         $this->packageMock->shouldReceive('getBinaries')
             ->andReturn([]);
-        $this->packageMock->shouldReceive('getPrettyName')
-            ->andReturn($name);
         $this->packageMock->shouldReceive('getTargetDir')
             ->andReturn('');
+        $this->packageMock->shouldReceive('getPrettyName')
+            ->andReturn($name);
         $this->packageMock->shouldReceive('getName')
             ->andReturn(\trim($name, '/'));
 
         $this->targetPackageMock->shouldReceive('getPrettyName')
             ->andReturn($name);
+        $this->targetPackageMock->shouldReceive('getName')
+            ->andReturn(\trim($name, '/'));
         $this->targetPackageMock->shouldReceive('getTargetDir')
             ->andReturn('');
         $this->targetPackageMock->shouldReceive('getBinaries')

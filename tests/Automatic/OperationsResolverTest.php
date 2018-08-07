@@ -65,6 +65,9 @@ final class OperationsResolverTest extends MockeryTestCase
         $package1Mock->shouldReceive('getName')
             ->once()
             ->andReturn('install');
+        $package1Mock->shouldReceive('getPrettyName')
+            ->once()
+            ->andReturn('install/install');
         $package1Mock->shouldReceive('getPrettyVersion')
             ->once()
             ->andReturn('1');
@@ -77,6 +80,9 @@ final class OperationsResolverTest extends MockeryTestCase
         $package1Mock->shouldReceive('getRequires')
             ->once()
             ->andReturn([]);
+        $package1Mock->shouldReceive('isDev')
+            ->once()
+            ->andReturn(false);
 
         $package2Mock = $this->mock(PackageInterface::class);
         $package2Mock->shouldReceive('getExtra')
@@ -90,6 +96,9 @@ final class OperationsResolverTest extends MockeryTestCase
         $package3Mock->shouldReceive('getName')
             ->once()
             ->andReturn('uninstall');
+        $package3Mock->shouldReceive('getPrettyName')
+            ->once()
+            ->andReturn('uninstall/uninstall');
         $package3Mock->shouldReceive('getPrettyVersion')
             ->once()
             ->andReturn('dev-master');
@@ -99,6 +108,9 @@ final class OperationsResolverTest extends MockeryTestCase
         $package3Mock->shouldReceive('getType')
             ->once()
             ->andReturn('provider');
+        $package3Mock->shouldReceive('isDev')
+            ->once()
+            ->andReturn(true);
 
         $link1Mock = $this->mock(Link::class);
         $link1Mock->shouldReceive('getTarget')

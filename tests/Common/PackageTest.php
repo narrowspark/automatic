@@ -35,11 +35,11 @@ final class PackageTest extends TestCase
             'copy'      => [
                 'from' => 'to',
             ],
-            'extraDependencyOf' => 'foo/bar',
+            'extraDependencyOf'   => 'foo/bar',
             'used-by-automatic'   => true,
-            'isDev' => false,
+            'isDev'               => false,
         ];
-        $this->package = new Package('test', 'test/test', __DIR__, $this->config);
+        $this->package = new Package('test', 'test/test', __DIR__, false, $this->config);
     }
 
     public function testGetName(): void
@@ -120,13 +120,21 @@ final class PackageTest extends TestCase
     {
         $json = $this->package->toJson();
 
-        self::assertJson($json);
-        self::assertSame(
-            array_merge(
-                ['name' => 'test', 'prettyName' => 'test/test', 'packagePath' => \str_replace('\\', '/', __DIR__ . '/test/test/')],
-                $this->config
+        static::assertJson($json);
+        static::assertSame(
+            \array_merge(
+                [
+                    'name'        => 'test',
+                    'prettyName'  => 'test/test',
+                    'packagePath' => \str_replace('\\', '/', __DIR__ . '/test/test/'),
+                    'isDev'       => false,
+                ],
+                $this->config,
+                [
+                    'created'     => $this->package->getTimestamp(),
+                ]
             ),
-            json_decode($json, true)
+            \json_decode($json, true)
         );
     }
 }

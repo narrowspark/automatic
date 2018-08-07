@@ -29,6 +29,11 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     private $installationManagerMock;
 
     /**
+     * @var \Narrowspark\Automatic\Lock|\Mockery\MockInterface
+     */
+    private $lockMock;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
@@ -37,6 +42,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
         $this->ioMock                  = $this->mock(IOInterface::class);
         $this->installationManagerMock = $this->mock(InstallationManager::class);
+        $this->lockMock                = $this->mock(Lock::class);
     }
 
     public function testRun(): void
@@ -45,12 +51,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
             ->once()
             ->with([], []);
 
-        $skeletonGenerator = new SkeletonGenerator(
-            $this->ioMock,
-            $this->installationManagerMock,
-            [],
-            [ConsoleFixtureGenerator::class]
-        );
+        $skeletonGenerator = $this->getSkeletonGenerator([], [ConsoleFixtureGenerator::class]);
 
         $this->ioMock->shouldReceive('select')
             ->once()
@@ -68,12 +69,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
             ->once()
             ->with([], []);
 
-        $skeletonGenerator = new SkeletonGenerator(
-            $this->ioMock,
-            $this->installationManagerMock,
-            [],
-            [ConsoleFixtureGenerator::class, FrameworkDefaultFixtureGenerator::class]
-        );
+        $skeletonGenerator = $this->getSkeletonGenerator([], [ConsoleFixtureGenerator::class, FrameworkDefaultFixtureGenerator::class]);
 
         $this->ioMock->shouldReceive('select')
             ->once()
@@ -87,12 +83,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
     public function testRemove(): void
     {
-        $skeletonGenerator = new SkeletonGenerator(
-            $this->ioMock,
-            $this->installationManagerMock,
-            [],
-            [ConsoleFixtureGenerator::class]
-        );
+        $skeletonGenerator = $this->getSkeletonGenerator([], [ConsoleFixtureGenerator::class]);
 
         $package  = $this->mock(PackageContract::class);
         $lockMock = $this->mock(Lock::class);
@@ -124,5 +115,23 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     protected function allowMockingNonExistentMethods($allow = false): void
     {
         parent::allowMockingNonExistentMethods(true);
+    }
+
+    /**
+     * @param array $packages
+     * @param array $generators
+     *
+     * @return \Narrowspark\Automatic\SkeletonGenerator
+     */
+    private function getSkeletonGenerator(array $packages, array $generators): SkeletonGenerator
+    {
+        return new SkeletonGenerator(
+            $this->ioMock,
+            $this->installationManagerMock,
+            $this->lockMock,
+            __DIR__,
+            $packages,
+            $generators
+        );
     }
 }

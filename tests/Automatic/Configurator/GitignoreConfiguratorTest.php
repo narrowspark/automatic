@@ -71,6 +71,7 @@ final class GitignoreConfiguratorTest extends TestCase
             'FooBundle',
             'Foo/Bundle',
             \sys_get_temp_dir(),
+            false,
             [
                 'version'    => '1',
                 'url'        => 'example.local',
@@ -94,6 +95,7 @@ EOF;
             'BarBundle',
             'Bar/Bundle',
             \sys_get_temp_dir(),
+            false,
             [
                 'version'    => '1',
                 'url'        => 'example.local',
@@ -141,6 +143,7 @@ EOF;
             'FooBundle',
             'Foo/Bundle',
             \sys_get_temp_dir(),
+            false,
             [
                 'version'    => '1',
                 'url'        => 'example.local',
@@ -159,6 +162,7 @@ EOF;
             'BarBundle',
             'Bar/Bundle',
             \sys_get_temp_dir(),
+            false,
             [
                 'version'    => '1',
                 'url'        => 'example.local',

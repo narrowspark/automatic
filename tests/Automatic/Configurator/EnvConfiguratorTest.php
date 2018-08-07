@@ -78,6 +78,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
             'test',
             'fixtures/test',
             __DIR__,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',
@@ -138,6 +139,7 @@ EOF;
             'env2',
             'fixtures/env2',
             __DIR__,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',
@@ -167,6 +169,7 @@ EOF;
             'env2',
             'fixtures/env2',
             __DIR__,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',

@@ -45,6 +45,11 @@ final class SkeletonGenerator
      */
     private $options;
 
+    /**
+     * The composer vendor path.
+     *
+     * @var string
+     */
     private $vendorPath;
 
     /**
@@ -53,28 +58,30 @@ final class SkeletonGenerator
      * @param \Composer\IO\IOInterface                             $io
      * @param \Narrowspark\Automatic\Installer\InstallationManager $installationManager
      * @param \Narrowspark\Automatic\Lock                          $lock
-     * @param \Narrowspark\Automatic\Common\Contract\Package[]     $packages
-     * @param string[]                                             $options
      * @param string                                               $vendorPath
+     * @param \Narrowspark\Automatic\Common\Contract\Package[]     $skeletons
+     * @param string[]                                             $options
      */
     public function __construct(
         IOInterface $io,
         InstallationManager $installationManager,
         Lock $lock,
-        array $packages,
-        array $options,
-        string $vendorPath
+        string $vendorPath,
+        array $skeletons,
+        array $options
     ) {
-        $this->io                  = $io;
-        $this->installationManager = $installationManager;
-        $this->lock                = $lock;
-        $this->skeletons            = $packages;
-        $this->options             = $options;
-        $this->vendorPath          = $vendorPath;
+        $this->io                   = $io;
+        $this->installationManager  = $installationManager;
+        $this->lock                 = $lock;
+        $this->skeletons            = $skeletons;
+        $this->options              = $options;
+        $this->vendorPath           = $vendorPath;
     }
 
     /**
-     * Generate the project.
+     * Generate the selected skeleton.
+     *
+     * @throws \Exception
      *
      * @return void
      */
@@ -82,32 +89,37 @@ final class SkeletonGenerator
     {
         $generators = $this->prepareGenerators();
 
-        $generatorTypes   = [];
-        $defaultGenerator = null;
+        $generatorTypes       = [];
+        $defaultGeneratorType = null;
 
+        /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $generator */
         foreach ($generators as $key => $generator) {
             $type = $generator->getSkeletonType();
 
-            if ($defaultGenerator === null && $generator instanceof DefaultGeneratorContract) {
-                $defaultGenerator = $type;
+            if ($defaultGeneratorType === null && $generator instanceof DefaultGeneratorContract) {
+                $defaultGeneratorType = $type;
+
+                continue;
             }
 
             $generatorTypes[$key] = $type;
         }
 
-        if ($defaultGenerator === null) {
-            $defaultGenerator = $generatorTypes[0];
+        if ($defaultGeneratorType === null) {
+            $defaultGeneratorType = $generatorTypes[0];
         }
 
         /** @var int $answer */
-        $answer = $this->io->select('Please select a skeleton:', $generatorTypes, $defaultGenerator);
+        $answer = $this->io->select('Please select a skeleton:', $generatorTypes, $defaultGeneratorType);
 
         /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $generator */
-        $generator = $this->generators[$answer];
+        $generator = $generators[$answer];
 
         $this->io->write(\sprintf('%sGenerating [%s] skeleton.%s', "\n", $generatorTypes[$answer], "\n"));
 
         $this->installationManager->install($generator->getDependencies(), $generator->getDevDependencies());
+
+        $this->installationManager->run();
 
         $generator->generate();
     }
@@ -124,10 +136,10 @@ final class SkeletonGenerator
         $this->lock->remove(SkeletonInstaller::LOCK_KEY);
 
         $requires = [];
-        $names = [];
+        $names    = [];
 
         foreach ($this->skeletons as $package) {
-            $names[] = $package->getName();
+            $names[]    = $package->getName();
             $requires[] = $package;
         }
 
@@ -145,21 +157,28 @@ final class SkeletonGenerator
     }
 
     /**
+     * Requires the found skeleton generators and create them.
+     *
      * @return \Narrowspark\Automatic\Common\Generator\AbstractGenerator[]
      */
     private function prepareGenerators(): array
     {
-        $generators = [];
+        $foundGenerators = [];
+        $classMap        = (array) $this->lock->get(Automatic::LOCK_CLASSMAP);
 
-        foreach ($this->skeletons as $skeleton) {
+        foreach ((array) $this->lock->get(SkeletonInstaller::LOCK_KEY) as $name => $generators) {
+            foreach ($classMap[$name] as $path) {
+                require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
+            }
 
+            $foundGenerators += $generators;
         }
 
-        \array_walk($generators, static function (&$class) {
+        \array_walk($foundGenerators, static function (&$class) {
             /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $class */
             $class = new $class(new Filesystem(), $this->options);
         });
 
-        return $generators;
+        return $foundGenerators;
     }
 }

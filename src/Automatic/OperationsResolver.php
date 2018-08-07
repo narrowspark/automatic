@@ -162,7 +162,7 @@ class OperationsResolver
                 'type'              => $package->getType(),
                 'operation'         => $operation,
                 'extraDependencyOf' => $this->parentName,
-                'require'           => $requires
+                'require'           => $requires,
             ],
             $package->getExtra()['automatic'] ?? []
         );

@@ -56,6 +56,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'fixtures',
             'Stub/stub',
             __DIR__,
+            false,
             [
                 'version'          => '1',
                 'url'              => 'example.local',
@@ -91,6 +92,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'fixtures',
             'Stub/stub',
             __DIR__,
+            false,
             [
                 'version'          => '1',
                 'url'              => 'example.local',
@@ -130,6 +132,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'fixtures',
             'Stub/stub',
             $dir,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',
@@ -163,6 +166,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'fixtures',
             'Stub/stub',
             __DIR__,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',
@@ -201,6 +205,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'fixtures',
             'Stub/stub',
             __DIR__,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',
@@ -245,6 +250,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'fixtures',
             'Stub/stub',
             __DIR__,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',
@@ -299,6 +305,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             'fixtures',
             'Stub/stub',
             __DIR__,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',

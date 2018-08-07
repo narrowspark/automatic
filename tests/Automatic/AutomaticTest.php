@@ -159,6 +159,8 @@ final class AutomaticTest extends MockeryTestCase
         $packageMock = $this->mock(Package::class);
         $packageMock->shouldReceive('getName')
             ->andReturn('test');
+        $packageMock->shouldReceive('getType')
+            ->andReturn('library');
 
         $updateOperationMock = $this->mock(UpdateOperation::class);
         $updateOperationMock->shouldReceive('getTargetPackage')
@@ -213,6 +215,8 @@ final class AutomaticTest extends MockeryTestCase
         $packageMock = $this->mock(Package::class);
         $packageMock->shouldReceive('getName')
             ->andReturn('test');
+        $packageMock->shouldReceive('getType')
+            ->andReturn('library');
 
         $installerOperationMock = $this->mock(InstallOperation::class);
         $installerOperationMock->shouldReceive('getPackage')

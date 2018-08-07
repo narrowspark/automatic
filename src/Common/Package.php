@@ -49,6 +49,13 @@ final class Package implements PackageContract
     private $operation;
 
     /**
+     * The package requires.
+     *
+     * @var array
+     */
+    private $requires = [];
+
+    /**
      * The package config from automatic.
      *
      * @var array
@@ -86,24 +93,21 @@ final class Package implements PackageContract
     /**
      * Create a new Package instance.
      *
-     * @param string   $name
-     * @param string   $prettyName
-     * @param string   $vendorDirPath
+     * @param string      $name
+     * @param null|string $vendorDirPath
      * @param bool     $isDev
      * @param string[] $options
      */
-    public function __construct(string $name, string $prettyName, string $vendorDirPath, bool $isDev, array $options)
+    public function __construct(string $name, ?string $version, array $options)
     {
+        $this->prettyName = $name;
         $this->name       = \mb_strtolower($name);
-        $this->prettyName = $prettyName;
-        $this->vendorPath = $vendorDirPath;
-        $this->isDev      = $isDev;
-        $this->version    = $options['version'];
+        $this->version    = $version;
         $this->url        = $options['url'] ?? '';
         $this->operation  = $options['operation'];
         $this->type       = $options['type'];
         $this->options    = $options;
-        $this->created    = (new \DateTimeImmutable())->getTimestamp();
+        $this->created    = (new \DateTimeImmutable())->format(\DateTime::RFC3339);
 
         unset(
             $options['version'],
@@ -116,6 +120,20 @@ final class Package implements PackageContract
         );
 
         $this->configuratorOptions = $options;
+    }
+
+    /**
+     * Set the package name.
+     *
+     * @param string $name
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setName(string $name): PackageContract
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     /**
@@ -156,6 +174,20 @@ final class Package implements PackageContract
     public function getUrl(): string
     {
         return $this->url;
+    }
+
+    /**
+     * Set the composer operation type.
+     *
+     * @var string $operation
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setOperation(string $operation): PackageContract
+    {
+        $this->operation = $operation;
+
+        return $this;
     }
 
     /**
@@ -211,11 +243,25 @@ final class Package implements PackageContract
     }
 
     /**
+     * Set the required packages
+     *
+     * @param string[] $requires
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setRequires(array $requires): PackageContract
+    {
+        $this->requires = $requires;
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getRequires(): array
     {
-        return $this->options['require'] ?? [];
+        return $this->requires;
     }
 
     /**
@@ -250,11 +296,14 @@ final class Package implements PackageContract
         return \json_encode(\array_merge(
             [
                 'name'         => $this->name,
-                'prettyName'  => $this->prettyName,
-                'packagePath' => $this->getPackagePath(),
-                'created'     => $this->created
+                'prettyName'   => $this->prettyName,
+                'packagePath'  => $this->getPackagePath(),
+                'isDev'        => $this->isDev,
             ],
-            $this->options
+            $this->options,
+            [
+                'created'      => $this->created,
+            ]
         ));
     }
 }

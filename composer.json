@@ -71,6 +71,8 @@
         "cs": "php-cs-fixer fix",
         "phpstan": "phpstan analyse -c phpstan.neon -l 7 src --memory-limit=-1",
         "test": "phpunit",
+        "test-common": "phpunit --testsuite=\"Narrowspark Automatic Common Test Suite\"",
+        "test-automatic": "phpunit --testsuite=\"Narrowspark Automatic Test Suite\"",
         "changelog":  "changelog-generator generate --config=\".changelog\" --file --prepend"
     },
     "support": {

@@ -108,6 +108,7 @@ final class ConfiguratorTest extends TestCase
             'fixtures',
             'Fixtures/stub',
             __DIR__,
+            false,
             [
                 'version'   => '1',
                 'url'       => 'example.local',

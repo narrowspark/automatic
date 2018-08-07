@@ -14,21 +14,12 @@ final class SkeletonInstallerTest extends AbstractInstallerTest
      */
     protected $installerClass = SkeletonInstaller::class;
 
-    public function testInstall(): void
+    public function testInstallWithNotFoundClasses(): void
     {
-        $this->packageMock->shouldReceive('getPrettyVersion')
+        $this->lockMock->shouldReceive('remove')
             ->once()
-            ->andReturn('dev-master');
+            ->with(SkeletonInstaller::LOCK_KEY);
 
-        parent::testInstall();
-    }
-
-    public function testUpdate(): void
-    {
-        $this->targetPackageMock->shouldReceive('getPrettyVersion')
-            ->once()
-            ->andReturn('dev-master');
-
-        parent::testUpdate();
+        parent::testInstallWithNotFoundClasses();
     }
 }

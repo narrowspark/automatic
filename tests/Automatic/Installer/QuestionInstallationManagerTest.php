@@ -21,8 +21,8 @@ declare(strict_types=1);
 //use Narrowspark\Automatic\Common\Installer\InstallationManager;
 //use Narrowspark\Automatic\Common\Package;
 //use Narrowspark\Automatic\OperationsResolver;
-//use Narrowspark\Automatic\Test\Fixtures\ComposerJsonFactory;
-//use Narrowspark\Automatic\Test\Fixtures\MockedQuestionInstallationManager;
+//use Narrowspark\Automatic\Test\Fixture\ComposerJsonFactory;
+//use Narrowspark\Automatic\Test\Fixture\MockedQuestionInstallationManager;
 //use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 //use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 //use Symfony\Component\Filesystem\Filesystem;
@@ -813,7 +813,7 @@ declare(strict_types=1);
 //    /**
 //     * @param string $composerFilePath
 //     *
-//     * @return \Narrowspark\Automatic\Test\Fixtures\MockedQuestionInstallationManager
+//     * @return \Narrowspark\Automatic\Test\Fixture\MockedQuestionInstallationManager
 //     */
 //    private function getQuestionInstallationManager(string $composerFilePath): MockedQuestionInstallationManager
 //    {

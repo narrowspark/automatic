@@ -137,9 +137,9 @@ abstract class AbstractInstallationManager
     }
 
     /**
-     * @codeCoverageIgnore
-     *
      * Get configured installer instance.
+     *
+     * @codeCoverageIgnore
      *
      * @return \Composer\Installer
      */

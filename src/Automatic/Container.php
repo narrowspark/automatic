@@ -29,9 +29,9 @@ final class Container
     /**
      * The array of closures defining each entry of the container.
      *
-     * @var array<string, Closure>
+     * @var array<string, \Closure>
      */
-    private $callbacks = [];
+    private $callbacks;
 
     /**
      * The array of entries once they have been instantiated.
@@ -48,6 +48,8 @@ final class Container
      */
     public function __construct(Composer $composer, IOInterface $io)
     {
+        $genericPropertyReader = $this->getGenericPropertyReader();
+
         $this->callbacks = [
             Composer::class => static function () use ($composer) {
                 return $composer;
@@ -69,8 +71,8 @@ final class Container
                     $container->get(Composer::class)->getPackage()->getExtra()
                 );
             },
-            InputInterface::class => static function (Container $container) {
-                return $this->getGenericPropertyReader()($container->get(IOInterface::class), 'input');
+            InputInterface::class => static function (Container $container) use ($genericPropertyReader) {
+                return $genericPropertyReader($container->get(IOInterface::class), 'input');
             },
             Lock::class => static function () {
                 return new Lock(Util::getAutomaticLockFile());
@@ -155,6 +157,15 @@ final class Container
                 return new PackageConfigurator(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
+                    $container->get('composer-extra')
+                );
+            },
+            SkeletonGenerator::class => static function (Container $container) {
+                return new SkeletonGenerator(
+                    $container->get(IOInterface::class),
+                    $container->get(InstallationManager::class),
+                    $container->get(Lock::class),
+                    $container->get('vendor-dir'),
                     $container->get('composer-extra')
                 );
             },

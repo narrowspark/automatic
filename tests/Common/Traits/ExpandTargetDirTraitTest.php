@@ -15,5 +15,6 @@ final class ExpandTargetDirTraitTest extends TestCase
     public function testItCanIdentifyVarsInTargetDir(): void
     {
         static::assertSame('bar', self::expandTargetDir(['foo' => 'bar/'], '%foo%'));
+        static::assertSame('%foo_test%', self::expandTargetDir(['foo' => 'bar/'], '%foo_test%'));
     }
 }

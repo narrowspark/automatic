@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Fixtures;
+namespace Narrowspark\Automatic\Test\Fixture;
 
 use Narrowspark\Automatic\Common\Contract\Generator\DefaultGenerator as DefaultGeneratorContract;
 use Narrowspark\Automatic\Common\Generator\AbstractGenerator;

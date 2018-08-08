@@ -30,7 +30,7 @@ final class Package implements PackageContract
     /**
      * The package version.
      *
-     * @var string
+     * @var null|string
      */
     private $prettyVersion;
 
@@ -68,13 +68,6 @@ final class Package implements PackageContract
      * @var array
      */
     private $configs = [];
-
-    /**
-     * List of automatic configurator config.
-     *
-     * @var array
-     */
-    private $configuratorConfigs = [];
 
     /**
      * List of selected questionable requirements.
@@ -121,11 +114,41 @@ final class Package implements PackageContract
     }
 
     /**
-     * Set the package name.
+     * Create a automatic package from the lock data.
      *
      * @param string $name
+     * @param array  $packageData
      *
      * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public static function createFromLock(string $name, array $packageData): PackageContract
+    {
+        $keyToFunctionMappers = [
+            'parent'                             => 'setParentName',
+            'is-dev'                             => 'setIsDev',
+            'url'                                => 'setUrl',
+            'operation'                          => 'setOperation',
+            'type'                               => 'setType',
+            'is-questionable-requirement'        => 'setIsQuestionableRequirement',
+            'selected-questionable-requirements' => 'setSelectedQuestionableRequirements',
+            'requires'                           => 'setRequires',
+            'automatic-extra'                    => 'setConfig',
+            'created'                            => 'setTimestamp',
+        ];
+
+        $package = new static($name, $packageData['version']);
+
+        foreach ($packageData as $key => $date) {
+            if (isset($keyToFunctionMappers[$key])) {
+                $package->{$keyToFunctionMappers}[$key]($date);
+            }
+        }
+
+        return $package;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function setName(string $name): PackageContract
     {
@@ -153,17 +176,13 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function getPrettyVersion(): string
+    public function getPrettyVersion(): ?string
     {
         return $this->prettyVersion;
     }
 
     /**
-     * Active this if the package is a dev-require.
-     *
-     * @param bool $bool
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * {@inheritdoc}
      */
     public function setIsDev(bool $bool = true): PackageContract
     {
@@ -181,11 +200,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * Set the package url.
-     *
-     * @param string $url
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * {@inheritdoc}
      */
     public function setUrl(string $url): PackageContract
     {
@@ -203,13 +218,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * Set the composer operation type.
-     *
-     * @var string
-     *
-     * @param string $operation
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * {@inheritdoc}
      */
     public function setOperation(string $operation): PackageContract
     {
@@ -227,13 +236,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * Set the package type.
-     *
-     * @var string
-     *
-     * @param string $type
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * {@inheritdoc}
      */
     public function setType(string $type): PackageContract
     {
@@ -251,11 +254,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * Set name of the parent package.
-     *
-     * @param string $name
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * {@inheritdoc}
      */
     public function setParentName(string $name): PackageContract
     {
@@ -273,11 +272,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * Set this if the information coming from the QuestionInstallationManager.
-     *
-     * @param bool $bool
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * {@inheritdoc}
      */
     public function setIsQuestionableRequirement(bool $bool = true): PackageContract
     {
@@ -295,11 +290,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * Set selected questionable requirements.
-     *
-     * @param array $selectedQuestionableRequirements
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * {@inheritdoc}
      */
     public function setSelectedQuestionableRequirements(array $selectedQuestionableRequirements): PackageContract
     {
@@ -309,9 +300,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * Return the selected questionable requirements.
-     *
-     * @return string[]
+     * {@inheritdoc}
      */
     public function getSelectedQuestionableRequirements(): array
     {
@@ -319,11 +308,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * Set the required packages.
-     *
-     * @param string[] $requires
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * {@inheritdoc}
      */
     public function setRequires(array $requires): PackageContract
     {
@@ -341,11 +326,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * Set the composer extra automatic package configs.
-     *
-     * @param array $configs
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * {@inheritdoc}
      */
     public function setConfig(array $configs): PackageContract
     {
@@ -381,7 +362,17 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function getTimestamp(): string
+    public function setTime(string $time): PackageContract
+    {
+        $this->created = $time;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTime(): string
     {
         return $this->created;
     }
@@ -389,20 +380,22 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function toJson(): string
+    public function toArray(): array
     {
-        return \json_encode([
-            'name'                 => $this->name,
-            'pretty-name'          => $this->prettyName,
-            'version'              => $this->prettyVersion,
-            'parent'               => $this->parentName,
-            'is-dev'               => $this->isDev,
-            'url'                  => $this->url,
-            'operation'            => $this->operation,
-            'type'                 => $this->type,
-            'requires'             => $this->requires,
-            'automatic-extra'      => $this->configs,
-            'created'              => $this->created,
-        ]);
+        return
+            [
+                'pretty-name'                        => $this->prettyName,
+                'version'                            => $this->prettyVersion,
+                'parent'                             => $this->parentName,
+                'is-dev'                             => $this->isDev,
+                'url'                                => $this->url,
+                'operation'                          => $this->operation,
+                'type'                               => $this->type,
+                'is-questionable-requirement'        => $this->isQuestionableRequirement,
+                'selected-questionable-requirements' => $this->selectedQuestionableRequirements,
+                'requires'                           => $this->requires,
+                'automatic-extra'                    => $this->configs,
+                'created'                            => $this->created,
+            ];
     }
 }

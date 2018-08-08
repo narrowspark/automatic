@@ -28,6 +28,10 @@ final class PackageTest extends TestCase
     public function testGetName(): void
     {
         static::assertSame('test/test', $this->package->getName());
+
+        $this->package->setName('test/test2');
+
+        static::assertSame('test/test2', $this->package->getName());
     }
 
     public function testGetPrettyName(): void
@@ -43,6 +47,10 @@ final class PackageTest extends TestCase
     public function testIsDev(): void
     {
         static::assertFalse($this->package->isDev());
+
+        $this->package->setIsDev();
+
+        static::assertTrue($this->package->isDev());
     }
 
     public function testSetAndGetUrl(): void
@@ -102,7 +110,6 @@ final class PackageTest extends TestCase
         $this->package->setConfig($config);
 
         static::assertTrue($this->package->getConfig('cut'));
-
         static::assertEquals($config, $this->package->getConfigs());
     }
 
@@ -115,26 +122,35 @@ final class PackageTest extends TestCase
         static::assertSame($name, $this->package->getParentName());
     }
 
-    public function testToJson(): void
+    public function testSetAndGetTime(): void
     {
-        $json = $this->package->toJson();
+        $time = (new \DateTimeImmutable())->format(\DateTime::RFC3339);
 
-        static::assertJson($json);
+        $this->package->setTime($time);
+
+        static::assertSame($time, $this->package->getTime());
+    }
+
+    public function testToArray(): void
+    {
+        $array = $this->package->toArray();
+
         static::assertSame(
             [
-                'name'                 => 'test/test',
-                'pretty-name'          => 'test/Test',
-                'version'              => '1',
-                'parent'               => null,
-                'is-dev'               => false,
-                'url'                  => null,
-                'operation'            => null,
-                'type'                 => null,
-                'requires'             => [],
-                'automatic-extra'      => [],
-                'created'              => $this->package->getTimestamp(),
+                'pretty-name'                        => 'test/Test',
+                'version'                            => '1',
+                'parent'                             => null,
+                'is-dev'                             => false,
+                'url'                                => null,
+                'operation'                          => null,
+                'type'                               => null,
+                'is-questionable-requirement'        => false,
+                'selected-questionable-requirements' => [],
+                'requires'                           => [],
+                'automatic-extra'                    => [],
+                'created'                            => $this->package->getTime(),
             ],
-            \json_decode($json, true)
+            $array
         );
     }
 }

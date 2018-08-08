@@ -79,7 +79,7 @@ class OperationsResolver
             $name = $composerPackage->getName();
 
             if ($operation instanceof UninstallOperation && $this->lock->has($name)) {
-                $package = $this->createFromLock((array) $this->lock->get($name));
+                $package = Package::createFromLock($name, (array) $this->lock->get($name));
             } else {
                 $package = $this->createAutomaticPackage($composerPackage);
             }
@@ -90,18 +90,6 @@ class OperationsResolver
         }
 
         return $packages;
-    }
-
-    /**
-     * Create a automatic package from the lock data.
-     *
-     * @param array $packageData
-     *
-     * @return \Narrowspark\Automatic\Common\Package
-     */
-    private function createFromLock(array $packageData): Package
-    {
-        return new Package($packageData['name'], $packageData['version']);
     }
 
     /**
@@ -135,9 +123,9 @@ class OperationsResolver
      *
      * @param \Composer\Package\PackageInterface $composerPackage
      *
-     * @return \Narrowspark\Automatic\Common\Package
+     * @return \Narrowspark\Automatic\Common\Contract\Package
      */
-    private function createAutomaticPackage(PackageInterface $composerPackage): Package
+    private function createAutomaticPackage(PackageInterface $composerPackage): PackageContract
     {
         $package  = new Package($composerPackage->getName(), $this->getPackageVersion($composerPackage));
         $requires = [];
@@ -156,7 +144,10 @@ class OperationsResolver
 
         $package->setRequires($requires);
         $package->setType($composerPackage->getType());
-        $package->setUrl($composerPackage->getSourceUrl());
+
+        if (($url = $composerPackage->getSourceUrl()) !== null) {
+            $package->setUrl($url);
+        }
 
         if ($this->parentName !== null) {
             $package->setParentName($this->parentName);

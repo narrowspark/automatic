@@ -119,18 +119,6 @@ final class PathClassLoader
     }
 
     /**
-     * Includes all found abstract classes, classes, traits and interfaces.
-     *
-     * @return void
-     */
-    public function load(): void
-    {
-        foreach ($this->getAll() as $path) {
-            includeFile($path);
-        }
-    }
-
-    /**
      * Returns a array of all found classes, interface and traits.
      *
      * @return array
@@ -206,16 +194,4 @@ final class PathClassLoader
 
         return null;
     }
-}
-
-/**
- * Scope isolated include.
- *
- * Prevents access to $this/self from included files.
- *
- * @param mixed $file
- */
-function includeFile($file)
-{
-    include $file;
 }

@@ -30,7 +30,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
 
         $data = '';
 
-        foreach ($package->getConfig('gitignore') as $value) {
+        foreach ((array) $package->getConfig(self::getName()) as $value) {
             $value = self::expandTargetDir($this->options, $value);
             $data .= "${value}\n";
         }
@@ -45,7 +45,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     {
         $file = getcwd() . '/.gitignore';
 
-        // @codeCoverageIgnoreStart
+        /** @codeCoverageIgnoreStart */
         if (! \file_exists($file)) {
             return;
         }

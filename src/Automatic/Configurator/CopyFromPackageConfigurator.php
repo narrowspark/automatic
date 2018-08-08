@@ -23,7 +23,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     {
         $this->write('Copying files');
 
-        foreach ($package->getConfig('copy') as $from => $to) {
+        foreach ((array) $package->getConfig(self::getName()) as $from => $to) {
             $target = self::expandTargetDir($this->options, $to);
 
             try {
@@ -50,7 +50,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     {
         $this->write('Removing files');
 
-        foreach ($package->getConfig('copy') as $source) {
+        foreach ((array) $package->getConfig(self::getName()) as $source) {
             $source = self::expandTargetDir($this->options, $source);
 
             try {

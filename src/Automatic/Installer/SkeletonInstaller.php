@@ -19,28 +19,6 @@ class SkeletonInstaller extends AbstractInstaller
     /**
      * {@inheritdoc}
      */
-    protected function saveToLockFile(array $autoload, PackageInterface $package, string $key): bool
-    {
-        $classes = $this->findClasses($autoload, $package);
-
-        if ($classes === null) {
-            return false;
-        }
-
-        $this->lock->add(
-            $key,
-            \array_merge(
-                (array) $this->lock->get($key),
-                [$package->getName() => $classes]
-            )
-        );
-
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function removeFromLock(PackageInterface $package, string $key): void
     {
         $this->lock->remove($key);

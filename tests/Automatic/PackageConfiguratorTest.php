@@ -8,7 +8,7 @@ use Composer\IO\NullIO;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\PackageConfigurator;
-use Narrowspark\Automatic\Test\Fixtures\MockConfigurator;
+use Narrowspark\Automatic\Test\Fixture\MockConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use ReflectionClass;
 
@@ -75,8 +75,8 @@ final class PackageConfiguratorTest extends MockeryTestCase
                 'mock' => MockConfigurator::class,
             ],
             'mock' => [
-                'test'
-            ]
+                'test',
+            ],
         ]);
 
         $this->ioMock->shouldReceive('writeError')
@@ -94,8 +94,8 @@ final class PackageConfiguratorTest extends MockeryTestCase
     {
         $package = $this->arrangePackageWithConfig('test/test', [
             'mock' => [
-                'test'
-            ]
+                'test',
+            ],
         ]);
 
         $this->ioMock->shouldReceive('writeError')

@@ -30,7 +30,7 @@ final class EnvConfigurator extends AbstractConfigurator
 
         $data = '';
 
-        foreach ($package->getConfig('env') as $key => $value) {
+        foreach ((array) $package->getConfig(self::getName()) as $key => $value) {
             if ($key[0] === '#' && \is_numeric(\mb_substr($key, 1))) {
                 $data .= '# ' . $value . "\n";
 

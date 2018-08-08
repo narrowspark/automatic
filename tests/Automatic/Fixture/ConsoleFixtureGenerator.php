@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Fixtures;
+namespace Narrowspark\Automatic\Test\Fixture;
 
 use Narrowspark\Automatic\Common\Generator\AbstractGenerator;
 
@@ -21,7 +21,9 @@ final class ConsoleFixtureGenerator extends AbstractGenerator
      */
     public function getDependencies(): array
     {
-        return [];
+        return [
+            'psr/log' => '^1.0.0',
+        ];
     }
 
     /**
@@ -49,6 +51,8 @@ final class ConsoleFixtureGenerator extends AbstractGenerator
      */
     protected function getFiles(): array
     {
-        return [];
+        return [
+            __DIR__ . '/test.php' => 'test',
+        ];
     }
 }

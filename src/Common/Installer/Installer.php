@@ -49,7 +49,6 @@ final class Installer
             ->setDryRun(self::getOption($input, 'dry-run'))
             ->setVerbose(self::getOption($input, 'verbose'))
             ->setDevMode(! self::getOption($input, 'no-dev'))
-            ->setRunScripts(false)
             ->setSkipSuggest(self::getOption($input, 'no-suggest'))
             ->setDumpAutoloader(! self::getOption($input, 'no-autoloader'))
             ->setRunScripts(! self::getOption($input, 'no-scripts'))

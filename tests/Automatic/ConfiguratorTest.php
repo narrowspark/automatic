@@ -8,18 +8,18 @@ use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator;
-use PHPUnit\Framework\TestCase;
+use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use ReflectionClass;
 
 /**
  * @internal
  */
-final class ConfiguratorTest extends TestCase
+final class ConfiguratorTest extends MockeryTestCase
 {
     /**
      * @var \Composer\Composer
      */
-    private $composer;
+    private $composerMock;
 
     /**
      * @var \Composer\IO\NullIo
@@ -38,9 +38,10 @@ final class ConfiguratorTest extends TestCase
     {
         parent::setUp();
 
-        $this->composer     = new Composer();
+        $this->composerMock = $this->mock(Composer::class);
+
         $this->nullIo       = new NullIO();
-        $this->configurator = new Configurator($this->composer, $this->nullIo, []);
+        $this->configurator = new Configurator($this->composerMock, $this->nullIo, []);
     }
 
     public function testAdd(): void
@@ -52,7 +53,7 @@ final class ConfiguratorTest extends TestCase
 
         static::assertArrayNotHasKey('mock-configurator', $property->getValue($this->configurator));
 
-        $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
+        $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composerMock, $this->nullIo, []]);
         $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
 
         static::assertArrayHasKey('mock-configurator', $property->getValue($this->configurator));
@@ -63,7 +64,7 @@ final class ConfiguratorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Configurator with the name "mock-configurator" already exists.');
 
-        $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composer, $this->nullIo, []]);
+        $mockConfigurator = $this->getMockForAbstractClass(ConfiguratorContract::class, [$this->composerMock, $this->nullIo, []]);
 
         $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
         $this->configurator->add('mock-configurator', \get_class($mockConfigurator));
@@ -102,28 +103,31 @@ final class ConfiguratorTest extends TestCase
      */
     protected function arrangeCopyConfiguratorTest(): array
     {
+        $this->composerMock->shouldReceive('getConfig->get')
+            ->with('vendor-dir')
+            ->andReturn(__DIR__);
+
         $toFileName = 'copy_of_copy.txt';
 
-        $package = new Package(
-            'fixtures',
-            'Fixtures/stub',
-            __DIR__,
-            false,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'copy'      => [
-                    'copy.txt' => $toFileName,
-                ],
-            ]
-        );
+        $package = new Package('Fixture/stub', '1.0');
+        $package->setConfig([
+            'copy'      => [
+                'copy.txt' => $toFileName,
+            ],
+        ]);
 
         $this->configurator->configure($package);
 
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
         return [$filePath, $package];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowMockingNonExistentMethods($allow = false): void
+    {
+        parent::allowMockingNonExistentMethods(true);
     }
 }

@@ -109,14 +109,14 @@ abstract class AbstractInstaller extends LibraryInstaller
 
         $this->removeFromLock($package, static::LOCK_KEY);
 
-        $lockKeyClassmapArray = (array) $this->lock->get(Automatic::LOCK_CLASSMAP);
-        $name                 = $package->getName();
+        $lockClassmap = (array) $this->lock->get(Automatic::LOCK_CLASSMAP);
+        $name         = $package->getName();
 
-        if (isset($lockKeyClassmapArray[$name])) {
-            unset($lockKeyClassmapArray[$name]);
+        if (isset($lockClassmap[$name])) {
+            unset($lockClassmap[$name]);
         }
 
-        $this->lock->add(Automatic::LOCK_CLASSMAP, $lockKeyClassmapArray);
+        $this->lock->add(Automatic::LOCK_CLASSMAP, $lockClassmap);
     }
 
     /**
@@ -158,7 +158,24 @@ abstract class AbstractInstaller extends LibraryInstaller
      *
      * @return bool FALSE if saving to lock failed, TRUE if anything is alright
      */
-    abstract protected function saveToLockFile(array $autoload, PackageInterface $package, string $key): bool;
+    protected function saveToLockFile(array $autoload, PackageInterface $package, string $key): bool
+    {
+        $classes = $this->findClasses($autoload, $package);
+
+        if ($classes === null) {
+            return false;
+        }
+
+        $this->lock->add(
+            $key,
+            \array_merge(
+                (array) $this->lock->get($key),
+                [$package->getName() => $classes]
+            )
+        );
+
+        return true;
+    }
 
     /**
      * Remove values from the automatic lock file.

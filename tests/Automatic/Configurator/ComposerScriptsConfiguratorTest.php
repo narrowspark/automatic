@@ -9,7 +9,7 @@ use Composer\Json\JsonManipulator;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Configurator\ComposerScriptsConfigurator;
-use Narrowspark\Automatic\Test\Fixtures\ComposerJsonFactory;
+use Narrowspark\Automatic\Test\Fixture\ComposerJsonFactory;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**

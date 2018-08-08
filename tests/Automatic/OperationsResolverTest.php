@@ -63,10 +63,7 @@ final class OperationsResolverTest extends MockeryTestCase
             ->times(3)
             ->andReturn(['automatic' =>  []]);
         $package1Mock->shouldReceive('getName')
-            ->once()
-            ->andReturn('install/install');
-        $package1Mock->shouldReceive('getPrettyName')
-            ->once()
+            ->twice()
             ->andReturn('install/install');
         $package1Mock->shouldReceive('getPrettyVersion')
             ->once()
@@ -80,9 +77,6 @@ final class OperationsResolverTest extends MockeryTestCase
         $package1Mock->shouldReceive('getRequires')
             ->once()
             ->andReturn([]);
-        $package1Mock->shouldReceive('isDev')
-            ->once()
-            ->andReturn(false);
 
         $package2Mock = $this->mock(PackageInterface::class);
         $package2Mock->shouldReceive('getExtra')
@@ -94,7 +88,7 @@ final class OperationsResolverTest extends MockeryTestCase
             ->times(3)
             ->andReturn(['branch-alias' => ['dev-master' => '1.0-dev'], 'automatic' =>  []]);
         $package3Mock->shouldReceive('getName')
-            ->once()
+            ->twice()
             ->andReturn('uninstall/uninstall');
         $package3Mock->shouldReceive('getPrettyVersion')
             ->once()
@@ -105,9 +99,6 @@ final class OperationsResolverTest extends MockeryTestCase
         $package3Mock->shouldReceive('getType')
             ->once()
             ->andReturn('provider');
-        $package3Mock->shouldReceive('isDev')
-            ->once()
-            ->andReturn(true);
 
         $link1Mock = $this->mock(Link::class);
         $link1Mock->shouldReceive('getTarget')
@@ -145,16 +136,16 @@ final class OperationsResolverTest extends MockeryTestCase
             $this->uninstallOperationMock,
         ]);
 
-        $package = $packages['install'];
+        $package = $packages['install/install'];
 
         static::assertSame('install/install', $package->getName());
         static::assertSame('1', $package->getPrettyVersion());
         static::assertSame('library', $package->getType());
         static::assertSame('example.local', $package->getUrl());
-        static::assertSame('install/install', $package->getOperation());
+        static::assertSame('install', $package->getOperation());
         static::assertSame('foo/bar', $package->getParentName());
 
-        $package = $packages['uninstall'];
+        $package = $packages['uninstall/uninstall'];
 
         static::assertSame('uninstall/uninstall', $package->getName());
         static::assertSame('uninstall/uninstall', $package->getPrettyName());

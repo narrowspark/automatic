@@ -52,7 +52,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         $autoScripts = $this->getComposerContentAndAutoScripts();
 
-        $autoScripts = \array_merge($autoScripts, $package->getConfig('composer-scripts'));
+        $autoScripts = \array_merge($autoScripts, (array) $package->getConfig(self::getName()));
 
         $this->manipulateAndWrite($autoScripts);
     }
@@ -64,7 +64,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         $autoScripts = $this->getComposerContentAndAutoScripts();
 
-        foreach (\array_keys($package->getConfig('composer-scripts')) as $cmd) {
+        foreach (\array_keys((array) $package->getConfig(self::getName())) as $cmd) {
             unset($autoScripts[$cmd]);
         }
 

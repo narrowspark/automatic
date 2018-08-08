@@ -4,6 +4,7 @@ namespace Narrowspark\Automatic;
 
 use Composer\IO\IOInterface;
 use Narrowspark\Automatic\Common\Contract\Generator\DefaultGenerator as DefaultGeneratorContract;
+use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Symfony\Component\Filesystem\Filesystem;
@@ -32,16 +33,9 @@ final class SkeletonGenerator
     private $lock;
 
     /**
-     * List of skeleton packages.
-     *
-     * @var \Narrowspark\Automatic\Common\Contract\Package[]
-     */
-    private $skeletons;
-
-    /**
      * List of composer extra options.
      *
-     * @var \Narrowspark\Automatic\Common\Contract\Package[]
+     * @var string[]
      */
     private $options;
 
@@ -59,7 +53,6 @@ final class SkeletonGenerator
      * @param \Narrowspark\Automatic\Installer\InstallationManager $installationManager
      * @param \Narrowspark\Automatic\Lock                          $lock
      * @param string                                               $vendorPath
-     * @param \Narrowspark\Automatic\Common\Contract\Package[]     $skeletons
      * @param string[]                                             $options
      */
     public function __construct(
@@ -67,13 +60,11 @@ final class SkeletonGenerator
         InstallationManager $installationManager,
         Lock $lock,
         string $vendorPath,
-        array $skeletons,
         array $options
     ) {
         $this->io                   = $io;
         $this->installationManager  = $installationManager;
         $this->lock                 = $lock;
-        $this->skeletons            = $skeletons;
         $this->options              = $options;
         $this->vendorPath           = $vendorPath;
     }
@@ -98,8 +89,6 @@ final class SkeletonGenerator
 
             if ($defaultGeneratorType === null && $generator instanceof DefaultGeneratorContract) {
                 $defaultGeneratorType = $type;
-
-                continue;
             }
 
             $generatorTypes[$key] = $type;
@@ -117,7 +106,10 @@ final class SkeletonGenerator
 
         $this->io->write(\sprintf('%sGenerating [%s] skeleton.%s', "\n", $generatorTypes[$answer], "\n"));
 
-        $this->installationManager->install($generator->getDependencies(), $generator->getDevDependencies());
+        $this->installationManager->install(
+            $this->transformToPackages($generator->getDependencies()),
+            $this->transformToPackages($generator->getDevDependencies())
+        );
 
         $this->installationManager->run();
 
@@ -133,25 +125,23 @@ final class SkeletonGenerator
      */
     public function remove(): void
     {
-        $this->lock->remove(SkeletonInstaller::LOCK_KEY);
-
         $requires = [];
-        $names    = [];
 
-        foreach ($this->skeletons as $package) {
-            $names[]    = $package->getName();
-            $requires[] = $package;
+        foreach ((array) $this->lock->get(SkeletonInstaller::LOCK_KEY) as $name => $generators) {
+            $requires[] = new Package($name, null);
         }
 
         $this->installationManager->uninstall($requires, []);
 
         $classmap = $this->lock->get(Automatic::LOCK_CLASSMAP);
 
-        foreach ($names as $name) {
-            unset($classmap[$name]);
+        /** @var \Narrowspark\Automatic\Common\Contract\Package $package */
+        foreach ($requires as $package) {
+            unset($classmap[$package->getName()]);
         }
 
         $this->lock->add(Automatic::LOCK_CLASSMAP, $classmap);
+        $this->lock->remove(SkeletonInstaller::LOCK_KEY);
 
         $this->lock->write();
     }
@@ -174,11 +164,31 @@ final class SkeletonGenerator
             $foundGenerators += $generators;
         }
 
-        \array_walk($foundGenerators, static function (&$class) {
+        $options = $this->options;
+
+        \array_walk($foundGenerators, static function (&$class) use ($options) {
             /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $class */
-            $class = new $class(new Filesystem(), $this->options);
+            $class = new $class(new Filesystem(), $options);
         });
 
         return $foundGenerators;
+    }
+
+    /**
+     * Transforms requires data to automatic packages.
+     *
+     * @param array $requires
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package[]
+     */
+    private function transformToPackages(array $requires): array
+    {
+        $packages = [];
+
+        foreach ($requires as $name => $version) {
+            $packages[] = new Package($name, $version);
+        }
+
+        return $packages;
     }
 }

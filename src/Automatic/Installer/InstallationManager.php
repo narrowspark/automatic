@@ -8,6 +8,13 @@ use Narrowspark\Automatic\Common\Installer\AbstractInstallationManager;
 class InstallationManager extends AbstractInstallationManager
 {
     /**
+     * List of white listed packages.
+     *
+     * @var array
+     */
+    private $whiteList = [];
+
+    /**
      * Install required and required-dev packages.
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package[] $requires
@@ -26,8 +33,8 @@ class InstallationManager extends AbstractInstallationManager
             $rootPackages[\mb_strtolower($link->getTarget())] = (string) $link->getConstraint();
         }
 
-        $requiresToInstall    = $this->preparePackage($requires, $rootPackages);
-        $devRequiresToInstall = $this->preparePackage($devRequires, $rootPackages);
+        $requiresToInstall    = $this->preparePackagesToInstall($requires, $rootPackages);
+        $devRequiresToInstall = $this->preparePackagesToInstall($devRequires, $rootPackages);
 
         if ((\count($requiresToInstall) + \count($devRequiresToInstall)) !== 0) {
             $this->updateComposerJson($requiresToInstall, $devRequiresToInstall, self::ADD);
@@ -52,11 +59,10 @@ class InstallationManager extends AbstractInstallationManager
      */
     public function uninstall(array $requires, array $devRequires): void
     {
-        $this->updateComposerJson(
-            $requires,
-            $devRequires,
-            self::REMOVE
-        );
+        $requires    = $this->preparePackagesToUninstall($requires);
+        $devRequires = $this->preparePackagesToUninstall($devRequires);
+
+        $this->updateComposerJson($requires, $devRequires, self::REMOVE);
 
         $whiteList = \array_merge($requires, $devRequires);
 
@@ -82,10 +88,7 @@ class InstallationManager extends AbstractInstallationManager
      */
     public function run(): int
     {
-        $status = $this->runInstaller(
-            $this->rootPackage,
-            $this->whiteList
-        );
+        $status = $this->runInstaller($this->rootPackage, $this->whiteList);
 
         if ($status !== 0) {
             $this->io->writeError("\n" . '<error>Removal failed, reverting ' . Factory::getComposerFile() . ' to its original content.</error>');
@@ -99,21 +102,18 @@ class InstallationManager extends AbstractInstallationManager
     /**
      * Checks if package exists and prepares package version.
      *
-     * @param array $requires
-     * @param array $rootPackages
+     * @param \Narrowspark\Automatic\Common\Contract\Package[] $requires
+     * @param array                                            $rootPackages
      *
      * @return array
      */
-    protected function preparePackage(array $requires, array $rootPackages): array
+    protected function preparePackagesToInstall(array $requires, array $rootPackages): array
     {
         $toInstall = [];
 
         foreach ($requires as $package) {
-            // Check if package variable is a integer
-            if (\is_int($packageName)) {
-                $packageName = $version;
-                $version     = null;
-            }
+            $packageName = $package->getPrettyName();
+            $version     = $package->getPrettyVersion();
 
             // Package has been already prepared to be installed, skipping.
             // Package from this group has been found in root composer, skipping.
@@ -151,5 +151,23 @@ class InstallationManager extends AbstractInstallationManager
         }
 
         return $toInstall;
+    }
+
+    /**
+     * Prepare the array of packages.
+     *
+     * @param \Narrowspark\Automatic\Common\Contract\Package[] $requires
+     *
+     * @return array<string, null|string>
+     */
+    private function preparePackagesToUninstall(array $requires): array
+    {
+        $preparedRequires = [];
+
+        foreach ($requires as $package) {
+            $preparedRequires[$package->getPrettyName()] = $package->getPrettyVersion();
+        }
+
+        return $preparedRequires;
     }
 }

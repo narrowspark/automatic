@@ -67,7 +67,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         parent::setUp();
 
         $this->composerJsonPath = __DIR__ . '/composer.json';
-        $this->configuratorPath = __DIR__ . '/../Fixtures/Configurator';
+        $this->configuratorPath = __DIR__ . '/../Fixture/Configurator';
 
         $this->arrangeComposerClasses();
 

@@ -15,13 +15,26 @@ final class QuestionFactoryTest extends TestCase
     {
         static::assertSame(
             '    Review the package from www.example.com.
-    Do you want to execute this package?
+    Do you want to execute this package [foo/bar]?
     [<comment>y</comment>] Yes
     [<comment>n</comment>] No
     [<comment>a</comment>] Yes for all packages, only for the current installation session
     [<comment>p</comment>] Yes permanently, never ask again for this project
     (defaults to <comment>n</comment>): ',
-            QuestionFactory::getPackageQuestion('www.example.com')
+            QuestionFactory::getPackageQuestion('foo/bar', 'www.example.com')
+        );
+    }
+
+    public function testGetPackageQuestionWithoutUrl(): void
+    {
+        static::assertSame(
+            '    Do you want to execute this package [foo/bar]?
+    [<comment>y</comment>] Yes
+    [<comment>n</comment>] No
+    [<comment>a</comment>] Yes for all packages, only for the current installation session
+    [<comment>p</comment>] Yes permanently, never ask again for this project
+    (defaults to <comment>n</comment>): ',
+            QuestionFactory::getPackageQuestion('foo/bar', null)
         );
     }
 

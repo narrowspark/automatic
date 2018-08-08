@@ -12,6 +12,8 @@ use Symfony\Component\Console\Input\InputInterface;
 
 class QuestionInstallationManager extends AbstractInstallationManager
 {
+    public const TYPE = 'questionable-requires';
+
     /**
      * List of selected question packages to install.
      *

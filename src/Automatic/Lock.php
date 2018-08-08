@@ -49,8 +49,8 @@ class Lock
     /**
      * Add a value to the lock file.
      *
-     * @param string       $name
-     * @param array|string $data
+     * @param string            $name
+     * @param null|array|string $data
      *
      * @return void
      */
@@ -116,6 +116,6 @@ class Lock
      */
     public function clear(): void
     {
-        $this->lock = null;
+        $this->lock = [];
     }
 }

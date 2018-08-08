@@ -87,7 +87,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
                 '#2'              => 'Comment 3',
                 '#TRUSTED_SECRET' => 's3cretf0rt3st"<>',
                 'APP_SECRET'      => 's3cretf0rt3st"<>',
-            ]
+            ],
         ]);
 
         $this->configurator->configure($package);

@@ -4,14 +4,15 @@ namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
 use Narrowspark\Automatic\Automatic;
-use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\SkeletonGenerator;
-use Narrowspark\Automatic\Test\Fixtures\ConsoleFixtureGenerator;
-use Narrowspark\Automatic\Test\Fixtures\FrameworkDefaultFixtureGenerator;
+use Narrowspark\Automatic\Test\Fixture\ConsoleFixtureGenerator;
+use Narrowspark\Automatic\Test\Fixture\FrameworkDefaultFixtureGenerator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use PHPUnit\Framework\Assert;
 
 /**
  * @internal
@@ -34,6 +35,11 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     private $lockMock;
 
     /**
+     * @var \Narrowspark\Automatic\SkeletonGenerator
+     */
+    private $skeletonGenerator;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
@@ -43,15 +49,53 @@ final class SkeletonGeneratorTest extends MockeryTestCase
         $this->ioMock                  = $this->mock(IOInterface::class);
         $this->installationManagerMock = $this->mock(InstallationManager::class);
         $this->lockMock                = $this->mock(Lock::class);
+
+        $this->skeletonGenerator       = new SkeletonGenerator(
+            $this->ioMock,
+            $this->installationManagerMock,
+            $this->lockMock,
+            __DIR__,
+            []
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown()
+    {
+        parent::tearDown();
+
+        $path = __DIR__ . '/Fixture/test.php';
+
+        if (\file_exists($path)) {
+            @\unlink($path);
+        }
     }
 
     public function testRun(): void
     {
         $this->installationManagerMock->shouldReceive('install')
             ->once()
-            ->with([], []);
+            ->withArgs(function ($requires, $devRequires) {
+                Assert::assertInstanceOf(Package::class, $requires[0]);
+                Assert::assertInternalType('array', $devRequires);
 
-        $skeletonGenerator = $this->getSkeletonGenerator([], [ConsoleFixtureGenerator::class]);
+                return true;
+            });
+        $this->installationManagerMock->shouldReceive('run')
+            ->once();
+
+        $this->arrangeLock(
+            [
+                'test/generator' => [
+                    '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
+                ],
+            ],
+            [
+                'test/generator' => [ConsoleFixtureGenerator::class],
+            ]
+        );
 
         $this->ioMock->shouldReceive('select')
             ->once()
@@ -60,7 +104,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
         $this->ioMock->shouldReceive('write')
             ->with("\nGenerating [console] skeleton.\n");
 
-        $skeletonGenerator->run();
+        $this->skeletonGenerator->run();
     }
 
     public function testRunWithDefault(): void
@@ -68,8 +112,20 @@ final class SkeletonGeneratorTest extends MockeryTestCase
         $this->installationManagerMock->shouldReceive('install')
             ->once()
             ->with([], []);
+        $this->installationManagerMock->shouldReceive('run')
+            ->once();
 
-        $skeletonGenerator = $this->getSkeletonGenerator([], [ConsoleFixtureGenerator::class, FrameworkDefaultFixtureGenerator::class]);
+        $this->arrangeLock(
+            [
+                'test/generator' => [
+                    '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
+                    '%vendor_path%/Fixture/FrameworkDefaultFixtureGenerator.php',
+                ],
+            ],
+            [
+                'test/generator' => [ConsoleFixtureGenerator::class, FrameworkDefaultFixtureGenerator::class],
+            ]
+        );
 
         $this->ioMock->shouldReceive('select')
             ->once()
@@ -78,35 +134,36 @@ final class SkeletonGeneratorTest extends MockeryTestCase
         $this->ioMock->shouldReceive('write')
             ->with("\nGenerating [framework] skeleton.\n");
 
-        $skeletonGenerator->run();
+        $this->skeletonGenerator->run();
     }
 
     public function testRemove(): void
     {
-        $skeletonGenerator = $this->getSkeletonGenerator([], [ConsoleFixtureGenerator::class]);
-
-        $package  = $this->mock(PackageContract::class);
-        $lockMock = $this->mock(Lock::class);
-
-        $lockMock->shouldReceive('remove')
-            ->once()
-            ->with(SkeletonInstaller::LOCK_KEY);
+        $this->arrangeLock(
+            [
+                'test/generator' => [
+                    '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
+                ],
+            ],
+            [
+                'test/generator' => [ConsoleFixtureGenerator::class],
+            ]
+        );
 
         $this->installationManagerMock->shouldReceive('uninstall')
             ->once()
-            ->with([$package], []);
+            ->with(\Mockery::type('array'), []);
 
-        $lockMock->shouldReceive('get')
+        $this->lockMock->shouldReceive('remove')
             ->once()
-            ->with(Automatic::LOCK_CLASSMAP)
-            ->andReturn([]);
-        $lockMock->shouldReceive('add')
+            ->with(SkeletonInstaller::LOCK_KEY);
+        $this->lockMock->shouldReceive('add')
             ->once()
             ->with(Automatic::LOCK_CLASSMAP, []);
-        $lockMock->shouldReceive('write')
+        $this->lockMock->shouldReceive('write')
             ->once();
 
-        $skeletonGenerator->remove($lockMock, $package);
+        $this->skeletonGenerator->remove();
     }
 
     /**
@@ -118,20 +175,19 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     }
 
     /**
-     * @param array $packages
+     * @param array $classmap
      * @param array $generators
-     *
-     * @return \Narrowspark\Automatic\SkeletonGenerator
      */
-    private function getSkeletonGenerator(array $packages, array $generators): SkeletonGenerator
+    protected function arrangeLock(array $classmap, array $generators): void
     {
-        return new SkeletonGenerator(
-            $this->ioMock,
-            $this->installationManagerMock,
-            $this->lockMock,
-            __DIR__,
-            $packages,
-            $generators
-        );
+        $this->lockMock->shouldReceive('get')
+            ->once()
+            ->with(Automatic::LOCK_CLASSMAP)
+            ->andReturn($classmap);
+
+        $this->lockMock->shouldReceive('get')
+            ->once()
+            ->with(SkeletonInstaller::LOCK_KEY)
+            ->andReturn($generators);
     }
 }

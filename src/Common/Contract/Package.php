@@ -11,6 +11,15 @@ interface Package
     public const UPDATE_OPERATION = 'update';
 
     /**
+     * Set the package name.
+     *
+     * @param string $name
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setName(string $name): self;
+
+    /**
      * Get the package name.
      *
      * @return string
@@ -27,9 +36,34 @@ interface Package
     /**
      * Get the package version.
      *
-     * @return string
+     * @return null|string
      */
-    public function getPrettyVersion(): string;
+    public function getPrettyVersion(): ?string;
+
+    /**
+     * Active this if the package is a dev-require.
+     *
+     * @param bool $bool
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setIsDev(bool $bool = true): self;
+
+    /**
+     * Check if the package is a dev requirement.
+     *
+     * @return bool
+     */
+    public function isDev(): bool;
+
+    /**
+     * Set the package url.
+     *
+     * @param string $url
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setUrl(string $url): self;
 
     /**
      * Get the package url.
@@ -39,11 +73,29 @@ interface Package
     public function getUrl(): ?string;
 
     /**
+     * Set the package type.
+     *
+     * @param string $type
+     *
+     * @return self
+     */
+    public function setType(string $type): self;
+
+    /**
      * Get the package type.
      *
      * @return null|string
      */
     public function getType(): ?string;
+
+    /**
+     * Set the composer operation type.
+     *
+     * @param string $operation
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setOperation(string $operation): self;
 
     /**
      * Get the package operation.
@@ -53,11 +105,29 @@ interface Package
     public function getOperation(): ?string;
 
     /**
+     * Set the required packages.
+     *
+     * @param string[] $requires
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setRequires(array $requires): self;
+
+    /**
      * Returns all requirements of the package.
      *
      * @return array
      */
     public function getRequires(): array;
+
+    /**
+     * Set the composer extra automatic package configs.
+     *
+     * @param array $configs
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setConfig(array $configs): self;
 
     /**
      * Checks if key exits in extra automatic config.
@@ -85,11 +155,29 @@ interface Package
     public function getConfigs(): array;
 
     /**
+     * Set name of the parent package.
+     *
+     * @param string $name
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setParentName(string $name): self;
+
+    /**
      * Get name of the parent package.
      *
      * @return null|string
      */
     public function getParentName(): ?string;
+
+    /**
+     * Set this if the information coming from the QuestionInstallationManager.
+     *
+     * @param bool $bool
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setIsQuestionableRequirement(bool $bool = true): self;
 
     /**
      * Is the package a questionable requirement.
@@ -99,16 +187,41 @@ interface Package
     public function isQuestionableRequirement(): bool;
 
     /**
-     * Returns the object creation timestamp.
+     * Set selected questionable requirements.
      *
-     * @return string
+     * @param array $selectedQuestionableRequirements
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
      */
-    public function getTimestamp(): string;
+    public function setSelectedQuestionableRequirements(array $selectedQuestionableRequirements): self;
 
     /**
-     * Transforms the package object to a json string.
+     * Return the selected questionable requirements.
+     *
+     * @return string[]
+     */
+    public function getSelectedQuestionableRequirements(): array;
+
+    /**
+     * Set the package time.
+     *
+     * @param string $time this \DateTime::RFC3339 format should be used
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setTime(string $time): self;
+
+    /**
+     * Returns the object creation time.
      *
      * @return string
      */
-    public function toJson(): string;
+    public function getTime(): string;
+
+    /**
+     * Transforms the package object to a array.
+     *
+     * @return array
+     */
+    public function toArray(): array;
 }

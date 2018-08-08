@@ -5,6 +5,7 @@ namespace Narrowspark\Automatic;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Package\PackageInterface;
+use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Package;
 
 class OperationsResolver
@@ -17,13 +18,6 @@ class OperationsResolver
     private $lock;
 
     /**
-     * The composer vendor path.
-     *
-     * @var string
-     */
-    private $vendorPath;
-
-    /**
      * Name of the parent package.
      *
      * @var string
@@ -34,12 +28,10 @@ class OperationsResolver
      * Create a new OperationsResolver instance.
      *
      * @param \Narrowspark\Automatic\Lock $lock
-     * @param string                      $vendorDir
      */
-    public function __construct(Lock $lock, string $vendorDir)
+    public function __construct(Lock $lock)
     {
-        $this->lock       = $lock;
-        $this->vendorPath = $vendorDir;
+        $this->lock = $lock;
     }
 
     /**
@@ -67,42 +59,49 @@ class OperationsResolver
         $packages = [];
 
         foreach ($operations as $i => $operation) {
-            $o = 'install';
+            $o = PackageContract::INSTALL_OPERATION;
 
             if ($operation instanceof UpdateOperation) {
-                $package = $operation->getTargetPackage();
-                $o       = 'update';
+                $composerPackage = $operation->getTargetPackage();
+                $o               = PackageContract::UPDATE_OPERATION;
             } else {
                 if ($operation instanceof UninstallOperation) {
-                    $o = 'uninstall';
+                    $o = PackageContract::UNINSTALL_OPERATION;
                 }
 
-                $package = $operation->getPackage();
+                $composerPackage = $operation->getPackage();
             }
 
-            if (! isset($package->getExtra()['automatic'])) {
+            if (! isset($composerPackage->getExtra()['automatic'])) {
                 continue;
             }
 
-            $name = $package->getName();
+            $name = $composerPackage->getName();
 
             if ($operation instanceof UninstallOperation && $this->lock->has($name)) {
-                $packageConfiguration              = (array) $this->lock->get($name);
-                $packageConfiguration['operation'] = $o;
+                $package = $this->createFromLock((array) $this->lock->get($name));
             } else {
-                $packageConfiguration = $this->buildPackageConfiguration($package, $o);
+                $package = $this->createAutomaticPackage($composerPackage);
             }
 
-            $packages[$name] = new Package(
-                $name,
-                $package->getPrettyName(),
-                $this->vendorPath,
-                $package->isDev(),
-                $packageConfiguration
-            );
+            $package->setOperation($o);
+
+            $packages[$name] = $package;
         }
 
         return $packages;
+    }
+
+    /**
+     * Create a automatic package from the lock data.
+     *
+     * @param array $packageData
+     *
+     * @return \Narrowspark\Automatic\Common\Package
+     */
+    private function createFromLock(array $packageData): Package
+    {
+        return new Package($packageData['name'], $packageData['version']);
     }
 
     /**
@@ -132,18 +131,18 @@ class OperationsResolver
     }
 
     /**
-     * Get found automatic configuration from packages.
+     * Create a automatic package with the composer package data.
      *
-     * @param \Composer\Package\PackageInterface $package
-     * @param string                             $operation
+     * @param \Composer\Package\PackageInterface $composerPackage
      *
-     * @return array
+     * @return \Narrowspark\Automatic\Common\Package
      */
-    private function buildPackageConfiguration(PackageInterface $package, string $operation): array
+    private function createAutomaticPackage(PackageInterface $composerPackage): Package
     {
+        $package  = new Package($composerPackage->getName(), $this->getPackageVersion($composerPackage));
         $requires = [];
 
-        foreach ($package->getRequires() as $link) {
+        foreach ($composerPackage->getRequires() as $link) {
             $target = $link->getTarget();
 
             if ($target === 'php' || \mb_strpos($target, 'ext-') === 0) {
@@ -155,16 +154,16 @@ class OperationsResolver
 
         \sort($requires, \SORT_STRING);
 
-        return \array_merge(
-            [
-                'version'           => $this->getPackageVersion($package),
-                'url'               => $package->getSourceUrl(),
-                'type'              => $package->getType(),
-                'operation'         => $operation,
-                'extraDependencyOf' => $this->parentName,
-                'require'           => $requires,
-            ],
-            $package->getExtra()['automatic'] ?? []
-        );
+        $package->setRequires($requires);
+        $package->setType($composerPackage->getType());
+        $package->setUrl($composerPackage->getSourceUrl());
+
+        if ($this->parentName !== null) {
+            $package->setParentName($this->parentName);
+        }
+
+        $package->setConfig($composerPackage->getExtra()['automatic']);
+
+        return $package;
     }
 }

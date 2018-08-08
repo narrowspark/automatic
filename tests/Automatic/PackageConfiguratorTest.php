@@ -5,6 +5,7 @@ namespace Narrowspark\Automatic\Test;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
+use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\PackageConfigurator;
 use Narrowspark\Automatic\Test\Fixtures\MockConfigurator;
@@ -27,20 +28,28 @@ final class PackageConfiguratorTest extends MockeryTestCase
     private $nullIo;
 
     /**
+     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
+     */
+    private $ioMock;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->composer = new Composer();
         $this->nullIo   = new NullIO();
+        $this->ioMock   = $this->mock(IOInterface::class);
     }
 
     public function testAddConfigurators(): void
     {
         $mockConfigurator = new MockConfigurator($this->composer, $this->nullIo, []);
 
-        $configurator = new PackageConfigurator($this->composer, $this->nullIo, [], ['mock' => \get_class($mockConfigurator)]);
+        $configurator = new PackageConfigurator($this->composer, $this->nullIo, []);
+        $configurator->add('mock', \get_class($mockConfigurator));
 
         $ref = new ReflectionClass($configurator);
         /** @var \ReflectionProperty $property */
@@ -52,39 +61,30 @@ final class PackageConfiguratorTest extends MockeryTestCase
 
     public function testAddWithoutConfiguratorContractClass(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Configurator class "stdClass" must extend the class "Narrowspark\\Automatic\\Common\\Contract\\Configurator".');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configurator class [stdClass] must extend the class [Narrowspark\\Automatic\\Common\\Contract\\Configurator].');
 
-        new PackageConfigurator($this->composer, $this->nullIo, [], ['test' => \stdClass::class]);
+        $configurator = new PackageConfigurator($this->composer, $this->nullIo, []);
+        $configurator->add('test', \stdClass::class);
     }
 
     public function testConfiguratorWithPackageConfigurator(): void
     {
-        $package = new Package(
-            'test',
-            'test/test',
-            __DIR__,
-            false,
-            [
-                'version'              => '1',
-                'url'                  => 'example.local',
-                'type'                 => 'library',
-                'operation'            => 'i',
-                'custom-configurators' => [
-                    'mock' => MockConfigurator::class,
-                ],
-                'mock' => [
-                    'test',
-                ],
+        $package = $this->arrangePackageWithConfig('test/test', [
+            'custom-configurators' => [
+                'mock' => MockConfigurator::class,
+            ],
+            'mock' => [
+                'test'
             ]
-        );
+        ]);
 
-        $io = $this->mock(IOInterface::class);
-        $io->shouldReceive('writeError')
+        $this->ioMock->shouldReceive('writeError')
             ->twice()
             ->with(['    test'], true, IOInterface::VERBOSE);
 
-        $configurator = new PackageConfigurator($this->composer, $io, [], $package->getConfiguratorOptions('custom-configurators'));
+        $configurator = new PackageConfigurator($this->composer, $this->ioMock, []);
+        $configurator->add('mock', MockConfigurator::class);
 
         $configurator->configure($package);
         $configurator->unconfigure($package);
@@ -92,30 +92,43 @@ final class PackageConfiguratorTest extends MockeryTestCase
 
     public function testConfiguratorOutWithPackageConfigurator(): void
     {
-        $package = new Package(
-            'test',
-            'test/test',
-            __DIR__,
-            false,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'mock'      => [
-                    'test',
-                ],
+        $package = $this->arrangePackageWithConfig('test/test', [
+            'mock' => [
+                'test'
             ]
-        );
+        ]);
 
-        $io = $this->mock(IOInterface::class);
-        $io->shouldReceive('writeError')
+        $this->ioMock->shouldReceive('writeError')
             ->never()
             ->with(['    test'], true, IOInterface::VERBOSE);
 
-        $configurator = new PackageConfigurator($this->composer, $io, [], $package->getConfiguratorOptions('custom-configurators'));
+        $configurator = new PackageConfigurator($this->composer, $this->ioMock, []);
 
         $configurator->configure($package);
         $configurator->unconfigure($package);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowMockingNonExistentMethods($allow = false): void
+    {
+        parent::allowMockingNonExistentMethods(true);
+    }
+
+    /**
+     * @param string $name
+     * @param array  $config
+     *
+     * @throws \Exception
+     *
+     * @return Package
+     */
+    private function arrangePackageWithConfig(string $name, array $config): Package
+    {
+        $package = new Package($name, '1.0.0');
+        $package->setConfig($config);
+
+        return $package;
     }
 }

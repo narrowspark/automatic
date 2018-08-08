@@ -102,7 +102,11 @@ class Lock
      */
     public function read(): array
     {
-        return $this->lock = $this->json->read() ?? [];
+        if (\count($this->lock) === 0) {
+            $this->lock = $this->json->read();
+        }
+
+        return $this->lock;
     }
 
     /**
@@ -112,6 +116,6 @@ class Lock
      */
     public function clear(): void
     {
-        $this->lock = [];
+        $this->lock = null;
     }
 }

@@ -21,30 +21,37 @@ final class Package implements PackageContract
     private $prettyName;
 
     /**
+     * The name of the parent package.
+     *
+     * @var null|string
+     */
+    private $parentName;
+
+    /**
      * The package version.
      *
      * @var string
      */
-    private $version;
+    private $prettyVersion;
 
     /**
      * The package type.
      *
-     * @var string
+     * @var null|string
      */
     private $type;
 
     /**
      * The package url.
      *
-     * @var string
+     * @var null|string
      */
     private $url;
 
     /**
      * The package operation.
      *
-     * @var string
+     * @var null|string
      */
     private $operation;
 
@@ -56,32 +63,39 @@ final class Package implements PackageContract
     private $requires = [];
 
     /**
-     * The package config from automatic.
+     * The automatic package config.
      *
      * @var array
      */
-    private $options;
+    private $configs = [];
 
     /**
-     * The configurator config from automatic.
+     * List of automatic configurator config.
      *
      * @var array
      */
-    private $configuratorOptions;
+    private $configuratorConfigs = [];
 
     /**
-     * Path to the composer vendor dir.
+     * List of selected questionable requirements.
      *
-     * @var string
+     * @var string[]
      */
-    private $vendorPath;
+    private $selectedQuestionableRequirements = [];
 
     /**
      * Check if this package is a dev require.
      *
      * @var bool
      */
-    private $isDev;
+    private $isDev = false;
+
+    /**
+     * Check if the package is a questionable requirement.
+     *
+     * @var bool
+     */
+    private $isQuestionableRequirement = false;
 
     /**
      * Timestamp of the object creation.
@@ -94,32 +108,16 @@ final class Package implements PackageContract
      * Create a new Package instance.
      *
      * @param string      $name
-     * @param null|string $vendorDirPath
-     * @param bool     $isDev
-     * @param string[] $options
+     * @param null|string $prettyVersion
+     *
+     * @throws \Exception
      */
-    public function __construct(string $name, ?string $version, array $options)
+    public function __construct(string $name, ?string $prettyVersion)
     {
-        $this->prettyName = $name;
-        $this->name       = \mb_strtolower($name);
-        $this->version    = $version;
-        $this->url        = $options['url'] ?? '';
-        $this->operation  = $options['operation'];
-        $this->type       = $options['type'];
-        $this->options    = $options;
-        $this->created    = (new \DateTimeImmutable())->format(\DateTime::RFC3339);
-
-        unset(
-            $options['version'],
-            $options['type'],
-            $options['operation'],
-            $options['url'],
-            $options['extraDependencyOf'],
-            $options['selected-question-packages'],
-            $options['require']
-        );
-
-        $this->configuratorOptions = $options;
+        $this->prettyName    = $name;
+        $this->name          = \mb_strtolower($name);
+        $this->prettyVersion = $prettyVersion;
+        $this->created       = (new \DateTimeImmutable())->format(\DateTime::RFC3339);
     }
 
     /**
@@ -147,14 +145,6 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function isDev(): bool
-    {
-        return $this->isDev;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getPrettyName(): string
     {
         return $this->prettyName;
@@ -165,13 +155,49 @@ final class Package implements PackageContract
      */
     public function getPrettyVersion(): string
     {
-        return $this->version;
+        return $this->prettyVersion;
+    }
+
+    /**
+     * Active this if the package is a dev-require.
+     *
+     * @param bool $bool
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setIsDev(bool $bool = true): PackageContract
+    {
+        $this->isDev = $bool;
+
+        return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getUrl(): string
+    public function isDev(): bool
+    {
+        return $this->isDev;
+    }
+
+    /**
+     * Set the package url.
+     *
+     * @param string $url
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setUrl(string $url): PackageContract
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUrl(): ?string
     {
         return $this->url;
     }
@@ -179,7 +205,9 @@ final class Package implements PackageContract
     /**
      * Set the composer operation type.
      *
-     * @var string $operation
+     * @var string
+     *
+     * @param string $operation
      *
      * @return \Narrowspark\Automatic\Common\Contract\Package
      */
@@ -193,57 +221,105 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function getOperation(): string
+    public function getOperation(): ?string
     {
         return $this->operation;
     }
 
     /**
+     * Set the package type.
+     *
+     * @var string
+     *
+     * @param string $type
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setType(string $type): PackageContract
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
-    public function getType(): string
+    public function getType(): ?string
     {
         return $this->type;
     }
 
     /**
-     * {@inheritdoc}
+     * Set name of the parent package.
+     *
+     * @param string $name
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
      */
-    public function getPackagePath(): string
+    public function setParentName(string $name): PackageContract
     {
-        return \str_replace('\\', '/', $this->vendorPath . '/' . $this->prettyName . '/');
+        $this->parentName = $name;
+
+        return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function hasConfiguratorKey(string $key): bool
+    public function getParentName(): ?string
     {
-        return \array_key_exists($key, $this->configuratorOptions);
+        return $this->parentName;
+    }
+
+    /**
+     * Set this if the information coming from the QuestionInstallationManager.
+     *
+     * @param bool $bool
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setIsQuestionableRequirement(bool $bool = true): PackageContract
+    {
+        $this->isQuestionableRequirement = $bool;
+
+        return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getConfiguratorOptions(string $key): array
+    public function isQuestionableRequirement(): bool
     {
-        if ($this->hasConfiguratorKey($key)) {
-            return (array) $this->configuratorOptions[$key];
-        }
-
-        return [];
+        return $this->isQuestionableRequirement;
     }
 
     /**
-     * {@inheritdoc}
+     * Set selected questionable requirements.
+     *
+     * @param array $selectedQuestionableRequirements
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
      */
-    public function isExtraDependency(): bool
+    public function setSelectedQuestionableRequirements(array $selectedQuestionableRequirements): PackageContract
     {
-        return isset($this->options['extraDependencyOf']);
+        $this->selectedQuestionableRequirements = $selectedQuestionableRequirements;
+
+        return $this;
     }
 
     /**
-     * Set the required packages
+     * Return the selected questionable requirements.
+     *
+     * @return string[]
+     */
+    public function getSelectedQuestionableRequirements(): array
+    {
+        return $this->selectedQuestionableRequirements;
+    }
+
+    /**
+     * Set the required packages.
      *
      * @param string[] $requires
      *
@@ -265,19 +341,41 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritdoc}
+     * Set the composer extra automatic package configs.
+     *
+     * @param array $configs
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
      */
-    public function getOption(string $key)
+    public function setConfig(array $configs): PackageContract
     {
-        return $this->options[$key] ?? null;
+        $this->configs = $configs;
+
+        return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): array
+    public function hasConfig(string $key): bool
     {
-        return $this->options;
+        return \array_key_exists($key, $this->configs);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfig(string $key)
+    {
+        return $this->configs[$key] ?? null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfigs(): array
+    {
+        return $this->configs;
     }
 
     /**
@@ -293,17 +391,18 @@ final class Package implements PackageContract
      */
     public function toJson(): string
     {
-        return \json_encode(\array_merge(
-            [
-                'name'         => $this->name,
-                'prettyName'   => $this->prettyName,
-                'packagePath'  => $this->getPackagePath(),
-                'isDev'        => $this->isDev,
-            ],
-            $this->options,
-            [
-                'created'      => $this->created,
-            ]
-        ));
+        return \json_encode([
+            'name'                 => $this->name,
+            'pretty-name'          => $this->prettyName,
+            'version'              => $this->prettyVersion,
+            'parent'               => $this->parentName,
+            'is-dev'               => $this->isDev,
+            'url'                  => $this->url,
+            'operation'            => $this->operation,
+            'type'                 => $this->type,
+            'requires'             => $this->requires,
+            'automatic-extra'      => $this->configs,
+            'created'              => $this->created,
+        ]);
     }
 }

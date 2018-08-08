@@ -19,7 +19,7 @@ final class LockTest extends TestCase
     {
         parent::tearDownAfterClass();
 
-        \unlink(__DIR__ . '/test.lock');
+        @\unlink(__DIR__ . '/test.lock');
     }
 
     /**

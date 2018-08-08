@@ -113,7 +113,7 @@ final class Configurator
     public function configure(PackageContract $package): void
     {
         foreach (\array_keys(self::$configurators) as $key) {
-            if ($package->hasConfiguratorKey($key)) {
+            if ($package->hasConfig($key)) {
                 $this->get($key)->configure($package);
             }
         }
@@ -129,7 +129,7 @@ final class Configurator
     public function unconfigure(PackageContract $package): void
     {
         foreach (\array_keys(self::$configurators) as $key) {
-            if ($package->hasConfiguratorKey($key)) {
+            if ($package->hasConfig($key)) {
                 $this->get($key)->unconfigure($package);
             }
         }

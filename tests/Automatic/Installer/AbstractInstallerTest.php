@@ -140,7 +140,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->andReturn($name);
         $this->packageMock->shouldReceive('getName')
             ->times(2)
-            ->andReturn(trim($name, '/'));
+            ->andReturn(\trim($name, '/'));
 
         $this->packageMock->shouldReceive('getTargetDir')
             ->andReturn(null);

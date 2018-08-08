@@ -30,7 +30,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
 
         $data = '';
 
-        foreach ($package->getConfiguratorOptions('gitignore') as $value) {
+        foreach ($package->getConfig('gitignore') as $value) {
             $value = self::expandTargetDir($this->options, $value);
             $data .= "${value}\n";
         }

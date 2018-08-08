@@ -81,7 +81,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
         $script = ['php -v' => 'script'];
 
         $packageMock = $this->mock(PackageContract::class);
-        $packageMock->shouldReceive('getConfiguratorOptions')
+        $packageMock->shouldReceive('getConfig')
             ->once()
             ->with(ComposerScriptsConfigurator::getName())
             ->andReturn($script);
@@ -115,7 +115,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
         $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
         $packageMock = $this->mock(PackageContract::class);
-        $packageMock->shouldReceive('getConfiguratorOptions')
+        $packageMock->shouldReceive('getConfig')
             ->once()
             ->with(ComposerScriptsConfigurator::getName())
             ->andReturn(['php -v' => 'script']);

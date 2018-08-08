@@ -16,45 +16,23 @@ final class PackageTest extends TestCase
     private $package;
 
     /**
-     * @var array
-     */
-    private $config;
-
-    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->config = [
-            'version'   => '1',
-            'url'       => 'example.local',
-            'type'      => 'library',
-            'operation' => 'i',
-            'copy'      => [
-                'from' => 'to',
-            ],
-            'extraDependencyOf'   => 'foo/bar',
-            'used-by-automatic'   => true,
-            'isDev'               => false,
-        ];
-        $this->package = new Package('test', 'test/test', __DIR__, false, $this->config);
+        $this->package = new Package('test/Test', '1');
     }
 
     public function testGetName(): void
     {
-        static::assertSame('test', $this->package->getName());
+        static::assertSame('test/test', $this->package->getName());
     }
 
     public function testGetPrettyName(): void
     {
-        static::assertSame('test/test', $this->package->getPrettyName());
-    }
-
-    public function testIsDev(): void
-    {
-        static::assertFalse($this->package->isDev());
+        static::assertSame('test/Test', $this->package->getPrettyName());
     }
 
     public function testGetPrettyVersion(): void
@@ -62,58 +40,79 @@ final class PackageTest extends TestCase
         static::assertSame('1', $this->package->getPrettyVersion());
     }
 
-    public function testGetPackagePath(): void
+    public function testIsDev(): void
     {
-        static::assertSame(
-            \str_replace('\\', '/', __DIR__ . '/test/test/'),
-            $this->package->getPackagePath()
-        );
+        static::assertFalse($this->package->isDev());
     }
 
-    public function testGetConfiguratorOptions(): void
+    public function testSetAndGetUrl(): void
     {
-        $options = $this->package->getConfiguratorOptions('copy');
+        $url = 'https://packagist.org/packages/narrowspark/automatic';
 
-        static::assertEquals(['from' => 'to'], $options);
+        $this->package->setUrl($url);
 
-        $options = $this->package->getConfiguratorOptions('test');
-
-        static::assertEquals([], $options);
+        static::assertSame($url, $this->package->getUrl());
     }
 
-    public function testGetOptions(): void
+    public function testSetAndGetOperation(): void
     {
-        static::assertEquals($this->config, $this->package->getOptions());
-    }
+        $this->package->setOperation(Package::INSTALL_OPERATION);
 
-    public function testGetUrl(): void
-    {
-        static::assertSame($this->config['url'], $this->package->getUrl());
-    }
-
-    public function testGetOperation(): void
-    {
-        static::assertSame($this->config['operation'], $this->package->getOperation());
+        static::assertSame(Package::INSTALL_OPERATION, $this->package->getOperation());
     }
 
     public function testGetType(): void
     {
-        static::assertSame($this->config['type'], $this->package->getType());
+        $type = 'library';
+
+        $this->package->setType($type);
+
+        static::assertSame($type, $this->package->getType());
     }
 
-    public function testIsExtraDependency(): void
+    public function testIsQuestionableRequirement(): void
     {
-        static::assertTrue($this->package->isExtraDependency());
+        $this->package->setIsQuestionableRequirement();
+
+        static::assertTrue($this->package->isQuestionableRequirement());
     }
 
-    public function testGetRequire(): void
+    public function testSetAndGetSelectedQuestionableRequirements(): void
     {
-        static::assertSame([], $this->package->getRequires());
+        $selected = ['test/test2'];
+
+        $this->package->setSelectedQuestionableRequirements($selected);
+
+        static::assertSame($selected, $this->package->getSelectedQuestionableRequirements());
     }
 
-    public function testGetOption(): void
+    public function testSetAndGetRequire(): void
     {
-        static::assertSame('foo/bar', $this->package->getOption('extraDependencyOf'));
+        $requires = [];
+
+        $this->package->setRequires($requires);
+
+        static::assertSame($requires, $this->package->getRequires());
+    }
+
+    public function testSetAndGetConfigs(): void
+    {
+        $config = ['cut' => true];
+
+        $this->package->setConfig($config);
+
+        static::assertTrue($this->package->getConfig('cut'));
+
+        static::assertEquals($config, $this->package->getConfigs());
+    }
+
+    public function testSetAndGetParentName(): void
+    {
+        $name = 'foo/bar';
+
+        $this->package->setParentName($name);
+
+        static::assertSame($name, $this->package->getParentName());
     }
 
     public function testToJson(): void
@@ -122,18 +121,19 @@ final class PackageTest extends TestCase
 
         static::assertJson($json);
         static::assertSame(
-            \array_merge(
-                [
-                    'name'        => 'test',
-                    'prettyName'  => 'test/test',
-                    'packagePath' => \str_replace('\\', '/', __DIR__ . '/test/test/'),
-                    'isDev'       => false,
-                ],
-                $this->config,
-                [
-                    'created'     => $this->package->getTimestamp(),
-                ]
-            ),
+            [
+                'name'                 => 'test/test',
+                'pretty-name'          => 'test/Test',
+                'version'              => '1',
+                'parent'               => null,
+                'is-dev'               => false,
+                'url'                  => null,
+                'operation'            => null,
+                'type'                 => null,
+                'requires'             => [],
+                'automatic-extra'      => [],
+                'created'              => $this->package->getTimestamp(),
+            ],
             \json_decode($json, true)
         );
     }

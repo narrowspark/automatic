@@ -261,7 +261,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 $lock,
                 $this->container->get('vendorPath'),
                 $this->skeletons,
-                $this->container->get('composerExtra')
+                $this->container->get('composer-extra')
             );
 
             $skeletonGenerator->run();
@@ -281,7 +281,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $manipulator->removeProperty('name');
         $manipulator->removeProperty('description');
 
-        foreach ($this->container->get('composerExtra') as $key => $value) {
+        foreach ($this->container->get('composer-extra') as $key => $value) {
             if ($key !== Util::AUTOMATIC) {
                 $manipulator->addSubNode('extra', $key, $value);
             }
@@ -322,7 +322,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $this->operations = $operations;
         }
 
-        $automaticOptions = $this->container->get('composerExtra')[Util::AUTOMATIC];
+        $automaticOptions = $this->container->get('composer-extra')[Util::AUTOMATIC];
         $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
         $packages         = $this->container->get(OperationsResolver::class)->resolve($this->operations);
         $lock             = $this->container->get(Lock::class);
@@ -618,12 +618,14 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function doActionOnPackageOperation(PackageContract $package): void
     {
-        $packageConfigurator = new PackageConfigurator(
-            $this->container->get(Composer::class),
-            $this->container->get(IOInterface::class),
-            $this->container->get('composerExtra'),
-            $package->getConfiguratorOptions('custom-configurators')
-        );
+        /** @var \Narrowspark\Automatic\PackageConfigurator $packageConfigurator */
+        $packageConfigurator = $this->container->get(PackageConfigurator::class);
+
+        if ($package->hasConfig(PackageConfigurator::TYPE)) {
+            foreach ($package->getConfig(PackageConfigurator::TYPE) as $name => $configurator) {
+                $packageConfigurator->add($name, $configurator);
+            }
+        }
 
         if ($package->getOperation() === 'install') {
             $this->doInstall($package, $packageConfigurator);
@@ -649,11 +651,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $this->container->get(Configurator::class)->configure($package);
         $packageConfigurator->configure($package);
 
-        $options                     = $package->getOptions();
+        $options                     = $package->getConfigs();
         $questionInstallationManager = $this->container->get(QuestionInstallationManager::class);
 
-        if ($package->hasConfiguratorKey('extra-dependency')) {
-            $extraDependency = $package->getConfiguratorOptions('extra-dependency');
+        if ($package->hasConfig('extra-dependency')) {
+            $extraDependency = $package->getConfig('extra-dependency');
             $options         = \array_merge(
                 $options,
                 ['selected-question-packages' => $questionInstallationManager->getPackagesToInstall()]
@@ -664,9 +666,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        if ($package->hasConfiguratorKey('post-install-output')) {
-            foreach ($package->getConfiguratorOptions('post-install-output') as $line) {
-                $this->postInstallOutput[] = self::expandTargetDir($this->container->get('composerExtra'), $line);
+        if ($package->hasConfig('post-install-output')) {
+            foreach ($package->getConfig('post-install-output') as $line) {
+                $this->postInstallOutput[] = self::expandTargetDir($this->container->get('composer-extra'), $line);
             }
 
             $this->postInstallOutput[] = '';
@@ -692,9 +694,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $this->container->get(Configurator::class)->unconfigure($package);
         $packageConfigurator->unconfigure($package);
 
+        /** @var \Narrowspark\Automatic\Lock $lock */
         $lock = $this->container->get(Lock::class);
 
-        if ($package->hasConfiguratorKey('extra-dependency')) {
+        if ($package->hasConfig('extra-dependency')) {
             $extraDependencies = [];
 
             foreach ($lock->read() as $packageName => $data) {

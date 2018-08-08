@@ -34,48 +34,23 @@ interface Package
     /**
      * Get the package url.
      *
-     * @return string
+     * @return null|string
      */
-    public function getUrl(): string;
+    public function getUrl(): ?string;
 
     /**
      * Get the package type.
      *
-     * @return string
+     * @return null|string
      */
-    public function getType(): string;
+    public function getType(): ?string;
 
     /**
      * Get the package operation.
      *
-     * @return string
+     * @return null|string
      */
-    public function getOperation(): string;
-
-    /**
-     * Get the package.
-     *
-     * @return string
-     */
-    public function getPackagePath(): string;
-
-    /**
-     * Checks if configurator key exits in extra automatic config.
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function hasConfiguratorKey(string $key): bool;
-
-    /**
-     * Returns the needed options for the right configurator.
-     *
-     * @param string $key
-     *
-     * @return array
-     */
-    public function getConfiguratorOptions(string $key): array;
+    public function getOperation(): ?string;
 
     /**
      * Returns all requirements of the package.
@@ -85,20 +60,43 @@ interface Package
     public function getRequires(): array;
 
     /**
-     * Get a option value.
+     * Checks if key exits in extra automatic config.
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function hasConfig(string $key): bool;
+
+    /**
+     * Get a automatic config value.
      *
      * @param string $key
      *
      * @return null|array|string
      */
-    public function getOption(string $key);
+    public function getConfig(string $key);
 
     /**
-     * Returns the package config for automatic.
+     * Returns the automatic package configs.
      *
      * @return array
      */
-    public function getOptions(): array;
+    public function getConfigs(): array;
+
+    /**
+     * Get name of the parent package.
+     *
+     * @return null|string
+     */
+    public function getParentName(): ?string;
+
+    /**
+     * Is the package a questionable requirement.
+     *
+     * @return bool
+     */
+    public function isQuestionableRequirement(): bool;
 
     /**
      * Returns the object creation timestamp.

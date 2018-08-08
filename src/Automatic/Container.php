@@ -49,16 +49,16 @@ final class Container
     public function __construct(Composer $composer, IOInterface $io)
     {
         $this->callbacks = [
-            Composer::class => function () use ($composer) {
+            Composer::class => static function () use ($composer) {
                 return $composer;
             },
-            IOInterface::class => function () use ($io) {
+            IOInterface::class => static function () use ($io) {
                 return $io;
             },
-            'vendorPath' => function (Container $container) {
+            'vendor-dir' => static function (Container $container) {
                 return \rtrim($container->get(Config::class)->get('vendor-dir'), '/');
             },
-            'composerExtra' => function (Container $container) {
+            'composer-extra' => static function (Container $container) {
                 return \array_merge(
                     [
                         Util::AUTOMATIC => [
@@ -69,16 +69,16 @@ final class Container
                     $container->get(Composer::class)->getPackage()->getExtra()
                 );
             },
-            InputInterface::class => function (Container $container) {
+            InputInterface::class => static function (Container $container) {
                 return $this->getGenericPropertyReader()($container->get(IOInterface::class), 'input');
             },
-            Lock::class => function () {
+            Lock::class => static function () {
                 return new Lock(Util::getAutomaticLockFile());
             },
-            Config::class => function (Container $container) {
+            Config::class => static function (Container $container) {
                 return $container->get(Composer::class)->getConfig();
             },
-            ConfiguratorInstaller::class => function (Container $container) {
+            ConfiguratorInstaller::class => static function (Container $container) {
                 return new ConfiguratorInstaller(
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
@@ -86,7 +86,7 @@ final class Container
                     new PathClassLoader()
                 );
             },
-            SkeletonInstaller::class => function (Container $container) {
+            SkeletonInstaller::class => static function (Container $container) {
                 return new SkeletonInstaller(
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
@@ -94,24 +94,24 @@ final class Container
                     new PathClassLoader()
                 );
             },
-            Configurator::class => function (Container $container) {
+            Configurator::class => static function (Container $container) {
                 return new Configurator(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
-                    $container->get('composerExtra')
+                    $container->get('composer-extra')
                 );
             },
-            OperationsResolver::class => function (Container $container) {
-                return new OperationsResolver($container->get(Lock::class), $container->get('vendorPath'));
+            OperationsResolver::class => static function (Container $container) {
+                return new OperationsResolver($container->get(Lock::class));
             },
-            InstallationManager::class => function (Container $container) {
+            InstallationManager::class => static function (Container $container) {
                 return new InstallationManager(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
                     $container->get(InputInterface::class)
                 );
             },
-            QuestionInstallationManager::class => function (Container $container) {
+            QuestionInstallationManager::class => static function (Container $container) {
                 return new QuestionInstallationManager(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
@@ -119,13 +119,13 @@ final class Container
                     $container->get(OperationsResolver::class)
                 );
             },
-            RemoteFilesystem::class => function (Container $container) {
+            RemoteFilesystem::class => static function (Container $container) {
                 return Factory::createRemoteFilesystem(
                     $container->get(IOInterface::class),
                     $container->get(Config::class)
                 );
             },
-            ParallelDownloader::class => function (Container $container) {
+            ParallelDownloader::class => static function (Container $container) {
                 $rfs = $container->get(RemoteFilesystem::class);
 
                 return new ParallelDownloader(
@@ -135,7 +135,7 @@ final class Container
                     $rfs->isTlsDisabled()
                 );
             },
-            Prefetcher::class => function (Container $container) {
+            Prefetcher::class => static function (Container $container) {
                 return new Prefetcher(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
@@ -143,12 +143,19 @@ final class Container
                     $container->get(ParallelDownloader::class)
                 );
             },
-            ScriptExecutor::class => function (Container $container) {
+            ScriptExecutor::class => static function (Container $container) {
                 return new ScriptExecutor(
                     $container->get(Container::class),
                     $container->get(IOInterface::class),
-                    $container->get('composerExtra'),
+                    $container->get('composer-extra'),
                     new ProcessExecutor()
+                );
+            },
+            PackageConfigurator::class => static function (Container $container) {
+                return new PackageConfigurator(
+                    $container->get(Composer::class),
+                    $container->get(IOInterface::class),
+                    $container->get('composer-extra')
                 );
             },
         ];

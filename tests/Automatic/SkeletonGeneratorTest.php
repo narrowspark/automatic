@@ -29,7 +29,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     private $installationManagerMock;
 
     /**
-     * @var \Narrowspark\Automatic\Lock|\Mockery\MockInterface
+     * @var \Mockery\MockInterface|\Narrowspark\Automatic\Lock
      */
     private $lockMock;
 

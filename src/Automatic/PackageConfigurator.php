@@ -10,6 +10,8 @@ use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 
 final class PackageConfigurator
 {
+    public const TYPE = 'custom-configurators';
+
     /**
      * A composer instance.
      *
@@ -44,17 +46,12 @@ final class PackageConfigurator
      * @param \Composer\Composer       $composer
      * @param \Composer\IO\IOInterface $io
      * @param array                    $options
-     * @param array                    $configurators
      */
-    public function __construct(Composer $composer, IOInterface $io, array $options, array $configurators)
+    public function __construct(Composer $composer, IOInterface $io, array $options)
     {
         $this->composer = $composer;
         $this->io       = $io;
         $this->options  = $options;
-
-        foreach ($configurators as $name => $configurator) {
-            $this->add($name, $configurator);
-        }
     }
 
     /**
@@ -70,7 +67,7 @@ final class PackageConfigurator
     public function add(string $name, string $configurator): void
     {
         if (! \is_subclass_of($configurator, ConfiguratorContract::class)) {
-            throw new InvalidArgumentException(\sprintf('Configurator class "%s" must extend the class "%s".', $configurator, ConfiguratorContract::class));
+            throw new InvalidArgumentException(\sprintf('Configurator class [%s] must extend the class [%s].', $configurator, ConfiguratorContract::class));
         }
 
         $this->configurators[$name] = $configurator;
@@ -86,7 +83,7 @@ final class PackageConfigurator
     public function configure(PackageContract $package): void
     {
         foreach (\array_keys($this->configurators) as $key) {
-            if ($package->hasConfiguratorKey($key)) {
+            if ($package->hasConfig($key)) {
                 $this->get($key)->configure($package);
             }
         }
@@ -102,7 +99,7 @@ final class PackageConfigurator
     public function unconfigure(PackageContract $package): void
     {
         foreach (\array_keys($this->configurators) as $key) {
-            if ($package->hasConfiguratorKey($key)) {
+            if ($package->hasConfig($key)) {
                 $this->get($key)->unconfigure($package);
             }
         }

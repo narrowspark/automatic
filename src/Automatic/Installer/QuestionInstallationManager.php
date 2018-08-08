@@ -151,7 +151,7 @@ class QuestionInstallationManager extends AbstractInstallationManager
 
         if (\count($questionMarkedDependencies) !== 0) {
             $this->updateComposerJson(
-                \array_merge($questionMarkedDependencies, (array) $package->getOption('selected-question-packages')),
+                \array_merge($questionMarkedDependencies, (array) $package->getConfig('selected-question-packages')),
                 [],
                 self::REMOVE
             );

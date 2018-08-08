@@ -14,14 +14,14 @@ class MockConfigurator extends AbstractConfigurator
 
     public function configure(PackageContract $package): void
     {
-        foreach ($package->getConfiguratorOptions('mock') as $message) {
+        foreach ($package->getConfig('mock') as $message) {
             $this->write($message);
         }
     }
 
     public function unconfigure(PackageContract $package): void
     {
-        foreach ($package->getConfiguratorOptions('mock') as $message) {
+        foreach ($package->getConfig('mock') as $message) {
             $this->write($message);
         }
     }

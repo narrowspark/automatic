@@ -30,12 +30,10 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
-use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
-use Narrowspark\Automatic\Installer\QuestionInstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
@@ -269,7 +267,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $manipulator->removeProperty('description');
 
         foreach ($this->container->get('composer-extra') as $key => $value) {
-            if ($key !== Util::AUTOMATIC) {
+            if ($key !== Util::COMPOSER_EXTRA_KEY) {
                 $manipulator->addSubNode('extra', $key, $value);
             }
         }
@@ -309,7 +307,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $this->operations = $operations;
         }
 
-        $automaticOptions = $this->container->get('composer-extra')[Util::AUTOMATIC];
+        $automaticOptions = $this->container->get('composer-extra')[Util::COMPOSER_EXTRA_KEY];
         $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
         $packages         = $this->container->get(OperationsResolver::class)->resolve($this->operations);
         $lock             = $this->container->get(Lock::class);
@@ -646,17 +644,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $this->container->get(Configurator::class)->configure($package);
         $packageConfigurator->configure($package);
 
-        if ($package->hasConfig(QuestionInstallationManager::TYPE)) {
-            /** @var \Narrowspark\Automatic\Installer\QuestionInstallationManager $questionInstallationManager */
-            $questionInstallationManager = $this->container->get(QuestionInstallationManager::class);
-
-            foreach ($questionInstallationManager->install($package, (array) $package->getConfig(QuestionInstallationManager::TYPE)) as $operation) {
-                $this->doInstall($operation, $packageConfigurator);
-            }
-
-            $package->setSelectedQuestionableRequirements($questionInstallationManager->getSelectedPackages());
-        }
-
         if ($package->hasConfig('post-install-output')) {
             foreach ((array) $package->getConfig('post-install-output') as $line) {
                 $this->postInstallOutput[] = self::expandTargetDir($this->container->get('composer-extra'), $line);
@@ -685,22 +672,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         /** @var \Narrowspark\Automatic\Lock $lock */
         $lock = $this->container->get(Lock::class);
-
-        if ($package->hasConfig(QuestionInstallationManager::TYPE)) {
-            $questionableRequirements = [];
-
-            foreach ((array) $lock->get(self::LOCK_PACKAGES) as $packageName => $data) {
-                $lockPackage = Package::createFromLock($packageName, $data);
-
-                if ($lockPackage->isQuestionableRequirement() && $lockPackage->getParentName() === $package->getName()) {
-                    $questionableRequirements[] = $lockPackage;
-                }
-            }
-
-            foreach ($this->container->get(QuestionInstallationManager::class)->uninstall($package, $questionableRequirements) as $operation) {
-                $this->doUninstall($operation, $packageConfigurator);
-            }
-        }
 
         $lock->remove($package->getName());
     }

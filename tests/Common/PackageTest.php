@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Common\Test;
 
+use Narrowspark\Automatic\Common\Contract\Package as ContractPackage;
 use Narrowspark\Automatic\Common\Package;
 use PHPUnit\Framework\TestCase;
 
@@ -78,22 +79,6 @@ final class PackageTest extends TestCase
         static::assertSame($type, $this->package->getType());
     }
 
-    public function testIsQuestionableRequirement(): void
-    {
-        $this->package->setIsQuestionableRequirement();
-
-        static::assertTrue($this->package->isQuestionableRequirement());
-    }
-
-    public function testSetAndGetSelectedQuestionableRequirements(): void
-    {
-        $selected = ['test/test2'];
-
-        $this->package->setSelectedQuestionableRequirements($selected);
-
-        static::assertSame($selected, $this->package->getSelectedQuestionableRequirements());
-    }
-
     public function testSetAndGetRequire(): void
     {
         $requires = [];
@@ -144,13 +129,29 @@ final class PackageTest extends TestCase
                 'url'                                => null,
                 'operation'                          => null,
                 'type'                               => null,
-                'is-questionable-requirement'        => false,
-                'selected-questionable-requirements' => [],
                 'requires'                           => [],
                 'automatic-extra'                    => [],
                 'created'                            => $this->package->getTime(),
             ],
             $array
         );
+    }
+
+    public function testCreateFromLock(): void
+    {
+        $lockdata = [
+            'pretty-name'                        => 'test/Test',
+            'version'                            => '1',
+            'parent'                             => null,
+            'is-dev'                             => false,
+            'url'                                => null,
+            'operation'                          => null,
+            'type'                               => null,
+            'requires'                           => [],
+            'automatic-extra'                    => [],
+            'created'                            => $this->package->getTime(),
+        ];
+
+        static::assertInstanceOf(ContractPackage::class, Package::createFromLock('test/test', $lockdata));
     }
 }

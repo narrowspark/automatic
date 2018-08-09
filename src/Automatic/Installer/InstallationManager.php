@@ -121,10 +121,10 @@ class InstallationManager extends AbstractInstallationManager
                 continue;
             }
 
-            // Check if package is currently installed, if so, use installed constraint and skip question.
-            if (isset($this->installedPackages[$packageName])) {
-                $version    = $this->installedPackages[$packageName];
-                $constraint = \mb_strpos($version, 'dev-') === false ? '^' . $version : $version;
+            // Check if package is currently installed, if so, use installed constraint.
+            if (isset($toInstall[$packageName])) {
+                $version    = $toInstall[$packageName];
+                $constraint = \mb_strpos($version, 'dev') === false ? '^' . $version : $version;
 
                 $toInstall[$packageName] = $constraint;
 
@@ -140,7 +140,19 @@ class InstallationManager extends AbstractInstallationManager
             }
 
             if (\in_array($version, ['*', null, ''], true)) {
-                $constraint = $this->findVersion($packageName);
+                $constraint = $this->io->askAndValidate(
+                    \sprintf(
+                        'Enter the version of <info>%s</info> to require (or leave blank to use the latest version): ',
+                        $packageName
+                    ),
+                    function ($input) {
+                        return \trim($input) ?? false;
+                    }
+                );
+
+                if ($constraint === false) {
+                    $constraint = $this->findBestVersionForPackage($packageName);
+                }
             } else {
                 $constraint = $version;
             }

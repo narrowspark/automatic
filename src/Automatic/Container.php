@@ -13,7 +13,6 @@ use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager;
-use Narrowspark\Automatic\Installer\QuestionInstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
@@ -63,7 +62,7 @@ final class Container
             'composer-extra' => static function (Container $container) {
                 return \array_merge(
                     [
-                        Util::AUTOMATIC => [
+                        Util::COMPOSER_EXTRA_KEY => [
                             'allow-auto-install' => false,
                             'dont-discover'      => [],
                         ],
@@ -111,14 +110,6 @@ final class Container
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
                     $container->get(InputInterface::class)
-                );
-            },
-            QuestionInstallationManager::class => static function (Container $container) {
-                return new QuestionInstallationManager(
-                    $container->get(Composer::class),
-                    $container->get(IOInterface::class),
-                    $container->get(InputInterface::class),
-                    $container->get(OperationsResolver::class)
                 );
             },
             RemoteFilesystem::class => static function (Container $container) {

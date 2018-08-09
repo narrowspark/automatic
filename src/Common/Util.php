@@ -11,7 +11,16 @@ final class Util
     /**
      * @var string
      */
-    public const AUTOMATIC = 'automatic';
+    public const COMPOSER_EXTRA_KEY = 'automatic';
+
+    /**
+     * Private constructor; non-instantiable.
+     *
+     * @codeCoverageIgnore
+     */
+    private function __construct()
+    {
+    }
 
     /**
      * Return the composer json file and json manipulator.
@@ -35,7 +44,7 @@ final class Util
      */
     public static function getAutomaticLockFile(): string
     {
-        return \str_replace('composer', self::AUTOMATIC, self::getComposerLockFile());
+        return \str_replace('composer', self::COMPOSER_EXTRA_KEY, self::getComposerLockFile());
     }
 
     /**

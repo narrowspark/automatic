@@ -171,38 +171,6 @@ interface Package
     public function getParentName(): ?string;
 
     /**
-     * Set this if the information coming from the QuestionInstallationManager.
-     *
-     * @param bool $bool
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
-     */
-    public function setIsQuestionableRequirement(bool $bool = true): self;
-
-    /**
-     * Is the package a questionable requirement.
-     *
-     * @return bool
-     */
-    public function isQuestionableRequirement(): bool;
-
-    /**
-     * Set selected questionable requirements.
-     *
-     * @param string[] $selectedQuestionableRequirements
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
-     */
-    public function setSelectedQuestionableRequirements(array $selectedQuestionableRequirements): self;
-
-    /**
-     * Return the selected questionable requirements.
-     *
-     * @return string[]
-     */
-    public function getSelectedQuestionableRequirements(): array;
-
-    /**
      * Set the package time.
      *
      * @param string $time this \DateTime::RFC3339 format should be used

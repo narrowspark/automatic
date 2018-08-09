@@ -70,25 +70,11 @@ final class Package implements PackageContract
     private $configs = [];
 
     /**
-     * List of selected questionable requirements.
-     *
-     * @var string[]
-     */
-    private $selectedQuestionableRequirements = [];
-
-    /**
      * Check if this package is a dev require.
      *
      * @var bool
      */
     private $isDev = false;
-
-    /**
-     * Check if the package is a questionable requirement.
-     *
-     * @var bool
-     */
-    private $isQuestionableRequirement = false;
 
     /**
      * Timestamp of the object creation.
@@ -124,23 +110,21 @@ final class Package implements PackageContract
     public static function createFromLock(string $name, array $packageData): PackageContract
     {
         $keyToFunctionMappers = [
-            'parent'                             => 'setParentName',
-            'is-dev'                             => 'setIsDev',
-            'url'                                => 'setUrl',
-            'operation'                          => 'setOperation',
-            'type'                               => 'setType',
-            'is-questionable-requirement'        => 'setIsQuestionableRequirement',
-            'selected-questionable-requirements' => 'setSelectedQuestionableRequirements',
-            'requires'                           => 'setRequires',
-            'automatic-extra'                    => 'setConfig',
-            'created'                            => 'setTimestamp',
+            'parent'          => 'setParentName',
+            'is-dev'          => 'setIsDev',
+            'url'             => 'setUrl',
+            'operation'       => 'setOperation',
+            'type'            => 'setType',
+            'requires'        => 'setRequires',
+            'automatic-extra' => 'setConfig',
+            'created'         => 'setTime',
         ];
 
         $package = new static($name, $packageData['version']);
 
         foreach ($packageData as $key => $date) {
-            if (isset($keyToFunctionMappers[$key])) {
-                $package->{$keyToFunctionMappers}[$key]($date);
+            if ($date !== null && isset($keyToFunctionMappers[$key])) {
+                $package->{$keyToFunctionMappers[$key]}($date);
             }
         }
 
@@ -274,42 +258,6 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function setIsQuestionableRequirement(bool $bool = true): PackageContract
-    {
-        $this->isQuestionableRequirement = $bool;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isQuestionableRequirement(): bool
-    {
-        return $this->isQuestionableRequirement;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setSelectedQuestionableRequirements(array $selectedQuestionableRequirements): PackageContract
-    {
-        $this->selectedQuestionableRequirements = $selectedQuestionableRequirements;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSelectedQuestionableRequirements(): array
-    {
-        return $this->selectedQuestionableRequirements;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function setRequires(array $requires): PackageContract
     {
         $this->requires = $requires;
@@ -391,8 +339,6 @@ final class Package implements PackageContract
                 'url'                                => $this->url,
                 'operation'                          => $this->operation,
                 'type'                               => $this->type,
-                'is-questionable-requirement'        => $this->isQuestionableRequirement,
-                'selected-questionable-requirements' => $this->selectedQuestionableRequirements,
                 'requires'                           => $this->requires,
                 'automatic-extra'                    => $this->configs,
                 'created'                            => $this->created,

@@ -6,7 +6,6 @@ use Composer\Composer;
 use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Installer as BaseInstaller;
-use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
@@ -157,7 +156,7 @@ abstract class AbstractInstallationManager
      *
      * @return string
      */
-    protected function findVersion(string $name): string
+    protected function findBestVersionForPackage(string $name): string
     {
         // find the latest version allowed in this pool
         $package = $this->versionSelector->findBestCandidate($name, null, null, 'stable');
@@ -256,27 +255,6 @@ abstract class AbstractInstallationManager
         $installer->setUpdateWhitelist($whitelistPackages);
 
         return $installer->run();
-    }
-
-    /**
-     * Adds a modified installation manager to composer.
-     *
-     * @param \Composer\Installer\InstallationManager $oldInstallManager
-     *
-     * @return void
-     */
-    protected function addAutomaticInstallationManagerToComposer(BaseInstallationManager $oldInstallManager): void
-    {
-        $reader     = $this->getGenericPropertyReader();
-        $installers = (array) $reader($oldInstallManager, 'installers');
-
-        $narrowsparkInstaller = new InstallationManager();
-
-        foreach ($installers as $installer) {
-            $narrowsparkInstaller->addInstaller($installer);
-        }
-
-        $this->composer->setInstallationManager($narrowsparkInstaller);
     }
 
     /**

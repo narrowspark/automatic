@@ -300,7 +300,7 @@ declare(strict_types=1);
 //        );
 //
 //        $this->assertPackagesInstall($packages, 'dev-master');
-//        static::assertCount(1, $questionInstallationManager->getPackagesToInstall());
+//        static::assertCount(1, $questionInstallationManager->getSelectedPackages());
 //    }
 //
 //    public function testInstallSkipPackageInstallIfPackageIsInRootPackage(): void
@@ -380,7 +380,7 @@ declare(strict_types=1);
 //        );
 //
 //        static::assertCount(0, $packages);
-//        static::assertCount(0, $questionInstallationManager->getPackagesToInstall());
+//        static::assertCount(0, $questionInstallationManager->getSelectedPackages());
 //    }
 //
 //    public function testInstallWithPackageNameVersionAndDevStability(): void

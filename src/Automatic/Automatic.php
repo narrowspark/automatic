@@ -328,6 +328,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 includeFile(\str_replace('%vendor_path%', $this->container->get('vendor-dir'), $path));
             }
 
+            /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */
             foreach ($classList as $class) {
                 $reflectionClass = new ReflectionClass($class);
 
@@ -615,11 +616,19 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
+        $io = $this->container->get(IOInterface::class);
+
         if ($package->getOperation() === 'install') {
+            $io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+
             $this->doInstall($package, $packageConfigurator);
         } elseif ($package->getOperation() === 'uninstall') {
+            $io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
+
             $this->doUninstall($package, $packageConfigurator);
         }
+
+        $packageConfigurator->clear();
     }
 
     /**
@@ -634,19 +643,18 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function doInstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
-        $this->container->get(IOInterface::class)->writeError(\sprintf('  - Configuring %s', $package->getName()));
-
         $this->container->get(Configurator::class)->configure($package);
         $packageConfigurator->configure($package);
 
-        $questionInstallationManager = $this->container->get(QuestionInstallationManager::class);
-
         if ($package->hasConfig(QuestionInstallationManager::TYPE)) {
-            foreach ($questionInstallationManager->install($package, $package->getConfig(QuestionInstallationManager::TYPE)) as $operation) {
+            /** @var \Narrowspark\Automatic\Installer\QuestionInstallationManager $questionInstallationManager */
+            $questionInstallationManager = $this->container->get(QuestionInstallationManager::class);
+
+            foreach ($questionInstallationManager->install($package, (array) $package->getConfig(QuestionInstallationManager::TYPE)) as $operation) {
                 $this->doInstall($operation, $packageConfigurator);
             }
 
-            $package->setSelectedQuestionableRequirements($questionInstallationManager->getPackagesToInstall());
+            $package->setSelectedQuestionableRequirements($questionInstallationManager->getSelectedPackages());
         }
 
         if ($package->hasConfig('post-install-output')) {
@@ -657,15 +665,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $this->postInstallOutput[] = '';
         }
 
-        $lock = $this->container->get(Lock::class);
-
-        $lock->add(
-            self::LOCK_PACKAGES,
-            \array_merge(
-                (array) $lock->get(self::LOCK_PACKAGES),
-                [$package->getName() => $package->toArray()]
-            )
-        );
+        $this->writePackageOperationToLock($package);
     }
 
     /**
@@ -680,8 +680,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function doUninstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
-        $this->container->get(IOInterface::class)->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
-
         $this->container->get(Configurator::class)->unconfigure($package);
         $packageConfigurator->unconfigure($package);
 
@@ -727,6 +725,26 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }
 
         return null;
+    }
+
+    /**
+     * Write the package operation to the lock file.
+     *
+     * @param \Narrowspark\Automatic\Common\Contract\Package $package
+     *
+     * @return void
+     */
+    private function writePackageOperationToLock(PackageContract $package): void
+    {
+        $lock = $this->container->get(Lock::class);
+
+        $lock->add(
+            self::LOCK_PACKAGES,
+            \array_merge(
+                (array) $lock->get(self::LOCK_PACKAGES),
+                [$package->getName() => $package->toArray()]
+            )
+        );
     }
 }
 

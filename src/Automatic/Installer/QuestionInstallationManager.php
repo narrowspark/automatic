@@ -19,7 +19,7 @@ class QuestionInstallationManager extends AbstractInstallationManager
      *
      * @var array
      */
-    private $packagesToInstall = [];
+    private $selectedPackages = [];
 
     /**
      * A operations resolver instance.
@@ -85,7 +85,7 @@ class QuestionInstallationManager extends AbstractInstallationManager
 
                 // Package has been already prepared to be installed, skipping.
                 // Package from this group has been found in root composer, skipping.
-                if (isset($this->packagesToInstall[$packageName]) || isset($rootPackages[$packageName])) {
+                if (isset($this->selectedPackages[$packageName]) || isset($rootPackages[$packageName])) {
                     continue 2;
                 }
 
@@ -94,7 +94,7 @@ class QuestionInstallationManager extends AbstractInstallationManager
                     $version    = $this->installedPackages[$packageName];
                     $constraint = \mb_strpos($version, 'dev-') === false ? '^' . $version : $version;
 
-                    $this->packagesToInstall[$packageName] = $constraint;
+                    $this->selectedPackages[$packageName] = $constraint;
 
                     $this->io->write(\sprintf(
                         'Added package <info>%s</info> to composer.json with constraint <info>%s</info>;'
@@ -113,15 +113,15 @@ class QuestionInstallationManager extends AbstractInstallationManager
 
             $this->io->writeError(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $packageName));
 
-            $this->packagesToInstall[$packageName] = $constraint;
+            $this->selectedPackages[$packageName] = $constraint;
         }
 
-        if (\count($this->packagesToInstall) !== 0) {
-            $this->updateComposerJson($this->packagesToInstall, [], self::ADD);
+        if (\count($this->selectedPackages) !== 0) {
+            $this->updateComposerJson($this->selectedPackages, [], self::ADD);
 
             $this->runInstaller(
-                $this->updateRootComposerJson($this->packagesToInstall, [], self::ADD),
-                \array_keys($this->packagesToInstall)
+                $this->updateRootComposerJson($this->selectedPackages, [], self::ADD),
+                \array_keys($this->selectedPackages)
             );
         }
 
@@ -192,9 +192,13 @@ class QuestionInstallationManager extends AbstractInstallationManager
      *
      * @return array
      */
-    public function getPackagesToInstall(): array
+    public function getSelectedPackages(): array
     {
-        return $this->packagesToInstall;
+        $toInstall = $this->selectedPackages;
+        // reset after call
+        $this->selectedPackages = [];
+
+        return $toInstall;
     }
 
     /**

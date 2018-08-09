@@ -189,7 +189,7 @@ interface Package
     /**
      * Set selected questionable requirements.
      *
-     * @param array $selectedQuestionableRequirements
+     * @param string[] $selectedQuestionableRequirements
      *
      * @return \Narrowspark\Automatic\Common\Contract\Package
      */

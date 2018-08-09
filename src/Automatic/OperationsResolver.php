@@ -143,7 +143,10 @@ class OperationsResolver
         \sort($requires, \SORT_STRING);
 
         $package->setRequires($requires);
-        $package->setType($composerPackage->getType());
+
+        if (($type = $composerPackage->getType()) !== null) {
+            $package->setType($type);
+        }
 
         if (($url = $composerPackage->getSourceUrl()) !== null) {
             $package->setUrl($url);

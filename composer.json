@@ -7,7 +7,9 @@
         "composer-plugin",
         "viserio",
         "discovery",
-        "automatic"
+        "automatic",
+        "configurators",
+        "skeleton"
     ],
     "homepage": "http://github.com/narrowspark/automatic",
     "license": "MIT",
@@ -22,6 +24,7 @@
     "require": {
         "php": "^7.2",
         "ext-mbstring": "*",
+        "ext-json": "*",
         "ext-tokenizer": "*",
         "composer-plugin-api": "^1.0"
     },
@@ -29,7 +32,7 @@
         "composer/composer": "^1.6.0 || ^1.7.0",
         "mockery/mockery": "^1.0.0",
         "narrowspark/coding-standard": "^1.1.0",
-        "narrowspark/testing-helper": "^6.0.0",
+        "narrowspark/testing-helper": "^7.0.0",
         "phpunit/phpunit": "^7.2.0",
         "symfony/phpunit-bridge": "^4.0.8"
     },
@@ -68,6 +71,8 @@
         "cs": "php-cs-fixer fix",
         "phpstan": "phpstan analyse -c phpstan.neon -l 7 src --memory-limit=-1",
         "test": "phpunit",
+        "test-common": "phpunit --testsuite=\"Narrowspark Automatic Common Test Suite\"",
+        "test-automatic": "phpunit --testsuite=\"Narrowspark Automatic Test Suite\"",
         "changelog":  "changelog-generator generate --config=\".changelog\" --file --prepend"
     },
     "support": {

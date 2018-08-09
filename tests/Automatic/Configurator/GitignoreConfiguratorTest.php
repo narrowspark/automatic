@@ -67,48 +67,28 @@ final class GitignoreConfiguratorTest extends TestCase
 
     public function testConfigureAndUnconfigure(): void
     {
-        $package = new Package(
-            'FooBundle',
-            \sys_get_temp_dir(),
-            [
-                'version'    => '1',
-                'url'        => 'example.local',
-                'type'       => 'library',
-                'operation'  => 'i',
-                'gitignore'  => [
-                    '.env',
-                    '/%PUBLIC_DIR%/css/',
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig('Foo/Bundle', [
+            '.env',
+            '/%PUBLIC_DIR%/css/',
+        ]);
 
         $gitignoreContents1 = <<<'EOF'
-###> FooBundle ###
+###> Foo/Bundle ###
 .env
 /public/css/
-###< FooBundle ###
+###< Foo/Bundle ###
 EOF;
 
-        $package2 = new Package(
-            'BarBundle',
-            \sys_get_temp_dir(),
-            [
-                'version'    => '1',
-                'url'        => 'example.local',
-                'type'       => 'library',
-                'operation'  => 'i',
-                'gitignore'  => [
-                    '/var/',
-                    '/vendor/',
-                ],
-            ]
-        );
+        $package2 = $this->arrangePackageWithConfig('Bar/Bundle', [
+            '/var/',
+            '/vendor/',
+        ]);
 
         $gitignoreContents2 = <<<'EOF'
-###> BarBundle ###
+###> Bar/Bundle ###
 /var/
 /vendor/
-###< BarBundle ###
+###< Bar/Bundle ###
 EOF;
 
         $this->configurator->configure($package);
@@ -135,46 +115,42 @@ EOF;
 
     public function testUnconfigureWithNotFoundPackage(): void
     {
-        $package = new Package(
-            'FooBundle',
-            \sys_get_temp_dir(),
-            [
-                'version'    => '1',
-                'url'        => 'example.local',
-                'type'       => 'library',
-                'operation'  => 'i',
-                'gitignore'  => [
-                    '.env',
-                    '/%PUBLIC_DIR%/css/',
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig('Foo/Bundle', [
+            '.env',
+            '/%PUBLIC_DIR%/css/',
+        ]);
 
         $this->configurator->configure($package);
 
-        $package = new Package(
-            'BarBundle',
-            \sys_get_temp_dir(),
-            [
-                'version'    => '1',
-                'url'        => 'example.local',
-                'type'       => 'library',
-                'operation'  => 'i',
-                'gitignore'  => [
-                    '/var/',
-                    '/vendor/',
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig('Bar/Bundle', [
+            '/var/',
+            '/vendor/',
+        ]);
 
         $this->configurator->unconfigure($package);
 
         $gitignoreContents1 = <<<'EOF'
-###> FooBundle ###
+###> Foo/Bundle ###
 .env
 /public/css/
-###< FooBundle ###
+###< Foo/Bundle ###
 EOF;
         static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
+    }
+
+    /**
+     * @param string $name
+     * @param array  $config
+     *
+     * @throws \Exception
+     *
+     * @return Package
+     */
+    private function arrangePackageWithConfig(string $name, array $config): Package
+    {
+        $package = new Package($name, '1.0.0');
+        $package->setConfig(['gitignore' => $config]);
+
+        return $package;
     }
 }

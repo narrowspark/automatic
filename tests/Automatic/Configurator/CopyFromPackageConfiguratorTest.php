@@ -16,9 +16,9 @@ use Symfony\Component\Filesystem\Filesystem;
 final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 {
     /**
-     * @var \Composer\Composer
+     * @var \Composer\Composer|\Mockery\MockInterface
      */
-    private $composer;
+    private $composerMock;
 
     /**
      * @var \Composer\IO\IOInterface|\Mockery\MockInterface
@@ -37,10 +37,10 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->composer = new Composer();
-        $this->ioMock   = $this->mock(IOInterface::class);
+        $this->composerMock = $this->mock(Composer::class);
+        $this->ioMock       = $this->mock(IOInterface::class);
 
-        $this->configurator = new CopyFromPackageConfigurator($this->composer, $this->ioMock, ['self-dir' => 'test']);
+        $this->configurator = new CopyFromPackageConfigurator($this->composerMock, $this->ioMock, ['self-dir' => 'test']);
     }
 
     public function testGetName(): void
@@ -52,19 +52,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     {
         $toFileName = 'copy_of_copy.txt';
 
-        $package = new Package(
-            'Fixtures',
-            __DIR__,
-            [
-                'version'          => '1',
-                'url'              => 'example.local',
-                'type'             => 'library',
-                'operation'        => 'i',
-                'copy'             => [
-                    'copy.txt' => $toFileName,
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig('copy.txt', $toFileName);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -82,23 +70,11 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         \unlink($filePath);
     }
 
-    public function testCopyADirWithFileFromPackage(): void
+    public function testCopyDirWithFileFromPackage(): void
     {
         $toAndFromFileName = '/css/style.css';
 
-        $package = new Package(
-            'Fixtures',
-            __DIR__,
-            [
-                'version'          => '1',
-                'url'              => 'example.local',
-                'type'             => 'library',
-                'operation'        => 'i',
-                'copy'             => [
-                    $toAndFromFileName => $toAndFromFileName,
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig($toAndFromFileName, $toAndFromFileName);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -122,28 +98,15 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     public function testTryCopyAFileThatIsNotFoundFromPackage(): void
     {
         $toFileName = 'notfound.txt';
-        $dir        = \str_replace('\\', '/', __DIR__);
 
-        $package = new Package(
-            'Fixtures',
-            $dir,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'copy'      => [
-                    $toFileName => $toFileName,
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig($toFileName, $toFileName);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
             ->with(['    Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . $dir . '/Fixtures/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
+            ->with(['    <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . __DIR__ . '/Stub/stub/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -156,19 +119,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     {
         $toFileName = 'copy_of_copy.txt';
 
-        $package = new Package(
-            'Fixtures',
-            __DIR__,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'copy'      => [
-                    'copy.txt' => $toFileName,
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig('copy.txt', $toFileName);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -193,19 +144,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     {
         $toAndFromFileName = '/css/style.css';
 
-        $package = new Package(
-            'Fixtures',
-            __DIR__,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'copy'      => [
-                    $toAndFromFileName => $toAndFromFileName,
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig($toAndFromFileName, $toAndFromFileName);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -236,19 +175,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     {
         $toAndFromFileName = '/css/style.css';
 
-        $package = new Package(
-            'Fixtures',
-            __DIR__,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'copy'      => [
-                    $toAndFromFileName => $toAndFromFileName,
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig($toAndFromFileName, $toAndFromFileName);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -289,19 +216,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     {
         $toFileName = 'copy_of_copy.txt';
 
-        $package = new Package(
-            'Fixtures',
-            __DIR__,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'copy'      => [
-                    'copy.txt' => '%SELF_DIR%/' . $toFileName,
-                ],
-            ]
-        );
+        $package = $this->arrangePackageWithConfig('copy.txt', '%SELF_DIR%/' . $toFileName);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -330,7 +245,28 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $this->allowMockingNonExistentMethods(true);
     }
 
-    private function setPrivate($obj, $attribute)
+    /**
+     * @param string $from
+     * @param string $to
+     *
+     * @throws \Exception
+     *
+     * @return Package
+     */
+    private function arrangePackageWithConfig(string $from, string $to): Package
+    {
+        $this->composerMock->shouldReceive('getConfig->get')
+            ->once()
+            ->with('vendor-dir')
+            ->andReturn(__DIR__);
+
+        $package = new Package('Stub/stub', '1.0.0');
+        $package->setConfig(['copy' => [$from => $to]]);
+
+        return $package;
+    }
+
+    private function setPrivate($obj, $attribute): callable
     {
         $setter = function ($value) use ($attribute): void {
             $this->{$attribute} = $value;

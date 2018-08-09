@@ -14,82 +14,131 @@ final class Package implements PackageContract
     private $name;
 
     /**
-     * The package version.
+     * The pretty package name.
      *
      * @var string
      */
-    private $version;
+    private $prettyName;
+
+    /**
+     * The name of the parent package.
+     *
+     * @var null|string
+     */
+    private $parentName;
+
+    /**
+     * The package version.
+     *
+     * @var null|string
+     */
+    private $prettyVersion;
 
     /**
      * The package type.
      *
-     * @var string
+     * @var null|string
      */
     private $type;
 
     /**
      * The package url.
      *
-     * @var string
+     * @var null|string
      */
     private $url;
 
     /**
      * The package operation.
      *
-     * @var string
+     * @var null|string
      */
     private $operation;
 
     /**
-     * The package config from automatic.
+     * The package requires.
      *
      * @var array
      */
-    private $options;
+    private $requires = [];
 
     /**
-     * The configurator config from automatic.
+     * The automatic package config.
      *
      * @var array
      */
-    private $configuratorOptions;
+    private $configs = [];
 
     /**
-     * Path to the composer vendor dir.
+     * Check if this package is a dev require.
+     *
+     * @var bool
+     */
+    private $isDev = false;
+
+    /**
+     * Timestamp of the object creation.
      *
      * @var string
      */
-    private $vendorPath;
+    private $created;
 
     /**
      * Create a new Package instance.
      *
-     * @param string $name
-     * @param string $vendorDirPath
-     * @param array  $options
+     * @param string      $name
+     * @param null|string $prettyVersion
+     *
+     * @throws \Exception
      */
-    public function __construct(string $name, string $vendorDirPath, array $options)
+    public function __construct(string $name, ?string $prettyVersion)
     {
-        $this->name       = $name;
-        $this->vendorPath = $vendorDirPath;
-        $this->version    = $options['version'];
-        $this->url        = $options['url'] ?? '';
-        $this->operation  = $options['operation'];
-        $this->type       = $options['type'];
-        $this->options    = $options;
+        $this->prettyName    = $name;
+        $this->name          = \mb_strtolower($name);
+        $this->prettyVersion = $prettyVersion;
+        $this->created       = (new \DateTimeImmutable())->format(\DateTime::RFC3339);
+    }
 
-        unset(
-            $options['version'],
-            $options['type'],
-            $options['operation'],
-            $options['url'],
-            $options['extra-dependency-of'],
-            $options['selected-question-packages'],
-            $options['require']
-        );
+    /**
+     * Create a automatic package from the lock data.
+     *
+     * @param string $name
+     * @param array  $packageData
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public static function createFromLock(string $name, array $packageData): PackageContract
+    {
+        $keyToFunctionMappers = [
+            'parent'          => 'setParentName',
+            'is-dev'          => 'setIsDev',
+            'url'             => 'setUrl',
+            'operation'       => 'setOperation',
+            'type'            => 'setType',
+            'requires'        => 'setRequires',
+            'automatic-extra' => 'setConfig',
+            'created'         => 'setTime',
+        ];
 
-        $this->configuratorOptions = $options;
+        $package = new static($name, $packageData['version']);
+
+        foreach ($packageData as $key => $date) {
+            if ($date !== null && isset($keyToFunctionMappers[$key])) {
+                $package->{$keyToFunctionMappers[$key]}($date);
+            }
+        }
+
+        return $package;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setName(string $name): PackageContract
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     /**
@@ -103,15 +152,51 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function getVersion(): string
+    public function getPrettyName(): string
     {
-        return $this->version;
+        return $this->prettyName;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getUrl(): string
+    public function getPrettyVersion(): ?string
+    {
+        return $this->prettyVersion;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setIsDev(bool $bool = true): PackageContract
+    {
+        $this->isDev = $bool;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isDev(): bool
+    {
+        return $this->isDev;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setUrl(string $url): PackageContract
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUrl(): ?string
     {
         return $this->url;
     }
@@ -119,7 +204,17 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function getOperation(): string
+    public function setOperation(string $operation): PackageContract
+    {
+        $this->operation = $operation;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOperation(): ?string
     {
         return $this->operation;
     }
@@ -127,7 +222,17 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function getType(): string
+    public function setType(string $type): PackageContract
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getType(): ?string
     {
         return $this->type;
     }
@@ -135,37 +240,29 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function getPackagePath(): string
+    public function setParentName(string $name): PackageContract
     {
-        return \str_replace('\\', '/', $this->vendorPath . '/' . $this->name . '/');
+        $this->parentName = $name;
+
+        return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function hasConfiguratorKey(string $key): bool
+    public function getParentName(): ?string
     {
-        return \array_key_exists($key, $this->configuratorOptions);
+        return $this->parentName;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getConfiguratorOptions(string $key): array
+    public function setRequires(array $requires): PackageContract
     {
-        if ($this->hasConfiguratorKey($key)) {
-            return (array) $this->configuratorOptions[$key];
-        }
+        $this->requires = $requires;
 
-        return [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isExtraDependency(): bool
-    {
-        return isset($this->options['extra-dependency-of']);
+        return $this;
     }
 
     /**
@@ -173,22 +270,78 @@ final class Package implements PackageContract
      */
     public function getRequires(): array
     {
-        return $this->options['require'] ?? [];
+        return $this->requires;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getOption(string $key)
+    public function setConfig(array $configs): PackageContract
     {
-        return $this->options[$key] ?? null;
+        $this->configs = $configs;
+
+        return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): array
+    public function hasConfig(string $key): bool
     {
-        return $this->options;
+        return \array_key_exists($key, $this->configs);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfig(string $key)
+    {
+        return $this->configs[$key] ?? null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfigs(): array
+    {
+        return $this->configs;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setTime(string $time): PackageContract
+    {
+        $this->created = $time;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTime(): string
+    {
+        return $this->created;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray(): array
+    {
+        return
+            [
+                'pretty-name'                        => $this->prettyName,
+                'version'                            => $this->prettyVersion,
+                'parent'                             => $this->parentName,
+                'is-dev'                             => $this->isDev,
+                'url'                                => $this->url,
+                'operation'                          => $this->operation,
+                'type'                               => $this->type,
+                'requires'                           => $this->requires,
+                'automatic-extra'                    => $this->configs,
+                'created'                            => $this->created,
+            ];
     }
 }

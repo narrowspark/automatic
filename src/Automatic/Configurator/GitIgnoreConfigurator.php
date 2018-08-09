@@ -24,18 +24,18 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
 
         $gitignore = getcwd() . '/.gitignore';
 
-        if ($this->isFileMarked($package->getName(), $gitignore)) {
+        if ($this->isFileMarked($package->getPrettyName(), $gitignore)) {
             return;
         }
 
         $data = '';
 
-        foreach ($package->getConfiguratorOptions('gitignore') as $value) {
+        foreach ((array) $package->getConfig(self::getName()) as $value) {
             $value = self::expandTargetDir($this->options, $value);
             $data .= "${value}\n";
         }
 
-        \file_put_contents($gitignore, "\n" . \ltrim($this->markData($package->getName(), $data), "\r\n"), \FILE_APPEND);
+        \file_put_contents($gitignore, "\n" . \ltrim($this->markData($package->getPrettyName(), $data), "\r\n"), \FILE_APPEND);
     }
 
     /**
@@ -45,14 +45,14 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     {
         $file = getcwd() . '/.gitignore';
 
-        // @codeCoverageIgnoreStart
+        /** @codeCoverageIgnoreStart */
         if (! \file_exists($file)) {
             return;
         }
         /** @codeCoverageIgnoreEnd */
         $count    = 0;
         $contents = \preg_replace(
-            \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getName(), $package->getName(), "\n"),
+            \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getPrettyName(), $package->getPrettyName(), "\n"),
             "\n",
             (string) \file_get_contents($file),
             -1,

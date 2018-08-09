@@ -1,18 +1,18 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Fixtures\Finder\Nested;
+namespace Narrowspark\Automatic\Test\Fixture\Finder;
 
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 
-class DummyClassNested implements ConfiguratorContract
+class DummyClassTwo implements ConfiguratorContract
 {
     /**
      * {@inheritdoc}
      */
     public static function getName(): string
     {
-        return 'nested';
+        return 'two';
     }
 
     /**

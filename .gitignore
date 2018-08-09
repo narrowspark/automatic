@@ -2,9 +2,11 @@
 # Ignoring those within your global gitignore will make it so
 # they will never get commited within any project you have.
 
-.php_cs.cache
-
 composer.phar
+composer.lock
+
+.php_cs.cache
+.phpunit.result.cache
 
 /build/logs
 /vendor

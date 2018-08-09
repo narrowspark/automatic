@@ -74,33 +74,26 @@ final class EnvConfiguratorTest extends MockeryTestCase
 
     public function testConfigure(): void
     {
-        $package = new Package(
-            'TEST PACKAGE',
-            __DIR__,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'env'       => [
-                    'APP_ENV'         => 'test bar',
-                    'APP_DEBUG'       => '0',
-                    'APP_PARAGRAPH'   => "foo\n\"bar\"\\t",
-                    'DATABASE_URL'    => 'mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7',
-                    'MAILER_URL'      => 'null://localhost',
-                    'MAILER_USER'     => 'narrow',
-                    '#1'              => 'Comment 1',
-                    '#2'              => 'Comment 3',
-                    '#TRUSTED_SECRET' => 's3cretf0rt3st"<>',
-                    'APP_SECRET'      => 's3cretf0rt3st"<>',
-                ],
-            ]
-        );
+        $package = new Package('fixtures/test', '1.0.0');
+        $package->setConfig([
+            'env' => [
+                'APP_ENV'         => 'test bar',
+                'APP_DEBUG'       => '0',
+                'APP_PARAGRAPH'   => "foo\n\"bar\"\\t",
+                'DATABASE_URL'    => 'mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7',
+                'MAILER_URL'      => 'null://localhost',
+                'MAILER_USER'     => 'narrow',
+                '#1'              => 'Comment 1',
+                '#2'              => 'Comment 3',
+                '#TRUSTED_SECRET' => 's3cretf0rt3st"<>',
+                'APP_SECRET'      => 's3cretf0rt3st"<>',
+            ],
+        ]);
 
         $this->configurator->configure($package);
 
         $envContents = <<<'EOF'
-###> TEST PACKAGE ###
+###> fixtures/test ###
 APP_ENV="test bar"
 APP_DEBUG=0
 APP_PARAGRAPH="foo\n\"bar\"\\t"
@@ -111,7 +104,7 @@ MAILER_USER=narrow
 # Comment 3
 #TRUSTED_SECRET="s3cretf0rt3st\"<>"
 APP_SECRET="s3cretf0rt3st\"<>"
-###< TEST PACKAGE ###
+###< fixtures/test ###
 
 EOF;
 
@@ -133,45 +126,27 @@ EOF;
             'APP_SECRET'      => 's3cretf0rt3st',
         ];
 
-        $package = new Package(
-            'env2',
-            __DIR__,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'env'       => $envConfig,
-            ]
-        );
+        $package = new Package('fixtures/env2', '1.0.0');
+        $package->setConfig(['env' => $envConfig]);
 
         $this->configurator->configure($package);
 
         $envContents = <<<'EOF'
-###> env2 ###
+###> fixtures/env2 ###
 APP_ENV=test
 APP_DEBUG=0
 # Comment 1
 # Comment 3
 #TRUSTED_SECRET=s3cretf0rt3st
 APP_SECRET=s3cretf0rt3st
-###< env2 ###
+###< fixtures/env2 ###
 
 EOF;
         static::assertStringEqualsFile($this->envDistPath, $envContents);
         static::assertStringEqualsFile($this->envPath, $envContents);
 
-        $package = new Package(
-            'env2',
-            __DIR__,
-            [
-                'version'   => '1',
-                'url'       => 'example.local',
-                'type'      => 'library',
-                'operation' => 'i',
-                'env'       => $envConfig,
-            ]
-        );
+        $package = new Package('fixtures/env2', '1.1.0');
+        $package->setConfig(['env' => $envConfig]);
 
         $this->configurator->unconfigure($package);
 

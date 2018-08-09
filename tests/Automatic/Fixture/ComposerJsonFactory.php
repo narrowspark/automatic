@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Fixtures;
+namespace Narrowspark\Automatic\Test\Fixture;
 
 class ComposerJsonFactory
 {
@@ -68,6 +68,7 @@ class ComposerJsonFactory
     {
         $composerJsonContent = [
             'name'        => $name,
+            'pretty-name' => $name . '/' . $name,
             'type'        => 'automatic-configurator',
             'description' => 'plugin',
             'authors'     => [
@@ -93,6 +94,7 @@ class ComposerJsonFactory
     {
         $composerJsonContent = [
             'name'        => $name,
+            'pretty-name' => $name . '/' . $name,
             'type'        => 'automatic-configurator',
             'description' => 'plugin',
             'authors'     => [

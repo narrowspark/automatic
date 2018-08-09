@@ -6,7 +6,6 @@ use Composer\Composer;
 use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Installer as BaseInstaller;
-use Composer\Installer\InstallationManager as BaseInstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
@@ -18,7 +17,6 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
-use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -100,6 +98,13 @@ abstract class AbstractInstallationManager
     protected $stability;
 
     /**
+     * A backup of the original composer.json content.
+     *
+     * @var string
+     */
+    protected $composerBackup;
+
+    /**
      * Create a new ExtraDependencyInstaller instance.
      *
      * @param \Composer\Composer                              $composer
@@ -108,10 +113,11 @@ abstract class AbstractInstallationManager
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input)
     {
-        $this->composer = $composer;
-        $this->io       = $io;
-        $this->input    = $input;
-        $this->jsonFile = new JsonFile(Factory::getComposerFile());
+        $this->composer       = $composer;
+        $this->io             = $io;
+        $this->input          = $input;
+        $this->jsonFile       = new JsonFile(Factory::getComposerFile());
+        $this->composerBackup = (string) \file_get_contents($this->jsonFile->getPath());
 
         $this->rootPackage = $this->composer->getPackage();
         $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
@@ -130,35 +136,9 @@ abstract class AbstractInstallationManager
     }
 
     /**
-     * Install extra dependencies.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param array                                          $dependencies
-     *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
-     * @throws \Exception
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package[]
-     */
-    abstract public function install(PackageContract $package, array $dependencies): array;
-
-    /**
-     * Uninstall extra dependencies.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param array                                          $dependencies
-     *
-     * @throws \Exception
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package[]
-     */
-    abstract public function uninstall(PackageContract $package, array $dependencies): array;
-
-    /**
-     * @codeCoverageIgnore
-     *
      * Get configured installer instance.
+     *
+     * @codeCoverageIgnore
      *
      * @return \Composer\Installer
      */
@@ -176,7 +156,7 @@ abstract class AbstractInstallationManager
      *
      * @return string
      */
-    protected function findVersion(string $name): string
+    protected function findBestVersionForPackage(string $name): string
     {
         // find the latest version allowed in this pool
         $package = $this->versionSelector->findBestCandidate($name, null, null, 'stable');
@@ -194,36 +174,20 @@ abstract class AbstractInstallationManager
     }
 
     /**
-     * Update the root composer.json require.
+     * Update the root package require and dev-require.
      *
-     * @param array $packages
+     * @param array $requires
+     * @param array $devRequires
      * @param int   $type
      *
      * @return \Composer\Package\RootPackageInterface
      */
-    protected function updateRootComposerJson(array $packages, int $type): RootPackageInterface
+    protected function updateRootComposerJson(array $requires, array $devRequires, int $type): RootPackageInterface
     {
         $this->io->writeError('Updating root package');
 
-        $requires = $this->rootPackage->getRequires();
-
-        if ($type === self::ADD) {
-            foreach ($packages as $packageName => $version) {
-                $requires[$packageName] = new Link(
-                    '__root__',
-                    $packageName,
-                    (new VersionParser())->parseConstraints($version),
-                    'requires',
-                    $version
-                );
-            }
-        } elseif ($type === self::REMOVE) {
-            foreach ($packages as $packageName => $version) {
-                unset($requires[$packageName]);
-            }
-        }
-
-        $this->rootPackage->setRequires($requires);
+        $this->updateRootPackageRequire($requires, $type);
+        $this->updateRootPackageDevRequire($devRequires, $type);
 
         return $this->rootPackage;
     }
@@ -231,32 +195,40 @@ abstract class AbstractInstallationManager
     /**
      * Manipulate root composer.json with the new packages and dump it.
      *
-     * @param array $packages
+     * @param array $requires
+     * @param array $devRequires
      * @param int   $type
      *
      * @throws \Exception happens in the JsonFile class
      *
      * @return void
      */
-    protected function updateComposerJson(array $packages, int $type): void
+    protected function updateComposerJson(array $requires, array $devRequires, int $type): void
     {
         $this->io->writeError('Updating composer.json');
 
         if ($type === self::ADD) {
             $jsonManipulator = new JsonManipulator(\file_get_contents($this->jsonFile->getPath()));
+            $sortPackages    = $this->composer->getConfig()->get('sort-packages') ?? false;
 
-            foreach ($packages as $name => $version) {
-                $sortPackages = $this->composer->getConfig()->get('sort-packages') ?? false;
-
+            foreach ($requires as $name => $version) {
                 $jsonManipulator->addLink('require', $name, $version, $sortPackages);
+            }
+
+            foreach ($devRequires as $name => $version) {
+                $jsonManipulator->addLink('require-dev', $name, $version, $sortPackages);
             }
 
             \file_put_contents($this->jsonFile->getPath(), $jsonManipulator->getContents());
         } elseif ($type === self::REMOVE) {
             $jsonFileContent = $this->jsonFile->read();
 
-            foreach ($packages as $packageName => $version) {
+            foreach ($requires as $packageName => $version) {
                 unset($jsonFileContent['require'][$packageName]);
+            }
+
+            foreach ($devRequires as $packageName => $version) {
+                unset($jsonFileContent['require-dev'][$packageName]);
             }
 
             $this->jsonFile->write($jsonFileContent);
@@ -286,27 +258,6 @@ abstract class AbstractInstallationManager
     }
 
     /**
-     * Adds a modified installation manager to composer.
-     *
-     * @param \Composer\Installer\InstallationManager $oldInstallManager
-     *
-     * @return void
-     */
-    protected function addAutomaticInstallationManagerToComposer(BaseInstallationManager $oldInstallManager): void
-    {
-        $reader     = $this->getGenericPropertyReader();
-        $installers = (array) $reader($oldInstallManager, 'installers');
-
-        $narrowsparkInstaller = new InstallationManager();
-
-        foreach ($installers as $installer) {
-            $narrowsparkInstaller->addInstaller($installer);
-        }
-
-        $this->composer->setInstallationManager($narrowsparkInstaller);
-    }
-
-    /**
      * Get merged root requires and dev-requires.
      *
      * @return \Composer\Package\Link[]
@@ -314,5 +265,73 @@ abstract class AbstractInstallationManager
     protected function getRootRequires(): array
     {
         return \array_merge($this->rootPackage->getRequires(), $this->rootPackage->getDevRequires());
+    }
+
+    /**
+     * Update the root required packages.
+     *
+     * @param array $packages
+     * @param int   $type
+     *
+     * @return void
+     */
+    protected function updateRootPackageRequire(array $packages, int $type): void
+    {
+        $requires = $this->manipulateRootPackage(
+            $packages,
+            $type,
+            $this->rootPackage->getRequires()
+        );
+
+        $this->rootPackage->setRequires($requires);
+    }
+
+    /**
+     * Update the root dev-required packages.
+     *
+     * @param array $packages
+     * @param int   $type
+     *
+     * @return void
+     */
+    protected function updateRootPackageDevRequire(array $packages, int $type): void
+    {
+        $devRequires = $this->manipulateRootPackage(
+            $packages,
+            $type,
+            $this->rootPackage->getDevRequires()
+        );
+
+        $this->rootPackage->setDevRequires($devRequires);
+    }
+
+    /**
+     * Manipulates the given requires with the new added packages.
+     *
+     * @param array $packages
+     * @param int   $type
+     * @param array $requires
+     *
+     * @return array
+     */
+    protected function manipulateRootPackage(array $packages, int $type, array $requires): array
+    {
+        if ($type === self::ADD) {
+            foreach ($packages as $packageName => $version) {
+                $requires[$packageName] = new Link(
+                    '__root__',
+                    $packageName,
+                    (new VersionParser())->parseConstraints($version),
+                    'relates to',
+                    $version
+                );
+            }
+        } elseif ($type === self::REMOVE) {
+            foreach ($packages as $packageName => $version) {
+                unset($requires[$packageName]);
+            }
+        }
+
+        return $requires;
     }
 }

@@ -40,18 +40,22 @@ final class Installer
 
         $optimize      = self::getOption($input, 'optimize-autoloader')    || $config->get('optimize-autoloader');
         $authoritative = self::getOption($input, 'classmap-authoritative') || $config->get('classmap-authoritative');
+        $apcu          = self::getOption($input, 'apcu-autoloader')        || $config->get('apcu-autoloader');
 
         $installer
             ->disablePlugins()
-            ->setDryRun(self::getOption($input, 'dry-run'))
-            ->setVerbose(self::getOption($input, 'verbose'))
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
+            ->setDryRun(self::getOption($input, 'dry-run'))
+            ->setVerbose(self::getOption($input, 'verbose'))
             ->setDevMode(! self::getOption($input, 'no-dev'))
-            ->setRunScripts(false)
             ->setSkipSuggest(self::getOption($input, 'no-suggest'))
+            ->setDumpAutoloader(! self::getOption($input, 'no-autoloader'))
+            ->setRunScripts(! self::getOption($input, 'no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
+            ->setApcuAutoloader($apcu)
+            ->setIgnorePlatformRequirements(self::getOption($input, 'ignore-platform-reqs'))
             ->setUpdate(true);
 
         return $installer;

@@ -4,9 +4,9 @@ namespace Narrowspark\Automatic\Configurator;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Common\Util;
 
 final class ComposerScriptsConfigurator extends AbstractConfigurator
 {
@@ -31,7 +31,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         parent::__construct($composer, $io, $options);
 
-        [$json, $manipulator] = Automatic::getComposerJsonFileAndManipulator();
+        [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
         $this->json        = $json;
         $this->manipulator = $manipulator;
@@ -52,7 +52,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         $autoScripts = $this->getComposerContentAndAutoScripts();
 
-        $autoScripts = \array_merge($autoScripts, $package->getConfiguratorOptions('composer-scripts'));
+        $autoScripts = \array_merge($autoScripts, (array) $package->getConfig(self::getName()));
 
         $this->manipulateAndWrite($autoScripts);
     }
@@ -64,7 +64,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         $autoScripts = $this->getComposerContentAndAutoScripts();
 
-        foreach (\array_keys($package->getConfiguratorOptions('composer-scripts')) as $cmd) {
+        foreach (\array_keys((array) $package->getConfig(self::getName())) as $cmd) {
             unset($autoScripts[$cmd]);
         }
 

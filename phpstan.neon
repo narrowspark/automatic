@@ -15,7 +15,6 @@ parameters:
 
     ignoreErrors:
         # QuestionInstallationManager
-        - '#Call to an undefined method Composer\\Installer\\InstallationManager::getOperations#'
         - '#\$package of method Composer\\Package\\Version\\VersionSelector\:\:findRecommendedRequireVersion\(\) expects Composer\\Package\\PackageInterface, Composer\\Package\\PackageInterface\|true given#'
         # ScriptExecutor
         - '#Call to static method cerebroBinary\(\) on an unknown class Viserio\\Component\\Console\\Application#'

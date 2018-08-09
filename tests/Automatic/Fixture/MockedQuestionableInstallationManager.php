@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Fixtures;
+namespace Narrowspark\Automatic\Test\Fixture;
 
 use Composer\Installer as BaseInstaller;
 use Composer\Json\JsonFile;
 use Composer\Package\Version\VersionSelector;
-use Narrowspark\Automatic\Installer\QuestionInstallationManager;
+use Narrowspark\Automatic\Installer\QuestionableInstallationManager;
 
-class MockedQuestionInstallationManager extends QuestionInstallationManager
+class MockedQuestionableInstallationManager extends QuestionableInstallationManager
 {
     private $installer;
 

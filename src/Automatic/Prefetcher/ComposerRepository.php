@@ -34,8 +34,8 @@ class ComposerRepository extends BaseComposerRepository
         while ($data) {
             $this->providerFiles = [];
 
-            foreach ($data as $data) {
-                $this->loadProviderListings($data);
+            foreach ($data as $d) {
+                $this->loadProviderListings($d);
             }
 
             $loadingFiles        = $this->providerFiles;

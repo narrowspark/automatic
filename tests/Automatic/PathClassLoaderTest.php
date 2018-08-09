@@ -3,11 +3,11 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
 use Narrowspark\Automatic\PathClassLoader;
-use Narrowspark\Automatic\Test\Fixtures\Finder\AbstractClass;
-use Narrowspark\Automatic\Test\Fixtures\Finder\DummyClass;
-use Narrowspark\Automatic\Test\Fixtures\Finder\DummyClassTwo;
-use Narrowspark\Automatic\Test\Fixtures\Finder\FooTrait;
-use Narrowspark\Automatic\Test\Fixtures\Finder\Nested\DummyClassNested;
+use Narrowspark\Automatic\Test\Fixture\Finder\AbstractClass;
+use Narrowspark\Automatic\Test\Fixture\Finder\DummyClass;
+use Narrowspark\Automatic\Test\Fixture\Finder\DummyClassTwo;
+use Narrowspark\Automatic\Test\Fixture\Finder\FooTrait;
+use Narrowspark\Automatic\Test\Fixture\Finder\Nested\DummyClassNested;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -34,18 +34,18 @@ final class PathClassLoaderTest extends TestCase
 
     public function testItFindsAllClassesInDirectoryWithGivenNamespace(): void
     {
-        $this->loader->find(__DIR__ . '/Fixtures/Finder');
+        $this->loader->find(__DIR__ . '/Fixture/Finder');
 
-        static::assertContains(DummyClass::class, $this->loader->getClasses());
-        static::assertContains(DummyClassTwo::class, $this->loader->getClasses());
-        static::assertContains(DummyClassNested::class, $this->loader->getClasses());
-        static::assertContains(FooTrait::class, $this->loader->getTraits());
-        static::assertContains(AbstractClass::class, $this->loader->getAbstractClasses());
+        static::assertArrayHasKey(DummyClass::class, $this->loader->getClasses());
+        static::assertArrayHasKey(DummyClassTwo::class, $this->loader->getClasses());
+        static::assertArrayHasKey(DummyClassNested::class, $this->loader->getClasses());
+        static::assertArrayHasKey(FooTrait::class, $this->loader->getTraits());
+        static::assertArrayHasKey(AbstractClass::class, $this->loader->getAbstractClasses());
     }
 
     public function testWithEmptyFolder(): void
     {
-        $dir      = __DIR__ . '/Fixtures/empty';
+        $dir      = __DIR__ . '/Fixture/empty';
         $filePath = $dir . '/empty.php';
 
         \mkdir($dir);

@@ -19,7 +19,7 @@ final class LockTest extends TestCase
     {
         parent::tearDownAfterClass();
 
-        \unlink(__DIR__ . '/test.lock');
+        @\unlink(__DIR__ . '/test.lock');
     }
 
     /**
@@ -73,5 +73,13 @@ final class LockTest extends TestCase
         static::assertSame($execptedArray, $this->lock->get('test'));
         static::assertSame($execptedHash, $this->lock->get('hash'));
         static::assertNull($this->lock->get('test2'));
+    }
+
+    public function testClear(): void
+    {
+        $this->lock->add('test', ['version' => '1']);
+        $this->lock->clear();
+
+        static::assertFalse($this->lock->has('test'));
     }
 }

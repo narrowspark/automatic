@@ -9,19 +9,27 @@ final class QuestionFactory
     /**
      * Returns the questions for package install.
      *
-     * @param string $url
+     * @param string      $name
+     * @param null|string $url
      *
      * @return string
      */
-    public static function getPackageQuestion(string $url): string
+    public static function getPackageQuestion(string $name, ?string $url): string
     {
-        return \sprintf('    Review the package from %s.
-    Do you want to execute this package?
+        $message = <<<'PHP'
+    Do you want to execute this package [%s]?
     [<comment>y</comment>] Yes
     [<comment>n</comment>] No
     [<comment>a</comment>] Yes for all packages, only for the current installation session
     [<comment>p</comment>] Yes permanently, never ask again for this project
-    (defaults to <comment>n</comment>): ', $url);
+    (defaults to <comment>n</comment>): 
+PHP;
+
+        if ($url === null) {
+            return \sprintf($message, $name);
+        }
+
+        return \sprintf("    Review the package from %s.\n" . $message, $url, $name);
     }
 
     /**

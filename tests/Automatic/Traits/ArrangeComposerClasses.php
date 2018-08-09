@@ -5,7 +5,6 @@ namespace Narrowspark\Automatic\Test\Traits;
 use Composer\Composer;
 use Composer\Config;
 use Composer\IO\IOInterface;
-use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Lock;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -39,7 +38,7 @@ trait ArrangeComposerClasses
     /**
      * @var \Mockery\MockInterface|\Narrowspark\Automatic\Lock
      */
-    private $lockMock;
+    protected $lockMock;
 
     protected function arrangeComposerClasses(): void
     {
@@ -56,17 +55,5 @@ trait ArrangeComposerClasses
             ->andReturn(false);
         $this->ioMock->shouldReceive('writeError')
             ->with('Downloading https://packagist.org/packages.json', true, IOInterface::DEBUG);
-
-        if (! \method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
-            $this->ioMock->shouldReceive('writeError')
-                ->once()
-                ->with('Writing ' . $this->composerCachePath . '/repo/https---packagist.org/packages.json into cache', true, IOInterface::DEBUG);
-        } else {
-            $this->ioMock->shouldReceive('writeError')
-                ->with('Downloading https://repo.packagist.org/packages.json', true, IOInterface::DEBUG);
-            $this->ioMock->shouldReceive('writeError')
-                ->once()
-                ->with('Writing ' . $this->composerCachePath . '/repo/https---repo.packagist.org/packages.json into cache', true, IOInterface::DEBUG);
-        }
     }
 }

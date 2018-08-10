@@ -22,14 +22,15 @@ final class PhpScriptExtender implements ScriptExtenderContract
     public function expand(string $cmd): string
     {
         $phpFinder = new PhpExecutableFinder();
-
+        // @codeCoverageIgnoreStart
         if (! $php = $phpFinder->find(false)) {
             throw new RuntimeException('The PHP executable could not be found, add it to your PATH and try again.');
         }
+        // @codeCoverageIgnoreEnd
 
         $arguments = $phpFinder->findArguments();
 
-        if ($env = (string) \getenv('COMPOSER_ORIGINAL_INIS')) {
+        if (($env = \getenv('COMPOSER_ORIGINAL_INIS')) !== false) {
             $paths = \explode(\PATH_SEPARATOR, $env);
             $ini   = \array_shift($paths);
         } else {

@@ -679,8 +679,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * @codeCoverageIgnore
-     *
      * Check if automatic can be activated.
      *
      * @param \Composer\IO\IOInterface $io
@@ -689,6 +687,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function getErrorMessage(IOInterface $io): ?string
     {
+        // @codeCoverageIgnoreStart
         if (! \extension_loaded('openssl')) {
             return 'You must enable the openssl extension in your "php.ini" file.';
         }
@@ -698,6 +697,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         if ($matches !== null && \version_compare($matches[0], '1.6.0') === -1) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
         }
+        // @codeCoverageIgnoreEnd
 
         // skip on no interactive mode
         if (! $io->isInteractive()) {

@@ -26,12 +26,11 @@ final class PhpScriptExtender implements ScriptExtenderContract
         if (! $php = $phpFinder->find(false)) {
             throw new RuntimeException('The PHP executable could not be found, add it to your PATH and try again.');
         }
-        // @codeCoverageIgnoreEnd
-
+        /** @codeCoverageIgnoreEnd */
         $arguments = $phpFinder->findArguments();
 
         if (($env = \getenv('COMPOSER_ORIGINAL_INIS')) !== false) {
-            $paths = \explode(\PATH_SEPARATOR, $env);
+            $paths = \explode(\PATH_SEPARATOR, (string) $env);
             $ini   = \array_shift($paths);
         } else {
             $ini = \php_ini_loaded_file();

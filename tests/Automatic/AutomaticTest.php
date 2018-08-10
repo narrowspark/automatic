@@ -242,7 +242,18 @@ final class AutomaticTest extends MockeryTestCase
         $composer->setConfig(new Config());
         $composer->setRepositoryManager($repositoryMock);
 
-        $automatic->activate($composer, new NullIO());
+        $automatic->activate(
+            $composer,
+            new class() extends NullIO {
+                /**
+                 * {@inheritdoc}
+                 */
+                public function isInteractive(): bool
+                {
+                    return true;
+                }
+            }
+        );
         $automatic->record($packageEventMock);
     }
 

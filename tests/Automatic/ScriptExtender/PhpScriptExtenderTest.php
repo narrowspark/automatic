@@ -5,7 +5,10 @@ namespace Narrowspark\Automatic\Test;
 use Narrowspark\Automatic\ScriptExtender\PhpScriptExtender;
 use PHPUnit\Framework\TestCase;
 
-class PhpScriptExtenderTest extends TestCase
+/**
+ * @internal
+ */
+final class PhpScriptExtenderTest extends TestCase
 {
     /**
      * @var \Narrowspark\Automatic\ScriptExtender\PhpScriptExtender
@@ -36,12 +39,11 @@ class PhpScriptExtenderTest extends TestCase
         static::assertContains('echo "hallo";', $output);
     }
 
-
     public function testExpandWithIniLoad(): void
     {
         // clear the composer env
-        putenv('COMPOSER_ORIGINAL_INIS=');
-        putenv('COMPOSER_ORIGINAL_INIS');
+        \putenv('COMPOSER_ORIGINAL_INIS=');
+        \putenv('COMPOSER_ORIGINAL_INIS');
 
         $output = $this->extender->expand('echo "hallo";');
 

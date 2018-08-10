@@ -138,10 +138,10 @@ final class Container
             },
             ScriptExecutor::class => static function (Container $container) {
                 return new ScriptExecutor(
-                    $container->get(Container::class),
+                    $container->get(Composer::class),
                     $container->get(IOInterface::class),
-                    $container->get('composer-extra'),
-                    new ProcessExecutor()
+                    new ProcessExecutor(),
+                    $container->get('composer-extra')
                 );
             },
             PackageConfigurator::class => static function (Container $container) {

@@ -126,7 +126,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
-        if (($errorMessage = $this->getErrorMessage()) !== null) {
+        if (($errorMessage = $this->getErrorMessage($io)) !== null) {
             self::$activated = false;
 
             $io->writeError('<warning>Narrowspark Automatic has been disabled. ' . $errorMessage . '</warning>');
@@ -537,7 +537,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }
 
         // when Composer runs with --no-dev, ignore uninstall operations on packages from require-dev
-        if (! $event->isDevMode() && $operation instanceof UninstallOperation) {
+        if ($operation instanceof UninstallOperation && ! $event->isDevMode()) {
             foreach ($event->getComposer()->getLocker()->getLockData()['packages-dev'] as $devPackage) {
                 if ($package->getName() === $devPackage['name']) {
                     return false;
@@ -545,7 +545,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        return ($operation instanceof InstallOperation && ! $this->container->get(Lock::class)->has($package->getName())) || $operation instanceof UninstallOperation;
+        $isInstallOperation = $operation instanceof InstallOperation && ! $this->container->get(Lock::class)->has($package->getName());
+
+        return $isInstallOperation || $operation instanceof UninstallOperation;
     }
 
     /**
@@ -681,9 +683,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      *
      * Check if automatic can be activated.
      *
+     * @param \Composer\IO\IOInterface $io
+     *
      * @return null|string
      */
-    private function getErrorMessage(): ?string
+    private function getErrorMessage(IOInterface $io): ?string
     {
         if (! \extension_loaded('openssl')) {
             return 'You must enable the openssl extension in your "php.ini" file.';
@@ -693,6 +697,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         if ($matches !== null && \version_compare($matches[0], '1.6.0') === -1) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
+        }
+
+        // skip on no interactive mode
+        if (! $io->isInteractive()) {
+            return 'Composer running in a no interaction mode.';
         }
 
         return null;

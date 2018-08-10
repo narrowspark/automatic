@@ -69,7 +69,7 @@ abstract class AbstractConfigurator
         }
 
         if (! \is_subclass_of($configurator, ConfiguratorContract::class)) {
-            throw new InvalidArgumentException(\sprintf('Configurator class [%s] must extend the class [%s].', $configurator, ConfiguratorContract::class));
+            throw new InvalidArgumentException(\sprintf('The class [%s] must implement the interface [\\%s].', $configurator, ConfiguratorContract::class));
         }
 
         $this->configurators[$name] = $configurator;

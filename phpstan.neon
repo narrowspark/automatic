@@ -16,8 +16,7 @@ parameters:
     ignoreErrors:
         # QuestionInstallationManager
         - '#\$package of method Composer\\Package\\Version\\VersionSelector\:\:findRecommendedRequireVersion\(\) expects Composer\\Package\\PackageInterface, Composer\\Package\\PackageInterface\|true given#'
-        # ScriptExecutor
-        - '#Call to static method cerebroBinary\(\) on an unknown class Viserio\\Component\\Console\\Application#'
+        # ScriptExtender
         - '#Parameter \#1 \$stream of class Symfony\\Component\\Console\\Output\\StreamOutput constructor expects resource, resource\|false given#'
 
         - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'

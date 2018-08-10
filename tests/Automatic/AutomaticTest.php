@@ -76,7 +76,6 @@ final class AutomaticTest extends MockeryTestCase
     public function testActivate(): void
     {
         $this->arrangeAutomaticConfig();
-
         $this->arrangePackagist();
 
         $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
@@ -119,6 +118,10 @@ final class AutomaticTest extends MockeryTestCase
                 ->once()
                 ->with('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);
         }
+
+        $this->ioMock->shouldReceive('isInteractive')
+            ->once()
+            ->andReturn(true);
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
 

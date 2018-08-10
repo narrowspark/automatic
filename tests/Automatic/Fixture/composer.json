@@ -1,0 +1,15 @@
+{
+    "name": "narrowspark/automatic",
+    "type": "composer-plugin",
+    "description": "Composer plugin for automatically project configuration and creation.",
+    "license": "MIT",
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist"
+    },
+    "scripts": {
+        "auto-scripts": {
+            "php -v": "script"
+        }
+    }
+}

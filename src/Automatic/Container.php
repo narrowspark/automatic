@@ -9,19 +9,22 @@ use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
+use Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
+use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * @internal
  */
-final class Container
+final class Container implements ContainerContract
 {
     use GetGenericPropertyReaderTrait;
 
@@ -137,12 +140,17 @@ final class Container
                 );
             },
             ScriptExecutor::class => static function (Container $container) {
-                return new ScriptExecutor(
+                $scriptExecutor = new ScriptExecutor(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
                     new ProcessExecutor(),
                     $container->get('composer-extra')
                 );
+
+                $scriptExecutor->addExtender(ScriptExtender::class);
+                $scriptExecutor->addExtender(PhpScriptExtender::class);
+
+                return $scriptExecutor;
             },
             PackageConfigurator::class => static function (Container $container) {
                 return new PackageConfigurator(
@@ -164,11 +172,7 @@ final class Container
     }
 
     /**
-     * Finds an entry of the container by its identifier and returns it.
-     *
-     * @param string $id identifier of the entry to look for
-     *
-     * @return mixed
+     * {@inheritdoc}
      */
     public function get(string $id)
     {
@@ -184,9 +188,7 @@ final class Container
     }
 
     /**
-     * Returns all container entries.
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getAll(): array
     {

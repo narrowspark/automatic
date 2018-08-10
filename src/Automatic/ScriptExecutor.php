@@ -6,8 +6,6 @@ use Composer\Composer;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
-use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
-use Narrowspark\Automatic\Common\Contract\ScriptExtender as ScriptExtenderContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
@@ -15,6 +13,8 @@ use Symfony\Component\Console\Output\StreamOutput;
 final class ScriptExecutor
 {
     use ExpandTargetDirTrait;
+
+    public const TYPE = 'script-extenders';
 
     /**
      * A Composer instance.
@@ -76,14 +76,7 @@ final class ScriptExecutor
      */
     public function addExtender(string $extender): void
     {
-        if (! \is_subclass_of($extender, ScriptExtenderContract::class)) {
-            throw new InvalidArgumentException(\sprintf('The class [%s] must implement the interface [%s].', $extender, ScriptExtenderContract::class));
-        }
         /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $extender */
-        if (isset($this->extenders[$extender::getType()])) {
-            throw new InvalidArgumentException(\sprintf('Script executor extender with the name [%s] already exists.', $extender::getType()));
-        }
-
         $this->extenders[$extender::getType()] = new $extender($this->composer, $this->io, $this->options);
     }
 
@@ -102,6 +95,7 @@ final class ScriptExecutor
         }
 
         $parsedCmd = self::expandTargetDir($this->options, $cmd);
+        $isVerbose = $this->io->isVerbose();
 
         $cmdOutput = new StreamOutput(
             \fopen('php://temp', 'rwb'),
@@ -109,25 +103,26 @@ final class ScriptExecutor
             $this->io->isDecorated()
         );
 
+        /** @codeCoverageIgnoreStart */
         $outputHandler = function ($type, $buffer) use ($cmdOutput): void {
             $cmdOutput->write($buffer, false, OutputInterface::OUTPUT_RAW);
         };
+        // @codeCoverageIgnoreEnd
 
-        $this->io->writeError(\sprintf('Executing script %s', $parsedCmd), $this->io->isVerbose());
+        $this->io->writeError(\sprintf('Executing script [%s]', $parsedCmd), $isVerbose);
 
         $exitCode = $this->executor->execute($this->extenders[$type]->expand($parsedCmd), $outputHandler);
 
-        $code = $exitCode === 0 ? ' <info>[OK]</info>' : ' <error>[KO]</error>';
-
-        if ($this->io->isVerbose()) {
-            $this->io->writeError(\sprintf('Executed script %s %s', $cmd, $code));
-        } else {
-            $this->io->writeError($code);
+        if ($isVerbose) {
+            $this->io->writeError(\sprintf('Executed script [%s] %s', $cmd, $exitCode === 0 ? '<info>[OK]</info>' : '<error>[KO]</error>'));
         }
 
         if ($exitCode !== 0) {
-            $this->io->writeError(' <error>[KO]</error>');
-            $this->io->writeError(\sprintf('<error>Script %s returned with error code %s</error>', $cmd, $exitCode));
+            if (! $isVerbose) {
+                $this->io->writeError('<error>[KO]</error>');
+            }
+
+            $this->io->writeError(\sprintf('<error>Script [%s] returned with error code %s</error>', $cmd, $exitCode));
 
             \fseek($cmdOutput->getStream(), 0);
 
@@ -136,6 +131,10 @@ final class ScriptExecutor
             }
 
             throw new ScriptExecutionException($cmd, $exitCode);
+        }
+
+        if (! $isVerbose) {
+            $this->io->writeError('<info>[OK]</info>');
         }
     }
 }

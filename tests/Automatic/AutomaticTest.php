@@ -17,12 +17,18 @@ use Composer\Package\Package;
 use Composer\Plugin\CommandEvent;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
+use Composer\Script\Event;
+use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
+use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Lock;
+use Narrowspark\Automatic\ScriptExecutor;
+use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
+use Narrowspark\Automatic\Test\Fixture\AutomaticFixture;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -132,6 +138,17 @@ final class AutomaticTest extends MockeryTestCase
             ],
             $this->automatic->getContainer()->get(Lock::class)->get('@readme')
         );
+    }
+
+    public function testActivateWithNoInteractive(): void
+    {
+        $this->ioMock->shouldReceive('isInteractive')
+            ->andReturn(false);
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('<warning>Narrowspark Automatic has been disabled. Composer running in a no interaction mode.</warning>');
+
+        $this->automatic->activate($this->composerMock, $this->ioMock);
     }
 
     public function testOnCommand(): void
@@ -254,7 +271,140 @@ final class AutomaticTest extends MockeryTestCase
                 }
             }
         );
+
         $automatic->record($packageEventMock);
+    }
+
+    public function testRecordWithInstallRecordAndAutomaticPackage(): void
+    {
+        $automatic = new Automatic();
+
+        $packageEventMock = $this->mock(PackageEvent::class);
+
+        $packageMock = $this->mock(Package::class);
+        $packageMock->shouldReceive('getName')
+            ->andReturn('test');
+        $packageMock->shouldReceive('getType')
+            ->andReturn('library');
+
+        $installerOperationMock = $this->mock(InstallOperation::class);
+        $installerOperationMock->shouldReceive('getPackage')
+            ->andReturn($packageMock);
+
+        $packageEventMock->shouldReceive('getOperation')
+            ->twice()
+            ->andReturn($installerOperationMock);
+        $packageEventMock->shouldReceive('isDevMode')
+            ->andReturn(false);
+
+        $automaticPackageEventMock = $this->mock(PackageEvent::class);
+
+        $automaticPackageMock = $this->mock(Package::class);
+        $automaticPackageMock->shouldReceive('getName')
+            ->twice()
+            ->andReturn(Automatic::PACKAGE_NAME);
+        $automaticPackageMock->shouldReceive('getType')
+            ->andReturn('composer-plugin');
+
+        $automaticInstallerOperationMock = $this->mock(InstallOperation::class);
+        $automaticInstallerOperationMock->shouldReceive('getPackage')
+            ->andReturn($automaticPackageMock);
+
+        $automaticPackageEventMock->shouldReceive('getOperation')
+            ->twice()
+            ->andReturn($automaticInstallerOperationMock);
+        $automaticPackageEventMock->shouldReceive('isDevMode')
+            ->andReturn(false);
+
+        $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
+
+        $repositoryMock = $this->mock(RepositoryManager::class);
+        $repositoryMock->shouldReceive('getLocalRepository')
+            ->andReturn($localRepositoryMock);
+
+        $composer = new Composer();
+        $composer->setInstallationManager(new InstallationManager());
+        $composer->setConfig(new Config());
+        $composer->setRepositoryManager($repositoryMock);
+
+        $automatic->activate(
+            $composer,
+            new class() extends NullIO {
+                /**
+                 * {@inheritdoc}
+                 */
+                public function isInteractive(): bool
+                {
+                    return true;
+                }
+            }
+        );
+
+        $automatic->record($packageEventMock);
+        $automatic->record($automaticPackageEventMock);
+    }
+
+    public function testExecuteAutoScripts(): void
+    {
+        \putenv('COMPOSER=' . __DIR__ . '/Fixture/composer.json');
+
+        $automatic = new AutomaticFixture();
+
+        $eventMock = $this->mock(Event::class);
+        $eventMock->shouldReceive('stopPropagation')
+            ->once();
+
+        $processExecutorMock = $this->mock(ProcessExecutor::class);
+        $processExecutorMock->shouldReceive('execute')
+            ->andReturn(0);
+
+        $scriptExecutor = new ScriptExecutor(new Composer(), new NullIO(), $processExecutorMock, []);
+
+        $lockMock = $this->mock(Lock::class);
+        $lockMock->shouldReceive('get')
+            ->once()
+            ->with(ScriptExecutor::TYPE)
+            ->andReturn([ScriptExtender::class]);
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with(ScriptExecutor::class)
+            ->andReturn($scriptExecutor);
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with(Lock::class)
+            ->andReturn($lockMock);
+
+        $automatic->setContainer($containerMock);
+
+        $automatic->executeAutoScripts($eventMock);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+    }
+
+    public function testExecuteAutoScriptsWithoutScripts(): void
+    {
+        $automatic = new AutomaticFixture();
+
+        $eventMock = $this->mock(Event::class);
+        $eventMock->shouldReceive('stopPropagation')
+            ->once();
+
+        $this->ioMock->shouldReceive('write')
+            ->once()
+            ->with('No auto-scripts section was found under scripts.', true, IOInterface::VERBOSE);
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with(IOInterface::class)
+            ->andReturn($this->ioMock);
+
+        $automatic->setContainer($containerMock);
+
+        $automatic->executeAutoScripts($eventMock);
     }
 
     /**

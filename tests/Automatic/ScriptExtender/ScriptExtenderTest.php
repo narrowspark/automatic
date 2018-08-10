@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
+use Composer\Composer;
+use Composer\IO\NullIO;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +24,7 @@ final class ScriptExtenderTest extends TestCase
     {
         parent::setUp();
 
-        $this->extender = new ScriptExtender();
+        $this->extender = new ScriptExtender(new Composer(), new NullIO(), []);
     }
 
     public function testGetType(): void

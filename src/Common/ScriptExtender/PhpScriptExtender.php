@@ -1,12 +1,11 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\ScriptExtender;
+namespace Narrowspark\Automatic\Common\ScriptExtender;
 
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
-use Narrowspark\Automatic\Common\Contract\ScriptExtender as ScriptExtenderContract;
 use Symfony\Component\Process\PhpExecutableFinder;
 
-final class PhpScriptExtender implements ScriptExtenderContract
+class PhpScriptExtender extends AbstractScriptExtender
 {
     /**
      * {@inheritdoc}

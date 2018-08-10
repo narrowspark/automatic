@@ -2,9 +2,9 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\ScriptExtender;
 
-use Narrowspark\Automatic\Common\Contract\ScriptExtender as ScriptExtenderContract;
+use Narrowspark\Automatic\Common\ScriptExtender\AbstractScriptExtender;
 
-final class ScriptExtender implements ScriptExtenderContract
+final class ScriptExtender extends AbstractScriptExtender
 {
     /**
      * {@inheritdoc}

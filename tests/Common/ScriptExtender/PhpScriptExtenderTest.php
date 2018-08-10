@@ -1,8 +1,10 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test;
+namespace Narrowspark\Automatic\Common\Test;
 
-use Narrowspark\Automatic\ScriptExtender\PhpScriptExtender;
+use Composer\Composer;
+use Composer\IO\NullIO;
+use Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -11,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 final class PhpScriptExtenderTest extends TestCase
 {
     /**
-     * @var \Narrowspark\Automatic\ScriptExtender\PhpScriptExtender
+     * @var \Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender
      */
     private $extender;
 
@@ -22,7 +24,7 @@ final class PhpScriptExtenderTest extends TestCase
     {
         parent::setUp();
 
-        $this->extender = new PhpScriptExtender();
+        $this->extender = new PhpScriptExtender(new Composer(), new NullIO(), []);
     }
 
     public function testGetType(): void

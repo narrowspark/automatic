@@ -29,10 +29,13 @@ use Composer\Repository\RepositoryManager;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
+use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Common\Contract\ScriptExtender as ScriptExtenderContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Contract\Container as ContractContainer;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
@@ -63,18 +66,18 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     public const PACKAGE_NAME = 'narrowspark/automatic';
 
     /**
+     * A Container instance.
+     *
+     * @var \Narrowspark\Automatic\Contract\Container
+     */
+    protected $container;
+
+    /**
      * Check if the the plugin is activated.
      *
      * @var bool
      */
     private static $activated = true;
-
-    /**
-     * A Container instance.
-     *
-     * @var \Narrowspark\Automatic\Container
-     */
-    private $container;
 
     /**
      * Check if composer.lock should be updated.
@@ -183,9 +186,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     /**
      * Get the Container instance.
      *
-     * @return \Narrowspark\Automatic\Container
+     * @return \Narrowspark\Automatic\Contract\Container
      */
-    public function getContainer(): Container
+    public function getContainer(): ContractContainer
     {
         return $this->container;
     }
@@ -275,6 +278,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         \file_put_contents($json->getPath(), $manipulator->getContents());
 
         $this->updateComposerLock();
+
+        $io->write($this->postInstallOutput);
     }
 
     /**
@@ -404,11 +409,20 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $json         = new JsonFile(Factory::getComposerFile());
         $jsonContents = $json->read();
 
-        foreach ($jsonContents['scripts']['auto-scripts'] as $cmd => $type) {
-            $this->container->get(ScriptExecutor::class)->execute($type, $cmd);
-        }
+        if (isset($jsonContents['scripts']['auto-scripts'])) {
+            /** @var \Narrowspark\Automatic\ScriptExecutor $scriptExecutor */
+            $scriptExecutor = $this->container->get(ScriptExecutor::class);
 
-        $this->container->get(IOInterface::class)->write($this->postInstallOutput);
+            foreach ((array) $this->container->get(Lock::class)->get(ScriptExecutor::TYPE) as $extender) {
+                $scriptExecutor->addExtender($extender);
+            }
+
+            foreach ($jsonContents['scripts']['auto-scripts'] as $cmd => $type) {
+                $scriptExecutor->execute($type, $cmd);
+            }
+        } else {
+            $this->container->get(IOInterface::class)->write('No auto-scripts section was found under scripts.', true, IOInterface::VERBOSE);
+        }
     }
 
     /**
@@ -643,7 +657,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function doInstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
+        /** @var \Narrowspark\Automatic\Lock $lock */
+        $lock = $this->container->get(Lock::class);
+
+        $this->writeScriptExtenderToLock($package, $lock);
+
         $this->container->get(Configurator::class)->configure($package);
+
         $packageConfigurator->configure($package);
 
         if ($package->hasConfig('post-install-output')) {
@@ -654,7 +674,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $this->postInstallOutput[] = '';
         }
 
-        $this->writePackageOperationToLock($package);
+        $lock->add(
+            self::LOCK_PACKAGES,
+            \array_merge(
+                (array) $lock->get(self::LOCK_PACKAGES),
+                [$package->getName() => $package->toArray()]
+            )
+        );
     }
 
     /**
@@ -670,12 +696,61 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     private function doUninstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
         $this->container->get(Configurator::class)->unconfigure($package);
+
         $packageConfigurator->unconfigure($package);
 
         /** @var \Narrowspark\Automatic\Lock $lock */
         $lock = $this->container->get(Lock::class);
 
+        if ($package->hasConfig(ScriptExecutor::TYPE)) {
+            $extenders = (array) $lock->get(ScriptExecutor::TYPE);
+
+            /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $extender */
+            foreach ((array) $package->getConfig(ScriptExecutor::TYPE) as $extender) {
+                $type = $extender::getType();
+
+                if (isset($extenders[$type])) {
+                    unset($extenders[$type]);
+                }
+            }
+
+            $lock->add(ScriptExecutor::TYPE, $extenders);
+        }
+
         $lock->remove($package->getName());
+    }
+
+    /**
+     * Looks if the package has a extra section for script extender.
+     *
+     * @param \Narrowspark\Automatic\Common\Contract\Package $package
+     * @param \Narrowspark\Automatic\Lock                    $lock
+     *
+     * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
+     *
+     * @return void
+     */
+    private function writeScriptExtenderToLock(PackageContract $package, Lock $lock): void
+    {
+        if ($package->hasConfig(ScriptExecutor::TYPE)) {
+            $extenders = (array) $lock->get(ScriptExecutor::TYPE);
+
+            foreach ((array) $package->getConfig(ScriptExecutor::TYPE) as $extender) {
+                /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $extender */
+                if (isset($extenders[$extender::getType()])) {
+                    throw new InvalidArgumentException(\sprintf('Script executor extender with the name [%s] already exists.', $extender::getType()));
+                }
+
+                if (! \is_subclass_of($extender, ScriptExtenderContract::class)) {
+                    throw new InvalidArgumentException(\sprintf('The class [%s] must implement the interface [%s].', $extender, ScriptExtenderContract::class));
+                }
+
+                /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $extender */
+                $extenders[$extender::getType()] = $extender;
+            }
+
+            $lock->add(ScriptExecutor::TYPE, $extenders);
+        }
     }
 
     /**
@@ -705,26 +780,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }
 
         return null;
-    }
-
-    /**
-     * Write the package operation to the lock file.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
-     * @return void
-     */
-    private function writePackageOperationToLock(PackageContract $package): void
-    {
-        $lock = $this->container->get(Lock::class);
-
-        $lock->add(
-            self::LOCK_PACKAGES,
-            \array_merge(
-                (array) $lock->get(self::LOCK_PACKAGES),
-                [$package->getName() => $package->toArray()]
-            )
-        );
     }
 }
 

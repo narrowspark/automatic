@@ -34,7 +34,7 @@ final class PhpScriptExtenderTest extends TestCase
     {
         $output = $this->extender->expand('echo "hallo";');
 
-        static::assertContains('/php', $output);
+        static::assertContains('php', $output);
         static::assertContains('/php.ini', $output);
         static::assertContains('echo "hallo";', $output);
     }
@@ -47,7 +47,7 @@ final class PhpScriptExtenderTest extends TestCase
 
         $output = $this->extender->expand('echo "hallo";');
 
-        static::assertContains('/php', $output);
+        static::assertContains('php', $output);
         static::assertContains('/php.ini', $output);
         static::assertContains('echo "hallo";', $output);
     }

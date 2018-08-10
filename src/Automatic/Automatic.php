@@ -109,6 +109,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         return [
             'auto-scripts'                             => 'executeAutoScripts',
+            'post-install-out'                         => 'postInstallOut',
             InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', \PHP_INT_MAX]],
             InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
@@ -192,6 +193,20 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     {
         return $this->container;
     }
+    
+    /**
+     * Execute on composer post-install-out event.
+     *
+     * @param \Composer\Script\Event $event
+     *
+     * @return void
+     */
+    public function postInstallOut(Event $event): void 
+    {
+        $event->stopPropagation();
+
+        $this->container->get(IOInterface::class)->write($this->postInstallOutput);
+    }
 
     /**
      * Records composer operations.
@@ -242,22 +257,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function onPostCreateProject(Event $event): void
     {
-        /** @var \Narrowspark\Automatic\Lock $lock */
-        $lock = $this->container->get(Lock::class);
-        /** @var \Composer\IO\IOInterface $io */
-        $io = $this->container->get(IOInterface::class);
-
-        $lock->read();
-
-        if ($lock->has(SkeletonInstaller::LOCK_KEY) && $io->isInteractive()) {
-            /** @var \Narrowspark\Automatic\SkeletonGenerator $skeletonGenerator */
-            $skeletonGenerator = $this->container->get(SkeletonGenerator::class);
-
-            $skeletonGenerator->run();
-
-            $skeletonGenerator->remove();
-        }
-
         /** @var \Composer\Json\JsonFile $json */
         /** @var \Composer\Json\JsonManipulator $manipulator */
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
@@ -275,11 +274,36 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
+        $manipulator->addSubNode('scripts', 'post-install-out', 'Added by automatic');
+
+        $scripts = [
+            '@auto-scripts',
+            '@post-install-out',
+        ];
+
+        $manipulator->addSubNode('scripts', 'post-install-cmd', $scripts);
+        $manipulator->addSubNode('scripts', 'post-update-cmd', $scripts);
+        $manipulator->addSubNode('scripts', 'auto-scripts', new \stdClass());
+
         \file_put_contents($json->getPath(), $manipulator->getContents());
 
         $this->updateComposerLock();
 
-        $io->write($this->postInstallOutput);
+        /** @var \Narrowspark\Automatic\Lock $lock */
+        $lock = $this->container->get(Lock::class);
+        /** @var \Composer\IO\IOInterface $io */
+        $io = $this->container->get(IOInterface::class);
+
+        $lock->read();
+
+        if ($lock->has(SkeletonInstaller::LOCK_KEY) && $io->isInteractive()) {
+            /** @var \Narrowspark\Automatic\SkeletonGenerator $skeletonGenerator */
+            $skeletonGenerator = $this->container->get(SkeletonGenerator::class);
+
+            $skeletonGenerator->run();
+
+            $skeletonGenerator->remove();
+        }
     }
 
     /**

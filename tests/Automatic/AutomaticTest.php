@@ -76,7 +76,7 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        static::assertCount(13, Automatic::getSubscribedEvents());
+        static::assertCount(14, Automatic::getSubscribedEvents());
     }
 
     public function testActivate(): void

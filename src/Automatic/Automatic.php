@@ -193,7 +193,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     {
         return $this->container;
     }
-    
+
     /**
      * Execute on composer post-install-out event.
      *
@@ -201,7 +201,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      *
      * @return void
      */
-    public function postInstallOut(Event $event): void 
+    public function postInstallOut(Event $event): void
     {
         $event->stopPropagation();
 

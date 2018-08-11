@@ -21,13 +21,6 @@ final class ConfiguratorInstaller extends AbstractInstaller
      */
     protected function removeFromLock(PackageInterface $package, string $key): void
     {
-        $lockKeyArray = (array) $this->lock->get($key);
-        $name         = $package->getName();
-
-        if (isset($lockKeyArray[$name])) {
-            unset($lockKeyArray[$name]);
-        }
-
-        $this->lock->add($key, $lockKeyArray);
+        $this->lock->remove($key, $package->getName());
     }
 }

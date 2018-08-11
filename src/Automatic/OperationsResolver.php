@@ -4,11 +4,12 @@ namespace Narrowspark\Automatic;
 
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\Json\JsonFile;
 use Composer\Package\PackageInterface;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Package;
 
-class OperationsResolver
+final class OperationsResolver
 {
     /**
      * A lock instance.
@@ -18,33 +19,22 @@ class OperationsResolver
     private $lock;
 
     /**
-     * Name of the parent package.
+     * The composer vendor dir.
      *
      * @var string
      */
-    private $parentName;
+    private $vendorDir;
 
     /**
      * Create a new OperationsResolver instance.
      *
      * @param \Narrowspark\Automatic\Lock $lock
+     * @param string                      $vendorDir
      */
-    public function __construct(Lock $lock)
+    public function __construct(Lock $lock, string $vendorDir)
     {
-        $this->lock = $lock;
-    }
-
-    /**
-     * Set the parent package name.
-     * This is used for the "extraDependencyOf" key.
-     *
-     * @param string $name
-     *
-     * @return void
-     */
-    public function setParentPackageName(string $name): void
-    {
-        $this->parentName = $name;
+        $this->lock      = $lock;
+        $this->vendorDir = $vendorDir;
     }
 
     /**
@@ -72,16 +62,17 @@ class OperationsResolver
                 $composerPackage = $operation->getPackage();
             }
 
-            if (! isset($composerPackage->getExtra()['automatic'])) {
+            $name          = $composerPackage->getName();
+            $automaticFile = $this->vendorDir . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . 'automatic.json';
+
+            if (! \file_exists($automaticFile) && ! isset($composerPackage->getExtra()['automatic'])) {
                 continue;
             }
 
-            $name = $composerPackage->getName();
-
-            if ($operation instanceof UninstallOperation && $this->lock->has($name)) {
-                $package = Package::createFromLock($name, (array) $this->lock->get($name));
+            if ($operation instanceof UninstallOperation && $this->lock->has(Automatic::LOCK_PACKAGES, $name)) {
+                $package = Package::createFromLock($name, (array) $this->lock->get(Automatic::LOCK_PACKAGES, $name));
             } else {
-                $package = $this->createAutomaticPackage($composerPackage);
+                $package = $this->createAutomaticPackage($composerPackage, $automaticFile);
             }
 
             $package->setOperation($o);
@@ -122,10 +113,11 @@ class OperationsResolver
      * Create a automatic package with the composer package data.
      *
      * @param \Composer\Package\PackageInterface $composerPackage
+     * @param string                             $automaticFile
      *
      * @return \Narrowspark\Automatic\Common\Contract\Package
      */
-    private function createAutomaticPackage(PackageInterface $composerPackage): PackageContract
+    private function createAutomaticPackage(PackageInterface $composerPackage, string $automaticFile): PackageContract
     {
         $package  = new Package($composerPackage->getName(), $this->getPackageVersion($composerPackage));
         $requires = [];
@@ -152,11 +144,11 @@ class OperationsResolver
             $package->setUrl($url);
         }
 
-        if ($this->parentName !== null) {
-            $package->setParentName($this->parentName);
+        if (\file_exists($automaticFile)) {
+            $package->setConfig(JsonFile::parseJson((string) \file_get_contents($automaticFile)));
+        } else {
+            $package->setConfig($composerPackage->getExtra()['automatic']);
         }
-
-        $package->setConfig($composerPackage->getExtra()['automatic']);
 
         return $package;
     }

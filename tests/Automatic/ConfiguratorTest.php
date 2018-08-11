@@ -97,7 +97,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
      */
     protected function arrangeCopyPackage(): Package
     {
-        $package = new Package('Fixture/stub', '1.0');
+        $package = new Package('Fixture/copy', '1.0');
         $package->setConfig([
             'copy' => [
                 'copy.txt' => $this->copyFileName,

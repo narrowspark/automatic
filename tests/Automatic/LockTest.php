@@ -39,6 +39,21 @@ final class LockTest extends TestCase
         static::assertTrue($this->lock->has('test'));
     }
 
+    public function testAddSubWithNotFoundMainKey(): void
+    {
+        $this->lock->addSub('test', 'providers', ['version' => '1']);
+
+        static::assertTrue($this->lock->has('test', 'providers'));
+    }
+
+    public function testAddSub(): void
+    {
+        $this->lock->add('test2', ['providers' => ['version' => 1]]);
+        $this->lock->addSub('test2', 'providers', ['test' => '1']);
+
+        static::assertTrue($this->lock->has('test2', 'providers'));
+    }
+
     public function testRemove(): void
     {
         $this->lock->add('testRemove', ['version' => '2']);
@@ -46,6 +61,25 @@ final class LockTest extends TestCase
         $this->lock->remove('testRemove');
 
         static::assertFalse($this->lock->has('testRemove'));
+    }
+
+    public function testRemoveWithMainKey(): void
+    {
+        $providers = [
+            'Viserio\\Component\\Console\\Provider\\ConsoleServiceProvider' => [
+                'global',
+            ],
+        ];
+
+        $this->lock->add('automatic', ['providers' => $providers]);
+        $this->lock->remove('automatic', 'providers');
+
+        static::assertFalse($this->lock->has('automatic', 'providers'));
+    }
+
+    public function testHasWithMainKey(): void
+    {
+        static::assertFalse($this->lock->has('automatic', 'providers'));
     }
 
     public function testWriteAndRead(): void
@@ -73,6 +107,19 @@ final class LockTest extends TestCase
         static::assertSame($execptedArray, $this->lock->get('test'));
         static::assertSame($execptedHash, $this->lock->get('hash'));
         static::assertNull($this->lock->get('test2'));
+    }
+
+    public function testGetWithMainKey(): void
+    {
+        $providers = [
+            'Viserio\\Component\\Console\\Provider\\ConsoleServiceProvider' => [
+                'global',
+            ],
+        ];
+
+        $this->lock->add('automatic', ['providers' => $providers]);
+
+        static::assertSame($providers, $this->lock->get('automatic', 'providers'));
     }
 
     public function testClear(): void

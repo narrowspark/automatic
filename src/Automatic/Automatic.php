@@ -21,7 +21,6 @@ use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
-use Composer\Package\Comparer\Comparer;
 use Composer\Package\Locker;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;

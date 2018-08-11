@@ -10,11 +10,13 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
+use Composer\Installer\InstallerEvent;
 use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\Package;
 use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\Event;
@@ -26,6 +28,8 @@ use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Lock;
+use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
+use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Narrowspark\Automatic\Test\Fixture\AutomaticFixture;
@@ -405,6 +409,85 @@ final class AutomaticTest extends MockeryTestCase
         $automatic->setContainer($containerMock);
 
         $automatic->executeAutoScripts($eventMock);
+    }
+
+    public function testPostInstallOut(): void
+    {
+        $automatic = new AutomaticFixture();
+
+        $eventMock = $this->mock(Event::class);
+        $eventMock->shouldReceive('stopPropagation')
+            ->once();
+
+        $this->ioMock->shouldReceive('write')
+            ->once()
+            ->with(['']);
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with(IOInterface::class)
+            ->andReturn($this->ioMock);
+
+        $automatic->setContainer($containerMock);
+
+        $automatic->postInstallOut($eventMock);
+    }
+
+    public function testPopulateFilesCacheDir(): void
+    {
+        $automatic = new AutomaticFixture();
+
+        $event = $this->mock(InstallerEvent::class);
+
+        $prefetcher = $this->mock(Prefetcher::class);
+        $prefetcher->shouldReceive('fetchAllFromOperations')
+            ->once()
+            ->with($event);
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with(Prefetcher::class)
+            ->andReturn($prefetcher);
+
+        $automatic->setContainer($containerMock);
+
+        $automatic->populateFilesCacheDir($event);
+    }
+
+    public function testOnFileDownload(): void
+    {
+        $automatic = new AutomaticFixture();
+
+        $remoteFilesystem = $this->mock(RemoteFilesystem::class);
+        $remoteFilesystem->shouldReceive('getOptions')
+            ->once()
+            ->andReturn([]);
+
+        $event = $this->mock(PreFileDownloadEvent::class);
+        $event->shouldReceive('getRemoteFilesystem')
+            ->twice()
+            ->andReturn($remoteFilesystem);
+
+        $downloader = $this->mock(ParallelDownloader::class);
+        $downloader->shouldReceive('setNextOptions')
+            ->once()
+            ->with([]);
+
+        $event->shouldReceive('setRemoteFilesystem')
+            ->once()
+            ->with(\Mockery::type(ParallelDownloader::class));
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with(ParallelDownloader::class)
+            ->andReturn($downloader);
+
+        $automatic->setContainer($containerMock);
+
+        $automatic->onFileDownload($event);
     }
 
     /**

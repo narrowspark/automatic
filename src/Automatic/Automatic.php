@@ -289,21 +289,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         $this->updateComposerLock();
 
-        /** @var \Narrowspark\Automatic\Lock $lock */
-        $lock = $this->container->get(Lock::class);
-        /** @var \Composer\IO\IOInterface $io */
-        $io = $this->container->get(IOInterface::class);
-
-        $lock->read();
-
-        if ($lock->has(SkeletonInstaller::LOCK_KEY) && $io->isInteractive()) {
-            /** @var \Narrowspark\Automatic\SkeletonGenerator $skeletonGenerator */
-            $skeletonGenerator = $this->container->get(SkeletonGenerator::class);
-
-            $skeletonGenerator->run();
-
-            $skeletonGenerator->remove();
-        }
+        $this->runSkeletonGenerator();
     }
 
     /**
@@ -550,6 +536,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function onFileDownload(PreFileDownloadEvent $event): void
     {
+        /** @var \Narrowspark\Automatic\Prefetcher\ParallelDownloader $rfs */
         $rfs = $this->container->get(ParallelDownloader::class);
 
         if ($event->getRemoteFilesystem() !== $rfs) {
@@ -775,6 +762,32 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
             $lock->add(ScriptExecutor::TYPE, $extenders);
         }
+    }
+
+    /**
+     * Run found skeleton generators.
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    private function runSkeletonGenerator(): void
+    {
+        /** @var \Narrowspark\Automatic\Lock $lock */
+        $lock = $this->container->get(Lock::class);
+
+        $lock->read();
+
+        if ($lock->has(SkeletonInstaller::LOCK_KEY) && $this->container->get(IOInterface::class)->isInteractive()) {
+            /** @var \Narrowspark\Automatic\SkeletonGenerator $skeletonGenerator */
+            $skeletonGenerator = $this->container->get(SkeletonGenerator::class);
+
+            $skeletonGenerator->run();
+
+            $skeletonGenerator->remove();
+        }
+
+        $lock->clear();
     }
 
     /**

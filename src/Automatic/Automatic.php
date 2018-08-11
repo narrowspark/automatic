@@ -5,20 +5,24 @@ namespace Narrowspark\Automatic;
 use Closure;
 use Composer\Composer;
 use Composer\Config;
+use Composer\Console\Application;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Factory;
+use Composer\Installer;
 use Composer\Installer\InstallerEvent;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
+use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
+use Composer\Package\Comparer\Comparer;
 use Composer\Package\Locker;
-use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
@@ -30,6 +34,7 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
+use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Contract\ScriptExtender as ScriptExtenderContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
@@ -44,6 +49,7 @@ use Narrowspark\Automatic\Prefetcher\TruncatedComposerRepository;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
+use Symfony\Component\Console\Input\ArgvInput;
 
 class Automatic implements PluginInterface, EventSubscriberInterface
 {
@@ -118,7 +124,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             PackageEvents::POST_PACKAGE_UPDATE         => 'record',
             PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
             PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
-            PluginEvents::COMMAND                      => 'onCommand',
             ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
             ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
             ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX]],
@@ -182,6 +187,54 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             'This file locks the automatic information of your project to a known state',
             'This file is @generated automatically',
         ]);
+
+        $backtrace = \debug_backtrace();
+
+        foreach ($backtrace as $trace) {
+            if (isset($trace['object']) && $trace['object'] instanceof Installer) {
+                /** @var \Composer\Installer $installer */
+                $installer = $trace['object'];
+                $installer->setSuggestedPackagesReporter(new SuggestedPackagesReporter(new NullIO()));
+
+                break;
+            }
+        }
+
+        foreach ($backtrace as $trace) {
+            if (! isset($trace['object']) || ! isset($trace['args'][0])) {
+                continue;
+            }
+
+            if (! $trace['object'] instanceof Application || ! $trace['args'][0] instanceof ArgvInput) {
+                continue;
+            }
+
+            /** @var \Symfony\Component\Console\Input\InputInterface $input */
+            $input = $trace['args'][0];
+            $app   = $trace['object'];
+
+            try {
+                /** @var null|string $command */
+                $command = $input->getFirstArgument();
+                $command = $command ? $app->find($command)->getName() : null;
+            } catch (\InvalidArgumentException $e) {
+                $command = null;
+            }
+
+            if ($command === 'create-project') {
+                if (\version_compare(self::getComposerVersion(), '1.7.0', '>=')) {
+                    $input->setOption('remove-vcs', true);
+                } else {
+                    $input->setInteractive(false);
+                }
+            } elseif ($command === 'suggests') {
+                $input->setOption('by-package', true);
+            }
+
+            if ($input->hasOption('no-suggest')) {
+                $input->setOption('no-suggest', true);
+            }
+        }
     }
 
     /**
@@ -227,24 +280,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             \array_unshift($this->operations, $operation);
         } else {
             $this->operations[] = $operation;
-        }
-    }
-
-    /**
-     * Execute on composer command event.
-     *
-     * @param \Composer\Plugin\CommandEvent $event
-     *
-     * @return void
-     */
-    public function onCommand(CommandEvent $event): void
-    {
-        if ($event->getInput()->hasOption('no-suggest')) {
-            $event->getInput()->setOption('no-suggest', true);
-        }
-
-        if ($event->getInput()->hasOption('remove-vcs')) {
-            $event->getInput()->setOption('remove-vcs', true);
         }
     }
 
@@ -338,7 +373,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
             foreach ($configuratorsClassmap[$packageName] as $path) {
-                includeFile(\str_replace('%vendor_path%', $this->container->get('vendor-dir'), $path));
+                include \str_replace('%vendor_path%', $this->container->get('vendor-dir'), $path);
             }
 
             /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */
@@ -393,7 +428,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 '',
                 '<info>Some files may have been created or updated to configure your new packages.</info>',
                 '<comment>The automatic.lock file has all information about the installed packages.</comment>',
-                'Please <comment>review</comment>, <comment>edit</comment> and <comment>commit</comment> them: these files are <comment>yours</comment>.'
+                'Please <comment>review</comment>, <comment>edit</comment> and <comment>commit</comment> them: these files are <comment>yours</comment>.',
+                "\nTo show the package suggests run <comment>composer suggests</comment>."
             );
         }
 
@@ -804,9 +840,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             return 'You must enable the openssl extension in your "php.ini" file.';
         }
 
-        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
-
-        if ($matches !== null && \version_compare($matches[0], '1.6.0') === -1) {
+        if (\version_compare(self::getComposerVersion(), '1.6.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd
@@ -818,16 +852,28 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         return null;
     }
-}
 
-/**
- * Scope isolated include.
- *
- * Prevents access to $this/self from included files.
- *
- * @param mixed $file
- */
-function includeFile($file)
-{
-    include $file;
+    /**
+     * Get the composer version.
+     *
+     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
+     *
+     * @return string
+     */
+    private static function getComposerVersion(): string
+    {
+        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        throw new RuntimeException('No composer version found.');
+    }
 }

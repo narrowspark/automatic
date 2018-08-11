@@ -15,7 +15,6 @@ use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\Package;
-use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
@@ -80,7 +79,7 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        static::assertCount(14, Automatic::getSubscribedEvents());
+        static::assertCount(13, Automatic::getSubscribedEvents());
     }
 
     public function testActivate(): void
@@ -153,27 +152,6 @@ final class AutomaticTest extends MockeryTestCase
             ->with('<warning>Narrowspark Automatic has been disabled. Composer running in a no interaction mode.</warning>');
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
-    }
-
-    public function testOnCommand(): void
-    {
-        $commandEventMock = $this->mock(CommandEvent::class);
-        $commandEventMock->shouldReceive('getInput->hasOption')
-            ->once()
-            ->with('no-suggest')
-            ->andReturn(true);
-        $commandEventMock->shouldReceive('getInput->setOption')
-            ->once()
-            ->with('no-suggest', true);
-        $commandEventMock->shouldReceive('getInput->hasOption')
-            ->once()
-            ->with('remove-vcs')
-            ->andReturn(true);
-        $commandEventMock->shouldReceive('getInput->setOption')
-            ->once()
-            ->with('remove-vcs', true);
-
-        $this->automatic->onCommand($commandEventMock);
     }
 
     public function testRecordWithUpdateRecord(): void

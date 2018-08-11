@@ -28,6 +28,7 @@ install:
     if [[ "$SETUP" = "high" ]]; then
       $COMPOSER_UP
     elif [[ "$SETUP" = "lowest" ]]; then
+      composer self-update 1.6.5
       $COMPOSER_UP --prefer-lowest --prefer-stable;
     else
       $COMPOSER_UP

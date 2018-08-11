@@ -34,6 +34,7 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
+use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Contract\ScriptExtender as ScriptExtenderContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
@@ -221,8 +222,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
 
             if ($command === 'create-project') {
-                // detect Composer >=1.7 (using the Composer::VERSION constant doesn't work with snapshot builds)
-                if (\class_exists(Comparer::class)) {
+                if (\version_compare(self::getComposerVersion(), '1.7.0', '>=')) {
                     $input->setOption('remove-vcs', true);
                 } else {
                     $input->setInteractive(false);
@@ -839,8 +839,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         if (! \extension_loaded('openssl')) {
             return 'You must enable the openssl extension in your "php.ini" file.';
         }
-        // detect Composer >=1.7 (using the Composer::VERSION constant doesn't work with snapshot builds)
-        if (! \class_exists(Comparer::class)) {
+
+        if (\version_compare(self::getComposerVersion(), '1.6.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd
@@ -851,5 +851,29 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }
 
         return null;
+    }
+
+    /**
+     * Get the composer version.
+     *
+     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
+     *
+     * @return string
+     */
+    private static function getComposerVersion(): string
+    {
+        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        throw new RuntimeException('No composer version found.');
     }
 }

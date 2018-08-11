@@ -123,7 +123,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             PackageEvents::POST_PACKAGE_UPDATE         => 'record',
             PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
             PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
-            PluginEvents::COMMAND                      => 'onCommand',
             ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
             ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
             ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX]],

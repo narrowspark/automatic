@@ -109,14 +109,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 
         $this->removeFromLock($package, static::LOCK_KEY);
 
-        $lockClassmap = (array) $this->lock->get(Automatic::LOCK_CLASSMAP);
-        $name         = $package->getName();
-
-        if (isset($lockClassmap[$name])) {
-            unset($lockClassmap[$name]);
-        }
-
-        $this->lock->add(Automatic::LOCK_CLASSMAP, $lockClassmap);
+        $this->lock->remove(Automatic::LOCK_CLASSMAP, $package->getName());
     }
 
     /**
@@ -166,13 +159,7 @@ abstract class AbstractInstaller extends LibraryInstaller
             return false;
         }
 
-        $this->lock->add(
-            $key,
-            \array_merge(
-                (array) $this->lock->get($key),
-                [$package->getName() => $classes]
-            )
-        );
+        $this->lock->addSub($key, $package->getName(), $classes);
 
         return true;
     }
@@ -200,12 +187,6 @@ abstract class AbstractInstaller extends LibraryInstaller
             return \str_replace($this->vendorDir, '%vendor_path%', $value);
         }, $this->loader->getAll());
 
-        $this->lock->add(
-            Automatic::LOCK_CLASSMAP,
-            \array_merge(
-                (array) $this->lock->get(Automatic::LOCK_CLASSMAP),
-                [$package->getName() => $classMap]
-            )
-        );
+        $this->lock->addSub(Automatic::LOCK_CLASSMAP, $package->getName(), $classMap);
     }
 }

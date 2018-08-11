@@ -106,7 +106,10 @@ final class Container implements ContainerContract
                 );
             },
             OperationsResolver::class => static function (Container $container) {
-                return new OperationsResolver($container->get(Lock::class));
+                return new OperationsResolver(
+                    $container->get(Lock::class),
+                    $container->get('vendor-dir')
+                );
             },
             InstallationManager::class => static function (Container $container) {
                 return new InstallationManager(

@@ -37,48 +37,95 @@ class Lock
     /**
      * Check if key exists in lock file.
      *
-     * @param string $name
+     * @param string      $mainKey
+     * @param null|string $name
      *
      * @return bool
      */
-    public function has(string $name): bool
+    public function has(string $mainKey, ?string $name = null): bool
     {
-        return \array_key_exists($name, $this->lock);
+        $mainCheck = \array_key_exists($mainKey, $this->lock);
+
+        if ($name === null) {
+            return $mainCheck;
+        }
+
+        if ($mainCheck === true && \is_array($this->lock[$mainKey])) {
+            return \array_key_exists($name, $this->lock[$mainKey]);
+        }
+
+        return false;
     }
 
     /**
      * Add a value to the lock file.
      *
+     * @param string            $mainKey
+     * @param null|array|string $data
+     *
+     * @return void
+     */
+    public function add(string $mainKey, $data): void
+    {
+        $this->lock[$mainKey] = $data;
+    }
+
+    /**
+     * Add sub value to the lock file.
+     *
+     * @param string            $mainKey
      * @param string            $name
      * @param null|array|string $data
      *
      * @return void
      */
-    public function add(string $name, $data): void
+    public function addSub(string $mainKey, string $name, $data): void
     {
-        $this->lock[$name] = $data;
+        if (! \array_key_exists($mainKey, $this->lock)) {
+            $this->lock[$mainKey] = [];
+        }
+
+        $this->lock[$mainKey][$name] = $data;
     }
 
     /**
      * Get package data found in the lock file.
      *
-     * @param string $name
+     * @param string      $mainKey
+     * @param null|string $name
      *
      * @return null|array|string
      */
-    public function get(string $name)
+    public function get(string $mainKey, ?string $name = null)
     {
-        return $this->lock[$name] ?? null;
+        if (\array_key_exists($mainKey, $this->lock)) {
+            if ($name === null) {
+                return $this->lock[$mainKey];
+            }
+
+            if (\is_array($this->lock[$mainKey]) && \array_key_exists($name, $this->lock[$mainKey])) {
+                return $this->lock[$mainKey][$name];
+            }
+        }
+
+        return null;
     }
 
     /**
      * Remove a package from lock file.
      *
-     * @param string $name
+     * @param string      $mainKey
+     * @param null|string $name
      */
-    public function remove(string $name): void
+    public function remove(string $mainKey, ?string $name = null): void
     {
-        unset($this->lock[$name]);
+        if ($name === null) {
+            unset($this->lock[$mainKey]);
+        }
+
+        if (\array_key_exists($mainKey, $this->lock)) {
+            unset($this->lock[$mainKey][$name]);
+        }
     }
 
     /**

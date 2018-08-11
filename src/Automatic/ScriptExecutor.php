@@ -5,33 +5,30 @@ namespace Narrowspark\Automatic;
 use Composer\Composer;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\IO\IOInterface;
-use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Util\ProcessExecutor;
-use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
-use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\Process\PhpExecutableFinder;
-use Viserio\Component\Console\Application;
 
-class ScriptExecutor
+final class ScriptExecutor
 {
     use ExpandTargetDirTrait;
+
+    public const TYPE = 'script-extenders';
 
     /**
      * A Composer instance.
      *
      * @var \Composer\Composer
      */
-    protected $composer;
+    private $composer;
 
     /**
      * A instance of a IOInterface.
      *
      * @var \Composer\IO\IOInterface
      */
-    protected $io;
+    private $io;
 
     /**
      * A ProcessExecutor instance.
@@ -48,19 +45,39 @@ class ScriptExecutor
     private $options;
 
     /**
-     * Create a new ScriptExecutor instance.
+     * A list of the registered extenders.
+     *
+     * @var \Narrowspark\Automatic\Common\Contract\ScriptExtender[]
+     */
+    private $extenders = [];
+
+    /**
+     * Create a new ScriptExtender instance.
      *
      * @param \Composer\Composer             $composer
      * @param \Composer\IO\IOInterface       $io
-     * @param array                          $options
      * @param \Composer\Util\ProcessExecutor $executor
+     * @param array                          $options
      */
-    public function __construct(Composer $composer, IOInterface $io, array $options, ProcessExecutor $executor)
+    public function __construct(Composer $composer, IOInterface $io, ProcessExecutor $executor, array $options)
     {
         $this->composer = $composer;
         $this->io       = $io;
-        $this->options  = $options;
         $this->executor = $executor;
+        $this->options  = $options;
+    }
+
+    /**
+     * Register a cmd extender.
+     *
+     * @param string $extender
+     *
+     * @return void
+     */
+    public function addExtender(string $extender): void
+    {
+        /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $extender */
+        $this->extenders[$extender::getType()] = new $extender($this->composer, $this->io, $this->options);
     }
 
     /**
@@ -73,12 +90,12 @@ class ScriptExecutor
      */
     public function execute(string $type, string $cmd): void
     {
-        $parsedCmd   = self::expandTargetDir($this->options, $cmd);
-        $expandedCmd = $this->expandCmd($type, $parsedCmd);
-
-        if ($expandedCmd === null) {
+        if (! isset($this->extenders[$type])) {
             return;
         }
+
+        $parsedCmd = self::expandTargetDir($this->options, $cmd);
+        $isVerbose = $this->io->isVerbose();
 
         $cmdOutput = new StreamOutput(
             \fopen('php://temp', 'rwb'),
@@ -86,25 +103,26 @@ class ScriptExecutor
             $this->io->isDecorated()
         );
 
+        /** @codeCoverageIgnoreStart */
         $outputHandler = function ($type, $buffer) use ($cmdOutput): void {
             $cmdOutput->write($buffer, false, OutputInterface::OUTPUT_RAW);
         };
+        // @codeCoverageIgnoreEnd
 
-        $this->io->writeError(\sprintf('Executing script %s', $parsedCmd), $this->io->isVerbose());
+        $this->io->writeError(\sprintf('Executing script [%s]', $parsedCmd), $isVerbose);
 
-        $exitCode = $this->executor->execute($expandedCmd, $outputHandler);
+        $exitCode = $this->executor->execute($this->extenders[$type]->expand($parsedCmd), $outputHandler);
 
-        $code = $exitCode === 0 ? ' <info>[OK]</info>' : ' <error>[KO]</error>';
-
-        if ($this->io->isVerbose()) {
-            $this->io->writeError(\sprintf('Executed script %s %s', $cmd, $code));
-        } else {
-            $this->io->writeError($code);
+        if ($isVerbose) {
+            $this->io->writeError(\sprintf('Executed script [%s] %s', $cmd, $exitCode === 0 ? '<info>[OK]</info>' : '<error>[KO]</error>'));
         }
 
         if ($exitCode !== 0) {
-            $this->io->writeError(' <error>[KO]</error>');
-            $this->io->writeError(\sprintf('<error>Script %s returned with error code %s</error>', $cmd, $exitCode));
+            if (! $isVerbose) {
+                $this->io->writeError('<error>[KO]</error>');
+            }
+
+            $this->io->writeError(\sprintf('<error>Script [%s] returned with error code %s</error>', $cmd, $exitCode));
 
             \fseek($cmdOutput->getStream(), 0);
 
@@ -114,84 +132,9 @@ class ScriptExecutor
 
             throw new ScriptExecutionException($cmd, $exitCode);
         }
-    }
 
-    /**
-     * @param string $type
-     * @param string $cmd
-     *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
-     *
-     * @return null|string
-     */
-    private function expandCmd(string $type, string $cmd): ?string
-    {
-        switch ($type) {
-            case 'cerebro-cmd':
-                return $this->expandCerebroCmd($cmd);
-            case 'php-script':
-                return $this->expandPhpScript($cmd);
-            case 'script':
-                return $cmd;
-            default:
-                throw new InvalidArgumentException(\sprintf('Command type "%s" is not valid.', $type));
+        if (! $isVerbose) {
+            $this->io->writeError('<info>[OK]</info>');
         }
-    }
-
-    /**
-     * @param string $cmd
-     *
-     * @return null|string
-     */
-    private function expandCerebroCmd(string $cmd): ?string
-    {
-        $repo = $this->composer->getRepositoryManager()->getLocalRepository();
-
-        if (! $repo->findPackage('viserio/console', new EmptyConstraint())) {
-            $this->io->writeError(\sprintf('<warning>Skipping "%s" (needs viserio/console to run).</warning>', $cmd));
-
-            return null;
-        }
-
-        $console = Application::cerebroBinary();
-
-        if ($this->io->isDecorated()) {
-            $console .= ' --ansi';
-        }
-
-        return $this->expandPhpScript($console . ' ' . $cmd);
-    }
-
-    /**
-     * @param string $cmd
-     *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
-     *
-     * @return string
-     */
-    private function expandPhpScript(string $cmd): string
-    {
-        $phpFinder = new PhpExecutableFinder();
-
-        if (! $php = $phpFinder->find(false)) {
-            throw new RuntimeException('The PHP executable could not be found, add it to your PATH and try again.');
-        }
-
-        $arguments = $phpFinder->findArguments();
-
-        if ($env = (string) (\getenv('COMPOSER_ORIGINAL_INIS'))) {
-            $paths = \explode(\PATH_SEPARATOR, $env);
-            $ini   = \array_shift($paths);
-        } else {
-            $ini = \php_ini_loaded_file();
-        }
-
-        if ($ini) {
-            $arguments[] = '--php-ini=' . $ini;
-        }
-
-        $phpArgs = \implode(' ', \array_map('escapeshellarg', $arguments));
-
-        return \escapeshellarg($php) . ($phpArgs ? ' ' . $phpArgs : '') . ' ' . $cmd;
     }
 }

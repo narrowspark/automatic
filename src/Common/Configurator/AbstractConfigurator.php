@@ -28,18 +28,18 @@ abstract class AbstractConfigurator implements ConfiguratorContract
     protected $io;
 
     /**
-     * A Filesystem instance.
-     *
-     * @var \Symfony\Component\Filesystem\Filesystem
-     */
-    protected $filesystem;
-
-    /**
      * The composer extra options data.
      *
      * @var array
      */
     protected $options;
+
+    /**
+     * A Filesystem instance.
+     *
+     * @var \Symfony\Component\Filesystem\Filesystem
+     */
+    protected $filesystem;
 
     /**
      * A Path instance.

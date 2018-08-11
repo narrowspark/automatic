@@ -63,7 +63,7 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
     public function testAddWithoutConfiguratorContractClass(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Configurator class [stdClass] must extend the class [Narrowspark\\Automatic\\Common\\Contract\\Configurator].');
+        $this->expectExceptionMessage('The class [stdClass] must implement the interface [\\Narrowspark\\Automatic\\Common\\Contract\\Configurator].');
 
         $this->configurator->add('test', \stdClass::class);
     }

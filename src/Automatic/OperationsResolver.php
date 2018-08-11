@@ -19,13 +19,6 @@ final class OperationsResolver
     private $lock;
 
     /**
-     * Name of the parent package.
-     *
-     * @var string
-     */
-    private $parentName;
-
-    /**
      * The composer vendor dir.
      *
      * @var string

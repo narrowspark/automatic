@@ -7,7 +7,7 @@ return [
     (new ChangelogConfig(
         'narrowspark',
         'automatic',
-        'v0.2.0',
+        'v0.3.0',
         ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security']
     ))
 ];

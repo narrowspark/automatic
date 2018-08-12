@@ -371,8 +371,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $configuratorsClassmap = (array) $lock->get(self::LOCK_CLASSMAP);
 
         foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
-            foreach ($configuratorsClassmap[$packageName] as $path) {
-                include \str_replace('%vendor_path%', $this->container->get('vendor-dir'), $path);
+            foreach ($configuratorsClassmap[$packageName] as $class => $path) {
+                if (! \class_exists($class)) {
+                    require_once \str_replace('%vendor_path%', $this->container->get('vendor-dir'), $path);
+                }
             }
 
             /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */

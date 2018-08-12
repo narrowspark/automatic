@@ -38,9 +38,9 @@ final class Installer
 
         [$preferSource, $preferDist] = self::getPreferredInstallOptions($config, $input);
 
-        $optimize      = self::getOption($input, 'optimize-autoloader')    || $config->get('optimize-autoloader');
-        $authoritative = self::getOption($input, 'classmap-authoritative') || $config->get('classmap-authoritative');
-        $apcu          = self::getOption($input, 'apcu-autoloader')        || $config->get('apcu-autoloader');
+        $optimize      = self::getOption($input, 'optimize-autoloader')    || (bool) $config->get('optimize-autoloader');
+        $authoritative = self::getOption($input, 'classmap-authoritative') || (bool) $config->get('classmap-authoritative');
+        $apcu          = self::getOption($input, 'apcu-autoloader')        || (bool) $config->get('apcu-autoloader');
 
         $installer
             ->disablePlugins()

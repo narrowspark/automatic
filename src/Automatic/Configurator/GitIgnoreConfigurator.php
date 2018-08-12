@@ -22,7 +22,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     {
         $this->write('Added entries to .gitignore.');
 
-        $gitignore = getcwd() . '/.gitignore';
+        $gitignore = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.gitignore';
 
         if ($this->isFileMarked($package->getPrettyName(), $gitignore)) {
             return;
@@ -43,7 +43,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
      */
     public function unconfigure(PackageContract $package): void
     {
-        $file = getcwd() . '/.gitignore';
+        $file = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.gitignore';
 
         /** @codeCoverageIgnoreStart */
         if (! \file_exists($file)) {
@@ -59,7 +59,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
             $count
         );
 
-        if (empty($count)) {
+        if ($count === 0) {
             return;
         }
 

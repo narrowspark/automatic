@@ -60,7 +60,7 @@ abstract class AbstractConfigurator implements ConfiguratorContract
         $this->composer   = $composer;
         $this->io         = $io;
         $this->options    = $options;
-        $this->path       = new Path(getcwd());
+        $this->path       = new Path($options['root-dir'] ?? getcwd());
         $this->filesystem = new Filesystem();
     }
 

@@ -1,9 +1,10 @@
 includes:
 #    - vendor/pepakriz/phpstan-exception-rules/extension.neon
     - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+    - vendor/phpstan/phpstan-mockery/extension.neon
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpstan/phpstan-phpunit/rules.neon
-#    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
 #    - vendor/thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
 
 parameters:
@@ -12,6 +13,10 @@ parameters:
 
     excludes_analyse:
         - %currentWorkingDirectory%/src/Automatic/Prefetcher/CurlDownloader.php
+        - %currentWorkingDirectory%/src/Automatic/Prefetcher/ComposerRepository.php
+        - %currentWorkingDirectory%/src/Automatic/Prefetcher/ParallelDownloader.php
+        - %currentWorkingDirectory%/src/Automatic/Prefetcher/Prefetcher.php
+        - %currentWorkingDirectory%/src/Automatic/Prefetcher/TruncatedComposerRepository.php
 
     ignoreErrors:
         # QuestionInstallationManager
@@ -21,12 +26,5 @@ parameters:
 
         - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
 
-        # Prefetcher
-        - '#Class Hirak\\Prestissimo\\Plugin not found#'
-        - '#Variable \$package might not be defined.#'
-        - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getTargetPackage#'
-        - '#Call to an undefined method Composer\\Downloader\\DownloaderInterface\:\:getCacheKey#'
-        # ParallelDownloader
-        - '#Call to function method_exists\(\) with #'
         # Automatic
         - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'

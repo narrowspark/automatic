@@ -136,11 +136,17 @@ final class OperationsResolver
 
         $package->setRequires($requires);
 
-        if (($type = $composerPackage->getType()) !== null) {
+        /** @var null|string $type */
+        $type = $composerPackage->getType();
+
+        if ($type !== null) {
             $package->setType($type);
         }
 
-        if (($url = $composerPackage->getSourceUrl()) !== null) {
+        /** @var null|string $url */
+        $url = $composerPackage->getSourceUrl();
+
+        if ($url !== null) {
             $package->setUrl($url);
         }
 

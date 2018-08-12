@@ -172,7 +172,7 @@ class Prefetcher
         $downloads = [];
 
         foreach ($event->getOperations() as $i => $operation) {
-            // @var \Composer\Package\PackageInterface $package
+            /** @var \Composer\Package\PackageInterface $package */
             switch ($operation->getJobType()) {
                 case 'install':
                     $package = $operation->getPackage();
@@ -186,7 +186,7 @@ class Prefetcher
                     continue 2;
             }
 
-            $url = $this->getUrlFromPackage($package);
+            $url = self::getUrlFromPackage($package);
 
             if ($url === null || ! $originUrl = \parse_url($url, \PHP_URL_HOST)) {
                 continue;

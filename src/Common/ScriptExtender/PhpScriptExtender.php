@@ -22,7 +22,7 @@ class PhpScriptExtender extends AbstractScriptExtender
     {
         $phpFinder = new PhpExecutableFinder();
         // @codeCoverageIgnoreStart
-        if (! $php = $phpFinder->find(false)) {
+        if (($php = $phpFinder->find(false)) === false) {
             throw new RuntimeException('The PHP executable could not be found, add it to your PATH and try again.');
         }
         /** @codeCoverageIgnoreEnd */
@@ -35,12 +35,12 @@ class PhpScriptExtender extends AbstractScriptExtender
             $ini = \php_ini_loaded_file();
         }
 
-        if ($ini) {
+        if (\is_string($ini)) {
             $arguments[] = '--php-ini=' . $ini;
         }
 
         $phpArgs = \implode(' ', \array_map('escapeshellarg', $arguments));
 
-        return \escapeshellarg($php) . ($phpArgs ? ' ' . $phpArgs : '') . ' ' . $cmd;
+        return \escapeshellarg((string) $php) . ($phpArgs !== '' ? ' ' . $phpArgs : '') . ' ' . $cmd;
     }
 }

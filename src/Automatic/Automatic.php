@@ -215,7 +215,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             try {
                 /** @var null|string $command */
                 $command = $input->getFirstArgument();
-                $command = $command ? $app->find($command)->getName() : null;
+                $command = $command !== null ? $app->find($command)->getName() : null;
             } catch (\InvalidArgumentException $e) {
                 $command = null;
             }

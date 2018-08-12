@@ -89,7 +89,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
         $this->arrangeLock(
             [
                 'test/generator' => [
-                    '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
+                    ConsoleFixtureGenerator::class => '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
                 ],
             ],
             [
@@ -118,8 +118,8 @@ final class SkeletonGeneratorTest extends MockeryTestCase
         $this->arrangeLock(
             [
                 'test/generator' => [
-                    '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
-                    '%vendor_path%/Fixture/FrameworkDefaultFixtureGenerator.php',
+                    ConsoleFixtureGenerator::class          => '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
+                    FrameworkDefaultFixtureGenerator::class => '%vendor_path%/Fixture/FrameworkDefaultFixtureGenerator.php',
                 ],
             ],
             [

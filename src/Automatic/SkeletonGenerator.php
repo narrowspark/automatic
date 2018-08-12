@@ -157,8 +157,10 @@ final class SkeletonGenerator
         $classMap        = (array) $this->lock->get(Automatic::LOCK_CLASSMAP);
 
         foreach ((array) $this->lock->get(SkeletonInstaller::LOCK_KEY) as $name => $generators) {
-            foreach ($classMap[$name] as $path) {
-                require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
+            foreach ($classMap[$name] as $class => $path) {
+                if (! \class_exists($class)) {
+                    require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
+                }
             }
 
             $foundGenerators += $generators;

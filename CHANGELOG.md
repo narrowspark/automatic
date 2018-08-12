@@ -1,3 +1,13 @@
+## v0.3.1
+
+- Total issues resolved: **1**
+- Total pull requests resolved: **0**
+- Total contributors: **1**
+
+### Added
+
+ - [40: Added a root-dir option for the configurator](https://github.com/narrowspark/automatic/issues/40) thanks to @prisis
+
 ## v0.3.0
 
 - Total issues resolved: **6**

@@ -1,3 +1,13 @@
+## v0.3.2
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Fixed
+
+ - [41: fixed class loading, checking if the class exists before we require t&hellip;](https://github.com/narrowspark/automatic/pull/41) thanks to @prisis
+
 ## v0.3.1
 
 - Total issues resolved: **1**

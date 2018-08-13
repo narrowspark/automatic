@@ -818,6 +818,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $lock->read();
 
         if ($lock->has(SkeletonInstaller::LOCK_KEY) && $this->container->get(IOInterface::class)->isInteractive()) {
+            // Clear old operations if a skeleton is generated.
+            $this->operations = [];
+            $this->container->get(Configurator::class)->clear();
+
             /** @var \Narrowspark\Automatic\SkeletonGenerator $skeletonGenerator */
             $skeletonGenerator = $this->container->get(SkeletonGenerator::class);
 

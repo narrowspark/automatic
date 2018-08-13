@@ -1,12 +1,10 @@
 | Q             | A
 | ------------- | ---
-| Branch?       | master for features
-| Bug fix?      | yes/no
-| New feature?  | yes/no <!-- don't forget to update src/Viserio/**/**/CHANGELOG.md files -->
-| BC breaks?    | no
-| Deprecations? | yes/no <!-- don't forget to update UPGRADE-*.md files -->
-| Tests pass?   | yes    <!-- please add some, will be required by reviewers -->
-| Fixed tickets | #...   <!-- #-prefixed issue number(s), if any -->
+| Bug fix?      | no|yes
+| New feature?  | no|yes
+| BC breaks?    | no|yes
+| Deprecations? | no|yes <!-- don't forget to update UPGRADE-*.md files -->
+| Related tickets | fixes #..., partially #..., mentioned in #...   <!-- #-prefixed issue number(s), if any -->
 | License       | MIT
 | Doc PR        | narrowspark/docs#... <!--highly recommended for new features-->
 

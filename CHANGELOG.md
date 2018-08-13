@@ -1,3 +1,13 @@
+## v0.3.3
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Fixed
+
+ - [42: added clear to lock write](https://github.com/narrowspark/automatic/pull/42) thanks to @prisis
+
 ## v0.3.2
 
 - Total issues resolved: **0**

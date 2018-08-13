@@ -74,7 +74,7 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
 
         static::assertTrue($this->configurator->has(MockConfigurator::getName()));
 
-        $this->configurator->clear();
+        $this->configurator->reset();
 
         static::assertFalse($this->configurator->has(MockConfigurator::getName()));
     }

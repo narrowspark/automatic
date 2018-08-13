@@ -3,8 +3,9 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic;
 
 use Composer\Json\JsonFile;
+use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
 
-class Lock
+class Lock implements ResettableContract
 {
     /**
      * Instance of JsonFile.
@@ -141,7 +142,7 @@ class Lock
 
         $this->json->write($this->lock);
 
-        $this->clear();
+        $this->reset();
     }
 
     /**
@@ -159,11 +160,9 @@ class Lock
     }
 
     /**
-     * Clear the lock.
-     *
-     * @return void
+     * {@inheritdoc}
      */
-    public function clear(): void
+    public function reset(): void
     {
         $this->lock = [];
     }

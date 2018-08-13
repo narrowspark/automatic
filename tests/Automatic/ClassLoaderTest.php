@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
-use Narrowspark\Automatic\PathClassLoader;
+use Narrowspark\Automatic\ClassLoader;
 use Narrowspark\Automatic\Test\Fixture\Finder\AbstractClass;
 use Narrowspark\Automatic\Test\Fixture\Finder\DummyClass;
 use Narrowspark\Automatic\Test\Fixture\Finder\DummyClassTwo;
@@ -13,12 +13,12 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-final class PathClassLoaderTest extends TestCase
+final class ClassLoaderTest extends TestCase
 {
     /**
      * A path class loader instance.
      *
-     * @var \Narrowspark\Automatic\PathClassLoader
+     * @var \Narrowspark\Automatic\ClassLoader
      */
     private $loader;
 
@@ -29,7 +29,7 @@ final class PathClassLoaderTest extends TestCase
     {
         parent::setUp();
 
-        $this->loader = new PathClassLoader();
+        $this->loader = new ClassLoader();
     }
 
     public function testItFindsAllClassesInDirectoryWithGivenNamespace(): void

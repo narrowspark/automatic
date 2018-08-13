@@ -87,7 +87,7 @@ final class Container implements ContainerContract
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
                     $container->get(Lock::class),
-                    new PathClassLoader()
+                    new ClassLoader()
                 );
             },
             SkeletonInstaller::class => static function (Container $container) {
@@ -95,7 +95,7 @@ final class Container implements ContainerContract
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
                     $container->get(Lock::class),
-                    new PathClassLoader()
+                    new ClassLoader()
                 );
             },
             Configurator::class => static function (Container $container) {
@@ -150,8 +150,8 @@ final class Container implements ContainerContract
                     $container->get('composer-extra')
                 );
 
-                $scriptExecutor->addExtender(ScriptExtender::class);
-                $scriptExecutor->addExtender(PhpScriptExtender::class);
+                $scriptExecutor->addExtender(ScriptExtender::getType(), ScriptExtender::class);
+                $scriptExecutor->addExtender(PhpScriptExtender::getType(),PhpScriptExtender::class);
 
                 return $scriptExecutor;
             },

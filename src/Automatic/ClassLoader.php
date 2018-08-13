@@ -2,9 +2,10 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic;
 
+use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
 use Symfony\Component\Finder\Finder;
 
-final class PathClassLoader
+final class ClassLoader implements ResettableContract
 {
     /**
      * List of traits.
@@ -48,6 +49,10 @@ final class PathClassLoader
             ->sortByName()
             ->in($dirs)
             ->name('*.php');
+
+        if ($this->filter !== null) {
+            $finder = $finder->filter($this->filter);
+        }
 
         /** @var \SplFileInfo $file */
         foreach ($finder as $file) {
@@ -131,6 +136,17 @@ final class PathClassLoader
             $this->abstractClasses,
             $this->classes
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function reset(): void
+    {
+        $this->interfaces      = [];
+        $this->traits          = [];
+        $this->abstractClasses = [];
+        $this->classes         = [];
     }
 
     /**

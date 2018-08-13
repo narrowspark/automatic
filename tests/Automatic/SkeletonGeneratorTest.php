@@ -163,7 +163,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
         $this->lockMock->shouldReceive('write')
             ->once();
 
-        $this->skeletonGenerator->remove();
+        $this->skeletonGenerator->selfRemove();
     }
 
     /**

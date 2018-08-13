@@ -7,6 +7,7 @@ use Composer\IO\IOInterface;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
 
 abstract class AbstractConfigurator
 {
@@ -130,11 +131,9 @@ abstract class AbstractConfigurator
     }
 
     /**
-     * Clear all configurators.
-     *
-     * @return void
+     * {@inheritdoc}
      */
-    public function clear(): void
+    public function reset(): void
     {
         $this->configurators = [];
     }

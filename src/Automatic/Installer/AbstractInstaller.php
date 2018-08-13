@@ -8,9 +8,9 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
+use Narrowspark\Automatic\ClassLoader;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
-use Narrowspark\Automatic\PathClassLoader;
 
 abstract class AbstractInstaller extends LibraryInstaller
 {
@@ -34,19 +34,19 @@ abstract class AbstractInstaller extends LibraryInstaller
     /**
      * A path class loader instance.
      *
-     * @var \Narrowspark\Automatic\PathClassLoader
+     * @var \Narrowspark\Automatic\ClassLoader
      */
     protected $loader;
 
     /**
      * Create a new Installer instance.
      *
-     * @param \Composer\IO\IOInterface               $io
-     * @param \Composer\Composer                     $composer
-     * @param \Narrowspark\Automatic\Lock            $lock
-     * @param \Narrowspark\Automatic\PathClassLoader $loader
+     * @param \Composer\IO\IOInterface           $io
+     * @param \Composer\Composer                 $composer
+     * @param \Narrowspark\Automatic\Lock        $lock
+     * @param \Narrowspark\Automatic\ClassLoader $loader
      */
-    public function __construct(IOInterface $io, Composer $composer, Lock $lock, PathClassLoader $loader)
+    public function __construct(IOInterface $io, Composer $composer, Lock $lock, ClassLoader $loader)
     {
         parent::__construct($io, $composer, static::TYPE);
 
@@ -124,10 +124,17 @@ abstract class AbstractInstaller extends LibraryInstaller
     {
         $name    = $package->getPrettyName();
         $classes = [];
+        $psr4    = [];
 
-        $psr4 = \array_map(function ($path) use ($name) {
-            return \rtrim(\rtrim($this->vendorDir, '/') . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $path, '/');
-        }, (array) $autoload['psr-4']);
+        foreach ((array) $autoload['psr-4'] as $path) {
+            if (\is_array($path)) {
+                foreach ($path as $p) {
+                    $psr4[] = \rtrim($this->vendorDir . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $p, '/');
+                }
+            } else {
+                $psr4[] = \rtrim($this->vendorDir . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $path, '/');
+            }
+        }
 
         $this->loader->find($psr4);
 

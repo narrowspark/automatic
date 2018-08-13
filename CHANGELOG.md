@@ -1,3 +1,13 @@
+## v0.3.5
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Added
+
+ - [44: added composer to require in common](https://github.com/narrowspark/automatic/pull/44) thanks to @prisis
+
 ## v0.3.4
 
 - Total issues resolved: **0**

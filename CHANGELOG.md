@@ -1,3 +1,13 @@
+## v0.3.4
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Added
+
+ - [43: clear configurators and operations before skeleton generation](https://github.com/narrowspark/automatic/pull/43) thanks to @prisis
+
 ## v0.3.3
 
 - Total issues resolved: **0**

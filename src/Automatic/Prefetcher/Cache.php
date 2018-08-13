@@ -98,6 +98,10 @@ class Cache extends BaseComposerCache
      */
     public function removeLegacyTags(array $data): array
     {
+        if (\getenv('SYMFONY_LOWEST_VERSION')) {
+            self::$lowestTags['symfony/symfony']['version'] = \getenv('SYMFONY_LOWEST_VERSION');
+        }
+
         foreach (self::$lowestTags as $lowestPackage => $settings) {
             $lowestVersion    = $settings['version'];
             $replacedPackages = $settings['replaces'];

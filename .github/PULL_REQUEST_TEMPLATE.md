@@ -1,12 +1,12 @@
-| Q             | A
-| ------------- | ---
-| Bug fix?      | no|yes
-| New feature?  | no|yes
-| BC breaks?    | no|yes
-| Deprecations? | no|yes <!-- don't forget to update UPGRADE-*.md files -->
+| Q               | A
+| --------------- | ---
+| Bug fix?        | no/yes
+| New feature?    | no/yes
+| BC breaks?      | no/yes
+| Deprecations?   | no/yes <!-- don't forget to update UPGRADE-*.md files -->
 | Related tickets | fixes #..., partially #..., mentioned in #...   <!-- #-prefixed issue number(s), if any -->
-| License       | MIT
-| Doc PR        | narrowspark/docs#... <!--highly recommended for new features-->
+| License         | MIT
+| Doc PR          | narrowspark/docs#... <!--highly recommended for new features-->
 
 <!--
 - Please fill in this template according to the PR you're about to submit.

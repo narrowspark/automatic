@@ -140,6 +140,8 @@ class Lock
         \ksort($this->lock);
 
         $this->json->write($this->lock);
+
+        $this->clear();
     }
 
     /**

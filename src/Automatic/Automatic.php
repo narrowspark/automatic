@@ -359,7 +359,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $automaticOptions = $this->container->get('composer-extra')[Util::COMPOSER_EXTRA_KEY];
         $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
         $packages         = $this->container->get(OperationsResolver::class)->resolve($this->operations);
+        /** @var \Narrowspark\Automatic\Lock $lock */
         $lock             = $this->container->get(Lock::class);
+        /** @var \Composer\IO\IOInterface $io */
         $io               = $this->container->get(IOInterface::class);
 
         $io->writeError(\sprintf(
@@ -368,10 +370,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             \count($packages) > 1 ? 's' : ''
         ));
 
-        $configuratorsClassmap = (array) $lock->get(self::LOCK_CLASSMAP);
+        $classMap = (array) $lock->get(self::LOCK_CLASSMAP);
 
         foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
-            foreach ($configuratorsClassmap[$packageName] as $class => $path) {
+            foreach ($classMap[$packageName] as $class => $path) {
                 if (! \class_exists($class)) {
                     require_once \str_replace('%vendor_path%', $this->container->get('vendor-dir'), $path);
                 }

@@ -1,3 +1,13 @@
+## v0.3.6
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Added
+
+ - [46: added SYMFONY&#95;LOWEST&#95;VERSION env var](https://github.com/narrowspark/automatic/pull/46) thanks to @prisis
+
 ## v0.3.5
 
 - Total issues resolved: **0**

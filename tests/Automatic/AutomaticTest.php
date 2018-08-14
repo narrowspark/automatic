@@ -15,6 +15,7 @@ use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\Package;
+use Composer\Package\RootPackage;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
@@ -88,6 +89,10 @@ final class AutomaticTest extends MockeryTestCase
         $this->arrangePackagist();
 
         $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
+
+        $this->composerMock->shouldReceive('getPackage->getExtra')
+            ->once()
+            ->andReturn([]);
 
         $repositoryMock = $this->mock(RepositoryManager::class);
         $repositoryMock->shouldReceive('getLocalRepository')
@@ -236,10 +241,16 @@ final class AutomaticTest extends MockeryTestCase
         $repositoryMock->shouldReceive('getLocalRepository')
             ->andReturn($localRepositoryMock);
 
+        $rootPackageMock = $this->mock(RootPackage::class);
+        $rootPackageMock->shouldReceive('getExtra')
+            ->once()
+            ->andReturn([]);
+
         $composer = new Composer();
         $composer->setInstallationManager(new InstallationManager());
         $composer->setConfig(new Config());
         $composer->setRepositoryManager($repositoryMock);
+        $composer->setPackage($rootPackageMock);
 
         $automatic->activate(
             $composer,
@@ -304,10 +315,16 @@ final class AutomaticTest extends MockeryTestCase
         $repositoryMock->shouldReceive('getLocalRepository')
             ->andReturn($localRepositoryMock);
 
+        $rootPackageMock = $this->mock(RootPackage::class);
+        $rootPackageMock->shouldReceive('getExtra')
+            ->once()
+            ->andReturn([]);
+
         $composer = new Composer();
         $composer->setInstallationManager(new InstallationManager());
         $composer->setConfig(new Config());
         $composer->setRepositoryManager($repositoryMock);
+        $composer->setPackage($rootPackageMock);
 
         $automatic->activate(
             $composer,

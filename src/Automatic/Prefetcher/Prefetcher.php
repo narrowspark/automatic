@@ -216,8 +216,8 @@ class Prefetcher
         if (\count($downloads) > 1) {
             $progress = true;
 
-            if ($this->input->hasOption('no-progress')) {
-                $progress = ! $this->input->getOption('no-progress');
+            if ($this->input->hasParameterOption('--no-progress', true)) {
+                $progress = false;
             }
 
             $this->rfs->download($downloads, [$this->rfs, 'get'], false, $progress);
@@ -280,8 +280,8 @@ class Prefetcher
     {
         $dryRun = false;
 
-        if ($this->input->hasOption('dry-run')) {
-            $dryRun = $this->input->getOption('dry-run');
+        if ($this->input->hasParameterOption('--dry-run')) {
+            $dryRun = true;
         }
 
         return $dryRun;

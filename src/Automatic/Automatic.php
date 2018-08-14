@@ -164,7 +164,14 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $this->container->get(Composer::class)->getEventDispatcher(),
             $this->container->get(ParallelDownloader::class)
         );
-        $setRepositories = Closure::bind(function (RepositoryManager $manager) {
+
+        if (\getenv('SYMFONY_REQUIRE') !== false) {
+            $symfonyRequire = \getenv('SYMFONY_REQUIRE');
+        } else {
+            $symfonyRequire = $this->container->get('composer-extra')['symfony']['require'] ?? '>=3.4';
+        }
+
+        $setRepositories = Closure::bind(function (RepositoryManager $manager) use ($symfonyRequire) {
             $manager->repositoryClasses = $this->repositoryClasses;
             $manager->setRepositoryClass('composer', TruncatedComposerRepository::class);
             $manager->repositories = $this->repositories;
@@ -173,6 +180,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
             foreach (RepositoryFactory::defaultRepos(null, $this->config, $manager) as $repo) {
                 $manager->repositories[$i++] = $repo;
+
+                if ($repo instanceof TruncatedComposerRepository) {
+                    $repo->setSymfonyRequire($symfonyRequire);
+                }
             }
 
             $manager->setLocalRepository($this->getLocalRepository());

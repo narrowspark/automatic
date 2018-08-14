@@ -17,12 +17,31 @@ use Composer\Util\RemoteFilesystem;
  */
 class TruncatedComposerRepository extends BaseComposerRepository
 {
+    /**
+     * {@inheritdoc}
+     */
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
         parent::__construct($repoConfig, $io, $config, $eventDispatcher, $rfs);
-        $this->cache = new Cache($io, $config->get('cache-repo-dir') . '/' . \preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
+
+        $this->cache = new Cache(
+            $io,
+            $config->get('cache-repo-dir') . '/' . \preg_replace('{[^a-z0-9.]}i', '-', $this->url),
+            'a-z0-9.$'
+        );
     }
 
+    /**
+     * @param string $symfonyRequire
+     */
+    public function setSymfonyRequire(string $symfonyRequire): void
+    {
+        $this->cache->setSymfonyRequire($symfonyRequire);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchFile($filename, $cacheKey = null, $sha256 = null, $storeLastModifiedTime = false)
     {
         $data = parent::fetchFile($filename, $cacheKey, $sha256, $storeLastModifiedTime);

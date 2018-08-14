@@ -1,3 +1,13 @@
+## v0.3.6
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Changed
+
+ - [47: added a new SYMFONY&#95;REQUIRE env ](https://github.com/narrowspark/automatic/pull/47) thanks to @prisis
+
 ## v0.3.5
 
 - Total issues resolved: **0**

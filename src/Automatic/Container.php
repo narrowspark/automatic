@@ -171,6 +171,9 @@ final class Container implements ContainerContract
                     $container->get('composer-extra')
                 );
             },
+            TagsManager::class => static function (Container $container) {
+                return new TagsManager($container->get(IOInterface::class));
+            },
         ];
     }
 

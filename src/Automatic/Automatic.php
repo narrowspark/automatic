@@ -158,20 +158,39 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $installationManager->addInstaller($this->container->get(ConfiguratorInstaller::class));
         $installationManager->addInstaller($this->container->get(SkeletonInstaller::class));
 
+        /** @var \Composer\IO\IOInterface $io */
+        $io = $this->container->get(IOInterface::class);
+
         $manager = RepositoryFactory::manager(
-            $this->container->get(IOInterface::class),
+            $io,
             $this->container->get(Config::class),
             $this->container->get(Composer::class)->getEventDispatcher(),
             $this->container->get(ParallelDownloader::class)
         );
 
-        if (\getenv('SYMFONY_REQUIRE') !== false) {
-            $symfonyRequire = \getenv('SYMFONY_REQUIRE');
-        } else {
-            $symfonyRequire = $this->container->get('composer-extra')['symfony']['require'] ?? '>=3.4';
+        /** @var \Narrowspark\Automatic\TagsManager $tagsManager */
+        $tagsManager = $this->container->get(TagsManager::class);
+        $extra       = $this->container->get('composer-extra');
+
+        if (isset($extra['require'])) {
+            foreach ($extra['require'] as $name => $version) {
+                if (\is_int($name)) {
+                    $io->writeError(\sprintf('Constrain [%s] skipped, because package name is a number [%s]', $version, $name));
+
+                    continue;
+                }
+
+                if (\mb_strpos($name, '/') === false) {
+                    $io->writeError(\sprintf('Constrain [%s] skipped, package name [%s] without a slash is not supported', $version, $name));
+
+                    continue;
+                }
+
+                $tagsManager->addConstraint($name, $version);
+            }
         }
 
-        $setRepositories = Closure::bind(function (RepositoryManager $manager) use ($symfonyRequire) {
+        $setRepositories = Closure::bind(function (RepositoryManager $manager) use ($tagsManager) {
             $manager->repositoryClasses = $this->repositoryClasses;
             $manager->setRepositoryClass('composer', TruncatedComposerRepository::class);
             $manager->repositories = $this->repositories;
@@ -182,7 +201,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 $manager->repositories[$i++] = $repo;
 
                 if ($repo instanceof TruncatedComposerRepository) {
-                    $repo->setSymfonyRequire($symfonyRequire);
+                    $repo->setTagsManager($tagsManager);
                 }
             }
 
@@ -446,6 +465,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 "\nTo show the package suggests run <comment>composer suggests</comment>."
             );
         }
+
+        $io->writeError('<info>Writing automatic lock file</info>');
 
         $lock->write();
 

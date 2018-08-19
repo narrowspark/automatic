@@ -3,10 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\Cache as BaseComposerCache;
-use Composer\IO\IOInterface;
-use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\VersionParser;
-use Composer\Util\Filesystem;
+use Narrowspark\Automatic\TagsManager;
 
 /**
  * Ported from symfony flex, see original.
@@ -18,35 +15,22 @@ use Composer\Util\Filesystem;
 class Cache extends BaseComposerCache
 {
     /**
-     * A version parser instance.
+     * A tags manager instance.
      *
-     * @var \Composer\Semver\VersionParser
+     * @var null|\Narrowspark\Automatic\TagsManager
      */
-    private $versionParser;
+    private $tagsManager;
 
     /**
-     * A composer constraint implementation.
+     * Set a tags manager instance.
      *
-     * @var \Composer\Semver\Constraint\ConstraintInterface
+     * @param \Narrowspark\Automatic\TagsManager $tagsManager
+     *
+     * @return void
      */
-    private $symfonyRequire;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct(IOInterface $io, $cacheDir, $whitelist = 'a-z0-9.', Filesystem $filesystem = null)
+    public function setTagsManager(TagsManager $tagsManager): void
     {
-        parent::__construct($io, $cacheDir, $whitelist, $filesystem);
-
-        $this->versionParser = new VersionParser();
-    }
-
-    /**
-     * @param string $symfonyRequire
-     */
-    public function setSymfonyRequire(string $symfonyRequire): void
-    {
-        $this->symfonyRequire = $this->versionParser->parseConstraints($symfonyRequire);
+        $this->tagsManager = $tagsManager;
     }
 
     /**
@@ -58,7 +42,7 @@ class Cache extends BaseComposerCache
     {
         $content = parent::read($file);
 
-        if (\mb_strpos($file, 'provider-symfony$') === 0 && \is_array($data = \json_decode($content, true))) {
+        if ($this->tagsManager !== null && $this->tagsManager->hasProvider($file) && \is_array($data = \json_decode($content, true))) {
             $content = \json_encode($this->removeLegacyTags($data));
         }
 
@@ -74,29 +58,6 @@ class Cache extends BaseComposerCache
      */
     public function removeLegacyTags(array $data): array
     {
-        if ($this->symfonyRequire === null || ! isset($data['packages']['symfony/symfony'])) {
-            return $data;
-        }
-
-        $symfonyVersions = $data['packages']['symfony/symfony'];
-
-        foreach ($data['packages'] as $name => $versions) {
-            foreach ($versions as $version => $package) {
-                if ('symfony/symfony' !== $name && ! isset($symfonyVersions[\preg_replace('/^(\d++\.\d++)\..*/', '$1.x-dev', $version)]['replace'][$name])) {
-                    continue;
-                }
-
-                $normalizedVersion = $package['extra']['branch-alias'][$version] ?? null;
-                $normalizedVersion = $normalizedVersion ? $this->versionParser->normalize($normalizedVersion) : $package['version_normalized'];
-
-                $provider = new Constraint('==', $normalizedVersion);
-
-                if (! $this->symfonyRequire->matches($provider)) {
-                    unset($data['packages'][$name][$version]);
-                }
-            }
-        }
-
-        return $data;
+        return $this->tagsManager->removeLegacyTags($data);
     }
 }

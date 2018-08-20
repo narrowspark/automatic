@@ -21,6 +21,7 @@ use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
+use Composer\Package\BasePackage;
 use Composer\Package\Locker;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
@@ -262,6 +263,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
             if ($input->hasOption('no-suggest')) {
                 $input->setOption('no-suggest', true);
+            }
+
+            // When prefer-lowest is set and no stable version has been released,
+            // we consider "dev" more stable than "alpha", "beta" or "RC". This
+            // allows testing lowest versions with potential fixes applied.
+            if ($input->hasParameterOption('--prefer-lowest', true)) {
+                BasePackage::$stabilities['dev'] = 1 + BasePackage::STABILITY_STABLE;
             }
         }
     }

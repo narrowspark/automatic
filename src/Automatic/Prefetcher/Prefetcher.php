@@ -132,7 +132,7 @@ class Prefetcher
 
         if ($populateRepoCacheDir === true &&
             isset(self::$repoReadingCommands[$command]) &&
-            ('install' !== $command || (\file_exists(Factory::getComposerFile()) && ! \file_exists(Util::getComposerLockFile())))
+            ($command !== 'install' || (\file_exists(Factory::getComposerFile()) && ! \file_exists(Util::getComposerLockFile())))
         ) {
             $repos = [];
 

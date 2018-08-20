@@ -50,7 +50,7 @@ class Cache extends BaseComposerCache
     }
 
     /**
-     * Helper to remove legacy symfony tags.
+     * Helper to remove legacy tags.
      *
      * @param array $data
      *
@@ -58,6 +58,10 @@ class Cache extends BaseComposerCache
      */
     public function removeLegacyTags(array $data): array
     {
+        if ($this->tagsManager === null) {
+            return $data;
+        }
+
         return $this->tagsManager->removeLegacyTags($data);
     }
 }

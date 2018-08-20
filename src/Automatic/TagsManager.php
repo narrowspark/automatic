@@ -23,7 +23,9 @@ final class TagsManager
     private $versionParser;
 
     /**
-     * @var \Composer\Semver\Constraint\Constraint[]
+     * A list of the legacy tags versions and constraints.
+     *
+     * @var array<string, array<string, \Composer\Semver\Constraint\ConstraintInterface|string>>
      */
     private $legacyTags = [];
 
@@ -50,7 +52,10 @@ final class TagsManager
      */
     public function addConstraint(string $name, string $require): void
     {
-        $this->legacyTags[$name] = $this->versionParser->parseConstraints($require);
+        $this->legacyTags[$name] = [
+            'version'   => $require,
+            'constrain' => $this->versionParser->parseConstraints($require),
+        ];
     }
 
     /**
@@ -74,6 +79,8 @@ final class TagsManager
     }
 
     /**
+     * Remove legacy tags from packages.
+     *
      * @param array $data
      *
      * @return array
@@ -84,15 +91,18 @@ final class TagsManager
             return $data;
         }
 
+        $regex = '/^(\d++\.\d++)\..*/';
+
         foreach ($data['packages'] as $name => $versions) {
-            var_dump($name);
             if (! isset($this->legacyTags[$name])) {
                 continue;
             }
 
             foreach ($versions as $version => $package) {
                 foreach ($this->legacyTags[$name] as $legacyName => $legacyVersion) {
-                    if (isset($data['packages'][$legacyName]) && $data['packages'][$legacyName][\preg_replace('/^(\d++\.\d++)\..*/', '$1.x-dev', $version)]['replace'][$name] !== 'self.version') {
+                    if (isset($data['packages'][$legacyName]) &&
+                        ($data['packages'][$legacyName][\preg_replace($regex, '$1.x-dev', $version)]['replace'][$name] ?? null) !== 'self.version'
+                    ) {
                         continue;
                     }
                 }
@@ -100,8 +110,11 @@ final class TagsManager
                 $normalizedVersion = $package['extra']['branch-alias'][$version] ?? null;
                 $normalizedVersion = $normalizedVersion ? $this->versionParser->normalize($normalizedVersion) : $package['version_normalized'];
 
-                if (! $this->legacyTags[$name]->matches(new Constraint('==', $normalizedVersion))) {
-                    $this->io->writeError(\sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', $name, (string) $this->legacyTags[$name]));
+                /** @var \Composer\Semver\Constraint\Constraint $constrain */
+                $constrain = $this->legacyTags[$name]['constrain'];
+
+                if (! $constrain->matches(new Constraint('==', $normalizedVersion))) {
+                    $this->io->writeError(\sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', $name, (string) $this->legacyTags[$name]['version']));
 
                     unset($data['packages'][$name][$version]);
                 }

@@ -45,11 +45,11 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     {
         $file = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.gitignore';
 
-        /** @codeCoverageIgnoreStart */
+        // @codeCoverageIgnoreStart
         if (! \file_exists($file)) {
             return;
         }
-        /** @codeCoverageIgnoreEnd */
+        // @codeCoverageIgnoreEnd
         $count    = 0;
         $contents = \preg_replace(
             \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getPrettyName(), $package->getPrettyName(), "\n"),

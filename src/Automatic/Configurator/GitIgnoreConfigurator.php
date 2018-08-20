@@ -45,7 +45,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     {
         $file = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.gitignore';
 
-        /** @codeCoverageIgnoreStart */
+        // @codeCoverageIgnoreStart
         if (! \file_exists($file)) {
             return;
         }

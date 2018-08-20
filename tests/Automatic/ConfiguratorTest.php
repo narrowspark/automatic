@@ -54,6 +54,11 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
         \unlink($this->copyPath);
     }
 
+    public function testGetConfigurators(): void
+    {
+        static::assertCount(4, $this->configurator->getConfigurators());
+    }
+
     public function testUnconfigureWithCopy(): void
     {
         $this->arrangeVendorDir();

@@ -132,20 +132,22 @@ interface Package
     /**
      * Checks if key exits in extra automatic config.
      *
-     * @param string $key
+     * @param string      $mainKey
+     * @param null|string $name
      *
      * @return bool
      */
-    public function hasConfig(string $key): bool;
+    public function hasConfig(string $mainKey, ?string $name = null): bool;
 
     /**
      * Get a automatic config value.
      *
-     * @param string $key
+     * @param string      $mainKey
+     * @param null|string $name
      *
      * @return null|array|string
      */
-    public function getConfig(string $key);
+    public function getConfig(string $mainKey, ?string $name = null);
 
     /**
      * Returns the automatic package configs.

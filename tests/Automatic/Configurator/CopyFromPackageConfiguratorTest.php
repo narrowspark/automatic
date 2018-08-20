@@ -4,6 +4,7 @@ namespace Narrowspark\Automatic\Test\Configurator;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator\CopyFromPackageConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -261,7 +262,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->andReturn(__DIR__);
 
         $package = new Package('Stub/stub', '1.0.0');
-        $package->setConfig(['copy' => [$from => $to]]);
+        $package->setConfig([ConfiguratorContract::TYPE => ['copy' => [$from => $to]]]);
 
         return $package;
     }

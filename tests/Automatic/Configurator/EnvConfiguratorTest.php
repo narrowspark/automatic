@@ -4,6 +4,7 @@ namespace Narrowspark\Automatic\Test\Configurator;
 
 use Composer\Composer;
 use Composer\IO\NullIO;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator\EnvConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -76,17 +77,19 @@ final class EnvConfiguratorTest extends MockeryTestCase
     {
         $package = new Package('fixtures/test', '1.0.0');
         $package->setConfig([
-            'env' => [
-                'APP_ENV'         => 'test bar',
-                'APP_DEBUG'       => '0',
-                'APP_PARAGRAPH'   => "foo\n\"bar\"\\t",
-                'DATABASE_URL'    => 'mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7',
-                'MAILER_URL'      => 'null://localhost',
-                'MAILER_USER'     => 'narrow',
-                '#1'              => 'Comment 1',
-                '#2'              => 'Comment 3',
-                '#TRUSTED_SECRET' => 's3cretf0rt3st"<>',
-                'APP_SECRET'      => 's3cretf0rt3st"<>',
+            ConfiguratorContract::TYPE => [
+                'env' => [
+                    'APP_ENV'         => 'test bar',
+                    'APP_DEBUG'       => '0',
+                    'APP_PARAGRAPH'   => "foo\n\"bar\"\\t",
+                    'DATABASE_URL'    => 'mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7',
+                    'MAILER_URL'      => 'null://localhost',
+                    'MAILER_USER'     => 'narrow',
+                    '#1'              => 'Comment 1',
+                    '#2'              => 'Comment 3',
+                    '#TRUSTED_SECRET' => 's3cretf0rt3st"<>',
+                    'APP_SECRET'      => 's3cretf0rt3st"<>',
+                ],
             ],
         ]);
 
@@ -127,7 +130,7 @@ EOF;
         ];
 
         $package = new Package('fixtures/env2', '1.0.0');
-        $package->setConfig(['env' => $envConfig]);
+        $package->setConfig([ConfiguratorContract::TYPE => ['env' => $envConfig]]);
 
         $this->configurator->configure($package);
 
@@ -146,7 +149,7 @@ EOF;
         static::assertStringEqualsFile($this->envPath, $envContents);
 
         $package = new Package('fixtures/env2', '1.1.0');
-        $package->setConfig(['env' => $envConfig]);
+        $package->setConfig([ConfiguratorContract::TYPE => ['env' => $envConfig]]);
 
         $this->configurator->unconfigure($package);
 

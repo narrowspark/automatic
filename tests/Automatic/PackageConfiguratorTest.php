@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\PackageConfigurator;
 use Narrowspark\Automatic\Test\Fixture\MockConfigurator;
@@ -17,8 +18,10 @@ final class PackageConfiguratorTest extends AbstractConfiguratorTest
         $package = $this->arrangePackageWithConfig(
             'test/test',
             [
-                'mock' => [
-                    'test',
+                ConfiguratorContract::TYPE => [
+                    'mock' => [
+                        'test',
+                    ],
                 ],
             ]
         );
@@ -38,8 +41,10 @@ final class PackageConfiguratorTest extends AbstractConfiguratorTest
         $package = $this->arrangePackageWithConfig(
             'test/test',
             [
-                'mock' => [
-                    'test',
+                ConfiguratorContract::TYPE => [
+                    'mock' => [
+                        'test',
+                    ],
                 ],
             ]
         );

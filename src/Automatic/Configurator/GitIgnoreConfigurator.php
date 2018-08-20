@@ -49,7 +49,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
         if (! \file_exists($file)) {
             return;
         }
-        // @codeCoverageIgnoreEnd
+        /** @codeCoverageIgnoreEnd */
         $count    = 0;
         $contents = \preg_replace(
             \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getPrettyName(), $package->getPrettyName(), "\n"),

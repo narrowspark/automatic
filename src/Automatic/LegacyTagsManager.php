@@ -6,7 +6,7 @@ use Composer\IO\IOInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\VersionParser;
 
-final class TagsManager
+final class LegacyTagsManager
 {
     /**
      * The composer io implementation.
@@ -30,7 +30,7 @@ final class TagsManager
     private $legacyTags = [];
 
     /**
-     * TagsManager constructor.
+     * LegacyTagsManager constructor.
      *
      * @param IOInterface $io
      */

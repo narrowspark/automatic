@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\Cache as BaseComposerCache;
-use Narrowspark\Automatic\TagsManager;
+use Narrowspark\Automatic\LegacyTagsManager;
 
 /**
  * Ported from symfony flex, see original.
@@ -17,18 +17,18 @@ class Cache extends BaseComposerCache
     /**
      * A tags manager instance.
      *
-     * @var null|\Narrowspark\Automatic\TagsManager
+     * @var null|\Narrowspark\Automatic\LegacyTagsManager
      */
     private $tagsManager;
 
     /**
      * Set a tags manager instance.
      *
-     * @param \Narrowspark\Automatic\TagsManager $tagsManager
+     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
      *
      * @return void
      */
-    public function setTagsManager(TagsManager $tagsManager): void
+    public function setTagsManager(LegacyTagsManager $tagsManager): void
     {
         $this->tagsManager = $tagsManager;
     }

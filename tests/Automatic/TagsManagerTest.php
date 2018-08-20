@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
-use Narrowspark\Automatic\TagsManager;
+use Narrowspark\Automatic\LegacyTagsManager;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
@@ -22,7 +22,7 @@ final class TagsManagerTest extends MockeryTestCase
     private $ioMock;
 
     /**
-     * @var \Narrowspark\Automatic\TagsManager
+     * @var \Narrowspark\Automatic\LegacyTagsManager
      */
     private $tagsManger;
 
@@ -44,7 +44,7 @@ final class TagsManagerTest extends MockeryTestCase
         ];
 
         $this->ioMock     = $this->mock(IOInterface::class);
-        $this->tagsManger = new TagsManager($this->ioMock);
+        $this->tagsManger = new LegacyTagsManager($this->ioMock);
     }
 
     public function testHasProvider(): void

@@ -159,119 +159,19 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $installationManager->addInstaller($this->container->get(ConfiguratorInstaller::class));
         $installationManager->addInstaller($this->container->get(SkeletonInstaller::class));
 
-        /** @var \Composer\IO\IOInterface $io */
-        $io = $this->container->get(IOInterface::class);
+        /** @var \Narrowspark\Automatic\LegacyTagsManager $tagsManager */
+        $tagsManager = $this->container->get(LegacyTagsManager::class);
 
-        $manager = RepositoryFactory::manager(
-            $io,
-            $this->container->get(Config::class),
-            $this->container->get(Composer::class)->getEventDispatcher(),
-            $this->container->get(ParallelDownloader::class)
-        );
+        $this->configureLegacyTagsManager($io, $tagsManager);
 
-        /** @var \Narrowspark\Automatic\TagsManager $tagsManager */
-        $tagsManager = $this->container->get(TagsManager::class);
-        $extra       = $this->container->get('composer-extra');
-
-        if (isset($extra['require'])) {
-            foreach ($extra['require'] as $name => $version) {
-                if (\is_int($name)) {
-                    $io->writeError(\sprintf('Constrain [%s] skipped, because package name is a number [%s]', $version, $name));
-
-                    continue;
-                }
-
-                if (\mb_strpos($name, '/') === false) {
-                    $io->writeError(\sprintf('Constrain [%s] skipped, package name [%s] without a slash is not supported', $version, $name));
-
-                    continue;
-                }
-
-                $tagsManager->addConstraint($name, $version);
-            }
-        }
-
-        $setRepositories = Closure::bind(function (RepositoryManager $manager) use ($tagsManager) {
-            $manager->repositoryClasses = $this->repositoryClasses;
-            $manager->setRepositoryClass('composer', TruncatedComposerRepository::class);
-            $manager->repositories = $this->repositories;
-
-            $i = 0;
-
-            foreach (RepositoryFactory::defaultRepos(null, $this->config, $manager) as $repo) {
-                $manager->repositories[$i++] = $repo;
-
-                if ($repo instanceof TruncatedComposerRepository) {
-                    $repo->setTagsManager($tagsManager);
-                }
-            }
-
-            $manager->setLocalRepository($this->getLocalRepository());
-        }, $composer->getRepositoryManager(), RepositoryManager::class);
-
-        $setRepositories($manager);
-
-        $composer->setRepositoryManager($manager);
+        $composer->setRepositoryManager($this->extendRepositoryManager($composer, $io, $tagsManager));
 
         $this->container->get(Lock::class)->add('@readme', [
             'This file locks the automatic information of your project to a known state',
             'This file is @generated automatically',
         ]);
 
-        $backtrace = \debug_backtrace();
-
-        foreach ($backtrace as $trace) {
-            if (isset($trace['object']) && $trace['object'] instanceof Installer) {
-                /** @var \Composer\Installer $installer */
-                $installer = $trace['object'];
-                $installer->setSuggestedPackagesReporter(new SuggestedPackagesReporter(new NullIO()));
-
-                break;
-            }
-        }
-
-        foreach ($backtrace as $trace) {
-            if (! isset($trace['object']) || ! isset($trace['args'][0])) {
-                continue;
-            }
-
-            if (! $trace['object'] instanceof Application || ! $trace['args'][0] instanceof ArgvInput) {
-                continue;
-            }
-
-            /** @var \Symfony\Component\Console\Input\InputInterface $input */
-            $input = $trace['args'][0];
-            $app   = $trace['object'];
-
-            try {
-                /** @var null|string $command */
-                $command = $input->getFirstArgument();
-                $command = $command !== null ? $app->find($command)->getName() : null;
-            } catch (\InvalidArgumentException $e) {
-                $command = null;
-            }
-
-            if ($command === 'create-project') {
-                if (\version_compare(self::getComposerVersion(), '1.7.0', '>=')) {
-                    $input->setOption('remove-vcs', true);
-                } else {
-                    $input->setInteractive(false);
-                }
-            } elseif ($command === 'suggests') {
-                $input->setOption('by-package', true);
-            }
-
-            if ($input->hasOption('no-suggest')) {
-                $input->setOption('no-suggest', true);
-            }
-
-            // When prefer-lowest is set and no stable version has been released,
-            // we consider "dev" more stable than "alpha", "beta" or "RC". This
-            // allows testing lowest versions with potential fixes applied.
-            if ($input->hasParameterOption('--prefer-lowest', true)) {
-                BasePackage::$stabilities['dev'] = 1 + BasePackage::STABILITY_STABLE;
-            }
-        }
+        $this->extendComposer(\debug_backtrace());
     }
 
     /**
@@ -624,6 +524,34 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Add found legacy tags to the tags manager.
+     *
+     * @param \Composer\IO\IOInterface                 $io
+     * @param array                                    $requires
+     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
+     *
+     * @return void
+     */
+    private function addLegacyTags(IOInterface $io, array $requires, LegacyTagsManager $tagsManager): void
+    {
+        foreach ($requires as $name => $version) {
+            if (\is_int($name)) {
+                $io->writeError(\sprintf('Constrain [%s] skipped, because package name is a number [%s]', $version, $name));
+
+                continue;
+            }
+
+            if (\mb_strpos($name, '/') === false) {
+                $io->writeError(\sprintf('Constrain [%s] skipped, package name [%s] without a slash is not supported', $version, $name));
+
+                continue;
+            }
+
+            $tagsManager->addConstraint($name, $version);
+        }
+    }
+
+    /**
      * Check which package should be recorded.
      *
      * @param \Composer\Installer\PackageEvent $event
@@ -922,5 +850,137 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }
 
         throw new RuntimeException('No composer version found.');
+    }
+
+    /**
+     * Configure the LegacyTagsManager with legacy package requires.
+     *
+     * @param \Composer\IO\IOInterface                 $io
+     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
+     *
+     * @return void
+     */
+    private function configureLegacyTagsManager(IOInterface $io, LegacyTagsManager $tagsManager): void
+    {
+        $extra      = $this->container->get('composer-extra');
+        $envRequire = \getenv('AUTOMATIC_REQUIRE');
+
+        if ($envRequire !== false) {
+            $requires = [];
+
+            foreach (\explode(',', $envRequire) as $packageString) {
+                [$packageName, $version] = \explode('=', $packageString, 2);
+
+                $requires[$packageName] = $version;
+            }
+
+            $this->addLegacyTags($io, $requires, $tagsManager);
+        } elseif (isset($extra['require'])) {
+            $this->addLegacyTags($io, $extra['require'], $tagsManager);
+        }
+    }
+
+    /**
+     * Extend the composer object with some automatic settings.
+     *
+     * @param array $backtrace
+     *
+     * @return void
+     */
+    private function extendComposer($backtrace): void
+    {
+        foreach ($backtrace as $trace) {
+            if (isset($trace['object']) && $trace['object'] instanceof Installer) {
+                /** @var \Composer\Installer $installer */
+                $installer = $trace['object'];
+                $installer->setSuggestedPackagesReporter(new SuggestedPackagesReporter(new NullIO()));
+
+                break;
+            }
+        }
+
+        foreach ($backtrace as $trace) {
+            if (! isset($trace['object']) || ! isset($trace['args'][0])) {
+                continue;
+            }
+
+            if (! $trace['object'] instanceof Application || ! $trace['args'][0] instanceof ArgvInput) {
+                continue;
+            }
+
+            /** @var \Symfony\Component\Console\Input\InputInterface $input */
+            $input = $trace['args'][0];
+            $app   = $trace['object'];
+
+            try {
+                /** @var null|string $command */
+                $command = $input->getFirstArgument();
+                $command = $command !== null ? $app->find($command)->getName() : null;
+            } catch (\InvalidArgumentException $e) {
+                $command = null;
+            }
+
+            if ($command === 'create-project') {
+                if (\version_compare(self::getComposerVersion(), '1.7.0', '>=')) {
+                    $input->setOption('remove-vcs', true);
+                } else {
+                    $input->setInteractive(false);
+                }
+            } elseif ($command === 'suggests') {
+                $input->setOption('by-package', true);
+            }
+
+            if ($input->hasOption('no-suggest')) {
+                $input->setOption('no-suggest', true);
+            }
+
+            // When prefer-lowest is set and no stable version has been released,
+            // we consider "dev" more stable than "alpha", "beta" or "RC". This
+            // allows testing lowest versions with potential fixes applied.
+            if ($input->hasParameterOption('--prefer-lowest', true)) {
+                BasePackage::$stabilities['dev'] = 1 + BasePackage::STABILITY_STABLE;
+            }
+        }
+    }
+
+    /**
+     * Extend the repository manager with a truncated composer repository.
+     *
+     * @param \Composer\Composer                       $composer
+     * @param \Composer\IO\IOInterface                 $io
+     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
+     *
+     * @return \Composer\Repository\RepositoryManager
+     */
+    private function extendRepositoryManager(Composer $composer, IOInterface $io, LegacyTagsManager $tagsManager): RepositoryManager
+    {
+        $manager = RepositoryFactory::manager(
+            $io,
+            $this->container->get(Config::class),
+            $this->container->get(Composer::class)->getEventDispatcher(),
+            $this->container->get(ParallelDownloader::class)
+        );
+
+        $setRepositories = Closure::bind(function (RepositoryManager $manager) use ($tagsManager) {
+            $manager->repositoryClasses = $this->repositoryClasses;
+            $manager->setRepositoryClass('composer', TruncatedComposerRepository::class);
+            $manager->repositories = $this->repositories;
+
+            $i = 0;
+
+            foreach (RepositoryFactory::defaultRepos(null, $this->config, $manager) as $repo) {
+                $manager->repositories[$i++] = $repo;
+
+                if ($repo instanceof TruncatedComposerRepository) {
+                    $repo->setTagsManager($tagsManager);
+                }
+            }
+
+            $manager->setLocalRepository($this->getLocalRepository());
+        }, $composer->getRepositoryManager(), RepositoryManager::class);
+
+        $setRepositories($manager);
+
+        return $manager;
     }
 }

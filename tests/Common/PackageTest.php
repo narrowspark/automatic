@@ -98,6 +98,29 @@ final class PackageTest extends TestCase
         static::assertEquals($config, $this->package->getConfigs());
     }
 
+    public function testGetConfigWithMainKeyAndName(): void
+    {
+        $config = ['test' => ['cut' => true]];
+
+        $this->package->setConfig($config);
+
+        static::assertTrue($this->package->getConfig('test', 'cut'));
+        static::assertNull($this->package->getConfig('test', 'noop'));
+    }
+
+    public function testHasConfigWithMainKeyAndName(): void
+    {
+        $config = ['test' => ['cut' => true]];
+
+        $this->package->setConfig($config);
+
+        static::assertFalse($this->package->hasConfig('noop'));
+        static::assertFalse($this->package->hasConfig('test', 'noop'));
+        static::assertFalse($this->package->hasConfig('noop', 'noop'));
+        static::assertTrue($this->package->hasConfig('test'));
+        static::assertTrue($this->package->hasConfig('test', 'cut'));
+    }
+
     public function testSetAndGetParentName(): void
     {
         $name = 'foo/bar';

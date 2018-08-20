@@ -1002,26 +1002,26 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      *
      * @return void
      */
-    private function showWarningOnRemainingConfigurators(PackageContract $package, PackageConfigurator $packageConfigurator, $configurator): void
+    private function showWarningOnRemainingConfigurators(PackageContract $package, PackageConfigurator $packageConfigurator, Configurator $configurator): void
     {
-        $packageConfigConfigurators = \array_keys((array) $package->getConfig(ConfiguratorContract::TYPE));
+        $packageConfigurators = \array_keys((array) $package->getConfig(ConfiguratorContract::TYPE));
 
         foreach (\array_keys($configurator->getConfigurators()) as $key) {
-            if (isset($packageConfigConfigurators[$key])) {
-                unset($packageConfigConfigurators[$key]);
+            if (isset($packageConfigurators[$key])) {
+                unset($packageConfigurators[$key]);
             }
         }
 
         foreach (\array_keys($packageConfigurator->getConfigurators()) as $key) {
-            if (isset($packageConfigConfigurators[$key])) {
-                unset($packageConfigConfigurators[$key]);
+            if (isset($packageConfigurators[$key])) {
+                unset($packageConfigurators[$key]);
             }
         }
 
-        if (\count($packageConfigConfigurators) !== 0) {
+        if (\count($packageConfigurators) !== 0) {
             $this->container->get(IOInterface::class)->writeError(\sprintf(
                 '<warning>No configurators were run for [%s] in [%s]</warning>',
-                \implode(', ', $packageConfigConfigurators),
+                \implode(', ', $packageConfigurators),
                 $package->getPrettyName()
             ));
         }

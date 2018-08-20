@@ -14,7 +14,7 @@ Branch Status
 
 Narrowspark Automatic automates the most common tasks of applications, like installing and removing bundles/providers, copying files, downloading dependencies and other Composer dependencies based configurations.
 
-How Does Automatic Work
+How Does Narrowspark Automatic Work
 ------------
 
 Narrowspark Automatic is a Composer plugin that modifies the behavior of the `require`, `update`, `create project`, and `remove` commands. When installing or removing dependencies in a Automatic-enabled application, your Application can perform tasks before and after the execution of Composer tasks.
@@ -27,25 +27,10 @@ composer require viserio/console
 
 If you execute this command in your Application that doesn't support Narrowspark Automatic, this command will execute in the normal composer require behavior.
 
-When Narrowspark Automatic is installed in your Application, it will check if a automatic.json file or a composer.json extra key with `automatic` exists. In the above example, Automatic decided which automated tasks need to be run after the installation.
+When Narrowspark Automatic is installed in your Application, it will check if a `automatic.json` file or a composer.json extra key with `automatic` exists.
+In the above example, Automatic decided which automated tasks need to be run after the installation.
 
-Narrowspark Automatic keeps tracks of the configuration, in a automatic.lock file, which must be committed to your code repository.
-
-Automatic extends the composer dependencies download with a parallel downloader and it can skip old dependencies tags for a download boost.
-
-With the below example you can see how to add a skip tag to Narrowspark Automatic, with this it will skip all tags of symfony that are older then `4.1` for the download.
-
-```json
-{
-    "extra": {
-        "automatic": {
-            "require": {
-                "symfony/symfony": ">=4.1"
-            }
-        }
-    }
-}
-``` 
+Narrowspark Automatic keeps tracks of the configuration, in a `automatic.lock` file, which must be committed to your code repository.
 
 Using Narrowspark Automatic in New Applications
 ------------
@@ -124,6 +109,27 @@ The instructions defined in this `automatic.json` file are also used by Narrowsp
 This means that Automatic can remove the Console Provider and Proxy from the application and remove the script executor from Narrowspark Automatic.
 
 Read the [configuration documentation](doc/CONFIGURATION.md) to learn everything about how to create configuration for your own packages.
+
+Automatic extends Composer
+------------
+
+Narrowspark Automatic adds a parallel downloader with the feature to skip old dependencies tags for a download boost.
+
+The Automatic legacy tags manager has a default tag skip, for all `symfony` versions older then `>=4.1`.
+
+With the below example you can see how to add a skip tag to Narrowspark Automatic, with this it will skip all tags of `cakephp` that are older then `3.5`.
+
+```json
+{
+    "extra": {
+        "automatic": {
+            "require": {
+                "cakephp/cakephp": ">=3.5"
+            }
+        }
+    }
+}
+``` 
 
 Testing
 -------------

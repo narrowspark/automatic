@@ -9,7 +9,7 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 /**
  * @internal
  */
-final class TagsManagerTest extends MockeryTestCase
+final class LegacyTagsManagerTest extends MockeryTestCase
 {
     /**
      * @var array

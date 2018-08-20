@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator;
 
@@ -99,8 +100,10 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
     {
         $package = new Package('Fixture/copy', '1.0');
         $package->setConfig([
-            'copy' => [
-                'copy.txt' => $this->copyFileName,
+            ConfiguratorContract::TYPE => [
+                'copy' => [
+                    'copy.txt' => $this->copyFileName,
+                ],
             ],
         ]);
 

@@ -97,7 +97,7 @@ abstract class AbstractConfigurator
     public function configure(PackageContract $package): void
     {
         foreach (\array_keys($this->configurators) as $key) {
-            if ($package->hasConfig($key)) {
+            if ($package->hasConfig(ConfiguratorContract::TYPE, $key)) {
                 $this->get($key)->configure($package);
             }
         }
@@ -113,10 +113,20 @@ abstract class AbstractConfigurator
     public function unconfigure(PackageContract $package): void
     {
         foreach (\array_keys($this->configurators) as $key) {
-            if ($package->hasConfig($key)) {
+            if ($package->hasConfig(ConfiguratorContract::TYPE, $key)) {
                 $this->get($key)->unconfigure($package);
             }
         }
+    }
+
+    /**
+     * Get all registered configurators.
+     *
+     * @return array
+     */
+    public function getConfigurators(): array
+    {
+        return $this->configurators;
     }
 
     /**

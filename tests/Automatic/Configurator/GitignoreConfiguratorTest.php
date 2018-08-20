@@ -4,6 +4,7 @@ namespace Narrowspark\Automatic\Test\Configurator;
 
 use Composer\Composer;
 use Composer\IO\NullIO;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator\GitIgnoreConfigurator;
 use PHPUnit\Framework\TestCase;
@@ -149,7 +150,7 @@ EOF;
     private function arrangePackageWithConfig(string $name, array $config): Package
     {
         $package = new Package($name, '1.0.0');
-        $package->setConfig(['gitignore' => $config]);
+        $package->setConfig([ConfiguratorContract::TYPE => ['gitignore' => $config]]);
 
         return $package;
     }

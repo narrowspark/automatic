@@ -33,6 +33,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
@@ -369,8 +370,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 '',
                 '<info>Some files may have been created or updated to configure your new packages.</info>',
                 '<comment>The automatic.lock file has all information about the installed packages.</comment>',
-                'Please <comment>review</comment>, <comment>edit</comment> and <comment>commit</comment> them: these files are <comment>yours</comment>.',
-                "\nTo show the package suggests run <comment>composer suggests</comment>."
+                'Please <comment>review</comment>, <comment>edit</comment> and <comment>commit</comment> them: these files are <comment>yours</comment>',
+                "\nTo show the package suggests run <comment>composer suggests</comment>"
             );
         }
 
@@ -410,7 +411,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 $scriptExecutor->execute($type, $cmd);
             }
         } else {
-            $this->container->get(IOInterface::class)->write('No auto-scripts section was found under scripts.', true, IOInterface::VERBOSE);
+            $this->container->get(IOInterface::class)->write('No auto-scripts section was found under scripts', true, IOInterface::VERBOSE);
         }
     }
 
@@ -680,9 +681,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         $this->writeScriptExtenderToLock($package, $lock);
 
-        $this->container->get(Configurator::class)->configure($package);
+        /** @var \Narrowspark\Automatic\Configurator $configurator */
+        $configurator = $this->container->get(Configurator::class);
 
+        $configurator->configure($package);
         $packageConfigurator->configure($package);
+
+        $this->showWarningOnRemainingConfigurators($package, $packageConfigurator, $configurator);
 
         if ($package->hasConfig('post-install-output')) {
             foreach ((array) $package->getConfig('post-install-output') as $line) {
@@ -713,9 +718,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function doUninstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
     {
-        $this->container->get(Configurator::class)->unconfigure($package);
+        /** @var \Narrowspark\Automatic\Configurator $configurator */
+        $configurator = $this->container->get(Configurator::class);
 
+        $configurator->unconfigure($package);
         $packageConfigurator->unconfigure($package);
+
+        $this->showWarningOnRemainingConfigurators($package, $packageConfigurator, $configurator);
 
         /** @var \Narrowspark\Automatic\Lock $lock */
         $lock = $this->container->get(Lock::class);
@@ -812,17 +821,17 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     {
         // @codeCoverageIgnoreStart
         if (! \extension_loaded('openssl')) {
-            return 'You must enable the openssl extension in your "php.ini" file.';
+            return 'You must enable the openssl extension in your "php.ini" file';
         }
 
         if (\version_compare(self::getComposerVersion(), '1.6.0', '<')) {
-            return \sprintf('Your version "%s" of Composer is too old; Please upgrade.', Composer::VERSION);
+            return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd
 
         // skip on no interactive mode
         if (! $io->isInteractive()) {
-            return 'Composer running in a no interaction mode.';
+            return 'Composer running in a no interaction mode';
         }
 
         return null;
@@ -849,7 +858,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             return $matches[0];
         }
 
-        throw new RuntimeException('No composer version found.');
+        throw new RuntimeException('No composer version found');
     }
 
     /**
@@ -875,8 +884,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
 
             $this->addLegacyTags($io, $requires, $tagsManager);
-        } elseif (isset($extra['require'])) {
-            $this->addLegacyTags($io, $extra['require'], $tagsManager);
+        } elseif (isset($extra[Util::COMPOSER_EXTRA_KEY]['require'])) {
+            $this->addLegacyTags($io, $extra[Util::COMPOSER_EXTRA_KEY]['require'], $tagsManager);
         }
     }
 
@@ -982,5 +991,39 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $setRepositories($manager);
 
         return $manager;
+    }
+
+    /**
+     * Show a waring if remaining configurators are found in package config.
+     *
+     * @param \Narrowspark\Automatic\Common\Contract\Package $package
+     * @param \Narrowspark\Automatic\PackageConfigurator     $packageConfigurator
+     * @param \Narrowspark\Automatic\Configurator            $configurator
+     *
+     * @return void
+     */
+    private function showWarningOnRemainingConfigurators(PackageContract $package, PackageConfigurator $packageConfigurator, $configurator): void
+    {
+        $packageConfigConfigurators = \array_keys((array) $package->getConfig(ConfiguratorContract::TYPE));
+
+        foreach (\array_keys($configurator->getConfigurators()) as $key) {
+            if (isset($packageConfigConfigurators[$key])) {
+                unset($packageConfigConfigurators[$key]);
+            }
+        }
+
+        foreach (\array_keys($packageConfigurator->getConfigurators()) as $key) {
+            if (isset($packageConfigConfigurators[$key])) {
+                unset($packageConfigConfigurators[$key]);
+            }
+        }
+
+        if (\count($packageConfigConfigurators) !== 0) {
+            $this->container->get(IOInterface::class)->writeError(\sprintf(
+                '<warning>No configurators were run for [%s] in [%s]</warning>',
+                \implode(', ', $packageConfigConfigurators),
+                $package->getPrettyName()
+            ));
+        }
     }
 }

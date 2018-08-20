@@ -286,17 +286,37 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
-    public function hasConfig(string $key): bool
+    public function hasConfig(string $mainKey, ?string $name = null): bool
     {
-        return \array_key_exists($key, $this->configs);
+        $mainCheck = \array_key_exists($mainKey, $this->configs);
+
+        if ($name === null) {
+            return $mainCheck;
+        }
+
+        if ($mainCheck === true && \is_array($this->configs[$mainKey])) {
+            return \array_key_exists($name, $this->configs[$mainKey]);
+        }
+
+        return false;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getConfig(string $key)
+    public function getConfig(string $mainKey, ?string $name = null)
     {
-        return $this->configs[$key] ?? null;
+        if (\array_key_exists($mainKey, $this->configs)) {
+            if ($name === null) {
+                return $this->configs[$mainKey];
+            }
+
+            if (\is_array($this->configs[$mainKey]) && \array_key_exists($name, $this->configs[$mainKey])) {
+                return $this->configs[$mainKey][$name];
+            }
+        }
+
+        return null;
     }
 
     /**

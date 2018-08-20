@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Configurator;
 
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 
 final class EnvConfigurator extends AbstractConfigurator
@@ -30,7 +31,7 @@ final class EnvConfigurator extends AbstractConfigurator
 
         $data = '';
 
-        foreach ((array) $package->getConfig(self::getName()) as $key => $value) {
+        foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $key => $value) {
             if ($key[0] === '#' && \is_numeric(\mb_substr($key, 1))) {
                 $data .= '# ' . $value . "\n";
 

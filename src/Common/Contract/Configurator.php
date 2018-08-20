@@ -5,6 +5,11 @@ namespace Narrowspark\Automatic\Common\Contract;
 interface Configurator
 {
     /**
+     * @var string
+     */
+    public const TYPE = 'configurators';
+
+    /**
      * Return the configurator key name.
      *
      * @return string

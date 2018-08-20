@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Configurator;
 
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Symfony\Component\Filesystem\Exception\IOException;
 
@@ -23,7 +24,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     {
         $this->write('Copying files');
 
-        foreach ((array) $package->getConfig(self::getName()) as $from => $to) {
+        foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $from => $to) {
             $target = self::expandTargetDir($this->options, $to);
 
             try {
@@ -50,7 +51,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     {
         $this->write('Removing files');
 
-        foreach ((array) $package->getConfig(self::getName()) as $source) {
+        foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $source) {
             $source = self::expandTargetDir($this->options, $source);
 
             try {

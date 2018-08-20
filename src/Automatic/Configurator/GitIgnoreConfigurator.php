@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Configurator;
 
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
+use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 
 final class GitIgnoreConfigurator extends AbstractConfigurator
@@ -20,7 +21,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
      */
     public function configure(PackageContract $package): void
     {
-        $this->write('Added entries to .gitignore.');
+        $this->write('Added entries to .gitignore');
 
         $gitignore = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.gitignore';
 
@@ -30,7 +31,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
 
         $data = '';
 
-        foreach ((array) $package->getConfig(self::getName()) as $value) {
+        foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $value) {
             $value = self::expandTargetDir($this->options, $value);
             $data .= "${value}\n";
         }
@@ -63,7 +64,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
             return;
         }
 
-        $this->write('Removed entries in .gitignore.');
+        $this->write('Removed entries in .gitignore');
 
         \file_put_contents($file, \ltrim($contents, "\r\n"));
     }

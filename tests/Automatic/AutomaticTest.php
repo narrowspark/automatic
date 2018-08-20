@@ -154,7 +154,7 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn(false);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with('<warning>Narrowspark Automatic has been disabled. Composer running in a no interaction mode.</warning>');
+            ->with('<warning>Narrowspark Automatic has been disabled. Composer running in a no interaction mode</warning>');
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
     }
@@ -393,7 +393,7 @@ final class AutomaticTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('write')
             ->once()
-            ->with('No auto-scripts section was found under scripts.', true, IOInterface::VERBOSE);
+            ->with('No auto-scripts section was found under scripts', true, IOInterface::VERBOSE);
 
         $containerMock = $this->mock(ContainerContract::class);
         $containerMock->shouldReceive('get')

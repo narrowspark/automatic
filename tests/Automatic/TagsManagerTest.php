@@ -36,10 +36,10 @@ final class TagsManagerTest extends MockeryTestCase
         $pPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'Packagist';
 
         $this->downloadFileList = [
-            $pPath . \DIRECTORY_SEPARATOR . 'provider-codeigniter$framework.json',
-            $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$security-guard.json',
-            $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$symfony.json',
-            $pPath . \DIRECTORY_SEPARATOR . 'provider-zendframework$zend-diactoros.json',
+            'codeigniter$framework' => $pPath . \DIRECTORY_SEPARATOR . 'provider-codeigniter$framework.json',
+            'symfony$security-guard' => $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$security-guard.json',
+            'symfony$symfony' => $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$symfony.json',
+            'zendframework$zend-diactoros' => $pPath . \DIRECTORY_SEPARATOR . 'provider-zendframework$zend-diactoros.json',
         ];
 
         $this->ioMock     = $this->mock(IOInterface::class);
@@ -61,9 +61,14 @@ final class TagsManagerTest extends MockeryTestCase
         static::assertSame(2, $count);
     }
 
+    public function testRemoveLegacyTagsWithoutDataPackages(): void
+    {
+        static::assertSame([], $this->tagsManger->removeLegacyTags([]));
+    }
+
     public function testRemoveLegacyTagsWithSymfony(): void
     {
-        $originalData = \json_decode(\file_get_contents($this->downloadFileList[3]), true);
+        $originalData = \json_decode(\file_get_contents($this->downloadFileList['symfony$symfony']), true);
 
         $data = $this->tagsManger->removeLegacyTags($originalData);
 

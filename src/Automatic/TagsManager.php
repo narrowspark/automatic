@@ -80,11 +80,12 @@ final class TagsManager
      */
     public function removeLegacyTags(array $data): array
     {
-        if (\count($data) === 0) {
+        if (! isset($data['packages'])) {
             return $data;
         }
 
         foreach ($data['packages'] as $name => $versions) {
+            var_dump($name);
             if (! isset($this->legacyTags[$name])) {
                 continue;
             }

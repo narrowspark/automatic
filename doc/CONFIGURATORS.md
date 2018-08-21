@@ -3,6 +3,11 @@
 Narrowspark Automatic Configurations allow the automation of Composer packages configuration via the
 [`Narrowspark Automatic`](../README.md) Composer plugin.
 
+Configurators
+----------------
+
+
+
 You can choose 2 ways to create some configurators, you can store the configurators on their own repositories, outside of your Composer package repository or inside your Composer package repository.
 
 Creating Configurators Repository

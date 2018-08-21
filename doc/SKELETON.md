@@ -3,13 +3,14 @@
 Narrowspark Automatic Skeleton generators allows the automation of Composer `create-project` via the
 [`Narrowspark Automatic`](../README.md) Composer plugin.
 
-Creating a Skeleton Repository
+Creating a Skeleton
 ----------------
 Narrowspark Automatic Skeleton must be stored on their own repositories, outside of your Composer package repository.
 
 Narrowspark Automatic checks all packages for the `automatic-skeleton` type and register it to Automatic.
 
-After the registration, it will search for all files found in your composer.json `autoload` section, all found classes are added to the `automatic.lock`.
+After the registration, it will search for all classes found in your composer.json `autoload` section.
+All found classes are added to the `automatic.lock` skeleton selection.
 
 The following example shows how your `composer.json` can look:
 
@@ -37,7 +38,7 @@ The following example shows how your `composer.json` can look:
 
 To create a skeleton generator you need to extend the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` class.
 
-The example shows how your generator class should look after the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` extend:
+The example below shows how your generator class should look after the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` was extend:
 
 ```php
 <?php

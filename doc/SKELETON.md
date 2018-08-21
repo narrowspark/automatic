@@ -7,10 +7,10 @@ Creating a Skeleton
 ----------------
 Narrowspark Automatic Skeleton must be stored on their own repositories, outside of your Composer package repository.
 
-Narrowspark Automatic checks all packages for the `automatic-skeleton` type and register it to Automatic.
+Narrowspark Automatic checks all packages for the `automatic-skeleton` package type and register it to Automatic.
 
 After the registration, it will search for all classes found in your composer.json `autoload` section.
-All found classes are added to the `automatic.lock` skeleton selection.
+All found classes are added to the `automatic.lock skeleton` section.
 
 The following example shows how your `composer.json` can look:
 

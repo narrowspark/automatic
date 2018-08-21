@@ -65,11 +65,15 @@ abstract class AbstractGenerator
     }
 
     /**
+     * Returns all requirements that should be installed.
+     *
      * @return string[]
      */
     abstract public function getDependencies(): array;
 
     /**
+     * Returns all dev requirements that should be installed.
+     *
      * @return string[]
      */
     abstract public function getDevDependencies(): array;

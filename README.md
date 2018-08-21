@@ -21,7 +21,7 @@ Narrowspark Automatic is a Composer plugin that modifies the behavior of the `re
 
 Consider the following example:
 ```bash
-cd project
+cd your-project
 composer require viserio/console
 ```
 
@@ -30,7 +30,7 @@ If you execute this command in your Application that doesn't support Narrowspark
 When Narrowspark Automatic is installed in your Application, it will check if a `automatic.json` file or a composer.json extra key with `automatic` exists.
 In the above example, Automatic decided which automated tasks need to be run after the installation.
 
-Narrowspark Automatic keeps tracks of the configuration, in a `automatic.lock` file, which must be committed to your code repository.
+>NOTE: Narrowspark Automatic keeps tracks of the configuration, in a `automatic.lock` file, which must be committed to your code repository.
 
 Using Narrowspark Automatic in New Applications
 ------------
@@ -80,9 +80,10 @@ Narrowspark Automatic supports skeleton generation. For example this is your `co
 }
 ```
 
-Automatic search all packages for the package type: `automatic-skeleton`. If packages are found with this type, all skeletons will be saved in the `automatic.lock`. 
+Automatic search all packages for the package type: `automatic-skeleton`.
+If packages are found with this type, all skeletons will be saved in the `automatic.lock` for the runtime. 
 
-This means you can execute the following command: `composer create-project your/project` to create a Automatic-enabled application, automatic will ask your some questions, which skeleton should be generated for your application.
+This means you can execute the following command: `composer create-project your/project` to create a Automatic-enabled application, automatic will ask which skeleton should be generated for your application.
 
 Read the [skeleton documentation](doc/SKELETON.md) to learn everything about how to create skeletons for your own application.
 
@@ -104,11 +105,12 @@ Narrowspark Automatic Configuration are defined in a `automatic.json` file or in
 
 The `providers` and `proxies` option tells Narrowspark Automatic in which environments this `provider`, `proxy` should be enabled automatically (all in this case).
 Finally the `script-extenders` option adds a new script executor to the Narrowspark Automatic `auto-scripts`.
+Now you can run viserio console commands in your application `composer.json auto-scripts` section.
 
 The instructions defined in this `automatic.json` file are also used by Narrowspark Automatic when uninstalling dependencies (e.g. `composer remove viserio/console`) to undo all changes.
 This means that Automatic can remove the Console Provider and Proxy from the application and remove the script executor from Narrowspark Automatic.
 
-Read the [configuration documentation](doc/CONFIGURATION.md) to learn everything about how to create configuration for your own packages.
+Read the [configuration documentation](doc/CONFIGURATORS.md) to learn everything about how to create configuration for your own packages.
 
 Automatic extends Composer
 ------------

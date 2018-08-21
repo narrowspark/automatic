@@ -69,6 +69,8 @@ final class TagsManagerTest extends MockeryTestCase
 
     public function testRemoveLegacyTagsWithSymfony(): void
     {
+        $this->tagsManger->addConstraint('symfony/symfony', '>=3.4');
+
         $originalData = \json_decode(\file_get_contents($this->downloadFileList['symfony$symfony']), true);
 
         $this->ioMock->shouldReceive('writeError')

@@ -38,8 +38,6 @@ final class LegacyTagsManager
     {
         $this->io            = $io;
         $this->versionParser = new VersionParser();
-
-        $this->addConstraint('symfony/symfony', '>=3.4');
     }
 
     /**

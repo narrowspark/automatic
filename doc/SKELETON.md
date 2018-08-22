@@ -9,8 +9,7 @@ Narrowspark Automatic Skeleton must be stored on their own repositories, outside
 
 Narrowspark Automatic checks all packages for the `automatic-skeleton` package type and register it to Automatic.
 
-After the registration, it will search for all classes found in your composer.json `autoload` section.
-All found classes are added to the `automatic.lock skeleton` section.
+After the registration, it will search for all classes found in your composer.json `autoload` section. The classes are added to the `skeleton` section in your `automatic.lock` file.
 
 The following example shows how your `composer.json` can look:
 
@@ -18,7 +17,6 @@ The following example shows how your `composer.json` can look:
 {
     "name": "narrowspark/skeleton-generators",
     "type": "automatic-skeleton",
-    "description": "The narrowspark skeleton generators.",
     "require": {
         "php": "^7.2",
         "ext-mbstring": "*"
@@ -36,9 +34,11 @@ The following example shows how your `composer.json` can look:
 }
 ```
 
+`narrowspark/automatic-common` required for creating a Configurator, pleas add it to the `dev-require` section in your composer.json file.
+
 To create a skeleton generator you need to extend the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` class.
 
-The example below shows how your generator class should look after the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` was extend:
+The example below shows you, how your generator class should look after the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` was extend:
 
 ```php
 <?php

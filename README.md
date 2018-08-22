@@ -41,7 +41,8 @@ Include Narrowspark Automatic as a required dependency to your application with 
 Using Narrowspark Automatic for Skeleton Application
 ------------
 
-Narrowspark Automatic supports skeleton generation. For example this is your `composer.json` file
+Narrowspark Automatic supports skeleton generation. For example this is your `composer.json` file:
+
 ```json
 {
     "type": "project",
@@ -83,11 +84,12 @@ Narrowspark Automatic supports skeleton generation. For example this is your `co
 Automatic search all packages for the package type: `automatic-skeleton`.
 If packages are found with this type, all skeletons will be saved in the `automatic.lock` for the runtime. 
 
-This means you can execute the following command: `composer create-project your/project` to create a Automatic-enabled application, automatic will ask which skeleton should be generated for your application.
+This means you can execute the following command: `composer create-project your/project` to create a Automatic-enabled application, Automatic will ask which skeleton should be generated for your application.
 
 Read the [skeleton documentation](doc/SKELETON.md) to learn everything about how to create skeletons for your own application.
 
 Narrowspark Automatic Configuration are defined in a `automatic.json` file or in the composer extra key `automatic` and can contain any number of other files and directories. For example, this is the `automatic.json` for `viserio/console`:
+
 ```json
 {
     "providers": {               
@@ -105,7 +107,7 @@ Narrowspark Automatic Configuration are defined in a `automatic.json` file or in
 
 The `providers` and `proxies` option tells Narrowspark Automatic in which environments this `provider`, `proxy` should be enabled automatically (all in this case).
 Finally the `script-extenders` option adds a new script executor to the Narrowspark Automatic `auto-scripts`.
-Now you can run viserio console commands in your application `composer.json auto-scripts` section.
+Now you can run `viserio console` commands in the `auto-scripts` section of your `composer.json` application file.
 
 The instructions defined in this `automatic.json` file are also used by Narrowspark Automatic when uninstalling dependencies (e.g. `composer remove viserio/console`) to undo all changes.
 This means that Automatic can remove the Console Provider and Proxy from the application and remove the script executor from Narrowspark Automatic.
@@ -116,8 +118,6 @@ Automatic extends Composer
 ------------
 
 Narrowspark Automatic adds a parallel downloader with the feature to skip old dependencies tags for a download boost.
-
-The Automatic legacy tags manager has a default tag skip, for all `symfony` versions older then `>=4.1`.
 
 With the below example you can see how to add a skip tag to Narrowspark Automatic, with this it will skip all tags of `cakephp` that are older then `3.5`.
 

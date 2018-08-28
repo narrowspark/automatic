@@ -2,10 +2,11 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic;
 
+use Closure;
 use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
 use Symfony\Component\Finder\Finder;
 
-final class ClassLoader implements ResettableContract
+final class ClassFinder implements ResettableContract
 {
     /**
      * List of traits.
@@ -36,22 +37,177 @@ final class ClassLoader implements ResettableContract
     private $classes = [];
 
     /**
+     * The composer vendor dir.
+     *
+     * @var string
+     */
+    private $vendorDir;
+
+    /**
+     * All given paths for psr4 and prs0.
+     *
+     * @var array[]|string[]
+     */
+    private $paths;
+
+    /**
+     * List of excludes paths.
+     *
+     * @var array
+     */
+    private $excludes = [];
+
+    /**
+     * A symfony finder filter.
+     *
+     * @var \Closure
+     */
+    private $filter;
+
+    /**
+     * Create a new ClassLoader instance.
+     *
+     * @param string $vendorDir
+     */
+    public function __construct(string $vendorDir)
+    {
+        $this->paths = [
+            'psr0'     => [],
+            'psr4'     => [],
+            'classmap' => [],
+        ];
+        $this->vendorDir = $vendorDir;
+    }
+
+    /**
+     * Set the composer.json file autoload key values.
+     *
+     * @param string $packageName
+     * @param array $autoload
+     *
+     * @return \Narrowspark\Automatic\ClassFinder
+     */
+    public function setComposerAutoload(string $packageName, array $autoload): self
+    {
+        $this->reset();
+
+        if (isset($autoload['psr-0'])) {
+            $this->addPsr0($packageName, (array) $autoload['psr-0']);
+        }
+
+        if (isset($autoload['psr-4'])) {
+            $this->addPsr4($packageName, (array) $autoload['psr-4']);
+        }
+
+        if (isset($autoload['classmap'])) {
+            $this->addClassmap($packageName, (array) $autoload['classmap']);
+        }
+
+        if (isset($autoload['exclude-from-classmap'])) {
+            $this->setExcludes((array) $autoload['exclude-from-classmap']);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add composer psr0 paths.
+     *
+     * @param string $packageName
+     * @param array  $paths
+     *
+     * @return \Narrowspark\Automatic\ClassFinder
+     */
+    public function addPsr0(string $packageName, array $paths): self
+    {
+        $this->paths['psr0'][$packageName] = $paths;
+
+        return $this;
+    }
+
+    /**
+     * Add composer psr4 paths.
+     *
+     * @param string $packageName
+     * @param array  $paths
+     *
+     * @return \Narrowspark\Automatic\ClassFinder
+     */
+    public function addPsr4(string $packageName, array $paths): self
+    {
+        $this->paths['psr4'][$packageName] = $paths;
+
+        return $this;
+    }
+
+    /**
+     * Add composer classmap paths.
+     *
+     * @param string $packageName
+     * @param array  $paths
+     *
+     * @return \Narrowspark\Automatic\ClassFinder
+     */
+    public function addClassmap(string $packageName, array $paths): self
+    {
+        $this->paths['classmap'][$packageName] = $paths;
+
+        return $this;
+    }
+
+    /**
+     * Exclude paths from finder.
+     *
+     * @param array $excludes
+     *
+     * @return \Narrowspark\Automatic\ClassFinder
+     */
+    public function setExcludes(array $excludes): self
+    {
+        $this->excludes = $excludes;
+
+        return $this;
+    }
+
+    /**
+     * Set a symfony finder filter.
+     *
+     * @param \Closure $filter
+     *
+     * @return \Narrowspark\Automatic\ClassFinder
+     */
+    public function setFilter(Closure $filter): self
+    {
+        $this->filter = $filter;
+
+        return $this;
+    }
+
+    /**
      * Find all the class, traits and interface names in a given directory.
      *
-     * @param array|string $dirs
-     *
-     * @return void
+     * @return \Narrowspark\Automatic\ClassFinder
      */
-    public function find($dirs): void
+    public function find(): self
     {
+        $preparedPaths = \array_unique(
+            \array_merge(
+                $this->getPreparedPaths($this->paths['psr0']),
+                $this->getPreparedPaths($this->paths['psr4']),
+                $this->getPreparedPaths($this->paths['classmap'])
+            ),
+            \SORT_STRING
+        );
+
         $finder = Finder::create()
             ->files()
-            ->sortByName()
-            ->in($dirs)
-            ->name('*.php');
+            ->in($preparedPaths)
+            ->exclude($this->excludes)
+            ->name('*.php')
+            ->sortByName();
 
         if ($this->filter !== null) {
-            $finder = $finder->filter($this->filter);
+            $finder->filter($this->filter);
         }
 
         /** @var \SplFileInfo $file */
@@ -78,9 +234,12 @@ final class ClassLoader implements ResettableContract
                 }
             }
 
+            unset($tokens);
             // PHP 7 memory manager will not release after token_get_all(), see https://bugs.php.net/70098
             \gc_mem_caches();
         }
+
+        return $this;
     }
 
     /**
@@ -147,6 +306,11 @@ final class ClassLoader implements ResettableContract
         $this->traits          = [];
         $this->abstractClasses = [];
         $this->classes         = [];
+        $this->paths           = [
+            'psr0'     => [],
+            'psr4'     => [],
+            'classmap' => [],
+        ];
     }
 
     /**
@@ -209,5 +373,29 @@ final class ClassLoader implements ResettableContract
         }
 
         return null;
+    }
+
+    /**
+     * Prepare psr0 and psr4 to full vendor package paths.
+     *
+     * @param $paths
+     *
+     * @return array
+     */
+    private function getPreparedPaths(array $paths): array
+    {
+        $fullPaths = [];
+
+        foreach ($paths as $name => $path) {
+            if (\is_array($path)) {
+                foreach ($path as $p) {
+                    $fullPaths[] = \rtrim($this->vendorDir . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $p, '/');
+                }
+            } else {
+                $fullPaths[] = \rtrim($this->vendorDir . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $path, '/');
+            }
+        }
+
+        return $fullPaths;
     }
 }

@@ -8,7 +8,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
-use Narrowspark\Automatic\ClassLoader;
+use Narrowspark\Automatic\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
 
@@ -34,7 +34,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     /**
      * A path class loader instance.
      *
-     * @var \Narrowspark\Automatic\ClassLoader
+     * @var \Narrowspark\Automatic\ClassFinder
      */
     protected $loader;
 
@@ -44,9 +44,9 @@ abstract class AbstractInstaller extends LibraryInstaller
      * @param \Composer\IO\IOInterface           $io
      * @param \Composer\Composer                 $composer
      * @param \Narrowspark\Automatic\Lock        $lock
-     * @param \Narrowspark\Automatic\ClassLoader $loader
+     * @param \Narrowspark\Automatic\ClassFinder $loader
      */
-    public function __construct(IOInterface $io, Composer $composer, Lock $lock, ClassLoader $loader)
+    public function __construct(IOInterface $io, Composer $composer, Lock $lock, ClassFinder $loader)
     {
         parent::__construct($io, $composer, static::TYPE);
 
@@ -122,21 +122,11 @@ abstract class AbstractInstaller extends LibraryInstaller
      */
     protected function findClasses(array $autoload, PackageInterface $package): ?array
     {
-        $name    = $package->getPrettyName();
         $classes = [];
-        $psr4    = [];
 
-        foreach ((array) $autoload['psr-4'] as $path) {
-            if (\is_array($path)) {
-                foreach ($path as $p) {
-                    $psr4[] = \rtrim($this->vendorDir . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $p, '/');
-                }
-            } else {
-                $psr4[] = \rtrim($this->vendorDir . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $path, '/');
-            }
-        }
-
-        $this->loader->find($psr4);
+        $this->loader
+            ->setComposerAutoload($package->getName(), $autoload)
+            ->find();
 
         foreach ($this->loader->getClasses() as $class => $path) {
             $classes[] = $class;

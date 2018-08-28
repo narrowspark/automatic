@@ -84,7 +84,7 @@ final class ScriptExecutor
     public function addExtender(string $name, string $extender): void
     {
         if (isset($this->extenders[$name])) {
-            throw new InvalidArgumentException(\sprintf('Script executor extender with the name [%s] already exists.', $name));
+            throw new InvalidArgumentException(\sprintf('Script executor with the name [%s] already exists.', $name));
         }
 
         if (! \is_subclass_of($extender, ScriptExtenderContract::class)) {

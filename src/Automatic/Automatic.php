@@ -34,11 +34,9 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
-use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
-use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
-use Narrowspark\Automatic\Common\Contract\ScriptExtender as ScriptExtenderContract;
+use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
@@ -650,6 +648,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
      */
     private function doActionOnPackageOperation(PackageContract $package): void
     {
+        $classFinder = $this->container->get(ClassFinder::class);
+        $classFinder->setComposerAutoload($package->getName(), $package->getAutoload());
+
         /** @var \Narrowspark\Automatic\PackageConfigurator $packageConfigurator */
         $packageConfigurator = $this->container->get(PackageConfigurator::class);
 
@@ -693,7 +694,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
             $extenders = [];
 
             foreach ((array) $package->getConfig(ScriptExecutor::TYPE) as $extender) {
-                $extenders[$extender] = $package->getName() . \DIRECTORY_SEPARATOR . '';
+                $extenders[$extender] = '%vendor_path%' . DIRECTORY_SEPARATOR . $package->getName() . \DIRECTORY_SEPARATOR . '';
             }
 
             $lock->addSub(ScriptExecutor::TYPE, $package->getName(), $extenders);

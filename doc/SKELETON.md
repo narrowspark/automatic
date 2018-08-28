@@ -34,7 +34,7 @@ The following example shows how your `composer.json` can look:
 }
 ```
 
-`narrowspark/automatic-common` required for creating a Configurator, pleas add it to the `dev-require` section in your composer.json file.
+`narrowspark/automatic-common` required for creating a Configurator, please add it to the `dev-require` section in your composer.json file.
 
 To create a skeleton generator you need to extend the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` class.
 

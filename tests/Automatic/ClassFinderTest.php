@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
-use Narrowspark\Automatic\ClassLoader;
+use Narrowspark\Automatic\ClassFinder;
 use Narrowspark\Automatic\Test\Fixture\Finder\AbstractClass;
 use Narrowspark\Automatic\Test\Fixture\Finder\DummyClass;
 use Narrowspark\Automatic\Test\Fixture\Finder\DummyClassTwo;
@@ -13,12 +13,12 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-final class ClassLoaderTest extends TestCase
+final class ClassFinderTest extends TestCase
 {
     /**
      * A path class loader instance.
      *
-     * @var \Narrowspark\Automatic\ClassLoader
+     * @var \Narrowspark\Automatic\ClassFinder
      */
     private $loader;
 
@@ -29,12 +29,14 @@ final class ClassLoaderTest extends TestCase
     {
         parent::setUp();
 
-        $this->loader = new ClassLoader();
+        $this->loader = new ClassFinder(__DIR__);
     }
 
     public function testItFindsAllClassesInDirectoryWithGivenNamespace(): void
     {
-        $this->loader->find(__DIR__ . '/Fixture/Finder');
+        $this->loader
+            ->addPsr4('Fixture/Finder', [''])
+            ->find();
 
         static::assertArrayHasKey(DummyClass::class, $this->loader->getClasses());
         static::assertArrayHasKey(DummyClassTwo::class, $this->loader->getClasses());
@@ -48,17 +50,19 @@ final class ClassLoaderTest extends TestCase
         $dir      = __DIR__ . '/Fixture/empty';
         $filePath = $dir . '/empty.php';
 
-        \mkdir($dir);
-        \touch($filePath);
+        @\mkdir($dir);
+        @\touch($filePath);
 
-        $this->loader->find($dir);
+        $this->loader
+            ->addPsr0('/Fixture/empty', [''])
+            ->find();
 
         static::assertSame([], $this->loader->getClasses());
         static::assertSame([], $this->loader->getTraits());
         static::assertSame([], $this->loader->getAbstractClasses());
         static::assertSame([], $this->loader->getInterfaces());
 
-        \unlink($filePath);
-        \rmdir($dir);
+        @\unlink($filePath);
+        @\rmdir($dir);
     }
 }

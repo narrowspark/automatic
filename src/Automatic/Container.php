@@ -82,12 +82,15 @@ final class Container implements ContainerContract
             Config::class => static function (Container $container) {
                 return $container->get(Composer::class)->getConfig();
             },
+            ClassFinder::class => static function (Container $container) {
+                return new ClassFinder($container->get('vendor-dir'));
+            },
             ConfiguratorInstaller::class => static function (Container $container) {
                 return new ConfiguratorInstaller(
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
                     $container->get(Lock::class),
-                    new ClassLoader()
+                    $container->get(ClassFinder::class)
                 );
             },
             SkeletonInstaller::class => static function (Container $container) {
@@ -95,7 +98,7 @@ final class Container implements ContainerContract
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
                     $container->get(Lock::class),
-                    new ClassLoader()
+                    $container->get(ClassFinder::class)
                 );
             },
             Configurator::class => static function (Container $container) {
@@ -151,7 +154,7 @@ final class Container implements ContainerContract
                 );
 
                 $scriptExecutor->addExtender(ScriptExtender::getType(), ScriptExtender::class);
-                $scriptExecutor->addExtender(PhpScriptExtender::getType(),PhpScriptExtender::class);
+                $scriptExecutor->addExtender(PhpScriptExtender::getType(), PhpScriptExtender::class);
 
                 return $scriptExecutor;
             },

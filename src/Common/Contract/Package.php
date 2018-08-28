@@ -57,6 +57,22 @@ interface Package
     public function isDev(): bool;
 
     /**
+     * Set the package autoload.
+     *
+     * @param array $autoload
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Package
+     */
+    public function setAutoload(array $autoload): self;
+
+    /**
+     * Get the package autoload.
+     *
+     * @return array
+     */
+    public function getAutoload(): array;
+
+    /**
      * Set the package url.
      *
      * @param string $url

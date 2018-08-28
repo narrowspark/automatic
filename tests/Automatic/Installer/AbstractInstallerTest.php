@@ -6,7 +6,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
-use Narrowspark\Automatic\ClassLoader;
+use Narrowspark\Automatic\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
@@ -95,7 +95,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn($this->downloadManagerMock);
 
-        $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new ClassLoader());
+        $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new ClassFinder($this->configuratorPath));
 
         $this->repositoryMock    = $this->mock(InstalledRepositoryInterface::class);
         $this->packageMock       = $this->mock(PackageInterface::class);

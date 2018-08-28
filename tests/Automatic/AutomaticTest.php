@@ -496,7 +496,7 @@ final class AutomaticTest extends MockeryTestCase
     private function arrangeAutomaticConfig(): void
     {
         $this->configMock->shouldReceive('get')
-            ->twice()
+            ->times(3)
             ->with('vendor-dir')
             ->andReturn(__DIR__);
         $this->configMock->shouldReceive('get')

@@ -215,11 +215,11 @@ This example shows you, how to add a new Package Configurator in your `composer.
 }
 ```
 
-`narrowspark/automatic-common` required for creating a Configurator, pleas add it to the `dev-require` section in your composer.json file.
+`narrowspark/automatic-common` required for creating a Configurator, please add it to the `dev-require` section in your composer.json file.
 
 After you choose a way, you can create your Configurator(s).
 
-> NOTE: You can't overwirte register configurators.
+> NOTE: You can't overwrite registered configurators.
 
 To create a configurator you need to extend the `Narrowspark\Automatic\Common\Configurator\AbstractConfigurator` class.
 

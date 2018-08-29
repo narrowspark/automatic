@@ -403,7 +403,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
             $scriptExecutor = $this->container->get(ScriptExecutor::class);
 
             foreach ((array) $this->container->get(Lock::class)->get(ScriptExecutor::TYPE) as $name => $extenders) {
-                /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $class */
                 foreach ($extenders as $class => $path) {
                     if (! \class_exists($class)) {
                         require_once $path;
@@ -659,7 +658,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         $classFinder  = $this->container->get(ClassFinder::class);
         $foundClasses = $classFinder->setComposerAutoload($package->getName(), $package->getAutoload())
             ->setFilter(function (\SplFileInfo $fileInfo) use ($package) {
-                return \mb_strpos(\mb_strstr($fileInfo->getPathname(), $package->getName()), '/Automatic/') !== false;
+                return \mb_strpos((string) \mb_strstr($fileInfo->getPathname(), $package->getName()), '/Automatic/') !== false;
             })
             ->find()
             ->getAll();

@@ -192,9 +192,9 @@ final class ClassFinder implements ResettableContract
     {
         $preparedPaths = \array_unique(
             \array_merge(
-                $this->getPreparedPaths($this->paths['psr0']),
-                $this->getPreparedPaths($this->paths['psr4']),
-                $this->getPreparedPaths($this->paths['classmap'])
+                $this->getPreparedPaths((array) $this->paths['psr0']),
+                $this->getPreparedPaths((array) $this->paths['psr4']),
+                $this->getPreparedPaths((array) $this->paths['classmap'])
             ),
             \SORT_STRING
         );
@@ -378,7 +378,7 @@ final class ClassFinder implements ResettableContract
     /**
      * Prepare psr0 and psr4 to full vendor package paths.
      *
-     * @param $paths
+     * @param array $paths
      *
      * @return array
      */

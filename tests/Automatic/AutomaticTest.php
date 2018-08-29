@@ -35,6 +35,7 @@ use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Narrowspark\Automatic\Test\Fixture\AutomaticFixture;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use Nyholm\NSA;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -81,6 +82,10 @@ final class AutomaticTest extends MockeryTestCase
     public function testGetSubscribedEvents(): void
     {
         static::assertCount(13, Automatic::getSubscribedEvents());
+
+        NSA::setProperty($this->automatic, 'activated', false);
+
+        static::assertCount(0, Automatic::getSubscribedEvents());
     }
 
     public function testActivate(): void
@@ -363,7 +368,7 @@ final class AutomaticTest extends MockeryTestCase
         $lockMock->shouldReceive('get')
             ->once()
             ->with(ScriptExecutor::TYPE)
-            ->andReturn([ScriptExtender::class]);
+            ->andReturn(['test/test' => [ScriptExtender::class => dirname(__DIR__, 2) . '/Automatic/ScriptExtender.php']]);
 
         $containerMock = $this->mock(ContainerContract::class);
         $containerMock->shouldReceive('get')

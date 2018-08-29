@@ -124,6 +124,7 @@ final class Package implements PackageContract
             'type'            => 'setType',
             'requires'        => 'setRequires',
             'automatic-extra' => 'setConfig',
+            'autoload'        => 'setAutoload',
             'created'         => 'setTime',
         ];
 
@@ -386,6 +387,7 @@ final class Package implements PackageContract
                 'type'                               => $this->type,
                 'requires'                           => $this->requires,
                 'automatic-extra'                    => $this->configs,
+                'autoload'                           => $this->autoload,
                 'created'                            => $this->created,
             ];
     }

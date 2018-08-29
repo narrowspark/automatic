@@ -402,8 +402,15 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
             /** @var \Narrowspark\Automatic\ScriptExecutor $scriptExecutor */
             $scriptExecutor = $this->container->get(ScriptExecutor::class);
 
-            foreach ((array) $this->container->get(Lock::class)->get(ScriptExecutor::TYPE) as $extender) {
-                $scriptExecutor->addExtender($extender);
+            foreach ((array) $this->container->get(Lock::class)->get(ScriptExecutor::TYPE) as $name => $extenders) {
+                /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $class */
+                foreach ($extenders as $class => $path) {
+                    if (! \class_exists($class)) {
+                        require_once $path;
+                    }
+
+                    $scriptExecutor->addExtender($class::getType(), $class);
+                }
             }
 
             foreach ($jsonContents['scripts']['auto-scripts'] as $cmd => $type) {
@@ -648,8 +655,20 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
      */
     private function doActionOnPackageOperation(PackageContract $package): void
     {
-        $classFinder = $this->container->get(ClassFinder::class);
-        $classFinder->setComposerAutoload($package->getName(), $package->getAutoload());
+        /** @var \Narrowspark\Automatic\ClassFinder $classFinder */
+        $classFinder  = $this->container->get(ClassFinder::class);
+        $foundClasses = $classFinder->setComposerAutoload($package->getName(), $package->getAutoload())
+            ->setFilter(function (\SplFileInfo $fileInfo) use ($package) {
+                return \mb_strpos(\mb_strstr($fileInfo->getPathname(), $package->getName()), '/Automatic/') !== false;
+            })
+            ->find()
+            ->getAll();
+
+        foreach ($foundClasses as $class => $path) {
+            if (! \class_exists($class)) {
+                require_once $path;
+            }
+        }
 
         /** @var \Narrowspark\Automatic\PackageConfigurator $packageConfigurator */
         $packageConfigurator = $this->container->get(PackageConfigurator::class);
@@ -665,7 +684,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         if ($package->getOperation() === 'install') {
             $io->writeError(\sprintf('  - Configuring %s', $package->getName()));
 
-            $this->doInstall($package, $packageConfigurator);
+            $this->doInstall($package, $packageConfigurator, $foundClasses);
         } elseif ($package->getOperation() === 'uninstall') {
             $io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
 
@@ -673,6 +692,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         }
 
         $packageConfigurator->reset();
+        $classFinder->reset();
     }
 
     /**
@@ -680,12 +700,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package $package
      * @param \Narrowspark\Automatic\PackageConfigurator     $packageConfigurator
+     * @param array                                          $foundClasses
      *
      * @throws \Exception
      *
      * @return void
      */
-    private function doInstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
+    private function doInstall(PackageContract $package, PackageConfigurator $packageConfigurator, array $foundClasses): void
     {
         /** @var \Narrowspark\Automatic\Lock $lock */
         $lock = $this->container->get(Lock::class);
@@ -694,7 +715,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
             $extenders = [];
 
             foreach ((array) $package->getConfig(ScriptExecutor::TYPE) as $extender) {
-                $extenders[$extender] = '%vendor_path%' . DIRECTORY_SEPARATOR . $package->getName() . \DIRECTORY_SEPARATOR . '';
+                if (isset($foundClasses[$extender])) {
+                    $extenders[$extender] = $foundClasses[$extender];
+                }
             }
 
             $lock->addSub(ScriptExecutor::TYPE, $package->getName(), $extenders);

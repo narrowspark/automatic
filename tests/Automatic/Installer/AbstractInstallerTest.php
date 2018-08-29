@@ -130,10 +130,10 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn(['psr-4' => ['Test\\' => '']]);
         $this->packageMock->shouldReceive('getPrettyName')
-            ->times(4)
+            ->times(3)
             ->andReturn($name);
         $this->packageMock->shouldReceive('getName')
-            ->times(2)
+            ->times(3)
             ->andReturn(\trim($name, '/'));
 
         $this->packageMock->shouldReceive('getTargetDir')

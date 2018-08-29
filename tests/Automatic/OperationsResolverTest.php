@@ -69,6 +69,9 @@ final class OperationsResolverTest extends MockeryTestCase
         $package1Mock->shouldReceive('getPrettyVersion')
             ->once()
             ->andReturn('1');
+        $package1Mock->shouldReceive('getAutoload')
+            ->once()
+            ->andReturn([]);
         $package1Mock->shouldReceive('getSourceUrl')
             ->once()
             ->andReturn('example.local');
@@ -103,6 +106,9 @@ final class OperationsResolverTest extends MockeryTestCase
         $package3Mock->shouldReceive('getType')
             ->once()
             ->andReturn('provider');
+        $package3Mock->shouldReceive('getAutoload')
+            ->once()
+            ->andReturn([]);
 
         $link1Mock = $this->mock(Link::class);
         $link1Mock->shouldReceive('getTarget')
@@ -178,6 +184,9 @@ final class OperationsResolverTest extends MockeryTestCase
         $package1Mock->shouldReceive('getRequires')
             ->once()
             ->andReturn([]);
+        $package1Mock->shouldReceive('getAutoload')
+            ->once()
+            ->andReturn([]);
 
         $this->installOperationMock->shouldReceive('getPackage')
             ->andReturn($package1Mock);
@@ -235,6 +244,7 @@ final class OperationsResolverTest extends MockeryTestCase
                 'requires'    => [
                     'viserio/contract',
                 ],
+                'autoload' => [],
                 'automatic-extra' => [
                     'providers' => [
                         'Viserio\\Component\\OptionsResolver\\Provider\\ConsoleCommandsServiceProvider' => [

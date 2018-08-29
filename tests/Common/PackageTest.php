@@ -145,16 +145,17 @@ final class PackageTest extends TestCase
 
         static::assertSame(
             [
-                'pretty-name'                        => 'test/Test',
-                'version'                            => '1',
-                'parent'                             => null,
-                'is-dev'                             => false,
-                'url'                                => null,
-                'operation'                          => null,
-                'type'                               => null,
-                'requires'                           => [],
-                'automatic-extra'                    => [],
-                'created'                            => $this->package->getTime(),
+                'pretty-name'     => 'test/Test',
+                'version'         => '1',
+                'parent'          => null,
+                'is-dev'          => false,
+                'url'             => null,
+                'operation'       => null,
+                'type'            => null,
+                'requires'        => [],
+                'automatic-extra' => [],
+                'autoload'        => [],
+                'created'         => $this->package->getTime(),
             ],
             $array
         );

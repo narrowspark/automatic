@@ -83,7 +83,7 @@ final class ClassFinder implements ResettableContract
      * Set the composer.json file autoload key values.
      *
      * @param string $packageName
-     * @param array $autoload
+     * @param array  $autoload
      *
      * @return \Narrowspark\Automatic\ClassFinder
      */
@@ -285,7 +285,7 @@ final class ClassFinder implements ResettableContract
     /**
      * Returns a array of all found classes, interface and traits.
      *
-     * @return array
+     * @return array|array<string, string>
      */
     public function getAll(): array
     {

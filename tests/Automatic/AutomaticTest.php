@@ -368,7 +368,7 @@ final class AutomaticTest extends MockeryTestCase
         $lockMock->shouldReceive('get')
             ->once()
             ->with(ScriptExecutor::TYPE)
-            ->andReturn(['test/test' => [ScriptExtender::class => dirname(__DIR__, 2) . '/Automatic/ScriptExtender.php']]);
+            ->andReturn(['test/test' => [ScriptExtender::class => \dirname(__DIR__, 2) . '/Automatic/ScriptExtender.php']]);
 
         $containerMock = $this->mock(ContainerContract::class);
         $containerMock->shouldReceive('get')

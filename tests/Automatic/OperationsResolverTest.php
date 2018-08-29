@@ -244,7 +244,7 @@ final class OperationsResolverTest extends MockeryTestCase
                 'requires'    => [
                     'viserio/contract',
                 ],
-                'autoload' => [],
+                'autoload'        => [],
                 'automatic-extra' => [
                     'providers' => [
                         'Viserio\\Component\\OptionsResolver\\Provider\\ConsoleCommandsServiceProvider' => [

@@ -139,6 +139,20 @@ final class PackageTest extends TestCase
         static::assertSame($time, $this->package->getTime());
     }
 
+    public function testSetAndGetAutoload(): void
+    {
+        $array = [
+            'psr-4' => [
+                'Narrowspark\\Automatic\\Common\\Test\\' => 'tests/Common/',
+                'Narrowspark\\Automatic\\Test\\'         => 'tests/Automatic/',
+            ],
+        ];
+
+        $this->package->setAutoload($array);
+
+        static::assertSame($array, $this->package->getAutoload());
+    }
+
     public function testToArray(): void
     {
         $array = $this->package->toArray();

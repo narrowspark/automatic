@@ -110,6 +110,8 @@ abstract class AbstractConfigurator implements ConfiguratorContract
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * Insert string before specified position.
      *
      * @param string $string

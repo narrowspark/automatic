@@ -3,9 +3,11 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
 use Narrowspark\Automatic\ClassFinder;
+use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Test\Fixture\Finder\AbstractClass;
 use Narrowspark\Automatic\Test\Fixture\Finder\DummyClass;
 use Narrowspark\Automatic\Test\Fixture\Finder\DummyClassTwo;
+use Narrowspark\Automatic\Test\Fixture\Finder\DummyInterface;
 use Narrowspark\Automatic\Test\Fixture\Finder\FooTrait;
 use Narrowspark\Automatic\Test\Fixture\Finder\Nested\DummyClassNested;
 use PHPUnit\Framework\TestCase;
@@ -15,6 +17,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class ClassFinderTest extends TestCase
 {
+    use GetGenericPropertyReaderTrait;
+
     /**
      * A path class loader instance.
      *
@@ -43,6 +47,7 @@ final class ClassFinderTest extends TestCase
         static::assertArrayHasKey(DummyClassNested::class, $this->loader->getClasses());
         static::assertArrayHasKey(FooTrait::class, $this->loader->getTraits());
         static::assertArrayHasKey(AbstractClass::class, $this->loader->getAbstractClasses());
+        static::assertArrayHasKey(DummyInterface::class, $this->loader->getInterfaces());
     }
 
     public function testWithEmptyFolder(): void
@@ -64,5 +69,53 @@ final class ClassFinderTest extends TestCase
 
         @\unlink($filePath);
         @\rmdir($dir);
+    }
+
+    public function testSetComposerAutoload(): void
+    {
+        $this->loader->setComposerAutoload(
+            'foo/bar',
+            [
+                'psr-0'                 => [],
+                'psr-4'                 => [],
+                'classmap'              => [],
+                'exclude-from-classmap' => [],
+            ]
+        );
+
+        $genericPropertyReader = $this->getGenericPropertyReader();
+
+        static::assertSame(
+            [
+                'psr0'     => [
+                    'foo/bar' => [],
+                ],
+                'psr4'     => [
+                    'foo/bar' => [],
+                ],
+                'classmap' => [
+                    'foo/bar' => [],
+                ],
+            ],
+            $genericPropertyReader($this->loader, 'paths')
+        );
+        static::assertSame([], $genericPropertyReader($this->loader, 'excludes'));
+    }
+
+    public function testSetFilter(): void
+    {
+        $genericPropertyReader = $this->getGenericPropertyReader();
+
+        $this->loader->setFilter(function () {
+            return false;
+        });
+
+        static::assertInstanceOf(\Closure::class, $genericPropertyReader($this->loader, 'filter'));
+
+        $this->loader
+            ->addPsr4('Fixture/Finder', [''])
+            ->find();
+
+        static::assertSame([], $this->loader->getAll());
     }
 }

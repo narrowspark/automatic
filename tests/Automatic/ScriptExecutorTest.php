@@ -50,26 +50,26 @@ final class ScriptExecutorTest extends MockeryTestCase
         $this->scriptExecutor = new ScriptExecutor($this->composer, $this->ioMock, $this->processExecutorMock, []);
     }
 
-//    public function testAddedExtenderThrowException(): void
-//    {
-//        $this->expectException(InvalidArgumentException::class);
-//        $this->expectExceptionMessage('The class [stdClass] must implement the interface [Narrowspark\Automatic\Common\Contract\ScriptExtender].');
-//
-//        $this->scriptExecutor->addExtender(\stdClass::class);
-//    }
-//
-//    public function testAddedExtenderThrowExceptionOnExistendExtender(): void
-//    {
-//        $this->expectException(InvalidArgumentException::class);
-//        $this->expectExceptionMessage('Script executor extender with the name [script] already exists.');
-//
-//        $this->scriptExecutor->addExtender(ScriptExtender::class);
-//        $this->scriptExecutor->addExtender(ScriptExtender::class);
-//    }
+    public function testAddedExtenderThrowException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The class [stdClass] must implement the interface [Narrowspark\Automatic\Common\Contract\ScriptExtender].');
+
+        $this->scriptExecutor->addExtender(ScriptExtender::getType(), \stdClass::class);
+    }
+
+    public function testAddedExtenderThrowExceptionOnExistendExtender(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Script executor with the name [script] already exists.');
+
+        $this->scriptExecutor->addExtender(ScriptExtender::getType(), ScriptExtender::class);
+        $this->scriptExecutor->addExtender(ScriptExtender::getType(), ScriptExtender::class);
+    }
 
     public function testExecute(): void
     {
-        $this->scriptExecutor->addExtender(ScriptExtender::class);
+        $this->scriptExecutor->addExtender(ScriptExtender::getType(), ScriptExtender::class);
 
         $this->ioMock->shouldReceive('isDecorated')
             ->once()
@@ -96,7 +96,7 @@ final class ScriptExecutorTest extends MockeryTestCase
     {
         $this->expectException(ScriptExecutionException::class);
 
-        $this->scriptExecutor->addExtender(ScriptExtender::class);
+        $this->scriptExecutor->addExtender(ScriptExtender::getType(), ScriptExtender::class);
 
         $this->ioMock->shouldReceive('isDecorated')
             ->once()
@@ -127,7 +127,7 @@ final class ScriptExecutorTest extends MockeryTestCase
 
     public function testExecuteWithoutVerbose(): void
     {
-        $this->scriptExecutor->addExtender(ScriptExtender::class);
+        $this->scriptExecutor->addExtender(ScriptExtender::getType(), ScriptExtender::class);
 
         $this->ioMock->shouldReceive('isDecorated')
             ->once()
@@ -155,7 +155,7 @@ final class ScriptExecutorTest extends MockeryTestCase
     {
         $this->expectException(ScriptExecutionException::class);
 
-        $this->scriptExecutor->addExtender(ScriptExtender::class);
+        $this->scriptExecutor->addExtender(ScriptExtender::getType(), ScriptExtender::class);
 
         $this->ioMock->shouldReceive('isDecorated')
             ->once()

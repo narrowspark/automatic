@@ -23,7 +23,6 @@ use Composer\Script\Event;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
-use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
@@ -35,6 +34,7 @@ use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Narrowspark\Automatic\Test\Fixture\AutomaticFixture;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use Nyholm\NSA;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -42,7 +42,6 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 final class AutomaticTest extends MockeryTestCase
 {
-    use GetGenericPropertyReaderTrait;
     use ArrangeComposerClasses;
 
     /**
@@ -81,6 +80,10 @@ final class AutomaticTest extends MockeryTestCase
     public function testGetSubscribedEvents(): void
     {
         static::assertCount(13, Automatic::getSubscribedEvents());
+
+        NSA::setProperty($this->automatic, 'activated', false);
+
+        static::assertCount(0, Automatic::getSubscribedEvents());
     }
 
     public function testActivate(): void
@@ -363,7 +366,7 @@ final class AutomaticTest extends MockeryTestCase
         $lockMock->shouldReceive('get')
             ->once()
             ->with(ScriptExecutor::TYPE)
-            ->andReturn([ScriptExtender::class]);
+            ->andReturn(['test/test' => [ScriptExtender::class => \dirname(__DIR__, 2) . '/Automatic/ScriptExtender.php']]);
 
         $containerMock = $this->mock(ContainerContract::class);
         $containerMock->shouldReceive('get')
@@ -496,7 +499,7 @@ final class AutomaticTest extends MockeryTestCase
     private function arrangeAutomaticConfig(): void
     {
         $this->configMock->shouldReceive('get')
-            ->twice()
+            ->times(3)
             ->with('vendor-dir')
             ->andReturn(__DIR__);
         $this->configMock->shouldReceive('get')

@@ -70,6 +70,13 @@ final class Package implements PackageContract
     private $configs = [];
 
     /**
+     * The package autoload values.
+     *
+     * @var array
+     */
+    private $autoload = [];
+
+    /**
      * Check if this package is a dev require.
      *
      * @var bool
@@ -117,6 +124,7 @@ final class Package implements PackageContract
             'type'            => 'setType',
             'requires'        => 'setRequires',
             'automatic-extra' => 'setConfig',
+            'autoload'        => 'setAutoload',
             'created'         => 'setTime',
         ];
 
@@ -181,6 +189,24 @@ final class Package implements PackageContract
     public function isDev(): bool
     {
         return $this->isDev;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setAutoload(array $autoload): PackageContract
+    {
+        $this->autoload = $autoload;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAutoload(): array
+    {
+        return $this->autoload;
     }
 
     /**
@@ -361,6 +387,7 @@ final class Package implements PackageContract
                 'type'                               => $this->type,
                 'requires'                           => $this->requires,
                 'automatic-extra'                    => $this->configs,
+                'autoload'                           => $this->autoload,
                 'created'                            => $this->created,
             ];
     }

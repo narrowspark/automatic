@@ -6,6 +6,8 @@ use Composer\Composer;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
+use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
+use Narrowspark\Automatic\Common\Contract\ScriptExtender as ScriptExtenderContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
@@ -47,7 +49,7 @@ final class ScriptExecutor
     /**
      * A list of the registered extenders.
      *
-     * @var \Narrowspark\Automatic\Common\Contract\ScriptExtender[]
+     * @var string[]
      */
     private $extenders = [];
 
@@ -59,8 +61,12 @@ final class ScriptExecutor
      * @param \Composer\Util\ProcessExecutor $executor
      * @param array                          $options
      */
-    public function __construct(Composer $composer, IOInterface $io, ProcessExecutor $executor, array $options)
-    {
+    public function __construct(
+        Composer $composer,
+        IOInterface $io,
+        ProcessExecutor $executor,
+        array $options
+    ) {
         $this->composer = $composer;
         $this->io       = $io;
         $this->executor = $executor;
@@ -70,14 +76,22 @@ final class ScriptExecutor
     /**
      * Register a cmd extender.
      *
+     * @param string $name
      * @param string $extender
      *
      * @return void
      */
-    public function addExtender(string $extender): void
+    public function addExtender(string $name, string $extender): void
     {
-        /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $extender */
-        $this->extenders[$extender::getType()] = new $extender($this->composer, $this->io, $this->options);
+        if (isset($this->extenders[$name])) {
+            throw new InvalidArgumentException(\sprintf('Script executor with the name [%s] already exists.', $name));
+        }
+
+        if (! \is_subclass_of($extender, ScriptExtenderContract::class)) {
+            throw new InvalidArgumentException(\sprintf('The class [%s] must implement the interface [%s].', $extender, ScriptExtenderContract::class));
+        }
+
+        $this->extenders[$name] = $extender;
     }
 
     /**
@@ -111,7 +125,10 @@ final class ScriptExecutor
 
         $this->io->writeError(\sprintf('Executing script [%s]', $parsedCmd), $isVerbose);
 
-        $exitCode = $this->executor->execute($this->extenders[$type]->expand($parsedCmd), $outputHandler);
+        /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $extender */
+        $extender = new $this->extenders[$type]($this->composer, $this->io, $this->options);
+
+        $exitCode = $this->executor->execute($extender->expand($parsedCmd), $outputHandler);
 
         if ($isVerbose) {
             $this->io->writeError(\sprintf('Executed script [%s] %s', $cmd, $exitCode === 0 ? '<info>[OK]</info>' : '<error>[KO]</error>'));

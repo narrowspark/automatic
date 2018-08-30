@@ -32,7 +32,7 @@ final class Configurator extends AbstractConfigurator
     /**
      * {@inheritdoc}
      */
-    public function clear(): void
+    public function reset(): void
     {
         $this->configurators = [];
         $this->cache         = [];

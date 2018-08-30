@@ -6,9 +6,9 @@ use Composer\Downloader\DownloadManager;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
+use Narrowspark\Automatic\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
-use Narrowspark\Automatic\PathClassLoader;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
@@ -95,7 +95,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn($this->downloadManagerMock);
 
-        $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new PathClassLoader());
+        $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new ClassFinder($this->configuratorPath));
 
         $this->repositoryMock    = $this->mock(InstalledRepositoryInterface::class);
         $this->packageMock       = $this->mock(PackageInterface::class);
@@ -130,10 +130,10 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn(['psr-4' => ['Test\\' => '']]);
         $this->packageMock->shouldReceive('getPrettyName')
-            ->times(4)
+            ->times(3)
             ->andReturn($name);
         $this->packageMock->shouldReceive('getName')
-            ->times(2)
+            ->times(3)
             ->andReturn(\trim($name, '/'));
 
         $this->packageMock->shouldReceive('getTargetDir')

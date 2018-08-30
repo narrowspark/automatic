@@ -122,10 +122,10 @@ final class LockTest extends TestCase
         static::assertSame($providers, $this->lock->get('automatic', 'providers'));
     }
 
-    public function testClear(): void
+    public function testReset(): void
     {
         $this->lock->add('test', ['version' => '1']);
-        $this->lock->clear();
+        $this->lock->reset();
 
         static::assertFalse($this->lock->has('test'));
     }

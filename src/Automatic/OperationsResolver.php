@@ -150,6 +150,8 @@ final class OperationsResolver
             $package->setUrl($url);
         }
 
+        $package->setAutoload($composerPackage->getAutoload());
+
         if (\file_exists($automaticFile)) {
             $package->setConfig(JsonFile::parseJson((string) \file_get_contents($automaticFile)));
         } else {

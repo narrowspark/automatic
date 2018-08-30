@@ -129,12 +129,7 @@ abstract class AbstractConfigurator
         return $this->configurators;
     }
 
-    /**
-     * Clear all configurators.
-     *
-     * @return void
-     */
-    public function clear(): void
+    public function reset(): void
     {
         $this->configurators = [];
     }

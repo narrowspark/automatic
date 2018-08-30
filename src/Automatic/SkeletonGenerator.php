@@ -74,9 +74,9 @@ final class SkeletonGenerator
      *
      * @throws \Exception
      *
-     * @return void
+     * @return \Narrowspark\Automatic\SkeletonGenerator
      */
-    public function run(): void
+    public function run(): self
     {
         $generators = $this->prepareGenerators();
 
@@ -114,6 +114,8 @@ final class SkeletonGenerator
         $this->installationManager->run();
 
         $generator->generate();
+
+        return $this;
     }
 
     /**
@@ -123,7 +125,7 @@ final class SkeletonGenerator
      *
      * @return void
      */
-    public function remove(): void
+    public function selfRemove(): void
     {
         $requires = [];
 

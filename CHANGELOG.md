@@ -1,3 +1,24 @@
+## v0.4.0
+
+- Total issues resolved: **6**
+- Total pull requests resolved: **0**
+- Total contributors: **1**
+
+### Added
+
+ - [56: Add documentation](https://github.com/narrowspark/automatic/issues/56) thanks to @prisis
+ - [52: Show a warning if a key can't be executed](https://github.com/narrowspark/automatic/issues/52) thanks to @prisis
+ - [50: Add a skip tags manager ](https://github.com/narrowspark/automatic/issues/50) thanks to @prisis
+
+### Changed
+
+ - [55: Move configurations for the configurators to a new automatic key configurators](https://github.com/narrowspark/automatic/issues/55) thanks to @prisis
+ - [45: Rename ClassLoader to ClassFinder and added composer autoloader support to finder](https://github.com/narrowspark/automatic/issues/45) thanks to @prisis
+
+### Fixed
+
+ - [58: Fixed autoloading for script executors and package configurators](https://github.com/narrowspark/automatic/issues/58) thanks to @prisis
+
 ## v0.3.6
 
 - Total issues resolved: **0**

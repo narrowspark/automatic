@@ -4,10 +4,12 @@
     "description": "Common classes for Automatic and Automatic configurators.",
     "keywords": [
         "narrowspark",
-        "library",
         "viserio",
+        "discovery",
         "automatic",
         "configurators",
+        "skeleton",
+        "library",
         "composer",
         "common"
     ],

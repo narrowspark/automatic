@@ -23,7 +23,6 @@ use Composer\Script\Event;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
-use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
@@ -43,7 +42,6 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 final class AutomaticTest extends MockeryTestCase
 {
-    use GetGenericPropertyReaderTrait;
     use ArrangeComposerClasses;
 
     /**

@@ -106,6 +106,7 @@ Narrowspark Automatic Configuration are defined in a `automatic.json` file or in
 ```
 
 The `providers` and `proxies` option tells Narrowspark Automatic in which environments this `provider`, `proxy` should be enabled automatically (all in this case).
+
 Finally the `script-extenders` option adds a new script executor to the Narrowspark Automatic `auto-scripts`.
 Now you can run `viserio console` commands in the `auto-scripts` section of your `composer.json` application file.
 

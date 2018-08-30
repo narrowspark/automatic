@@ -1,7 +1,7 @@
 {
     "name": "narrowspark/automatic",
     "type": "composer-plugin",
-    "description": "Composer plugin for automatically project configuration and creation.",
+    "description": "Composer plugin for automate the most common tasks of applications.",
     "keywords": [
         "narrowspark",
         "composer-plugin",

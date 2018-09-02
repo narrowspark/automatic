@@ -5,6 +5,7 @@ namespace Narrowspark\Automatic\Common\Installer;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Installer as BaseInstaller;
+use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Symfony\Component\Console\Input\InputInterface;
@@ -60,9 +61,9 @@ final class Installer
             ->setDryRun(self::getOption($input, 'dry-run'))
             ->setVerbose(self::getOption($input, 'verbose'))
             ->setDevMode(! self::getOption($input, 'no-dev'))
-            ->setSuggestedPackagesReporter(new BaseInstaller\SuggestedPackagesReporter(new NullIO()))
+            ->setSuggestedPackagesReporter(new SuggestedPackagesReporter(new NullIO()))
             ->setDumpAutoloader(! self::getOption($input, 'no-autoloader'))
-//            ->setRunScripts(! self::getOption($input, 'no-scripts'))
+            ->setRunScripts(! self::getOption($input, 'no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)

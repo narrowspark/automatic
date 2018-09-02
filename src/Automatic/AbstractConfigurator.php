@@ -53,6 +53,16 @@ abstract class AbstractConfigurator
     }
 
     /**
+     * Get all registered configurators.
+     *
+     * @return array
+     */
+    public function getConfigurators(): array
+    {
+        return $this->configurators;
+    }
+
+    /**
      * Add a new automatic configurator.
      *
      * @param string $name
@@ -117,16 +127,6 @@ abstract class AbstractConfigurator
                 $this->get($key)->unconfigure($package);
             }
         }
-    }
-
-    /**
-     * Get all registered configurators.
-     *
-     * @return array
-     */
-    public function getConfigurators(): array
-    {
-        return $this->configurators;
     }
 
     public function reset(): void

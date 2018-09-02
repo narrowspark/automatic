@@ -6,6 +6,7 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Installer as BaseInstaller;
 use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
 use Symfony\Component\Console\Input\InputInterface;
 
 /**
@@ -33,8 +34,18 @@ final class Installer
      */
     public static function create(IOInterface $io, Composer $composer, InputInterface $input): BaseInstaller
     {
-        $installer = BaseInstaller::create($io, $composer);
         $config    = $composer->getConfig();
+        $installer = new BaseInstaller(
+            $io,
+            $config,
+            $composer->getPackage(),
+            $composer->getDownloadManager(),
+            $composer->getRepositoryManager(),
+            $composer->getLocker(),
+            $composer->getInstallationManager(),
+            $composer->getEventDispatcher(),
+            $composer->getAutoloadGenerator()
+        );
 
         [$preferSource, $preferDist] = self::getPreferredInstallOptions($config, $input);
 
@@ -49,9 +60,9 @@ final class Installer
             ->setDryRun(self::getOption($input, 'dry-run'))
             ->setVerbose(self::getOption($input, 'verbose'))
             ->setDevMode(! self::getOption($input, 'no-dev'))
-            ->setSkipSuggest(self::getOption($input, 'no-suggest'))
+            ->setSuggestedPackagesReporter(new BaseInstaller\SuggestedPackagesReporter(new NullIO()))
             ->setDumpAutoloader(! self::getOption($input, 'no-autoloader'))
-            ->setRunScripts(! self::getOption($input, 'no-scripts'))
+//            ->setRunScripts(! self::getOption($input, 'no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)

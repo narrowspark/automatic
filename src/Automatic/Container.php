@@ -14,7 +14,6 @@ use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
-use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
@@ -31,9 +30,9 @@ final class Container implements ContainerContract
     /**
      * The array of closures defining each entry of the container.
      *
-     * @var array<string, \Closure>
+     * @var array<string, callable>
      */
-    private $callbacks;
+    private $data;
 
     /**
      * The array of entries once they have been instantiated.
@@ -52,7 +51,7 @@ final class Container implements ContainerContract
     {
         $genericPropertyReader = $this->getGenericPropertyReader();
 
-        $this->callbacks = [
+        $this->data = [
             Composer::class => static function () use ($composer) {
                 return $composer;
             },
@@ -114,13 +113,6 @@ final class Container implements ContainerContract
                     $container->get('vendor-dir')
                 );
             },
-            InstallationManager::class => static function (Container $container) {
-                return new InstallationManager(
-                    $container->get(Composer::class),
-                    $container->get(IOInterface::class),
-                    $container->get(InputInterface::class)
-                );
-            },
             RemoteFilesystem::class => static function (Container $container) {
                 return Factory::createRemoteFilesystem(
                     $container->get(IOInterface::class),
@@ -165,19 +157,23 @@ final class Container implements ContainerContract
                     $container->get('composer-extra')
                 );
             },
-            SkeletonGenerator::class => static function (Container $container) {
-                return new SkeletonGenerator(
-                    $container->get(IOInterface::class),
-                    $container->get(InstallationManager::class),
-                    $container->get(Lock::class),
-                    $container->get('vendor-dir'),
-                    $container->get('composer-extra')
-                );
-            },
             LegacyTagsManager::class => static function (Container $container) {
                 return new LegacyTagsManager($container->get(IOInterface::class));
             },
         ];
+    }
+
+    /**
+     * Set a new entry to the container.
+     *
+     * @param string   $id
+     * @param callable $callback
+     *
+     * @return void
+     */
+    public function set(string $id, callable $callback): void
+    {
+        $this->data[$id] = $callback;
     }
 
     /**
@@ -189,11 +185,11 @@ final class Container implements ContainerContract
             return $this->objects[$id];
         }
 
-        if (! isset($this->callbacks[$id])) {
+        if (! isset($this->data[$id])) {
             throw new InvalidArgumentException(\sprintf('Identifier [%s] is not defined.', $id));
         }
 
-        return $this->objects[$id] = $this->callbacks[$id]($this);
+        return $this->objects[$id] = $this->data[$id]($this);
     }
 
     /**
@@ -201,6 +197,6 @@ final class Container implements ContainerContract
      */
     public function getAll(): array
     {
-        return $this->callbacks;
+        return $this->data;
     }
 }

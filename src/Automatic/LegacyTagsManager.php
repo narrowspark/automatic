@@ -30,6 +30,11 @@ final class LegacyTagsManager
     private $legacyTags = [];
 
     /**
+     * @var array
+     */
+    private static $packageCache = [];
+
+    /**
      * LegacyTagsManager constructor.
      *
      * @param IOInterface $io
@@ -89,33 +94,78 @@ final class LegacyTagsManager
             return $data;
         }
 
-        $regex = '/^(\d++\.\d++)\..*/';
+        $packagesReplace = [];
+        $packages        = [];
 
-        foreach ($data['packages'] as $name => $versions) {
-            if (! isset($this->legacyTags[$name])) {
+        foreach ($this->legacyTags as $name => $legacy) {
+            if (! isset($data['packages'][$name])) {
                 continue;
             }
 
-            foreach ($versions as $version => $package) {
-                foreach ($this->legacyTags[$name] as $legacyName => $legacyVersion) {
-                    if (isset($data['packages'][$legacyName]) &&
-                        ($data['packages'][$legacyName][\preg_replace($regex, '$1.x-dev', $version)]['replace'][$name] ?? null) !== 'self.version'
-                    ) {
-                        continue;
-                    }
-                }
+            $packages[$name] = $data['packages'][$name];
 
-                $normalizedVersion = $package['extra']['branch-alias'][$version] ?? null;
-                $normalizedVersion = $normalizedVersion ? $this->versionParser->normalize($normalizedVersion) : $package['version_normalized'];
+            foreach ($data['packages'][$name] as $version => $composerJson) {
+                if ($version === 'dev-master' && null !== $devMasterVersion = $composerJson['extra']['branch-alias']['dev-master'] ?? null) {
+                    $normalizedVersion = $this->versionParser->normalize($devMasterVersion);
+                } else {
+                    $normalizedVersion = $composerJson['version_normalized'];
+                }
 
                 /** @var \Composer\Semver\Constraint\Constraint $constrain */
-                $constrain = $this->legacyTags[$name]['constrain'];
+                $constrain = $legacy['constrain'];
 
-                if (! $constrain->matches(new Constraint('==', $normalizedVersion))) {
-                    $this->io->writeError(\sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', $name, (string) $this->legacyTags[$name]['version']));
+                if ($constrain->matches(new Constraint('==', $normalizedVersion))) {
+                    if (isset($composerJson['replace'])) {
+                        foreach ($composerJson['replace'] as $key => $value) {
+                            $packagesReplace[$key] = $name;
+                        }
+                    }
+                } else {
+                    if (! isset(self::$packageCache[$name])) {
+                        $this->io->writeError(
+                            \sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', $name, (string) $legacy['version'])
+                        );
+                        self::$packageCache[$name] = true;
+                    }
 
-                    unset($data['packages'][$name][$version]);
+                    unset($packages[$name][$version]);
                 }
+            }
+        }
+
+        if (\count(\array_filter($packages)) === 0) {
+            return $data;
+        }
+
+        foreach ($packages as $key => $value) {
+            $data['packages'][$key] = $value;
+        }
+
+        foreach ($data['packages'] as $name => $versions) {
+            if (! isset($packagesReplace[$name])) {
+                continue;
+            }
+
+            $parentName = $packagesReplace[$name];
+            $devMaster  = null;
+
+            if (isset($versions['dev-master'])) {
+                $devMaster = $versions['dev-master'];
+            }
+
+            $versions = \array_intersect_key($versions, $data['packages'][$parentName]);
+
+            if ($devMaster !== null && null !== $devMasterAlias = $versions['dev-master']['extra']['branch-alias']['dev-master'] ?? null) {
+                /** @var \Composer\Semver\Constraint\Constraint $legacyConstrain */
+                $legacyConstrain = $this->legacyTags[$parentName]['constrain'];
+
+                if ($legacyConstrain->matches(new Constraint('==', $this->versionParser->normalize($devMasterAlias)))) {
+                    $versions['dev-master'] = $devMaster;
+                }
+            }
+
+            if (\count($versions) !== 0) {
+                $data['packages'][$name] = $versions;
             }
         }
 

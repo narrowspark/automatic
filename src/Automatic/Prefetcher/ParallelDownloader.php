@@ -122,6 +122,28 @@ class ParallelDownloader extends RemoteFilesystem
     }
 
     /**
+     * Set the next options for the remote filesystem.
+     *
+     * @param array $options
+     *
+     * @return $this
+     */
+    public function setNextOptions(array $options): self
+    {
+        $this->nextOptions = parent::getOptions() !== $options ? $options : [];
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLastHeaders(): ?array
+    {
+        return $this->lastHeaders ?? parent::getLastHeaders();
+    }
+
+    /**
      * Parallel download for providers.
      *
      * @param array    $nextArgs
@@ -197,28 +219,6 @@ class ParallelDownloader extends RemoteFilesystem
     }
 
     /**
-     * Set the next options for the remote filesystem.
-     *
-     * @param array $options
-     *
-     * @return $this
-     */
-    public function setNextOptions(array $options): self
-    {
-        $this->nextOptions = parent::getOptions() !== $options ? $options : [];
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getLastHeaders(): ?array
-    {
-        return $this->lastHeaders ?? parent::getLastHeaders();
-    }
-
-    /**
      * Copy the remote file in local.
      *
      * @param string      $originUrl The origin URL
@@ -231,8 +231,13 @@ class ParallelDownloader extends RemoteFilesystem
      *
      * @return bool|string
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = [])
-    {
+    public function copy(
+        $originUrl,
+        $fileUrl,
+        $fileName,
+        $progress = true,
+        $options  = []
+    ) {
         $options           = \array_replace_recursive($this->nextOptions, $options);
         $this->nextOptions = [];
         $rfs               = clone $this;
@@ -260,8 +265,15 @@ class ParallelDownloader extends RemoteFilesystem
      *
      * @internal
      */
-    public function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax, $nativeDownload = true): void
-    {
+    public function callbackGet(
+        $notificationCode,
+        $severity,
+        $message,
+        $messageCode,
+        $bytesTransferred,
+        $bytesMax,
+        $nativeDownload = true
+    ): void {
         if (! $nativeDownload && \STREAM_NOTIFY_SEVERITY_ERR === $severity) {
             throw new TransportException($message, $messageCode);
         }

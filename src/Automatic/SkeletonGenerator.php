@@ -74,9 +74,9 @@ final class SkeletonGenerator
      *
      * @throws \Exception
      *
-     * @return \Narrowspark\Automatic\SkeletonGenerator
+     * @return void
      */
-    public function run(): self
+    public function run(): void
     {
         $generators = $this->prepareGenerators();
 
@@ -111,11 +111,13 @@ final class SkeletonGenerator
             $this->transformToPackages($generator->getDevDependencies())
         );
 
-        $this->installationManager->run();
+        $status = $this->installationManager->run();
+
+        if ($status !== 0) {
+            exit($status);
+        }
 
         $generator->generate();
-
-        return $this;
     }
 
     /**
@@ -127,24 +129,19 @@ final class SkeletonGenerator
      */
     public function selfRemove(): void
     {
+        $this->lock->read();
+
         $requires = [];
 
         foreach ((array) $this->lock->get(SkeletonInstaller::LOCK_KEY) as $name => $generators) {
             $requires[] = new Package($name, null);
+
+            $this->lock->remove(Automatic::LOCK_CLASSMAP, $name);
         }
 
         $this->installationManager->uninstall($requires, []);
 
-        $classmap = $this->lock->get(Automatic::LOCK_CLASSMAP);
-
-        /** @var \Narrowspark\Automatic\Common\Contract\Package $package */
-        foreach ($requires as $package) {
-            unset($classmap[$package->getName()]);
-        }
-
-        $this->lock->add(Automatic::LOCK_CLASSMAP, $classmap);
         $this->lock->remove(SkeletonInstaller::LOCK_KEY);
-
         $this->lock->write();
     }
 
@@ -156,10 +153,9 @@ final class SkeletonGenerator
     private function prepareGenerators(): array
     {
         $foundGenerators = [];
-        $classMap        = (array) $this->lock->get(Automatic::LOCK_CLASSMAP);
 
         foreach ((array) $this->lock->get(SkeletonInstaller::LOCK_KEY) as $name => $generators) {
-            foreach ($classMap[$name] as $class => $path) {
+            foreach ((array) $this->lock->get(Automatic::LOCK_CLASSMAP, $name) as $class => $path) {
                 if (! \class_exists($class)) {
                     require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
                 }

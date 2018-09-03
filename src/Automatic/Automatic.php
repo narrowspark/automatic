@@ -138,7 +138,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
             PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
             ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
             ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
-            ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX]],
+            ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator']],
         ];
     }
 
@@ -270,8 +270,40 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         \file_put_contents($json->getPath(), $manipulator->getContents());
 
         $this->updateComposerLock();
+    }
 
-        $this->runSkeletonGenerator();
+    /**
+     * Run found skeleton generators.
+     *
+     * @param \Composer\Script\Event $event
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    public function runSkeletonGenerator(Event $event): void
+    {
+        /** @var \Narrowspark\Automatic\Lock $lock */
+        $lock = $this->container->get(Lock::class);
+
+        $lock->read();
+
+        if ($lock->has(SkeletonInstaller::LOCK_KEY)) {
+            $this->reset();
+
+            $skeletonGenerator = new SkeletonGenerator(
+                $this->container->get(IOInterface::class),
+                $this->container->get(InstallationManager::class),
+                $lock,
+                $this->container->get('vendor-dir'),
+                $this->container->get('composer-extra')
+            );
+
+            $skeletonGenerator->run();
+            $skeletonGenerator->selfRemove();
+        } else {
+            $lock->reset();
+        }
     }
 
     /**
@@ -780,38 +812,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         }
 
         $lock->remove(self::LOCK_PACKAGES, $package->getName());
-    }
-
-    /**
-     * Run found skeleton generators.
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    private function runSkeletonGenerator(): void
-    {
-        /** @var \Narrowspark\Automatic\Lock $lock */
-        $lock = $this->container->get(Lock::class);
-
-        $lock->read();
-
-        if ($lock->has(SkeletonInstaller::LOCK_KEY)) {
-            $this->reset();
-
-            $skeletonGenerator = new SkeletonGenerator(
-                $this->container->get(IOInterface::class),
-                $this->container->get(InstallationManager::class),
-                $lock,
-                $this->container->get('vendor-dir'),
-                $this->container->get('composer-extra')
-            );
-
-            $skeletonGenerator->run();
-            $skeletonGenerator->selfRemove();
-        } else {
-            $lock->reset();
-        }
     }
 
     /**

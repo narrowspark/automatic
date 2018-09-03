@@ -46,13 +46,16 @@ use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\Prefetcher\TruncatedComposerRepository;
+use Narrowspark\Automatic\Security\Command\AuditCommandProvider;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Composer\Plugin\Capable;
+use Composer\Plugin\Capability\CommandProvider;
 
-class Automatic implements PluginInterface, EventSubscriberInterface
+class Automatic implements PluginInterface, EventSubscriberInterface, Capable
 {
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
@@ -138,6 +141,16 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
             ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
             ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator']],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCapabilities(): array
+    {
+        return [
+            CommandProvider::class => AuditCommandProvider::class,
         ];
     }
 

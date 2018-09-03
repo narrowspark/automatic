@@ -92,8 +92,11 @@ abstract class AbstractInstaller extends LibraryInstaller
     /**
      * {@inheritdoc}
      */
-    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target): void
-    {
+    public function update(
+        InstalledRepositoryInterface $repo,
+        PackageInterface $initial,
+        PackageInterface $target
+    ): void {
         parent::update($repo, $initial, $target);
 
         $this->saveToLockFile($target->getAutoload(), $target, static::LOCK_KEY);

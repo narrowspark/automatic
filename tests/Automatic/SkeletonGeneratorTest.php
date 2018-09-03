@@ -87,14 +87,8 @@ final class SkeletonGeneratorTest extends MockeryTestCase
             ->once();
 
         $this->arrangeLock(
-            [
-                'test/generator' => [
-                    ConsoleFixtureGenerator::class => '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
-                ],
-            ],
-            [
-                'test/generator' => [ConsoleFixtureGenerator::class],
-            ]
+            [ConsoleFixtureGenerator::class => '%vendor_path%/Fixture/ConsoleFixtureGenerator.php'],
+            ['test/generator' => [ConsoleFixtureGenerator::class]]
         );
 
         $this->ioMock->shouldReceive('select')
@@ -117,14 +111,10 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
         $this->arrangeLock(
             [
-                'test/generator' => [
-                    ConsoleFixtureGenerator::class          => '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
-                    FrameworkDefaultFixtureGenerator::class => '%vendor_path%/Fixture/FrameworkDefaultFixtureGenerator.php',
-                ],
+                ConsoleFixtureGenerator::class          => '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
+                FrameworkDefaultFixtureGenerator::class => '%vendor_path%/Fixture/FrameworkDefaultFixtureGenerator.php',
             ],
-            [
-                'test/generator' => [ConsoleFixtureGenerator::class, FrameworkDefaultFixtureGenerator::class],
-            ]
+            ['test/generator' => [ConsoleFixtureGenerator::class, FrameworkDefaultFixtureGenerator::class]]
         );
 
         $this->ioMock->shouldReceive('select')
@@ -139,27 +129,23 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
     public function testRemove(): void
     {
-        $this->arrangeLock(
-            [
-                'test/generator' => [
-                    '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
-                ],
-            ],
-            [
-                'test/generator' => [ConsoleFixtureGenerator::class],
-            ]
-        );
+        $this->lockMock->shouldReceive('get')
+            ->once()
+            ->with(SkeletonInstaller::LOCK_KEY)
+            ->andReturn(['test/generator' => [ConsoleFixtureGenerator::class]]);
 
         $this->installationManagerMock->shouldReceive('uninstall')
             ->once()
             ->with(\Mockery::type('array'), []);
 
+        $this->lockMock->shouldReceive('read')
+            ->once();
+        $this->lockMock->shouldReceive('remove')
+            ->once()
+            ->with(Automatic::LOCK_CLASSMAP, 'test/generator');
         $this->lockMock->shouldReceive('remove')
             ->once()
             ->with(SkeletonInstaller::LOCK_KEY);
-        $this->lockMock->shouldReceive('add')
-            ->once()
-            ->with(Automatic::LOCK_CLASSMAP, []);
         $this->lockMock->shouldReceive('write')
             ->once();
 
@@ -182,7 +168,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     {
         $this->lockMock->shouldReceive('get')
             ->once()
-            ->with(Automatic::LOCK_CLASSMAP)
+            ->with(Automatic::LOCK_CLASSMAP, 'test/generator')
             ->andReturn($classmap);
 
         $this->lockMock->shouldReceive('get')

@@ -80,6 +80,74 @@ final class ClassFinder implements ResettableContract
     }
 
     /**
+     * Returns a list with found traits.
+     *
+     * @return array|string[]
+     */
+    public function getTraits(): array
+    {
+        return $this->traits;
+    }
+
+    /**
+     * Returns a list with found interfaces.
+     *
+     * @return array|string[]
+     */
+    public function getInterfaces(): array
+    {
+        return $this->interfaces;
+    }
+
+    /**
+     * Returns a list with found abstract classes.
+     *
+     * @return array|string[]
+     */
+    public function getAbstractClasses(): array
+    {
+        return $this->abstractClasses;
+    }
+
+    /**
+     * Returns a list with found classes.
+     *
+     * @return array|string[]
+     */
+    public function getClasses(): array
+    {
+        return $this->classes;
+    }
+
+    /**
+     * Exclude paths from finder.
+     *
+     * @param array $excludes
+     *
+     * @return \Narrowspark\Automatic\ClassFinder
+     */
+    public function setExcludes(array $excludes): self
+    {
+        $this->excludes = $excludes;
+
+        return $this;
+    }
+
+    /**
+     * Set a symfony finder filter.
+     *
+     * @param \Closure $filter
+     *
+     * @return \Narrowspark\Automatic\ClassFinder
+     */
+    public function setFilter(Closure $filter): self
+    {
+        $this->filter = $filter;
+
+        return $this;
+    }
+
+    /**
      * Set the composer.json file autoload key values.
      *
      * @param string $packageName
@@ -156,34 +224,6 @@ final class ClassFinder implements ResettableContract
     }
 
     /**
-     * Exclude paths from finder.
-     *
-     * @param array $excludes
-     *
-     * @return \Narrowspark\Automatic\ClassFinder
-     */
-    public function setExcludes(array $excludes): self
-    {
-        $this->excludes = $excludes;
-
-        return $this;
-    }
-
-    /**
-     * Set a symfony finder filter.
-     *
-     * @param \Closure $filter
-     *
-     * @return \Narrowspark\Automatic\ClassFinder
-     */
-    public function setFilter(Closure $filter): self
-    {
-        $this->filter = $filter;
-
-        return $this;
-    }
-
-    /**
      * Find all the class, traits and interface names in a given directory.
      *
      * @return \Narrowspark\Automatic\ClassFinder
@@ -240,46 +280,6 @@ final class ClassFinder implements ResettableContract
         }
 
         return $this;
-    }
-
-    /**
-     * Returns a list with found abstract classes.
-     *
-     * @return array|string[]
-     */
-    public function getAbstractClasses(): array
-    {
-        return $this->abstractClasses;
-    }
-
-    /**
-     * Returns a list with found classes.
-     *
-     * @return array|string[]
-     */
-    public function getClasses(): array
-    {
-        return $this->classes;
-    }
-
-    /**
-     * Returns a list with found interfaces.
-     *
-     * @return array|string[]
-     */
-    public function getInterfaces(): array
-    {
-        return $this->interfaces;
-    }
-
-    /**
-     * Returns a list with found traits.
-     *
-     * @return array|string[]
-     */
-    public function getTraits(): array
-    {
-        return $this->traits;
     }
 
     /**

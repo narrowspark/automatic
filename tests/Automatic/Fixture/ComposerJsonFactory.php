@@ -15,10 +15,10 @@ class ComposerJsonFactory
      */
     public static function createComposerJson(
         string $name,
-        array $require = [],
+        array $require    = [],
         array $devRequire = [],
-        array $autoload = [],
-        array $extra = []
+        array $autoload   = [],
+        array $extra      = []
     ): string {
         $composerJsonContent = [
             'name'    => $name,
@@ -48,8 +48,12 @@ class ComposerJsonFactory
      *
      * @return string
      */
-    public static function createAutomaticComposerJson(string $name, array $require = [], array $devRequire = [], array $automaticExtra = []): string
-    {
+    public static function createAutomaticComposerJson(
+        string $name,
+        array $require        = [],
+        array $devRequire     = [],
+        array $automaticExtra = []
+    ): string {
         $extendedExtra = [
             'automatic' => $automaticExtra,
         ];

@@ -12,6 +12,14 @@ class MockedQuestionableInstallationManager extends QuestionableInstallationMana
     private $installer;
 
     /**
+     * {@inheritdoc}
+     */
+    protected function getInstaller(): BaseInstaller
+    {
+        return $this->installer;
+    }
+
+    /**
      * @param object $installer
      */
     public function setInstaller($installer): void
@@ -33,13 +41,5 @@ class MockedQuestionableInstallationManager extends QuestionableInstallationMana
     public function getVersionSelector(): VersionSelector
     {
         return $this->versionSelector;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getInstaller(): BaseInstaller
-    {
-        return $this->installer;
     }
 }

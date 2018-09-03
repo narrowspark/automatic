@@ -113,10 +113,6 @@ final class InstallerTest extends MockeryTestCase
             ->andReturn(false);
         $this->inputMock->shouldReceive('hasOption')
             ->once()
-            ->with('no-suggest')
-            ->andReturn(false);
-        $this->inputMock->shouldReceive('hasOption')
-            ->once()
             ->with('apcu-autoloader')
             ->andReturn(false);
         $this->inputMock->shouldReceive('hasOption')

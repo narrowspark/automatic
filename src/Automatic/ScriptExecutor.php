@@ -61,12 +61,8 @@ final class ScriptExecutor
      * @param \Composer\Util\ProcessExecutor $executor
      * @param array                          $options
      */
-    public function __construct(
-        Composer $composer,
-        IOInterface $io,
-        ProcessExecutor $executor,
-        array $options
-    ) {
+    public function __construct(Composer $composer, IOInterface $io, ProcessExecutor $executor, array $options)
+    {
         $this->composer = $composer;
         $this->io       = $io;
         $this->executor = $executor;

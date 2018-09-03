@@ -21,8 +21,13 @@ class TruncatedComposerRepository extends BaseComposerRepository
     /**
      * {@inheritdoc}
      */
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
-    {
+    public function __construct(
+        array $repoConfig,
+        IOInterface $io,
+        Config $config,
+        EventDispatcher $eventDispatcher = null,
+        RemoteFilesystem $rfs            = null
+    ) {
         parent::__construct($repoConfig, $io, $config, $eventDispatcher, $rfs);
 
         $this->cache = new Cache(

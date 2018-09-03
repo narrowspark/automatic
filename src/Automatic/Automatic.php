@@ -42,6 +42,7 @@ use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Contract\Container as ContractContainer;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
+use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
@@ -50,6 +51,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputInterface;
 
 class Automatic implements PluginInterface, EventSubscriberInterface, ResettableContract
 {
@@ -103,6 +105,16 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
      * @var array
      */
     private $postInstallOutput = [''];
+
+    /**
+     * Get the Container instance.
+     *
+     * @return \Narrowspark\Automatic\Contract\Container
+     */
+    public function getContainer(): ContractContainer
+    {
+        return $this->container;
+    }
 
     /**
      * {@inheritdoc}
@@ -172,16 +184,14 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         ]);
 
         $this->extendComposer(\debug_backtrace());
-    }
 
-    /**
-     * Get the Container instance.
-     *
-     * @return \Narrowspark\Automatic\Contract\Container
-     */
-    public function getContainer(): ContractContainer
-    {
-        return $this->container;
+        $this->container->set(InstallationManager::class, static function (Container $container) use ($composer) {
+            return new InstallationManager(
+                $composer,
+                $container->get(IOInterface::class),
+                $container->get(InputInterface::class)
+            );
+        });
     }
 
     /**
@@ -246,7 +256,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
             }
         }
 
-        $manipulator->addSubNode('scripts', 'post-install-out', 'Added by automatic');
+        $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark Automatic to show package messages.');
 
         $scripts = [
             '@auto-scripts',
@@ -535,7 +545,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
     public function reset(): void
     {
         $this->operations = [];
-        $this->container->get(Configurator::class)->reset();
     }
 
     /**
@@ -705,8 +714,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
      *
      * @return void
      */
-    private function doInstall(PackageContract $package, PackageConfigurator $packageConfigurator, array $foundClasses): void
-    {
+    private function doInstall(
+        PackageContract $package,
+        PackageConfigurator $packageConfigurator,
+        array $foundClasses
+    ): void {
         /** @var \Narrowspark\Automatic\Lock $lock */
         $lock = $this->container->get(Lock::class);
 
@@ -788,14 +800,19 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         if ($lock->has(SkeletonInstaller::LOCK_KEY)) {
             $this->reset();
 
-            /** @var \Narrowspark\Automatic\SkeletonGenerator $skeletonGenerator */
-            $skeletonGenerator = $this->container->get(SkeletonGenerator::class);
+            $skeletonGenerator = new SkeletonGenerator(
+                $this->container->get(IOInterface::class),
+                $this->container->get(InstallationManager::class),
+                $lock,
+                $this->container->get('vendor-dir'),
+                $this->container->get('composer-extra')
+            );
 
-            $skeletonGenerator->run()
-                ->selfRemove();
+            $skeletonGenerator->run();
+            $skeletonGenerator->selfRemove();
+        } else {
+            $lock->reset();
         }
-
-        $lock->reset();
     }
 
     /**
@@ -815,6 +832,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         if (\version_compare(self::getComposerVersion(), '1.6.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
+
         // @codeCoverageIgnoreEnd
 
         // skip on no interactive mode
@@ -846,7 +864,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
             return $matches[0];
         }
 
-        throw new RuntimeException('No composer version found');
+        throw new RuntimeException('No composer version found.');
     }
 
     /**
@@ -949,8 +967,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
      *
      * @return \Composer\Repository\RepositoryManager
      */
-    private function extendRepositoryManager(Composer $composer, IOInterface $io, LegacyTagsManager $tagsManager): RepositoryManager
-    {
+    private function extendRepositoryManager(
+        Composer $composer,
+        IOInterface $io,
+        LegacyTagsManager $tagsManager
+    ): RepositoryManager {
         $manager = RepositoryFactory::manager(
             $io,
             $this->container->get(Config::class),
@@ -990,8 +1011,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
      *
      * @return void
      */
-    private function showWarningOnRemainingConfigurators(PackageContract $package, PackageConfigurator $packageConfigurator, Configurator $configurator): void
-    {
+    private function showWarningOnRemainingConfigurators(
+        PackageContract $package,
+        PackageConfigurator $packageConfigurator,
+        Configurator $configurator
+    ): void {
         $packageConfigurators = \array_keys((array) $package->getConfig(ConfiguratorContract::TYPE));
 
         foreach (\array_keys($configurator->getConfigurators()) as $key) {

@@ -1,3 +1,18 @@
+## v0.4.1
+
+- Total issues resolved: **2**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Added
+
+ - [59: Add doc about automatic.json](https://github.com/narrowspark/automatic/issues/59) thanks to @prisis
+
+### Fixed
+
+ - [62: moved runSkeletonGenerator from onPostCreateProject call to the create project event call](https://github.com/narrowspark/automatic/issues/62) thanks to @prisis
+ - [61: Fixes for LegacyTagsManager and SkeletonGenerator](https://github.com/narrowspark/automatic/pull/61) thanks to @prisis
+
 ## v0.4.0
 
 - Total issues resolved: **6**

@@ -378,7 +378,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
                 $this->postInstallOutput,
                 '',
                 '<info>Some files may have been created or updated to configure your new packages.</info>',
-                '<comment>The automatic.lock file has all information about the installed packages.</comment>',
                 'Please <comment>review</comment>, <comment>edit</comment> and <comment>commit</comment> them: these files are <comment>yours</comment>',
                 "\nTo show the package suggests run <comment>composer suggests</comment>"
             );

@@ -27,10 +27,12 @@ composer require viserio/console
 
 If you execute this command in your Application that doesn't support Narrowspark Automatic, this command will execute in the normal composer require behavior.
 
+> NOTE: The `automatic.json` and composer.json extra key `automatic` are used to configure Narrowspark Automatic with configurators, script executors, custom-configurators and more.
+
 When Narrowspark Automatic is installed in your Application, it will check if a `automatic.json` file or a composer.json extra key with `automatic` exists.
 In the above example, Automatic decided which automated tasks need to be run after the installation.
 
->NOTE: Narrowspark Automatic keeps tracks of the configuration, in a `automatic.lock` file, which must be committed to your code repository.
+> NOTE: Narrowspark Automatic keeps tracks of the configuration, in a `automatic.lock` file, which must be committed to your code repository.
 
 Using Narrowspark Automatic in New Applications
 ------------

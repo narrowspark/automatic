@@ -36,7 +36,6 @@ use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
-use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
@@ -53,7 +52,7 @@ use ReflectionClass;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 
-class Automatic implements PluginInterface, EventSubscriberInterface, ResettableContract
+class Automatic implements PluginInterface, EventSubscriberInterface
 {
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
@@ -289,7 +288,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         $lock->read();
 
         if ($lock->has(SkeletonInstaller::LOCK_KEY)) {
-            $this->reset();
+            $this->operations = [];
 
             $skeletonGenerator = new SkeletonGenerator(
                 $this->container->get(IOInterface::class),
@@ -568,14 +567,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Resettable
         if ($event->getRemoteFilesystem() !== $rfs) {
             $event->setRemoteFilesystem($rfs->setNextOptions($event->getRemoteFilesystem()->getOptions()));
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function reset(): void
-    {
-        $this->operations = [];
     }
 
     /**

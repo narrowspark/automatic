@@ -23,6 +23,8 @@ use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\Locker;
+use Composer\Plugin\Capability\CommandProvider;
+use Composer\Plugin\Capable;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
@@ -52,13 +54,13 @@ use RecursiveIteratorIterator;
 use ReflectionClass;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
-use Composer\Plugin\Capable;
-use Composer\Plugin\Capability\CommandProvider;
 
 class Automatic implements PluginInterface, EventSubscriberInterface, Capable
 {
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
+
+    public const VERSION = '0.5.0';
 
     /**
      * @var string

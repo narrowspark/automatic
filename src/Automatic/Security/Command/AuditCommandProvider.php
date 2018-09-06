@@ -11,6 +11,6 @@ class AuditCommandProvider implements CommandProvider
      */
     public function getCommands(): array
     {
-        return array(new AuditCommand());
+        return [new AuditCommand()];
     }
 }

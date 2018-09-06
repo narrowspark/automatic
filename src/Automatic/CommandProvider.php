@@ -2,9 +2,12 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Command;
 
-use Composer\Plugin\Capability\CommandProvider;
+use Composer\Plugin\Capability\CommandProvider as CommandProviderContract;
 
-class AuditCommandProvider implements CommandProvider
+/**
+ * @internal
+ */
+final class CommandProvider implements CommandProviderContract
 {
     /**
      * {@inheritdoc}

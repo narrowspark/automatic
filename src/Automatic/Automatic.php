@@ -23,7 +23,7 @@ use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\Locker;
-use Composer\Plugin\Capability\CommandProvider;
+use Composer\Plugin\Capability\CommandProvider as CommandProviderContract;
 use Composer\Plugin\Capable;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
@@ -49,7 +49,7 @@ use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\Prefetcher\TruncatedComposerRepository;
 use Narrowspark\Automatic\Security\Audit;
-use Narrowspark\Automatic\Security\Command\AuditCommandProvider;
+use Narrowspark\Automatic\Security\Command\CommandProvider;
 use Narrowspark\Automatic\Security\Downloader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -170,7 +170,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
     public function getCapabilities(): array
     {
         return [
-            CommandProvider::class => AuditCommandProvider::class,
+            CommandProviderContract::class => CommandProvider::class,
         ];
     }
 

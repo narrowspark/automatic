@@ -19,6 +19,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class AuditCommand extends BaseCommand
 {
     /**
+     * @var string
+     */
+    protected static $defaultName = 'audit';
+
+    /**
      * {@inheritdoc}
      */
     protected function configure(): void
@@ -26,6 +31,7 @@ class AuditCommand extends BaseCommand
         $this
             ->setName('audit')
             ->setDefinition([
+                new InputOption('composer-lock', '', InputOption::VALUE_REQUIRED, 'Path to a composer.lock'),
                 new InputOption('format', '', InputOption::VALUE_REQUIRED, 'The output format', 'txt'),
                 new InputOption('timeout', '', InputOption::VALUE_REQUIRED, 'The HTTP timeout in seconds'),
             ])
@@ -54,13 +60,16 @@ EOF
             $downloader->setTimeout($timeout);
         }
 
-        $audit        = new Audit(\rtrim($composer->getConfig()->get('vendor-dir'), '/'), $downloader);
-        $composerFile = \str_replace('json', 'lock', Factory::getComposerFile());
+        $audit = new Audit(\rtrim($composer->getConfig()->get('vendor-dir'), '/'), $downloader);
+
+        if ($input->getOption('composer-lock') !== null) {
+            $composerFile = $input->getOption('composer-lock');
+        } else {
+            $composerFile = \str_replace('json', 'lock', Factory::getComposerFile());
+        }
 
         $output = new SymfonyStyle($input, $output);
-
         $output->writeln('=== Audit Security Report ===');
-        $output->comment('This checker can only detect vulnerabilities that are referenced in the SensioLabs security advisories database.');
 
         try {
             [$vulnerabilities, $messages] = $audit->checkLock($composerFile);
@@ -72,6 +81,7 @@ EOF
 
             return 1;
         }
+        $output->comment('This checker can only detect vulnerabilities that are referenced in the SensioLabs security advisories database.');
 
         if (\count($messages) !== 0) {
             $output->note('Please report this found messages to https://github.com/narrowspark/security-advisories.');

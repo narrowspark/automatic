@@ -164,12 +164,7 @@ final class Container implements ContainerContract
     }
 
     /**
-     * Set a new entry to the container.
-     *
-     * @param string   $id
-     * @param callable $callback
-     *
-     * @return void
+     * {@inheritdoc}
      */
     public function set(string $id, callable $callback): void
     {

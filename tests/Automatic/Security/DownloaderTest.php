@@ -10,10 +10,33 @@ use PHPUnit\Framework\TestCase;
  */
 final class DownloaderTest extends TestCase
 {
-    public function testGetSecurityAdvisories(): void
-    {
-        $d = new Downloader();
+    /**
+     * @var string
+     */
+    private const SECURITY_ADVISORIES_SHA = 'https://raw.githubusercontent.com/narrowspark/security-advisories/master/security-advisories-sha';
 
-        $d->getSecurityAdvisories();
+    /**
+     * @var \Narrowspark\Automatic\Security\Downloader
+     */
+    private $downloader;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp()
+    {
+        parent::setUp();
+
+        $this->downloader = new Downloader();
+    }
+
+    public function testDownloadWithComposer(): void
+    {
+        static::assertNotEmpty($this->downloader->downloadWithComposer(self::SECURITY_ADVISORIES_SHA));
+    }
+
+    public function testDownloadWithCurl(): void
+    {
+        static::assertNotEmpty($this->downloader->downloadWithCurl(self::SECURITY_ADVISORIES_SHA));
     }
 }

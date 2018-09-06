@@ -12,8 +12,32 @@ use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
  */
 final class Downloader
 {
-    private $timeout = 5;
+    /**
+     * The HTTP timeout in seconds.
+     *
+     * @var int
+     */
+    private $timeout = 20;
 
+    /**
+     * Sets the HTTP timeout in seconds.
+     *
+     * @param int $timeout The HTTP timeout in seconds
+     *
+     * @return void
+     */
+    public function setTimeout(int $timeout): void
+    {
+        $this->timeout = $timeout;
+    }
+
+    /**
+     * Download a file from a url with composer's StreamContextFactory class.
+     *
+     * @param string $url
+     *
+     * @return string
+     */
     public function downloadWithComposer(string $url): string
     {
         $opts = [
@@ -52,7 +76,7 @@ final class Downloader
         }
 
         // status code
-        if (! \preg_match('{HTTP/\d\.\d (\d+) }i', $http_response_header[0], $match)) {
+        if ((bool) \preg_match('{HTTP/\d\.\d (\d+) }i', $http_response_header[0], $match) === false) {
             throw new RuntimeException('An unknown error occurred.');
         }
 
@@ -62,6 +86,8 @@ final class Downloader
     }
 
     /**
+     * Download a file with the curl extension.
+     *
      * @param string $url
      *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
@@ -78,7 +104,7 @@ final class Downloader
         \curl_setopt($curl, \CURLOPT_HTTPHEADER, ['Accept: application/text']);
         \curl_setopt($curl, \CURLOPT_CONNECTTIMEOUT, $this->timeout);
         \curl_setopt($curl, \CURLOPT_TIMEOUT, 10);
-        \curl_setopt($curl, \CURLOPT_FOLLOWLOCATION, \ini_get('open_basedir') ? 0 : 1);
+        \curl_setopt($curl, \CURLOPT_FOLLOWLOCATION, \is_string(\ini_get('open_basedir')) ? 0 : 1);
         \curl_setopt($curl, \CURLOPT_MAXREDIRS, 3);
         \curl_setopt($curl, \CURLOPT_FAILONERROR, false);
         \curl_setopt($curl, \CURLOPT_SSL_VERIFYPEER, 1);
@@ -103,7 +129,7 @@ final class Downloader
             throw new RuntimeException(\sprintf('An error occurred: %s.', $error));
         }
 
-        $body       = \mb_substr($response, \curl_getinfo($curl, \CURLINFO_HEADER_SIZE));
+        $body       = \mb_substr((string) $response, \curl_getinfo($curl, \CURLINFO_HEADER_SIZE));
         $statusCode = (int) \curl_getinfo($curl, \CURLINFO_HTTP_CODE);
 
         \curl_close($curl);
@@ -120,11 +146,11 @@ final class Downloader
     {
         return \sprintf(
             'Narrowspark-Automatic/%s (%s; %s; %s%s)',
-            Automatic::VERSION === '@package_version@' ? 'source' : Automatic::VERSION,
+            Automatic::VERSION,
             \function_exists('php_uname') ? \php_uname('s') : 'Unknown',
             \function_exists('php_uname') ? \php_uname('r') : 'Unknown',
             'PHP ' . \PHP_MAJOR_VERSION . '.' . \PHP_MINOR_VERSION . '.' . \PHP_RELEASE_VERSION,
-            \getenv('CI') ? '; CI' : ''
+            \getenv('CI') !== false ? '; CI' : ''
         );
     }
 

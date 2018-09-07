@@ -54,7 +54,7 @@ EOF
         $downloader = new Downloader();
 
         if (($timeout = $input->getOption('timeout')) !== null) {
-            $downloader->setTimeout($timeout);
+            $downloader->setTimeout((int) $timeout);
         }
 
         $config = Factory::createConfig(new NullIO());

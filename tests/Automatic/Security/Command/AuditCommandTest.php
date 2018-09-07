@@ -34,7 +34,7 @@ final class AuditCommandTest extends TestCase
 
         $commandTester = $this->executeCommand(new AuditCommand());
 
-        static::assertContains(\trim('[+] No known vulnerabilities found'), \trim($commandTester->getDisplay(true)));
+        static::assertContains('[+] No known vulnerabilities found', \trim($commandTester->getDisplay(true)));
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -49,9 +49,9 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        static::assertContains(\trim('=== Audit Security Report ==='), $output);
-        static::assertContains(\trim('This checker can only detect vulnerabilities that are referenced'), $output);
-        static::assertContains(\trim('[+] No known vulnerabilities found'), $output);
+        static::assertContains('=== Audit Security Report ===', $output);
+        static::assertContains('This checker can only detect vulnerabilities that are referenced', $output);
+        static::assertContains('[+] No known vulnerabilities found', $output);
     }
 
     public function testAuditCommandWithEmptyComposerLockPath(): void
@@ -76,10 +76,62 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        static::assertContains(\trim('=== Audit Security Report ==='), $output);
-        static::assertContains(\trim('This checker can only detect vulnerabilities that are referenced'), $output);
-        static::assertContains(\trim('symfony/symfony (v2.5.2)'), $output);
-        static::assertContains(\trim('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.'), $output);
+        static::assertContains('=== Audit Security Report ===', $output);
+        static::assertContains('This checker can only detect vulnerabilities that are referenced', $output);
+        static::assertContains('symfony/symfony (v2.5.2)', $output);
+        static::assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+    }
+
+    public function testAuditCommandWithErrorAndJsonFormat(): void
+    {
+        $commandTester = $this->executeCommand(
+            new AuditCommand(),
+            [
+                '--composer-lock' => \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
+                '--format'        => 'json',
+                '--timeout'       => '20',
+            ]
+        );
+
+        $output = \trim($commandTester->getDisplay(true));
+
+        $jsonOutput = \str_replace(
+            [
+                '=== Audit Security Report ===',
+                '//',
+                'This checker can only detect vulnerabilities that are referenced',
+                'in the',
+                'SensioLabs security advisories database.',
+                '[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.',
+            ],
+            '',
+            $output
+        );
+
+        static::assertJson($jsonOutput);
+        static::assertContains('=== Audit Security Report ===', $output);
+        static::assertContains('This checker can only detect vulnerabilities that are referenced', $output);
+        static::assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+    }
+
+    public function testAuditCommandWithErrorAndSimpleFormat(): void
+    {
+        $commandTester = $this->executeCommand(
+            new AuditCommand(),
+            [
+                '--composer-lock' => \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
+                '--format'        => 'simple',
+            ]
+        );
+
+        $output = \trim($commandTester->getDisplay(true));
+
+        static::assertContains('=== Audit Security Report ===', $output);
+        static::assertContains(\trim('symfony/symfony (v2.5.2)
+------------------------
+'), $output);
+        static::assertContains('This checker can only detect vulnerabilities that are referenced', $output);
+        static::assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     /**

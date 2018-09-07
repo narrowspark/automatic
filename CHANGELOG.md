@@ -1,3 +1,13 @@
+## v0.5.0
+
+- Total issues resolved: **1**
+- Total pull requests resolved: **0**
+- Total contributors: **1**
+
+### Added
+
+ - [63: show known security vulnerabilities for packages](https://github.com/narrowspark/automatic/issues/63) thanks to @prisis
+
 ## v0.4.1
 
 - Total issues resolved: **2**

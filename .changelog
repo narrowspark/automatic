@@ -2,12 +2,13 @@
 declare(strict_types=1);
 
 use ChangelogGenerator\ChangelogConfig;
+use Narrowspark\Automatic\Automatic;
 
 return [
     (new ChangelogConfig(
         'narrowspark',
         'automatic',
-        'v0.4.1',
+        'v' . Automatic::VERSION,
         ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security']
     ))
 ];

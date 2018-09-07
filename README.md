@@ -135,6 +135,9 @@ With the below example you can see how to add a skip tag to Narrowspark Automati
     }
 }
 ``` 
+Automatic Security Audit
+------------
+Narrowspark Automatic shows you on every `composer install` and `composer update` known security vulnerabilities for your installed dependencies based on [FriendsOfPHP/security-advisories](https://github.com/FriendsOfPHP/security-advisories) database.
 
 Testing
 -------------

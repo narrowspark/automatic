@@ -234,14 +234,14 @@ final class OperationsResolverTest extends MockeryTestCase
             ->once()
             ->with(Automatic::LOCK_PACKAGES, $name)
             ->andReturn([
-                'pretty-name' => $name,
-                'version'     => '1.0-dev',
-                'parent'      => null,
-                'is-dev'      => false,
-                'url'         => null,
-                'operation'   => 'install',
-                'type'        => 'library',
-                'requires'    => [
+                'pretty-name'    => $name,
+                'version'        => '1.0-dev',
+                'parent'         => null,
+                'is-dev'         => false,
+                'url'            => null,
+                'operation'      => 'install',
+                'type'           => 'library',
+                'requires'       => [
                     'viserio/contract',
                 ],
                 'autoload'        => [],

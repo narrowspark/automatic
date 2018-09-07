@@ -28,7 +28,7 @@ final class Package implements PackageContract
     private $parentName;
 
     /**
-     * The package version.
+     * The package pretty version.
      *
      * @var null|string
      */
@@ -290,9 +290,9 @@ final class Package implements PackageContract
 
         $package = new static($name, $packageData['version']);
 
-        foreach ($packageData as $key => $date) {
-            if ($date !== null && isset($keyToFunctionMappers[$key])) {
-                $package->{$keyToFunctionMappers[$key]}($date);
+        foreach ($packageData as $key => $data) {
+            if ($data !== null && isset($keyToFunctionMappers[$key])) {
+                $package->{$keyToFunctionMappers[$key]}($data);
             }
         }
 

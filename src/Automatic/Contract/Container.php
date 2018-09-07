@@ -14,6 +14,16 @@ interface Container
     public function get(string $id);
 
     /**
+     * Set a new entry to the container.
+     *
+     * @param string   $id
+     * @param callable $callback
+     *
+     * @return void
+     */
+    public function set(string $id, callable $callback): void;
+
+    /**
      * Returns all container entries.
      *
      * @return array

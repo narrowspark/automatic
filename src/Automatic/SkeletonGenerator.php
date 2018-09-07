@@ -113,10 +113,11 @@ final class SkeletonGenerator
 
         $status = $this->installationManager->run();
 
+        // @codeCoverageIgnoreStart
         if ($status !== 0) {
             exit($status);
         }
-
+        // @codeCoverageIgnoreEnd
         $generator->generate();
     }
 

@@ -154,12 +154,12 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
             InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_INSTALL        => [['record'], ['audit']],
-            PackageEvents::POST_PACKAGE_UPDATE         => [['record'], ['audit']],
+            PackageEvents::POST_PACKAGE_INSTALL        => [['record'], ['auditPackage']],
+            PackageEvents::POST_PACKAGE_UPDATE         => [['record'], ['auditPackage']],
             PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
             PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
-            ScriptEvents::POST_INSTALL_CMD             => 'onPostInstall',
-            ScriptEvents::POST_UPDATE_CMD              => 'onPostUpdate',
+            ScriptEvents::POST_INSTALL_CMD             => [['onPostInstall'], ['auditComposerLock']],
+            ScriptEvents::POST_UPDATE_CMD              => [['onPostUpdate'], ['auditComposerLock']],
             ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator']],
         ];
     }
@@ -264,6 +264,28 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
     }
 
     /**
+     * Audit composer.lock.
+     *
+     * @param \Composer\Script\Event $event
+     *
+     * @return void
+     */
+    public function auditComposerLock(Event $event): void
+    {
+        if (\count($this->foundVulnerabilities) !== 0) {
+            return;
+        }
+
+        $data = $this->container->get(Audit::class)->checkLock(Util::getComposerLockFile());
+
+        if (\count($data) === 0) {
+            return;
+        }
+
+        $this->foundVulnerabilities += $data[0];
+    }
+
+    /**
      * Records composer operations.
      *
      * @param \Composer\Installer\PackageEvent $event
@@ -292,7 +314,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
      *
      * @return void
      */
-    public function audit(PackageEvent $event): void
+    public function auditPackage(PackageEvent $event): void
     {
         $operation = $event->getOperation();
 
@@ -306,13 +328,17 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
             $composerPackage = $operation->getPackage();
         }
 
-        [$vulnerabilities, $messages] = $this->container->get(Audit::class)->checkPackage(
+        $data = $this->container->get(Audit::class)->checkPackage(
             $composerPackage->getName(),
             $composerPackage->getVersion(),
             $this->securityAdvisories
         );
 
-        $this->foundVulnerabilities += $vulnerabilities;
+        if (\count($data) === 0) {
+            return;
+        }
+
+        $this->foundVulnerabilities += $data[0];
     }
 
     /**

@@ -30,9 +30,14 @@ final class AuditCommandTest extends TestCase
 
     public function testAuditCommand(): void
     {
+        \putenv('COMPOSER=' . \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock');
+
         $commandTester = $this->executeCommand(new AuditCommand());
 
         static::assertContains(\trim('[+] No known vulnerabilities found'), \trim($commandTester->getDisplay(true)));
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
     }
 
     public function testAuditCommandWithComposerLockOption(): void

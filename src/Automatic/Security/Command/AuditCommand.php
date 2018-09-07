@@ -4,6 +4,7 @@ namespace Narrowspark\Automatic\Security\Command;
 
 use Composer\Command\BaseCommand;
 use Composer\Factory;
+use Composer\IO\NullIO;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Security\Audit;
@@ -50,22 +51,19 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $composer   = $this->getComposer();
         $downloader = new Downloader();
-        $extra      = $composer->getPackage()->getExtra();
 
-        if (isset($extra[Util::COMPOSER_EXTRA_KEY]['audit']['timeout'])) {
-            $downloader->setTimeout($extra[Util::COMPOSER_EXTRA_KEY]['audit']['timeout']);
-        } elseif (($timeout = $input->getOption('timeout')) !== null) {
+        if (($timeout = $input->getOption('timeout')) !== null) {
             $downloader->setTimeout($timeout);
         }
 
-        $audit = new Audit(\rtrim($composer->getConfig()->get('vendor-dir'), '/'), $downloader);
+        $config = Factory::createConfig(new NullIO());
+        $audit  = new Audit(\rtrim($config->get('vendor-dir'), '/'), $downloader);
 
         if ($input->getOption('composer-lock') !== null) {
             $composerFile = $input->getOption('composer-lock');
         } else {
-            $composerFile = \str_replace('json', 'lock', Factory::getComposerFile());
+            $composerFile = Util::getComposerLockFile();
         }
 
         $output = new SymfonyStyle($input, $output);

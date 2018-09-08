@@ -3,13 +3,13 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Common\Test;
 
 use Narrowspark\Automatic\Common\ClassFinder;
-use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Test\Fixture\Finder\AbstractClass;
 use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyClass;
 use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyClassTwo;
 use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyInterface;
 use Narrowspark\Automatic\Common\Test\Fixture\Finder\FooTrait;
 use Narrowspark\Automatic\Common\Test\Fixture\Finder\Nested\DummyClassNested;
+use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

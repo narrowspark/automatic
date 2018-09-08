@@ -76,7 +76,7 @@ abstract class AbstractConfigurator implements ConfiguratorContract
         }
 
         foreach ($messages as $i => $message) {
-            $messages[$i] = '    ' . $message;
+            $messages[$i] = '    · ' . $message;
         }
 
         $this->io->writeError($messages, true, IOInterface::VERBOSE);

@@ -8,7 +8,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
-use Narrowspark\Automatic\ClassFinder;
+use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
 
@@ -34,17 +34,17 @@ abstract class AbstractInstaller extends LibraryInstaller
     /**
      * A path class loader instance.
      *
-     * @var \Narrowspark\Automatic\ClassFinder
+     * @var \Narrowspark\Automatic\Common\ClassFinder
      */
     protected $loader;
 
     /**
      * Create a new Installer instance.
      *
-     * @param \Composer\IO\IOInterface           $io
-     * @param \Composer\Composer                 $composer
-     * @param \Narrowspark\Automatic\Lock        $lock
-     * @param \Narrowspark\Automatic\ClassFinder $loader
+     * @param \Composer\IO\IOInterface                  $io
+     * @param \Composer\Composer                        $composer
+     * @param \Narrowspark\Automatic\Lock               $lock
+     * @param \Narrowspark\Automatic\Common\ClassFinder $loader
      */
     public function __construct(IOInterface $io, Composer $composer, Lock $lock, ClassFinder $loader)
     {

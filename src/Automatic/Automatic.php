@@ -35,6 +35,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
+use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
@@ -797,7 +798,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
      */
     private function doActionOnPackageOperation(PackageContract $package): void
     {
-        /** @var \Narrowspark\Automatic\ClassFinder $classFinder */
+        /** @var \Narrowspark\Automatic\Common\ClassFinder $classFinder */
         $classFinder  = $this->container->get(ClassFinder::class);
         $foundClasses = $classFinder->setComposerAutoload($package->getName(), $package->getAutoload())
             ->setFilter(function (\SplFileInfo $fileInfo) use ($package) {

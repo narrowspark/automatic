@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Fixture\Finder;
+namespace Narrowspark\Automatic\Common\Test\Fixture\Finder;
 
 interface DummyInterface
 {

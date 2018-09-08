@@ -1,3 +1,13 @@
+## v0.6.0
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Changed
+
+ - [67: moved class finder to common](https://github.com/narrowspark/automatic/pull/67) thanks to @prisis
+
 ## v0.5.2
 
 - Total issues resolved: **0**

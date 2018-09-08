@@ -9,7 +9,7 @@ Configurators define the different tasks executed when installing a dependency, 
 
 The package only contain the tasks needed to install and configure the dependency, because Narrowspark Automatic Configurators are smart enough to reverse those tasks when uninstalling and unconfiguring the dependencies.
 
-Narrowspark Automatic comes with several types of tasks, which are called **configurators**: `copy`, `env`, `composer-scripts`, `gitignore`, and `post-install-output`.
+Narrowspark Automatic comes with several types of tasks, which are called **configurators**: `copy`, `env`, `composer-scripts`, `gitignore` and a special configurator `post-install-output`.
 
 ### Copy Configurator `copy`
 
@@ -20,8 +20,10 @@ directory of the application:
 
 ```json
 {
-    "copy": {
-        "bin/check.php": "%BIN_DIR%/check.php"
+    "configurators": {
+        "copy": {
+            "bin/check.php": "%BIN_DIR%/check.php"
+        }
     }
 }
 ```
@@ -49,8 +51,10 @@ files stored in the root of your application project:
 
 ```json
 {
-    "env": {
-        "APP_ENV": "dev"
+    "configurators": {
+        "env": {
+            "APP_ENV": "dev"
+        }
     }
 }
 ```
@@ -76,9 +80,11 @@ The value is an associative array where the key is the script to execute (includ
 
 ```json
 {
-    "composer-scripts": {
-        "echo \"hallo\";": "php-script",
-        "bash -c \"echo hallo\"": "script"
+    "configurators": {
+        "composer-scripts": {
+            "echo \"hallo\";": "php-script",
+            "bash -c \"echo hallo\"": "script"
+        }
     }
 }
 ```
@@ -119,12 +125,14 @@ each line):
 
 ```json
 {
-    "gitignore": [
-        ".env",
-        "/public/bundles/",
-        "/var/",
-        "/vendor/"
-    ]
+    "configurators": {
+        "gitignore": [
+            ".env",
+            "/public/bundles/",
+            "/var/",
+            "/vendor/"
+        ]
+    }
 }
 ```
 
@@ -132,7 +140,7 @@ Similar to other configurators, the contents are copied into the `.gitignore`
 file and wrapped with section separators (``###> your-package-name-here ###``)
 that must not be removed or modified.
 
-Post-install output Configurator `post-install-output`
+The package messages `post-install-output`
 
 Displays contents in the command console after the package has been installed.
 Avoid outputting meaningless information and use it only when you need to show

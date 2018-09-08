@@ -6,7 +6,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
-use Narrowspark\Automatic\ClassFinder;
+use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;

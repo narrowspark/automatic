@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test;
+namespace Narrowspark\Automatic\Common\Test;
 
-use Narrowspark\Automatic\ClassFinder;
+use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
-use Narrowspark\Automatic\Test\Fixture\Finder\AbstractClass;
-use Narrowspark\Automatic\Test\Fixture\Finder\DummyClass;
-use Narrowspark\Automatic\Test\Fixture\Finder\DummyClassTwo;
-use Narrowspark\Automatic\Test\Fixture\Finder\DummyInterface;
-use Narrowspark\Automatic\Test\Fixture\Finder\FooTrait;
-use Narrowspark\Automatic\Test\Fixture\Finder\Nested\DummyClassNested;
+use Narrowspark\Automatic\Common\Test\Fixture\Finder\AbstractClass;
+use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyClass;
+use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyClassTwo;
+use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyInterface;
+use Narrowspark\Automatic\Common\Test\Fixture\Finder\FooTrait;
+use Narrowspark\Automatic\Common\Test\Fixture\Finder\Nested\DummyClassNested;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -22,7 +22,7 @@ final class ClassFinderTest extends TestCase
     /**
      * A path class loader instance.
      *
-     * @var \Narrowspark\Automatic\ClassFinder
+     * @var \Narrowspark\Automatic\Common\ClassFinder
      */
     private $loader;
 

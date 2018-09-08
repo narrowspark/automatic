@@ -8,6 +8,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
+use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;

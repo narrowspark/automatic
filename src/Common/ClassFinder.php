@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic;
+namespace Narrowspark\Automatic\Common;
 
 use Closure;
 use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
@@ -124,7 +124,7 @@ final class ClassFinder implements ResettableContract
      *
      * @param array $excludes
      *
-     * @return \Narrowspark\Automatic\ClassFinder
+     * @return \Narrowspark\Automatic\Common\ClassFinder
      */
     public function setExcludes(array $excludes): self
     {
@@ -138,7 +138,7 @@ final class ClassFinder implements ResettableContract
      *
      * @param \Closure $filter
      *
-     * @return \Narrowspark\Automatic\ClassFinder
+     * @return \Narrowspark\Automatic\Common\ClassFinder
      */
     public function setFilter(Closure $filter): self
     {
@@ -153,7 +153,7 @@ final class ClassFinder implements ResettableContract
      * @param string $packageName
      * @param array  $autoload
      *
-     * @return \Narrowspark\Automatic\ClassFinder
+     * @return \Narrowspark\Automatic\Common\ClassFinder
      */
     public function setComposerAutoload(string $packageName, array $autoload): self
     {
@@ -184,7 +184,7 @@ final class ClassFinder implements ResettableContract
      * @param string $packageName
      * @param array  $paths
      *
-     * @return \Narrowspark\Automatic\ClassFinder
+     * @return \Narrowspark\Automatic\Common\ClassFinder
      */
     public function addPsr0(string $packageName, array $paths): self
     {
@@ -199,7 +199,7 @@ final class ClassFinder implements ResettableContract
      * @param string $packageName
      * @param array  $paths
      *
-     * @return \Narrowspark\Automatic\ClassFinder
+     * @return \Narrowspark\Automatic\Common\ClassFinder
      */
     public function addPsr4(string $packageName, array $paths): self
     {
@@ -214,7 +214,7 @@ final class ClassFinder implements ResettableContract
      * @param string $packageName
      * @param array  $paths
      *
-     * @return \Narrowspark\Automatic\ClassFinder
+     * @return \Narrowspark\Automatic\Common\ClassFinder
      */
     public function addClassmap(string $packageName, array $paths): self
     {
@@ -226,7 +226,7 @@ final class ClassFinder implements ResettableContract
     /**
      * Find all the class, traits and interface names in a given directory.
      *
-     * @return \Narrowspark\Automatic\ClassFinder
+     * @return \Narrowspark\Automatic\Common\ClassFinder
      */
     public function find(): self
     {

@@ -1,3 +1,13 @@
+## v0.5.2
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Changed
+
+ - [66: added midddot to configurators messages](https://github.com/narrowspark/automatic/pull/66) thanks to @prisis
+
 ## v0.5.1
 
 - Total issues resolved: **0**

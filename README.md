@@ -90,16 +90,18 @@ This means you can execute the following command: `composer create-project your/
 
 Read the [skeleton documentation](doc/SKELETON.md) to learn everything about how to create skeletons for your own application.
 
-Narrowspark Automatic Configuration are defined in a `automatic.json` file or in the composer extra key `automatic` and can contain any number of other files and directories. For example, this is the `automatic.json` for `viserio/console`:
+Narrowspark Automatic tasks are defined in a `automatic.json` file or in the composer extra key `automatic` and can contain any number of other files and directories. For example, this is the `automatic.json` for `viserio/console`:
 
 ```json
 {
-    "providers": {               
-        "Viserio\\Component\\Console\\Provider\\ConsoleServiceProvider": ["global"],
-        "Viserio\\Component\\Console\\Provider\\LazilyCommandsServiceProvider": ["global"]
-    },
-    "proxies": {
-        "Viserio\\Component\\Console\\Proxy\\Console": ["global"]
+    "configurators": {
+        "providers": {               
+            "Viserio\\Component\\Console\\Provider\\ConsoleServiceProvider": ["global"],
+            "Viserio\\Component\\Console\\Provider\\LazilyCommandsServiceProvider": ["global"]
+        },
+        "proxies": {
+            "Viserio\\Component\\Console\\Proxy\\Console": ["global"]
+        }
     },
     "script-extenders": [
         "Viserio\\Component\\Console\\Automatic\\CerebroScriptExtender"

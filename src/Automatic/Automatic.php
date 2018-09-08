@@ -1134,7 +1134,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
 
         if (\count($packageConfigurators) !== 0) {
             $this->container->get(IOInterface::class)->writeError(\sprintf(
-                '<warning>No configurators were run for [%s] in [%s]</warning>',
+                '<warning>Configurators [%s] did not run for package [%s]</warning>',
                 \implode(', ', $packageConfigurators),
                 $package->getPrettyName()
             ));

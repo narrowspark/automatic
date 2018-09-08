@@ -1,3 +1,13 @@
+## v0.5.1
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Changed
+
+ - [65: Doc update](https://github.com/narrowspark/automatic/pull/65) thanks to @prisis
+
 ## v0.5.0
 
 - Total issues resolved: **1**

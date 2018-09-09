@@ -1121,13 +1121,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
     ): void {
         $packageConfigurators = \array_keys((array) $package->getConfig(ConfiguratorContract::TYPE));
 
-        foreach (\array_keys($configurator->getConfigurators()) as $key) {
+        foreach (\array_keys($configurator->getConfigurators()) as $key => $value) {
             if (isset($packageConfigurators[$key])) {
                 unset($packageConfigurators[$key]);
             }
         }
 
-        foreach (\array_keys($packageConfigurator->getConfigurators()) as $key) {
+        foreach (\array_keys($packageConfigurator->getConfigurators()) as $key => $value) {
             if (isset($packageConfigurators[$key])) {
                 unset($packageConfigurators[$key]);
             }

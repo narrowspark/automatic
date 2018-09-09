@@ -9,7 +9,7 @@ Configurators define the different tasks executed when installing a dependency, 
 
 The package only contain the tasks needed to install and configure the dependency, because Narrowspark Automatic Configurators are smart enough to reverse those tasks when uninstalling and unconfiguring the dependencies.
 
-Narrowspark Automatic comes with several types of tasks, which are called **configurators**: `copy`, `env`, `composer-scripts`, `gitignore` and a special configurator `post-install-output`.
+Narrowspark Automatic comes with several types of tasks, which are called **configurators**: `copy`, `env`, `composer-scripts`, `composer-auto-scripts`, `gitignore` and a special configurator `post-install-output`.
 
 ### Copy Configurator `copy`
 
@@ -72,16 +72,16 @@ The `###> your-package-name-here ###` section separators are needed by Narrowspa
 to detect the contents added by this dependency in case you uninstall it later.
 > !!! Don't remove or modify these separators.
 
-Composer Scripts Configurator `composer-scripts`
+Composer Scripts Configurator `composer-auto-scripts`
 
-Registers scripts in the `auto-scripts` section of the `composer.json` file
+Registers scripts in the `composer-auto-scripts` section of the `composer.json` file
 to execute them automatically when running `composer install` and `composer update`.
 The value is an associative array where the key is the script to execute (including all its arguments and options) and the value is the type of script (`php-script` for PHP scripts, ``script`` for any shell script):
 
 ```json
 {
     "configurators": {
-        "composer-scripts": {
+        "composer-auto-scripts": {
             "echo \"hallo\";": "php-script",
             "bash -c \"echo hallo\"": "script"
         }

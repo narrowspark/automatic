@@ -5,7 +5,6 @@ namespace Narrowspark\Automatic\Common\Test\Fixture\Finder;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Viserio\Component\StaticalProxy\StaticalProxy;
 use Viserio\Component\View\ViewFactory;
 
 class StaticFunctionAndClasses

@@ -1,3 +1,13 @@
+## v0.6.1
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Fixed
+
+ - [68: fixed finder to not find classes of functions in classes](https://github.com/narrowspark/automatic/pull/68) thanks to @prisis
+
 ## v0.6.0
 
 - Total issues resolved: **0**

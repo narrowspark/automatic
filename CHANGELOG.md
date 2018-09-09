@@ -14,7 +14,7 @@
 - Total pull requests resolved: **1**
 - Total contributors: **1**
 
-### Changed
+### Added
 
  - [66: added midddot to configurators messages](https://github.com/narrowspark/automatic/pull/66) thanks to @prisis
 
@@ -24,7 +24,7 @@
 - Total pull requests resolved: **1**
 - Total contributors: **1**
 
-### Changed
+### Fixed
 
  - [65: Doc update](https://github.com/narrowspark/automatic/pull/65) thanks to @prisis
 
@@ -101,7 +101,7 @@
 - Total pull requests resolved: **1**
 - Total contributors: **1**
 
-### Added
+### Fixed
 
  - [43: clear configurators and operations before skeleton generation](https://github.com/narrowspark/automatic/pull/43) thanks to @prisis
 

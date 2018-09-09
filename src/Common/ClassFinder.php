@@ -128,7 +128,9 @@ final class ClassFinder implements ResettableContract
      */
     public function setExcludes(array $excludes): self
     {
-        $this->excludes = $excludes;
+        $this->excludes = \array_map(function ($value) {
+            return \trim($value, '/');
+        }, $excludes);
 
         return $this;
     }
@@ -253,6 +255,7 @@ final class ClassFinder implements ResettableContract
         /** @var \SplFileInfo $file */
         foreach ($finder as $file) {
             $realPath  = (string) $file->getRealPath();
+
             $namespace = null;
             $tokens    = \token_get_all((string) \file_get_contents($realPath));
 
@@ -261,15 +264,39 @@ final class ClassFinder implements ResettableContract
                     if ($token[0] === \T_NAMESPACE) {
                         $namespace = self::getNamespace($key + 2, $tokens);
                     } elseif ($token[0] === \T_INTERFACE) {
-                        $this->interfaces[\ltrim($namespace . '\\' . self::getName($key + 2, $tokens), '\\')] = $realPath;
+                        $name = self::getName($key + 2, $tokens);
+
+                        if ($name === null) {
+                            continue 2;
+                        }
+
+                        $this->interfaces[\ltrim($namespace . '\\' . $name, '\\')] = $realPath;
                     } elseif ($token[0] === \T_TRAIT) {
-                        $this->traits[\ltrim($namespace . '\\' . self::getName($key + 2, $tokens), '\\')] = $realPath;
+                        $name = self::getName($key + 2, $tokens);
+
+                        if ($name === null) {
+                            continue 2;
+                        }
+
+                        $this->traits[\ltrim($namespace . '\\' . $name, '\\')] = $realPath;
                     } elseif ($token[0] === \T_ABSTRACT) {
-                        $this->abstractClasses[\ltrim($namespace . '\\' . self::getName($key + 4, $tokens), '\\')] = $realPath;
+                        $name = self::getName($key + 4, $tokens);
+
+                        if ($name === null) {
+                            continue 2;
+                        }
+
+                        $this->abstractClasses[\ltrim($namespace . '\\' . $name, '\\')] = $realPath;
 
                         continue 2;
                     } elseif ($token[0] === \T_CLASS) {
-                        $this->classes[\ltrim($namespace . '\\' . self::getName($key + 2, $tokens), '\\')] = $realPath;
+                        $name = self::getName($key + 2, $tokens);
+
+                        if ($name === null) {
+                            continue 2;
+                        }
+
+                        $this->classes[\ltrim($namespace . '\\' . $name, '\\')] = $realPath;
                     }
                 }
             }

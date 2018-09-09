@@ -9,6 +9,7 @@ use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyClassTwo;
 use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyInterface;
 use Narrowspark\Automatic\Common\Test\Fixture\Finder\FooTrait;
 use Narrowspark\Automatic\Common\Test\Fixture\Finder\Nested\DummyClassNested;
+use Narrowspark\Automatic\Common\Test\Fixture\Finder\StaticFunctionAndClasses;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use PHPUnit\Framework\TestCase;
 
@@ -45,9 +46,15 @@ final class ClassFinderTest extends TestCase
         static::assertArrayHasKey(DummyClass::class, $this->loader->getClasses());
         static::assertArrayHasKey(DummyClassTwo::class, $this->loader->getClasses());
         static::assertArrayHasKey(DummyClassNested::class, $this->loader->getClasses());
+        static::assertArrayHasKey(StaticFunctionAndClasses::class, $this->loader->getClasses());
         static::assertArrayHasKey(FooTrait::class, $this->loader->getTraits());
         static::assertArrayHasKey(AbstractClass::class, $this->loader->getAbstractClasses());
         static::assertArrayHasKey(DummyInterface::class, $this->loader->getInterfaces());
+
+        static::assertCount(4, $this->loader->getClasses());
+        static::assertCount(1, $this->loader->getTraits());
+        static::assertCount(1, $this->loader->getAbstractClasses());
+        static::assertCount(1, $this->loader->getInterfaces());
     }
 
     public function testWithEmptyFolder(): void

@@ -57,10 +57,10 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Copying files'], true, IOInterface::VERBOSE);
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Created <fg=green>"copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -79,10 +79,10 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Copying files'], true, IOInterface::VERBOSE);
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -104,10 +104,10 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Copying files'], true, IOInterface::VERBOSE);
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . __DIR__ . '/Stub/stub/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
+            ->with(['    - <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . __DIR__ . '/Stub/stub/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -124,19 +124,19 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Copying files'], true, IOInterface::VERBOSE);
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Created <fg=green>"copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Removing files'], true, IOInterface::VERBOSE);
+            ->with(['    - Removing files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Removed <fg=green>"copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Removed <fg=green>"copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->unconfigure($package);
     }
@@ -149,19 +149,19 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Copying files'], true, IOInterface::VERBOSE);
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Removing files'], true, IOInterface::VERBOSE);
+            ->with(['    - Removing files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Removed <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Removed <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->unconfigure($package);
 
@@ -180,10 +180,10 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Copying files'], true, IOInterface::VERBOSE);
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -197,10 +197,10 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Removing files'], true, IOInterface::VERBOSE);
+            ->with(['    - Removing files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · <fg=red>Failed to remove "/css/style.css"</>; Error message: '], true, IOInterface::VERBOSE);
+            ->with(['    - <fg=red>Failed to remove "/css/style.css"</>; Error message: '], true, IOInterface::VERBOSE);
 
         $this->configurator->unconfigure($package);
 
@@ -221,10 +221,10 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Copying files'], true, IOInterface::VERBOSE);
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Created <fg=green>"test/copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"test/copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 

@@ -11,6 +11,8 @@ use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Lock;
+use Narrowspark\Automatic\QuestionFactory;
 
 final class ComposerScriptsConfigurator extends AbstractConfigurator
 {
@@ -57,6 +59,13 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     ];
 
     /**
+     * A automatic lock instance.
+     *
+     * @var \Narrowspark\Automatic\Lock
+     */
+    private $lock;
+
+    /**
      * {@inheritdoc}
      */
     public function __construct(Composer $composer, IOInterface $io, array $options = [])
@@ -67,6 +76,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
         $this->json        = $json;
         $this->manipulator = $manipulator;
+        $this->lock        = new Lock(Util::getAutomaticLockFile());
     }
 
     /**
@@ -83,6 +93,11 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     public function configure(PackageContract $package): void
     {
         $packageEvents = (array) $package->getConfig(ConfiguratorContract::TYPE, self::getName());
+
+        if (\count($packageEvents) === 0) {
+            return;
+        }
+
         $allowedEvents = [];
 
         foreach ($this->allowedComposerEvents as $event) {
@@ -90,6 +105,29 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
                 $allowedEvents[$event] = (array) $packageEvents[$event];
 
                 unset($packageEvents[$event]);
+            }
+        }
+
+        $allowed = false;
+
+        if (\count($allowedEvents) !== 0) {
+            if (\is_array($this->lock->get(self::getName(), $package->getName()))) {
+                $allowed = true;
+            } else {
+                $answer = $this->io->askAndValidate(
+                    QuestionFactory::getPackageScriptsQuestion($package->getPrettyName()),
+                    [QuestionFactory::class, 'validatePackageQuestionAnswer'],
+                    null,
+                    'n'
+                );
+
+                if ($answer === 'n') {
+                    return;
+                }
+
+                if ($answer === 'a' || $answer === 'p') {
+                    $allowed = true;
+                }
             }
         }
 
@@ -101,7 +139,11 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
             ));
         }
 
-        $this->manipulateAndWrite(\array_merge($this->getComposerScripts(), $allowedEvents));
+        if ($allowed) {
+            $this->lock->addSub(self::getName(), $package->getName(), $allowedEvents);
+
+            $this->manipulateAndWrite(\array_merge($this->getComposerScripts(), $allowedEvents));
+        }
     }
 
     /**
@@ -109,12 +151,18 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
      */
     public function unconfigure(PackageContract $package): void
     {
-        $scripts = $this->getComposerScripts();
+        $composerScripts = $this->getComposerScripts();
 
-        foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $key => $value) {
+        foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $key => $scripts) {
+            foreach ((array) $scripts as $script) {
+                if (isset($this->allowedComposerEvents[$key], $composerScripts[$key][$script])) {
+                    unset($composerScripts[$key][$script]);
+                }
+            }
         }
 
-        $this->manipulateAndWrite($scripts);
+        $this->manipulateAndWrite($composerScripts);
+        $this->lock->remove(self::getName(), $package->getName());
     }
 
     /**

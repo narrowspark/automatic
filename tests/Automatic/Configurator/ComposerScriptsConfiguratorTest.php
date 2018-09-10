@@ -16,6 +16,7 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 {
     use GetGenericPropertyReaderTrait;
+
     /**
      * @var \Composer\Composer
      */

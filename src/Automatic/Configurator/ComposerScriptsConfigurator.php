@@ -114,20 +114,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
             if (\is_array($this->lock->get(self::getName(), $package->getName()))) {
                 $allowed = true;
             } else {
-                $answer = $this->io->askAndValidate(
-                    QuestionFactory::getPackageScriptsQuestion($package->getPrettyName()),
-                    [QuestionFactory::class, 'validatePackageQuestionAnswer'],
-                    null,
-                    'n'
-                );
-
-                if ($answer === 'n') {
-                    return;
-                }
-
-                if ($answer === 'a' || $answer === 'p') {
-                    $allowed = true;
-                }
+                $allowed = $this->io->askConfirmation(QuestionFactory::getPackageScriptsQuestion($package->getPrettyName()), false);
             }
         }
 

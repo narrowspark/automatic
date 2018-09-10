@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic;
 
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
+use Narrowspark\Automatic\Configurator\ComposerAutoScriptsConfigurator;
 use Narrowspark\Automatic\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Automatic\Configurator\CopyFromPackageConfigurator;
 use Narrowspark\Automatic\Configurator\EnvConfigurator;
@@ -16,10 +17,11 @@ final class Configurator extends AbstractConfigurator
      * @var array
      */
     protected $configurators = [
-        'composer-scripts' => ComposerScriptsConfigurator::class,
-        'copy'             => CopyFromPackageConfigurator::class,
-        'env'              => EnvConfigurator::class,
-        'gitignore'        => GitIgnoreConfigurator::class,
+        'composer-auto-scripts' => ComposerAutoScriptsConfigurator::class,
+        'composer-scripts'      => ComposerScriptsConfigurator::class,
+        'copy'                  => CopyFromPackageConfigurator::class,
+        'env'                   => EnvConfigurator::class,
+        'gitignore'             => GitIgnoreConfigurator::class,
     ];
 
     /**

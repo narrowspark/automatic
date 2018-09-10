@@ -42,12 +42,8 @@ PHP;
     public static function getPackageScriptsQuestion(string $name): string
     {
         $message = <<<'PHP'
-    Do you want to add this package [%s] scripts?
-    [<comment>y</comment>] Yes
-    [<comment>n</comment>] No
-    [<comment>a</comment>] Yes, only for the current installation session
-    [<comment>p</comment>] Yes permanently, never ask again for this project
-    (defaults to <comment>n</comment>): 
+    Do you want to add this package [%s] composer scripts?
+    (defaults to <comment>no</comment>): 
 PHP;
 
         return \sprintf($message, $name);

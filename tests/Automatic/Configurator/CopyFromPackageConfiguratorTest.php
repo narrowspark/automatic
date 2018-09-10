@@ -262,7 +262,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->andReturn(__DIR__);
 
         $package = new Package('Stub/stub', '1.0.0');
-        $package->setConfig([ConfiguratorContract::TYPE => ['copy' => [$from => $to]]]);
+        $package->setConfig([ConfiguratorContract::TYPE => [CopyFromPackageConfigurator::getName() => [$from => $to]]]);
 
         return $package;
     }

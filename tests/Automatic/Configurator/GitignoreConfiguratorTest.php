@@ -150,7 +150,7 @@ EOF;
     private function arrangePackageWithConfig(string $name, array $config): Package
     {
         $package = new Package($name, '1.0.0');
-        $package->setConfig([ConfiguratorContract::TYPE => ['gitignore' => $config]]);
+        $package->setConfig([ConfiguratorContract::TYPE => [GitIgnoreConfigurator::getName() => $config]]);
 
         return $package;
     }

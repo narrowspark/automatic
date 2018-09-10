@@ -56,7 +56,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
     public function testGetConfigurators(): void
     {
-        static::assertCount(4, $this->configurator->getConfigurators());
+        static::assertCount(5, $this->configurator->getConfigurators());
     }
 
     public function testUnconfigureWithCopy(): void

@@ -11,7 +11,6 @@ use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Util;
-use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\QuestionFactory;
 
 final class ComposerScriptsConfigurator extends AbstractConfigurator
@@ -59,24 +58,13 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     ];
 
     /**
-     * A automatic lock instance.
-     *
-     * @var \Narrowspark\Automatic\Lock
-     */
-    private $lock;
-
-    /**
      * {@inheritdoc}
      */
     public function __construct(Composer $composer, IOInterface $io, array $options = [])
     {
         parent::__construct($composer, $io, $options);
 
-        [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
-
-        $this->json        = $json;
-        $this->manipulator = $manipulator;
-        $this->lock        = new Lock(Util::getAutomaticLockFile());
+        [$this->json, $this->manipulator] = Util::getComposerJsonFileAndManipulator();
     }
 
     /**
@@ -110,8 +98,10 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
         $allowed = false;
 
+        $composerContent = $this->json->read();
+
         if (\count($allowedEvents) !== 0) {
-            if (\is_array($this->lock->get(self::getName(), $package->getName()))) {
+            if (isset($composerContent['extra'][Util::COMPOSER_EXTRA_KEY]['composer-script-whitelist'][$package->getName()])) {
                 $allowed = true;
             } else {
                 $allowed = $this->io->askConfirmation(QuestionFactory::getPackageScriptsQuestion($package->getPrettyName()), false);
@@ -127,7 +117,11 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
         }
 
         if ($allowed) {
-            $this->lock->addSub(self::getName(), $package->getName(), $allowedEvents);
+            $this->manipulator->addSubNode(
+                'extra',
+                Util::COMPOSER_EXTRA_KEY,
+                \array_merge($composerContent['extra'][Util::COMPOSER_EXTRA_KEY] ?? [], ['composer-script-whitelist' => [$package->getName() => true]])
+            );
 
             $this->manipulateAndWrite(\array_merge($this->getComposerScripts(), $allowedEvents));
         }
@@ -148,8 +142,19 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
             }
         }
 
+        $composerContent = $this->json->read();
+
+        if (isset($composerContent['extra'][Util::COMPOSER_EXTRA_KEY]['composer-script-whitelist'][$package->getName()])) {
+            unset($composerContent['extra'][Util::COMPOSER_EXTRA_KEY]['composer-script-whitelist'][$package->getName()]);
+
+            $this->manipulator->addSubNode(
+                'extra',
+                Util::COMPOSER_EXTRA_KEY,
+                $composerContent['extra'][Util::COMPOSER_EXTRA_KEY]
+            );
+        }
+
         $this->manipulateAndWrite($composerScripts);
-        $this->lock->remove(self::getName(), $package->getName());
     }
 
     /**

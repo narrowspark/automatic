@@ -78,7 +78,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
         $package = new Package('fixtures/test', '1.0.0');
         $package->setConfig([
             ConfiguratorContract::TYPE => [
-                'env' => [
+                EnvConfigurator::getName() => [
                     'APP_ENV'         => 'test bar',
                     'APP_DEBUG'       => '0',
                     'APP_PARAGRAPH'   => "foo\n\"bar\"\\t",
@@ -130,7 +130,7 @@ EOF;
         ];
 
         $package = new Package('fixtures/env2', '1.0.0');
-        $package->setConfig([ConfiguratorContract::TYPE => ['env' => $envConfig]]);
+        $package->setConfig([ConfiguratorContract::TYPE => [EnvConfigurator::getName() => $envConfig]]);
 
         $this->configurator->configure($package);
 
@@ -149,7 +149,7 @@ EOF;
         static::assertStringEqualsFile($this->envPath, $envContents);
 
         $package = new Package('fixtures/env2', '1.1.0');
-        $package->setConfig([ConfiguratorContract::TYPE => ['env' => $envConfig]]);
+        $package->setConfig([ConfiguratorContract::TYPE => [EnvConfigurator::getName() => $envConfig]]);
 
         $this->configurator->unconfigure($package);
 

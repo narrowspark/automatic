@@ -125,6 +125,56 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
         \unlink($composerJsonPath);
     }
 
+    public function testConfigureWithUpdate(): void
+    {
+        $oldWhitelist = ['composer-script-whitelist' => ['stub/stub' => true]];
+
+        $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $oldWhitelist);
+        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+
+        $package = new Package('Stub/stub', '1.0.0');
+        $package->setConfig([
+            ConfiguratorContract::TYPE => [
+                ComposerScriptsConfigurator::getName() => [
+                    'post-autoload-dump' => ['Foo\\Bar'],
+                ],
+            ],
+        ]);
+
+        $this->jsonMock->shouldReceive('read')
+            ->andReturn($composerRootJsonData);
+
+        $composerJsonPath = __DIR__ . '/composer.json';
+
+        \file_put_contents($composerJsonPath, \json_encode(['extra' => []]));
+
+        $this->jsonMock->shouldReceive('getPath')
+            ->once()
+            ->andReturn($composerJsonPath);
+
+        $whitelist = ['composer-script-whitelist' => [$package->getName() => true]];
+
+        $this->jsonManipulatorMock->shouldReceive('addSubNode')
+            ->once()
+            ->with('extra', Util::COMPOSER_EXTRA_KEY, $whitelist);
+
+        $this->jsonManipulatorMock->shouldReceive('addMainKey')
+            ->once()
+            ->with('scripts', ['post-autoload-dump' => ['Foo\\Bar']]);
+
+        $composerRootJsonData['scripts']['auto-scripts'] = $whitelist;
+
+        $this->jsonManipulatorMock->shouldReceive('getContents')
+            ->andReturn(ComposerJsonFactory::arrayToJson($composerRootJsonData));
+
+        $this->ioMock->shouldReceive('askConfirmation')
+            ->never();
+
+        $this->configurator->configure($package);
+
+        \unlink($composerJsonPath);
+    }
+
     public function testConfigureNotAllowedScripts(): void
     {
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub');

@@ -192,4 +192,46 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
     }
+
+    public function testUnconfigure(): void
+    {
+        $package = new Package('Stub/stub', '1.0.0');
+        $package->setConfig([
+            ConfiguratorContract::TYPE => [
+                ComposerScriptsConfigurator::getName() => [
+                    'post-autoload-dump' => ['Foo\\Bar'],
+                    'notallowed'         => 'foo',
+                ],
+            ],
+        ]);
+
+        $whitelist = ['composer-script-whitelist' => [$package->getName() => true]];
+
+        $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $whitelist);
+        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+
+        $this->jsonMock->shouldReceive('read')
+            ->andReturn($composerRootJsonData);
+
+        $composerJsonPath = __DIR__ . '/composer.json';
+
+        $this->jsonMock->shouldReceive('getPath')
+            ->once()
+            ->andReturn($composerJsonPath);
+
+        $this->jsonManipulatorMock->shouldReceive('addSubNode')
+            ->once()
+            ->with('extra', Util::COMPOSER_EXTRA_KEY, ['composer-script-whitelist' => []]);
+
+        $this->jsonManipulatorMock->shouldReceive('addMainKey')
+            ->once()
+            ->with('scripts', []);
+
+        $this->jsonManipulatorMock->shouldReceive('getContents')
+            ->andReturn(ComposerJsonFactory::arrayToJson($composerRootJsonData));
+
+        $this->configurator->unconfigure($package);
+
+        \unlink($composerJsonPath);
+    }
 }

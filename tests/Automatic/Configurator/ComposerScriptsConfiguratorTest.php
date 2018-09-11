@@ -100,7 +100,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ->once()
             ->andReturn($composerJsonPath);
 
-        $whitelist = ['composer-script-whitelist' => [$package->getName() => true]];
+        $whitelist = ['composer-script-whitelist' => [$package->getName()]];
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
@@ -127,7 +127,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
     public function testConfigureWithUpdate(): void
     {
-        $oldWhitelist = ['composer-script-whitelist' => ['stub/stub' => true]];
+        $oldWhitelist = ['composer-script-whitelist' => ['stub/stub']];
 
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $oldWhitelist);
         $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
@@ -152,7 +152,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ->once()
             ->andReturn($composerJsonPath);
 
-        $whitelist = ['composer-script-whitelist' => [$package->getName() => true]];
+        $whitelist = ['composer-script-whitelist' => [$package->getName()]];
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
@@ -173,6 +173,31 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
         $this->configurator->configure($package);
 
         \unlink($composerJsonPath);
+    }
+
+    public function testConfigureWithBlacklist(): void
+    {
+        $blackList = ['composer-script-blacklist' => ['stub/stub']];
+
+        $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $blackList);
+        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+
+        $package = new Package('Stub/stub', '1.0.0');
+        $package->setConfig([
+            ConfiguratorContract::TYPE => [
+                ComposerScriptsConfigurator::getName() => [
+                    'post-autoload-dump' => ['Foo\\Bar'],
+                ],
+            ],
+        ]);
+
+        $this->jsonMock->shouldReceive('read')
+            ->andReturn($composerRootJsonData);
+        $this->ioMock->shouldReceive('write')
+            ->once()
+            ->with('Composer scripts for [Stub/stub] skipped, because it was found in the [composer-script-blacklist]');
+
+        $this->configurator->configure($package);
     }
 
     public function testConfigureNotAllowedScripts(): void
@@ -200,7 +225,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ->once()
             ->andReturn($composerJsonPath);
 
-        $whitelist = ['composer-script-whitelist' => [$package->getName() => true]];
+        $whitelist = ['composer-script-whitelist' => [$package->getName()]];
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
@@ -255,7 +280,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ],
         ]);
 
-        $whitelist = ['composer-script-whitelist' => [$package->getName() => true]];
+        $whitelist = ['composer-script-whitelist' => [$package->getName()]];
 
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $whitelist);
         $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
@@ -283,5 +308,15 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
         $this->configurator->unconfigure($package);
 
         \unlink($composerJsonPath);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function assertPreConditions(): void
+    {
+        parent::assertPreConditions();
+
+        $this->allowMockingNonExistentMethods(true);
     }
 }

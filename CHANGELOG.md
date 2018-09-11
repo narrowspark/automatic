@@ -1,3 +1,13 @@
+## v0.7.0
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Added
+
+ - [69: adding composer-scripts configurator](https://github.com/narrowspark/automatic/pull/69) thanks to @prisis
+
 ## v0.6.1
 
 - Total issues resolved: **0**

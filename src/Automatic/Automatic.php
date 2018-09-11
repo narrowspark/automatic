@@ -63,7 +63,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
 
-    public const VERSION = '0.6.1';
+    public const VERSION = '0.7.0';
 
     /**
      * @var string

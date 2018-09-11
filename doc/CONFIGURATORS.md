@@ -9,7 +9,7 @@ Configurators define the different tasks executed when installing a dependency, 
 
 The package only contain the tasks needed to install and configure the dependency, because Narrowspark Automatic Configurators are smart enough to reverse those tasks when uninstalling and unconfiguring the dependencies.
 
-Narrowspark Automatic comes with several types of tasks, which are called **configurators**: `copy`, `env`, `composer-scripts`, `gitignore` and a special configurator `post-install-output`.
+Narrowspark Automatic comes with several types of tasks, which are called **configurators**: `copy`, `env`, `composer-scripts`, `composer-auto-scripts`, `gitignore` and a special configurator `post-install-output`.
 
 ### Copy Configurator `copy`
 
@@ -30,7 +30,7 @@ directory of the application:
 
 The `%BIN_DIR%` string is a special value that it's turned into the absolute
 path of the binaries directory. You can access any variable defined in
-the `extra` section of your `composer.json` file:
+the `extra` section of your root `composer.json` file:
 
 ```json
 {
@@ -72,18 +72,34 @@ The `###> your-package-name-here ###` section separators are needed by Narrowspa
 to detect the contents added by this dependency in case you uninstall it later.
 > !!! Don't remove or modify these separators.
 
-Composer Scripts Configurator `composer-scripts`
+Composer Auto Scripts Configurator `composer-auto-scripts`
 
-Registers scripts in the `auto-scripts` section of the `composer.json` file
+Registers `auto-scripts` in the `composer-scripts` section of the root `composer.json` file
 to execute them automatically when running `composer install` and `composer update`.
 The value is an associative array where the key is the script to execute (including all its arguments and options) and the value is the type of script (`php-script` for PHP scripts, ``script`` for any shell script):
 
 ```json
 {
     "configurators": {
-        "composer-scripts": {
+        "composer-auto-scripts": {
             "echo \"hallo\";": "php-script",
             "bash -c \"echo hallo\"": "script"
+        }
+    }
+}
+```
+Composer Scripts Configurator `composer-scripts`
+
+Registers [composer scripts](https://getcomposer.org/doc/articles/scripts.md) in the `composer-scripts` section of the root `composer.json` file.
+Only the composer `command`, `installer` and `package` events are supported, you will get a warning if other events a used.
+
+```json
+{
+    "configurators": {
+        "composer-auto-scripts": {
+            "post-autoload-dump" : [
+                "Your\\Namespace\\ComposerScripts::dump"
+            ]
         }
     }
 }

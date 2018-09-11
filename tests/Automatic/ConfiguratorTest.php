@@ -41,11 +41,11 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Copying files'], true, IOInterface::VERBOSE);
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Created <fg=green>"' . $this->copyFileName . '"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"' . $this->copyFileName . '"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -56,7 +56,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
     public function testGetConfigurators(): void
     {
-        static::assertCount(4, $this->configurator->getConfigurators());
+        static::assertCount(5, $this->configurator->getConfigurators());
     }
 
     public function testUnconfigureWithCopy(): void
@@ -67,11 +67,11 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Copying files'], true, IOInterface::VERBOSE);
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Created <fg=green>"' . $this->copyFileName . '"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"' . $this->copyFileName . '"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -79,11 +79,11 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Removing files'], true, IOInterface::VERBOSE);
+            ->with(['    - Removing files'], true, IOInterface::VERBOSE);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    · Removed <fg=green>"' . $this->copyFileName . '"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Removed <fg=green>"' . $this->copyFileName . '"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->unconfigure($package);
 

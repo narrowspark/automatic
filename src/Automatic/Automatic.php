@@ -155,13 +155,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
             InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_INSTALL        => [['record'], ['auditPackage']],
-            PackageEvents::POST_PACKAGE_UPDATE         => [['record'], ['auditPackage']],
+            PackageEvents::POST_PACKAGE_INSTALL        => [['record'], ['auditPackage', \PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_UPDATE         => [['record'], ['auditPackage', \PHP_INT_MAX]],
             PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
             PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
-            ScriptEvents::POST_INSTALL_CMD             => [['onPostInstall'], ['auditComposerLock']],
-            ScriptEvents::POST_UPDATE_CMD              => [['onPostUpdate'], ['auditComposerLock']],
-            ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator']],
+            ScriptEvents::POST_INSTALL_CMD             => [['onPostInstall', \PHP_INT_MAX - 1], ['auditComposerLock', \PHP_INT_MAX]],
+            ScriptEvents::POST_UPDATE_CMD              => [['onPostUpdate', \PHP_INT_MAX - 1], ['auditComposerLock', \PHP_INT_MAX]],
+            ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator', ~\PHP_INT_MAX]],
         ];
     }
 
@@ -1121,13 +1121,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
     ): void {
         $packageConfigurators = \array_keys((array) $package->getConfig(ConfiguratorContract::TYPE));
 
-        foreach (\array_keys($configurator->getConfigurators()) as $key) {
+        foreach (\array_keys($configurator->getConfigurators()) as $key => $value) {
             if (isset($packageConfigurators[$key])) {
                 unset($packageConfigurators[$key]);
             }
         }
 
-        foreach (\array_keys($packageConfigurator->getConfigurators()) as $key) {
+        foreach (\array_keys($packageConfigurator->getConfigurators()) as $key => $value) {
             if (isset($packageConfigurators[$key])) {
                 unset($packageConfigurators[$key]);
             }

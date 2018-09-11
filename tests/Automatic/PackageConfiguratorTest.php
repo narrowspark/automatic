@@ -28,7 +28,7 @@ final class PackageConfiguratorTest extends AbstractConfiguratorTest
 
         $this->ioMock->shouldReceive('writeError')
             ->twice()
-            ->with(['    · test'], true, IOInterface::VERBOSE);
+            ->with(['    - test'], true, IOInterface::VERBOSE);
 
         $this->configurator->add('mock', MockConfigurator::class);
 
@@ -51,7 +51,7 @@ final class PackageConfiguratorTest extends AbstractConfiguratorTest
 
         $this->ioMock->shouldReceive('writeError')
             ->never()
-            ->with(['    · test'], true, IOInterface::VERBOSE);
+            ->with(['    - test'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
         $this->configurator->unconfigure($package);

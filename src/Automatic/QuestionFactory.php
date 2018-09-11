@@ -33,6 +33,23 @@ PHP;
     }
 
     /**
+     * Returns the questions for package scripts.
+     *
+     * @param string $name
+     *
+     * @return string
+     */
+    public static function getPackageScriptsQuestion(string $name): string
+    {
+        $message = <<<'PHP'
+    Do you want to add this package [%s] composer scripts?
+    (defaults to <comment>no</comment>): 
+PHP;
+
+        return \sprintf($message, $name);
+    }
+
+    /**
      * Validate given input answer.
      *
      * @param null|string $value

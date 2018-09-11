@@ -1,12 +1,17 @@
 ## v0.7.0
 
-- Total issues resolved: **0**
+- Total issues resolved: **2**
 - Total pull requests resolved: **1**
 - Total contributors: **1**
 
 ### Added
 
+ - [70: updated automatic events](https://github.com/narrowspark/automatic/issues/70) thanks to @prisis
  - [69: adding composer-scripts configurator](https://github.com/narrowspark/automatic/pull/69) thanks to @prisis
+
+### Changed
+
+ - [71: change middot to line](https://github.com/narrowspark/automatic/issues/71) thanks to @prisis
 
 ## v0.6.1
 

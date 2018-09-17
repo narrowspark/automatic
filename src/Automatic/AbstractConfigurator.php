@@ -7,8 +7,9 @@ use Composer\IO\IOInterface;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Contract\Configurator as MainConfiguratorContract;
 
-abstract class AbstractConfigurator
+abstract class AbstractConfigurator implements MainConfiguratorContract
 {
     /**
      * All registered automatic configurators.
@@ -53,9 +54,7 @@ abstract class AbstractConfigurator
     }
 
     /**
-     * Get all registered configurators.
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getConfigurators(): array
     {
@@ -63,14 +62,7 @@ abstract class AbstractConfigurator
     }
 
     /**
-     * Add a new automatic configurator.
-     *
-     * @param string $name
-     * @param string $configurator
-     *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
-     *
-     * @return void
+     * {@inheritdoc}
      */
     public function add(string $name, string $configurator): void
     {
@@ -86,11 +78,7 @@ abstract class AbstractConfigurator
     }
 
     /**
-     * Check if configurator is registered.
-     *
-     * @param string $name
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function has(string $name): bool
     {
@@ -98,11 +86,7 @@ abstract class AbstractConfigurator
     }
 
     /**
-     * Configure the application after the package settings.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
-     * @return void
+     * {@inheritdoc}
      */
     public function configure(PackageContract $package): void
     {
@@ -114,11 +98,7 @@ abstract class AbstractConfigurator
     }
 
     /**
-     * Unconfigure the application after the package settings.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
-     * @return void
+     * {@inheritdoc}
      */
     public function unconfigure(PackageContract $package): void
     {
@@ -129,6 +109,9 @@ abstract class AbstractConfigurator
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function reset(): void
     {
         $this->configurators = [];

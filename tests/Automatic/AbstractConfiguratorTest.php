@@ -19,7 +19,7 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
     protected $composerMock;
 
     /**
-     * @var Composer\IO\IOInterface|\Mockery\MockInterface
+     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
      */
     protected $ioMock;
 

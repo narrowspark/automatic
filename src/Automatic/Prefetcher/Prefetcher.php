@@ -6,7 +6,6 @@ use Closure;
 use Composer\Composer;
 use Composer\Downloader\FileDownloader;
 use Composer\Factory;
-use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginManager;
@@ -158,11 +157,11 @@ class Prefetcher
     }
 
     /**
-     * @param \Composer\Installer\InstallerEvent $event
+     * @param \Composer\Installer\InstallerEvent|\Composer\Installer\PackageEvent $event
      *
      * @return void
      */
-    public function fetchAllFromOperations(InstallerEvent $event): void
+    public function fetchAllFromOperations($event): void
     {
         if ($this->cacheDirPopulated === true || $this->getDryRun() === true) {
             return;

@@ -17,7 +17,7 @@ use Composer\Plugin\Capability\CommandProvider as CommandProviderContract;
 use Composer\Plugin\Capable;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
-use Composer\Script\ScriptEvents;
+use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
@@ -36,6 +36,11 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
      * @var string
      */
     public const COMPOSER_EXTRA_KEY = 'audit';
+
+    /**
+     * @var string
+     */
+    public const PACKAGE_NAME = 'narrowspark/automatic-security-audit';
 
     /**
      * The SecurityAdvisories database.
@@ -89,12 +94,13 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
         }
 
         return [
-            'post-messages'                     => [['postMessages', \PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_INSTALL => [['auditPackage', \PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_UPDATE  => [['auditPackage', \PHP_INT_MAX]],
-            ScriptEvents::PRE_AUTOLOAD_DUMP     => 'initMessage',
-            ScriptEvents::POST_INSTALL_CMD      => [['auditComposerLock', \PHP_INT_MAX]],
-            ScriptEvents::POST_UPDATE_CMD       => [['auditComposerLock', \PHP_INT_MAX]],
+            ScriptEvents::POST_MESSAGES             => [['postMessages', \PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_INSTALL     => [['auditPackage', \PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_UPDATE      => [['auditPackage', \PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_UNINSTALL   => 'onPostUninstall',
+            ComposerScriptEvents::PRE_AUTOLOAD_DUMP => 'initMessage',
+            ComposerScriptEvents::POST_INSTALL_CMD  => [['auditComposerLock', \PHP_INT_MAX]],
+            ComposerScriptEvents::POST_UPDATE_CMD   => [['auditComposerLock', \PHP_INT_MAX]],
         ];
     }
 
@@ -151,6 +157,62 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     }
 
     /**
+     * Execute on composer post-uninstall event.
+     *
+     * @param \Composer\Installer\PackageEvent $event
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    public function onPostUninstall(PackageEvent $event): void
+    {
+        /** @var \Composer\DependencyResolver\Operation\UninstallOperation $operation */
+        $operation = $event->getOperation();
+
+        if ($operation->getPackage()->getName() !== self::PACKAGE_NAME) {
+            return;
+        }
+
+        $scripts = $this->composer->getPackage()->getScripts();
+
+        if (\count($scripts) === 0 || ! isset($scripts[ScriptEvents::POST_MESSAGES])) {
+            return;
+        }
+
+        $composerFilePath = Factory::getComposerFile();
+        $manipulator      = new JsonManipulator(\file_get_contents($composerFilePath));
+
+        $manipulator->removeSubNode('scripts', ScriptEvents::POST_MESSAGES);
+
+        $scriptKey = '@' . ScriptEvents::POST_MESSAGES;
+
+        if (\in_array($scriptKey, $scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], true)) {
+            foreach ((array) $scripts[ComposerScriptEvents::POST_INSTALL_CMD] as $key => $script) {
+                if ($script === $scriptKey) {
+                    unset($scripts[ComposerScriptEvents::POST_INSTALL_CMD][$key]);
+                }
+            }
+
+            $manipulator->addSubNode('scripts', ComposerScriptEvents::POST_INSTALL_CMD, $scripts[ComposerScriptEvents::POST_INSTALL_CMD]);
+        }
+
+        if (\in_array($scriptKey, $scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], true)) {
+            foreach ((array) $scripts[ComposerScriptEvents::POST_UPDATE_CMD] as $key => $script) {
+                if ($script === $scriptKey) {
+                    unset($scripts[ComposerScriptEvents::POST_UPDATE_CMD][$key]);
+                }
+            }
+
+            $manipulator->addSubNode('scripts', ComposerScriptEvents::POST_UPDATE_CMD, $scripts[ComposerScriptEvents::POST_UPDATE_CMD]);
+        }
+
+        \file_put_contents($composerFilePath, $manipulator->getContents());
+
+        $this->updateComposerLock();
+    }
+
+    /**
      * Add post-messages to root composer.json.
      *
      * @throws \Exception
@@ -161,7 +223,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     {
         $scripts = $this->composer->getPackage()->getScripts();
 
-        if (isset($scripts['post-messages'])) {
+        if (isset($scripts[ScriptEvents::POST_MESSAGES])) {
             return;
         }
 
@@ -172,16 +234,24 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
             $manipulator->addMainKey('scripts', []);
         }
 
-        $manipulator->addSubNode('scripts', 'post-messages', 'This key is needed to show messages.');
+        $manipulator->addSubNode('scripts', ScriptEvents::POST_MESSAGES, 'This key is needed to show messages.');
 
-        $scriptKey = '@post-messages';
+        $scriptKey = '@' . ScriptEvents::POST_MESSAGES;
 
-        if (! \in_array($scriptKey, $scripts['post-install-cmd'] ?? [], true)) {
-            $manipulator->addSubNode('scripts', 'post-install-cmd', \array_merge($scripts['post-install-cmd'] ?? [], [$scriptKey]));
+        if (! \in_array($scriptKey, $scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], true)) {
+            $manipulator->addSubNode(
+                'scripts',
+                ComposerScriptEvents::POST_INSTALL_CMD,
+                \array_merge($scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], [$scriptKey])
+            );
         }
 
-        if (! \in_array($scriptKey, $scripts['post-update-cmd'] ?? [], true)) {
-            $manipulator->addSubNode('scripts', 'post-update-cmd', \array_merge($scripts['post-update-cmd'] ?? [], [$scriptKey]));
+        if (! \in_array($scriptKey, $scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], true)) {
+            $manipulator->addSubNode(
+                'scripts',
+                ComposerScriptEvents::POST_UPDATE_CMD,
+                \array_merge($scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], [$scriptKey])
+            );
         }
 
         \file_put_contents($composerFilePath, $manipulator->getContents());

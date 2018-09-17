@@ -7,7 +7,6 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Console\Application;
 use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\EventDispatcher\EventSubscriberInterface;
@@ -31,10 +30,8 @@ use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Script\Event;
-use Composer\Script\ScriptEvents;
+use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
-use Narrowspark\Automatic\Common\ClassFinder;
-use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
@@ -44,6 +41,8 @@ use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
+use Narrowspark\Automatic\Operation\Install;
+use Narrowspark\Automatic\Operation\Uninstall;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\Prefetcher\TruncatedComposerRepository;
@@ -105,11 +104,18 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     private $shouldUpdateComposerLock = false;
 
     /**
-     * The composer operations.
+     * The composer install/update operations.
      *
      * @var array
      */
     private $operations = [];
+
+    /**
+     * The composer uninstall operations.
+     *
+     * @var array
+     */
+    private $uninstallOperations = [];
 
     /**
      * List of package messages.
@@ -148,19 +154,20 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }
 
         return [
-            'auto-scripts'                             => 'executeAutoScripts',
-            'post-messages'                            => 'postMessages',
-            InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', \PHP_INT_MAX]],
-            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_INSTALL        => 'record',
-            PackageEvents::POST_PACKAGE_UPDATE         => 'record',
-            PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
-            PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
-            ScriptEvents::POST_INSTALL_CMD             => [['onPostInstall', \PHP_INT_MAX - 1]],
-            ScriptEvents::POST_UPDATE_CMD              => [['onPostUpdate', \PHP_INT_MAX - 1]],
-            ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator', ~\PHP_INT_MAX]],
+            ScriptEvents::AUTO_SCRIPTS                    => 'executeAutoScripts',
+            ScriptEvents::POST_MESSAGES                   => 'postMessages',
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING     => [['onPreDependenciesSolving', \PHP_INT_MAX]],
+            InstallerEvents::POST_DEPENDENCIES_SOLVING    => [['populateFilesCacheDir', \PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_INSTALL            => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UPDATE             => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UNINSTALL          => [['onPreUninstall', \PHP_INT_MAX - 1]],
+            PackageEvents::POST_PACKAGE_INSTALL           => 'record',
+            PackageEvents::POST_PACKAGE_UPDATE            => 'record',
+            PackageEvents::POST_PACKAGE_UNINSTALL         => [['onPostUninstall', \PHP_INT_MAX - 1]],
+            PluginEvents::PRE_FILE_DOWNLOAD               => 'onFileDownload',
+            ComposerScriptEvents::POST_INSTALL_CMD        => [['onPostInstall', \PHP_INT_MAX - 1]],
+            ComposerScriptEvents::POST_UPDATE_CMD         => [['onPostUpdate', \PHP_INT_MAX - 1]],
+            ComposerScriptEvents::POST_CREATE_PROJECT_CMD => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator', ~\PHP_INT_MAX]],
         ];
     }
 
@@ -214,6 +221,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 $container->get(InputInterface::class)
             );
         });
+
+        $this->loadConfigurators();
     }
 
     /**
@@ -239,17 +248,36 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function record(PackageEvent $event): void
     {
-        if (! $this->shouldRecordOperation($event)) {
-            return;
-        }
-
+        /** @var \Composer\DependencyResolver\Operation\InstallOperation|\Composer\DependencyResolver\Operation\UpdateOperation $operation */
         $operation = $event->getOperation();
 
-        if ($operation instanceof InstallOperation && $operation->getPackage()->getName() === self::PACKAGE_NAME) {
-            \array_unshift($this->operations, $operation);
+        if ($operation instanceof UpdateOperation) {
+            $package = $operation->getTargetPackage();
         } else {
-            $this->operations[] = $operation;
+            $package = $operation->getPackage();
         }
+
+        if ($operation instanceof InstallOperation) {
+            if ($this->container->get(Lock::class)->has($package->getName())) {
+                return;
+            }
+
+            if ($package->getName() === self::PACKAGE_NAME) {
+                \array_unshift($this->operations, $operation);
+
+                return;
+            }
+
+            if (\count($this->operations) !== 0 && $this->operations[0] instanceof InstallOperation && $this->operations[0]->getPackage()->getName() === self::PACKAGE_NAME) {
+                $operation = $this->operations[0];
+
+                unset($this->operations[0]);
+
+                \array_unshift($this->operations, $operation);
+            }
+        }
+
+        $this->operations[] = $operation;
     }
 
     /**
@@ -284,18 +312,26 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $manipulator->addMainKey('scripts', []);
         }
 
-        $manipulator->addSubNode('scripts', 'post-messages', 'This key is needed to show messages.');
+        $manipulator->addSubNode('scripts', ScriptEvents::POST_MESSAGES, 'This key is needed to show messages.');
 
         $automaticScripts = [
-            '@auto-scripts',
-            '@post-messages',
+            '@' . ScriptEvents::AUTO_SCRIPTS,
+            '@' . ScriptEvents::POST_MESSAGES,
         ];
 
-        $manipulator->addSubNode('scripts', 'post-install-cmd', \array_merge($scripts['post-install-cmd'] ?? [], [$automaticScripts]));
-        $manipulator->addSubNode('scripts', 'post-update-cmd', \array_merge($scripts['post-update-cmd'] ?? [], [$automaticScripts]));
+        $manipulator->addSubNode(
+            'scripts',
+            ComposerScriptEvents::POST_INSTALL_CMD,
+            \array_merge($scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], [$automaticScripts])
+        );
+        $manipulator->addSubNode(
+            'scripts',
+            ComposerScriptEvents::POST_UPDATE_CMD,
+            \array_merge($scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], [$automaticScripts])
+        );
 
-        if (! isset($scripts['auto-scripts'])) {
-            $manipulator->addSubNode('scripts', 'auto-scripts', new \stdClass());
+        if (! isset($scripts[ScriptEvents::AUTO_SCRIPTS])) {
+            $manipulator->addSubNode('scripts', ScriptEvents::AUTO_SCRIPTS, new \stdClass());
         }
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
@@ -338,6 +374,91 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Execute on composer pre-uninstall event.
+     *
+     * @param \Composer\Installer\PackageEvent $event
+     *
+     * @return void
+     */
+    public function onPreUninstall(PackageEvent $event): void
+    {
+        /** @var \Composer\DependencyResolver\Operation\UninstallOperation $operation */
+        $operation = $event->getOperation();
+
+        if ($this->isDevPackage($event, $operation->getPackage()->getName())) {
+            return;
+        }
+
+        /** @var \Narrowspark\Automatic\Operation\Uninstall $uninstall */
+        $uninstall = $this->container->get(Uninstall::class);
+
+        if ($uninstall->supports($operation)) {
+            $package = $uninstall->resolve($operation);
+
+            $this->uninstallOperations[] = $package->getName();
+
+            $uninstall->transform($package);
+        }
+    }
+
+    /**
+     * Execute on composer post-uninstall event.
+     *
+     * @param \Composer\Installer\PackageEvent $event
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    public function onPostUninstall(PackageEvent $event): void
+    {
+        if ($this->isDevPackage($event, self::PACKAGE_NAME)) {
+            return;
+        }
+
+        /** @var \Composer\DependencyResolver\Operation\UninstallOperation $operation */
+        $operation = $event->getOperation();
+
+        if ($operation->getPackage()->getName() === self::PACKAGE_NAME) {
+            $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
+
+            if (\count($scripts) === 0 || ! isset($scripts[ScriptEvents::POST_MESSAGES])) {
+                return;
+            }
+
+            /** @var \Composer\Json\JsonFile $json */
+            /** @var \Composer\Json\JsonManipulator $manipulator */
+            [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
+
+            $manipulator->removeSubNode('scripts', ScriptEvents::POST_MESSAGES);
+
+            foreach ((array) $scripts[ComposerScriptEvents::POST_INSTALL_CMD] as $key => $script) {
+                if ($script === '@' . ScriptEvents::POST_MESSAGES) {
+                    unset($scripts[ComposerScriptEvents::POST_INSTALL_CMD][$key]);
+                } elseif ($script === '@' . ScriptEvents::AUTO_SCRIPTS) {
+                    unset($scripts[ComposerScriptEvents::POST_INSTALL_CMD][$key]);
+                }
+            }
+
+            $manipulator->addSubNode('scripts', ComposerScriptEvents::POST_INSTALL_CMD, $scripts[ComposerScriptEvents::POST_INSTALL_CMD]);
+
+            foreach ((array) $scripts[ComposerScriptEvents::POST_UPDATE_CMD] as $key => $script) {
+                if ($script === '@' . ScriptEvents::POST_MESSAGES) {
+                    unset($scripts[ComposerScriptEvents::POST_UPDATE_CMD][$key]);
+                } elseif ($script === '@' . ScriptEvents::AUTO_SCRIPTS) {
+                    unset($scripts[ComposerScriptEvents::POST_UPDATE_CMD][$key]);
+                }
+            }
+
+            $manipulator->addSubNode('scripts', ComposerScriptEvents::POST_UPDATE_CMD, $scripts[ComposerScriptEvents::POST_UPDATE_CMD]);
+
+            \file_put_contents($json->getPath(), $manipulator->getContents());
+
+            $this->updateComposerLock();
+        }
+    }
+
+    /**
      * Execute on composer install event.
      *
      * @param \Composer\Script\Event $event
@@ -368,75 +489,85 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }
 
         /** @var \Narrowspark\Automatic\Lock $lock */
+        $lock = $this->container->get(Lock::class);
         /** @var \Composer\IO\IOInterface $io */
-        $automaticOptions = $this->container->get('composer-extra')[self::COMPOSER_EXTRA_KEY];
-        $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
-        $packages         = $this->container->get(OperationsResolver::class)->resolve($this->operations);
-        $lock             = $this->container->get(Lock::class);
-        $io               = $this->container->get(IOInterface::class);
+        $io   = $this->container->get(IOInterface::class);
+        /** @var \Narrowspark\Automatic\Operation\Install $install */
+        $install = $this->container->get(Install::class);
+        /** @var \Narrowspark\Automatic\Common\Contract\Package[] $packages */
+        $packages = [];
+
+        foreach ($this->operations as $operation) {
+            if ($install->supports($operation)) {
+                $packages[] = $install->resolve($operation);
+            }
+        }
+
+        $count = \count($packages) + \count($this->uninstallOperations);
 
         $io->writeError(\sprintf(
             '<info>Automatic operations: %s package%s</info>',
-            \count($packages),
-            \count($packages) > 1 ? 's' : ''
+            $count,
+            $count > 1 ? 's' : ''
         ));
 
-        $classMap = (array) $lock->get(self::LOCK_CLASSMAP);
+        if (\count($packages) !== 0) {
+            $automaticOptions = $this->container->get('composer-extra')[self::COMPOSER_EXTRA_KEY];
+            $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
 
-        foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
-            foreach ($classMap[$packageName] as $class => $path) {
-                if (! \class_exists($class)) {
-                    require_once \str_replace('%vendor_path%', $this->container->get('vendor-dir'), $path);
-                }
-            }
+            foreach ($packages as $package) {
+                $prettyName = $package->getPrettyName();
 
-            /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */
-            foreach ($classList as $class) {
-                $reflectionClass = new ReflectionClass($class);
+                if (isset($automaticOptions['dont-discover']) && \array_key_exists($package->getName(), $automaticOptions['dont-discover'])) {
+                    $io->write(\sprintf('<info>Package "%s" was ignored.</info>', $prettyName));
 
-                if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
-                    $this->container->get(Configurator::class)->add($class::getName(), $reflectionClass->getName());
-                }
-            }
-        }
-
-        /** @var \Narrowspark\Automatic\Common\Contract\Package $package */
-        foreach ($packages as $package) {
-            $prettyName = $package->getPrettyName();
-
-            if (isset($automaticOptions['dont-discover']) && \array_key_exists($prettyName, $automaticOptions['dont-discover'])) {
-                $io->write(\sprintf('<info>Package "%s" was ignored.</info>', $prettyName));
-
-                return;
-            }
-
-            if ($allowInstall === false && $package->getOperation() === PackageContract::INSTALL_OPERATION) {
-                $answer = $io->askAndValidate(
-                    QuestionFactory::getPackageQuestion($prettyName, $package->getUrl()),
-                    [QuestionFactory::class, 'validatePackageQuestionAnswer'],
-                    null,
-                    'n'
-                );
-
-                if ($answer === 'n') {
                     return;
                 }
 
-                if ($answer === 'a') {
-                    $allowInstall = true;
-                } elseif ($answer === 'p') {
-                    $allowInstall = true;
+                if ($allowInstall === false && $package->getOperation() === PackageContract::INSTALL_OPERATION) {
+                    $answer = $io->askAndValidate(
+                        QuestionFactory::getPackageQuestion($prettyName, $package->getUrl()),
+                        [QuestionFactory::class, 'validatePackageQuestionAnswer'],
+                        null,
+                        'n'
+                    );
 
-                    $this->manipulateComposerJsonWithAllowAutoInstall();
+                    if ($answer === 'n') {
+                        return;
+                    }
 
-                    $this->shouldUpdateComposerLock = true;
+                    if ($answer === 'a') {
+                        $allowInstall = true;
+                    } elseif ($answer === 'p') {
+                        $allowInstall = true;
+
+                        $this->manipulateComposerJsonWithAllowAutoInstall();
+
+                        $this->shouldUpdateComposerLock = true;
+                    }
+                }
+
+                $io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+
+                $install->transform($package);
+
+                if ($package->hasConfig(ScriptEvents::POST_MESSAGES)) {
+                    foreach ((array) $package->getConfig(ScriptEvents::POST_MESSAGES) as $line) {
+                        $this->postMessages[] = self::expandTargetDir($this->container->get('composer-extra'), $line);
+                    }
+
+                    $this->postMessages[] = '';
                 }
             }
-
-            $this->doActionOnPackageOperation($package);
         }
 
-        if (\count($packages) !== 0) {
+        if (\count($this->uninstallOperations) !== 0) {
+            foreach ($this->uninstallOperations as $name) {
+                $io->writeError(\sprintf('  - Unconfiguring %s', $name));
+            }
+        }
+
+        if ($count !== 0) {
             \array_unshift(
                 $this->postMessages,
                 '',
@@ -460,6 +591,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      *
      * @param \Composer\Script\Event $event
      *
+     * @throws \ReflectionException
+     *
      * @return void
      */
     public function executeAutoScripts(Event $event): void
@@ -470,7 +603,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $json         = new JsonFile(Factory::getComposerFile());
         $jsonContents = $json->read();
 
-        if (isset($jsonContents['scripts']['auto-scripts'])) {
+        if (isset($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS])) {
             /** @var \Narrowspark\Automatic\ScriptExecutor $scriptExecutor */
             $scriptExecutor = $this->container->get(ScriptExecutor::class);
 
@@ -489,7 +622,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 }
             }
 
-            foreach ($jsonContents['scripts']['auto-scripts'] as $cmd => $type) {
+            foreach ($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS] as $cmd => $type) {
                 $scriptExecutor->execute($type, $cmd);
             }
         } else {
@@ -580,11 +713,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      *
      * @see \Narrowspark\Automatic\Prefetcher\Prefetcher::fetchAllFromOperations()
      *
-     * @param \Composer\Installer\InstallerEvent $event
+     * @param \Composer\Installer\InstallerEvent|\Composer\Installer\PackageEvent $event
      *
      * @return void
      */
-    public function populateFilesCacheDir(InstallerEvent $event): void
+    public function populateFilesCacheDir($event): void
     {
         $this->container->get(Prefetcher::class)->fetchAllFromOperations($event);
     }
@@ -603,6 +736,60 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         if ($event->getRemoteFilesystem() !== $rfs) {
             $event->setRemoteFilesystem($rfs->setNextOptions($event->getRemoteFilesystem()->getOptions()));
+        }
+    }
+
+    /**
+     * Check if package is in require-dev.
+     * When Composer runs with --no-dev, ignore uninstall operations on packages from require-dev.
+     *
+     * @param \Composer\Installer\PackageEvent|\Composer\Script\Event $event
+     * @param string                                                  $packageName
+     *
+     * @return bool
+     */
+    private function isDevPackage($event, string $packageName): bool
+    {
+        if (! $event->isDevMode()) {
+            foreach ($event->getComposer()->getLocker()->getLockData()['packages-dev'] as $devPackage) {
+                if ($devPackage['name'] === $packageName) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Loads configurators from "automatic-configurator".
+     *
+     * @throws \ReflectionException
+     *
+     * @return void
+     */
+    private function loadConfigurators(): void
+    {
+        $lock         = $this->container->get(Lock::class);
+        $vendorDir    = $this->container->get('vendor-dir');
+        $configurator = $this->container->get(Configurator::class);
+        $classMap     = (array) $lock->get(self::LOCK_CLASSMAP);
+
+        foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
+            foreach ($classMap[$packageName] as $class => $path) {
+                if (! \class_exists($class)) {
+                    require_once \str_replace('%vendor_path%', $vendorDir, $path);
+                }
+            }
+
+            /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */
+            foreach ($classList as $class) {
+                $reflectionClass = new \ReflectionClass($class);
+
+                if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
+                    $configurator->add($class::getName(), $reflectionClass->getName());
+                }
+            }
         }
     }
 
@@ -632,37 +819,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
             $tagsManager->addConstraint($name, $version);
         }
-    }
-
-    /**
-     * Check which package should be recorded.
-     *
-     * @param \Composer\Installer\PackageEvent $event
-     *
-     * @return bool
-     */
-    private function shouldRecordOperation(PackageEvent $event): bool
-    {
-        $operation = $event->getOperation();
-
-        if ($operation instanceof UpdateOperation) {
-            $package = $operation->getTargetPackage();
-        } else {
-            $package = $operation->getPackage();
-        }
-
-        // when Composer runs with --no-dev, ignore uninstall operations on packages from require-dev
-        if ($operation instanceof UninstallOperation && ! $event->isDevMode()) {
-            foreach ($event->getComposer()->getLocker()->getLockData()['packages-dev'] as $devPackage) {
-                if ($package->getName() === $devPackage['name']) {
-                    return false;
-                }
-            }
-        }
-
-        $isInstallOperation = $operation instanceof InstallOperation && ! $this->container->get(Lock::class)->has($package->getName());
-
-        return $isInstallOperation || $operation instanceof UninstallOperation;
     }
 
     /**
@@ -709,137 +865,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $manipulator->addSubNode('extra', 'automatic.allow-auto-install', true);
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
-    }
-
-    /**
-     * Choose action on package operation.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    private function doActionOnPackageOperation(PackageContract $package): void
-    {
-        /** @var \Narrowspark\Automatic\Common\ClassFinder $classFinder */
-        $classFinder  = $this->container->get(ClassFinder::class);
-        $foundClasses = $classFinder->setComposerAutoload($package->getName(), $package->getAutoload())
-            ->setFilter(function (\SplFileInfo $fileInfo) use ($package) {
-                return \mb_strpos((string) \mb_strstr($fileInfo->getPathname(), $package->getName()), '/Automatic/') !== false;
-            })
-            ->find()
-            ->getAll();
-
-        foreach ($foundClasses as $class => $path) {
-            if (! \class_exists($class)) {
-                require_once $path;
-            }
-        }
-
-        /** @var \Narrowspark\Automatic\PackageConfigurator $packageConfigurator */
-        $packageConfigurator = $this->container->get(PackageConfigurator::class);
-
-        if ($package->hasConfig(PackageConfigurator::TYPE)) {
-            foreach ((array) $package->getConfig(PackageConfigurator::TYPE) as $name => $configurator) {
-                $packageConfigurator->add($name, $configurator);
-            }
-        }
-
-        $io = $this->container->get(IOInterface::class);
-
-        if ($package->getOperation() === 'install') {
-            $io->writeError(\sprintf('  - Configuring %s', $package->getName()));
-
-            $this->doInstall($package, $packageConfigurator, $foundClasses);
-        } elseif ($package->getOperation() === 'uninstall') {
-            $io->writeError(\sprintf('  - Unconfiguring %s', $package->getName()));
-
-            $this->doUninstall($package, $packageConfigurator);
-        }
-
-        $packageConfigurator->reset();
-        $classFinder->reset();
-    }
-
-    /**
-     * All package configuration and installations happens here.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param \Narrowspark\Automatic\PackageConfigurator     $packageConfigurator
-     * @param array                                          $foundClasses
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    private function doInstall(
-        PackageContract $package,
-        PackageConfigurator $packageConfigurator,
-        array $foundClasses
-    ): void {
-        /** @var \Narrowspark\Automatic\Lock $lock */
-        $lock = $this->container->get(Lock::class);
-
-        if ($package->hasConfig(ScriptExecutor::TYPE)) {
-            $extenders = [];
-
-            foreach ((array) $package->getConfig(ScriptExecutor::TYPE) as $extender) {
-                if (isset($foundClasses[$extender])) {
-                    $extenders[$extender] = $foundClasses[$extender];
-                }
-            }
-
-            $lock->addSub(ScriptExecutor::TYPE, $package->getName(), $extenders);
-        }
-
-        /** @var \Narrowspark\Automatic\Configurator $configurator */
-        $configurator = $this->container->get(Configurator::class);
-
-        $configurator->configure($package);
-        $packageConfigurator->configure($package);
-
-        $this->showWarningOnRemainingConfigurators($package, $packageConfigurator, $configurator);
-
-        if ($package->hasConfig('post-messages')) {
-            foreach ((array) $package->getConfig('post-messages') as $line) {
-                $this->postMessages[] = self::expandTargetDir($this->container->get('composer-extra'), $line);
-            }
-
-            $this->postMessages[] = '';
-        }
-
-        $lock->addSub(self::LOCK_PACKAGES, $package->getName(), $package->toArray());
-    }
-
-    /**
-     * All package unconfiguration and uninstallations happens here.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param \Narrowspark\Automatic\PackageConfigurator     $packageConfigurator
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    private function doUninstall(PackageContract $package, PackageConfigurator $packageConfigurator): void
-    {
-        /** @var \Narrowspark\Automatic\Configurator $configurator */
-        $configurator = $this->container->get(Configurator::class);
-
-        $configurator->unconfigure($package);
-        $packageConfigurator->unconfigure($package);
-
-        $this->showWarningOnRemainingConfigurators($package, $packageConfigurator, $configurator);
-
-        /** @var \Narrowspark\Automatic\Lock $lock */
-        $lock = $this->container->get(Lock::class);
-
-        if ($package->hasConfig(ScriptExecutor::TYPE)) {
-            $lock->remove(ScriptExecutor::TYPE, $package->getName());
-        }
-
-        $lock->remove(self::LOCK_PACKAGES, $package->getName());
     }
 
     /**
@@ -1027,42 +1052,5 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $setRepositories($manager);
 
         return $manager;
-    }
-
-    /**
-     * Show a waring if remaining configurators are found in package config.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param \Narrowspark\Automatic\PackageConfigurator     $packageConfigurator
-     * @param \Narrowspark\Automatic\Configurator            $configurator
-     *
-     * @return void
-     */
-    private function showWarningOnRemainingConfigurators(
-        PackageContract $package,
-        PackageConfigurator $packageConfigurator,
-        Configurator $configurator
-    ): void {
-        $packageConfigurators = \array_keys((array) $package->getConfig(ConfiguratorContract::TYPE));
-
-        foreach (\array_keys($configurator->getConfigurators()) as $key => $value) {
-            if (isset($packageConfigurators[$key])) {
-                unset($packageConfigurators[$key]);
-            }
-        }
-
-        foreach (\array_keys($packageConfigurator->getConfigurators()) as $key => $value) {
-            if (isset($packageConfigurators[$key])) {
-                unset($packageConfigurators[$key]);
-            }
-        }
-
-        if (\count($packageConfigurators) !== 0) {
-            $this->container->get(IOInterface::class)->writeError(\sprintf(
-                '<warning>Configurators [%s] did not run for package [%s]</warning>',
-                \implode(', ', $packageConfigurators),
-                $package->getPrettyName()
-            ));
-        }
     }
 }

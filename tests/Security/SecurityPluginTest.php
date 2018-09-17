@@ -82,7 +82,7 @@ final class SecurityPluginTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        static::assertCount(6, SecurityPlugin::getSubscribedEvents());
+        static::assertCount(7, SecurityPlugin::getSubscribedEvents());
 
         NSA::setProperty($this->securityPlugin, 'activated', false);
 
@@ -94,7 +94,7 @@ final class SecurityPluginTest extends MockeryTestCase
         static::assertSame([CommandProviderContract::class => CommandProvider::class], $this->securityPlugin->getCapabilities());
     }
 
-    public function testpostMessages(): void
+    public function testPostMessages(): void
     {
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
@@ -109,7 +109,7 @@ final class SecurityPluginTest extends MockeryTestCase
         $this->securityPlugin->postMessages($eventMock);
     }
 
-    public function testpostMessagesWithVulnerability(): void
+    public function testPostMessagesWithVulnerability(): void
     {
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
@@ -272,7 +272,7 @@ final class SecurityPluginTest extends MockeryTestCase
         @\unlink($composerLockPath);
     }
 
-    public function testInitMessageWithpostMessages(): void
+    public function testInitMessageWithPostMessages(): void
     {
         $packageMock = $this->mock(PackageInterface::class);
         $packageMock->shouldReceive('getScripts')
@@ -287,6 +287,68 @@ final class SecurityPluginTest extends MockeryTestCase
         NSA::setProperty($this->securityPlugin, 'composer', $this->composerMock);
 
         $this->securityPlugin->initMessage();
+    }
+
+    public function testOnPostUninstall(): void
+    {
+        $composerJsonPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_on_init.json';
+        $composerLockPath = \mb_substr($composerJsonPath, 0, -4) . 'lock';
+
+        $scripts = ['post-messages' => 'test', 'post-install-cmd' => ['@post-messages', 'foo'], 'post-update-cmd' => ['@post-messages', 'bar']];
+
+        \file_put_contents($composerJsonPath, \json_encode(['name' => 'test', 'scripts' => $scripts]));
+        \file_put_contents($composerLockPath, \json_encode(['packages' => []]));
+
+        \putenv('COMPOSER=' . $composerJsonPath);
+
+        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock->shouldReceive('getScripts')
+            ->once()
+            ->andReturn($scripts);
+
+        $this->composerMock
+            ->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($packageMock);
+
+        $repositoryManagerMock = $this->mock(RepositoryManager::class);
+
+        $this->composerMock->shouldReceive('getRepositoryManager')
+            ->once()
+            ->andReturn($repositoryManagerMock);
+
+        $installationManagerMock = $this->mock(InstallationManager::class);
+
+        $this->composerMock->shouldReceive('getInstallationManager')
+            ->once()
+            ->andReturn($installationManagerMock);
+
+        NSA::setProperty($this->securityPlugin, 'io', new NullIO());
+        NSA::setProperty($this->securityPlugin, 'composer', $this->composerMock);
+
+        $event = $this->mock(PackageEvent::class);
+        $event->shouldReceive('getOperation->getPackage->getName')
+            ->andReturn(SecurityPlugin::PACKAGE_NAME);
+
+        $this->securityPlugin->onPostUninstall($event);
+
+        $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
+
+        static::assertTrue(isset($jsonContent['scripts']));
+        static::assertFalse(isset($jsonContent['scripts']['post-messages']));
+        static::assertTrue(isset($jsonContent['scripts']['post-install-cmd']));
+        static::assertTrue(isset($jsonContent['scripts']['post-update-cmd']));
+        static::assertCount(1, $jsonContent['scripts']['post-install-cmd']);
+        static::assertCount(1, $jsonContent['scripts']['post-update-cmd']);
+
+        $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
+
+        static::assertInternalType('string', $lockContent['content-hash']);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+        @\unlink($composerJsonPath);
+        @\unlink($composerLockPath);
     }
 
     /**

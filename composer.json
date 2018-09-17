@@ -37,7 +37,8 @@
         "narrowspark/coding-standard": "^1.2.0",
         "narrowspark/testing-helper": "^7.0.0",
         "nyholm/nsa": "^1.1.0",
-        "phpunit/phpunit": "^7.2.0"
+        "phpunit/phpunit": "^7.2.0",
+        "symfony/process": "^4.1"
     },
     "config": {
         "optimize-autoloader": true,
@@ -66,7 +67,8 @@
         "psr-4": {
             "Narrowspark\\Automatic\\Test\\": "tests/Automatic/",
             "Narrowspark\\Automatic\\Common\\Test\\": "tests/Common/",
-            "Narrowspark\\Automatic\\Security\\Test\\": "tests/Security/"
+            "Narrowspark\\Automatic\\Security\\Test\\": "tests/Security/",
+            "Narrowspark\\Automatic\\Functional\\Test\\": "tests/Functional/"
         },
         "files": [
             "tests/Automatic/TmpDirMock.php"

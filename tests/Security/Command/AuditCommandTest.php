@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Security;
+namespace Narrowspark\Automatic\Security\Test;
 
 use Composer\Console\Application;
 use Narrowspark\Automatic\Security\Command\AuditCommand;

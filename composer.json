@@ -10,7 +10,9 @@
         "automatic",
         "configurators",
         "skeleton",
-        "composer"
+        "composer",
+        "audit",
+        "security"
     ],
     "homepage": "http://github.com/narrowspark/automatic",
     "license": "MIT",

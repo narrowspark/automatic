@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Security;
+namespace Narrowspark\Automatic\Security\Test;
 
 use Composer\Util\Filesystem;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
@@ -35,7 +35,7 @@ final class AuditTest extends TestCase
     {
         parent::tearDown();
 
-        (new Filesystem())->remove(__DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark');
+        (new Filesystem())->remove(__DIR__ . \DIRECTORY_SEPARATOR);
     }
 
     public function testCheckPackageWithSymfony(): void

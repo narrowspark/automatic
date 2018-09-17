@@ -9,11 +9,6 @@ use Composer\Json\JsonManipulator;
 final class Util
 {
     /**
-     * @var string
-     */
-    public const COMPOSER_EXTRA_KEY = 'automatic';
-
-    /**
      * Private constructor; non-instantiable.
      *
      * @codeCoverageIgnore
@@ -35,16 +30,6 @@ final class Util
         $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
 
         return [$json, $manipulator];
-    }
-
-    /**
-     * Get the automatic.lock file path.
-     *
-     * @return string
-     */
-    public static function getAutomaticLockFile(): string
-    {
-        return \str_replace('composer', self::COMPOSER_EXTRA_KEY, self::getComposerLockFile());
     }
 
     /**

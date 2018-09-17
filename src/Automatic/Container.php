@@ -9,11 +9,10 @@ use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Common\ClassFinder;
-use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
-use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
@@ -65,7 +64,7 @@ final class Container implements ContainerContract
             'composer-extra' => static function (Container $container) {
                 return \array_merge(
                     [
-                        Util::COMPOSER_EXTRA_KEY => [
+                        Automatic::COMPOSER_EXTRA_KEY => [
                             'allow-auto-install' => false,
                             'dont-discover'      => [],
                         ],

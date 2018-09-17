@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Security;
+namespace Narrowspark\Automatic\Security\Test;
 
 use Narrowspark\Automatic\Security\Downloader;
 use PHPUnit\Framework\TestCase;

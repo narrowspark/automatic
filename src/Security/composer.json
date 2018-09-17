@@ -1,7 +1,7 @@
 {
-    "name": "narrowspark/automatic-common",
-    "type": "library",
-    "description": "Common classes for Automatic and Automatic configurators.",
+    "name": "narrowspark/automatic-security-audit",
+    "type": "composer-plugin",
+    "description": "A composer plugin that checks if your application has known security vulnerabilities.",
     "keywords": [
         "narrowspark",
         "viserio",
@@ -11,7 +11,8 @@
         "skeleton",
         "library",
         "composer",
-        "common"
+        "audit",
+        "security"
     ],
     "homepage": "http://github.com/narrowspark/automatic",
     "license": "MIT",
@@ -26,16 +27,17 @@
     "require": {
         "php": "^7.2",
         "ext-mbstring": "*",
-        "composer/composer": "^1.6.0 || ^1.7.0"
+        "composer-plugin-api": "^1.0"
     },
     "extra": {
         "branch-alias": {
             "dev-master": "1.0-dev"
-        }
+        },
+        "class": "Narrowspark\\Automatic\\AuditPlugin"
     },
     "autoload": {
         "psr-4": {
-            "Narrowspark\\Automatic\\Common\\": "/"
+            "Narrowspark\\Automatic\\Security\\": "/"
         }
     },
     "support": {

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Contract\Security;
+namespace Narrowspark\Automatic\Security\Contract;
 
 use Symfony\Component\Console\Style\SymfonyStyle;
 

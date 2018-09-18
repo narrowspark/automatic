@@ -55,16 +55,16 @@ final class Container implements ContainerContract
             Composer::class => static function () use ($composer) {
                 return $composer;
             },
-            Config::class => static function (Container $container) {
+            Config::class => static function (ContainerContract $container) {
                 return $container->get(Composer::class)->getConfig();
             },
             IOInterface::class => static function () use ($io) {
                 return $io;
             },
-            'vendor-dir' => static function (Container $container) {
+            'vendor-dir' => static function (ContainerContract $container) {
                 return \rtrim($container->get(Config::class)->get('vendor-dir'), '/');
             },
-            'composer-extra' => static function (Container $container) {
+            'composer-extra' => static function (ContainerContract $container) {
                 return \array_merge(
                     [
                         Automatic::COMPOSER_EXTRA_KEY => [
@@ -75,16 +75,16 @@ final class Container implements ContainerContract
                     $container->get(Composer::class)->getPackage()->getExtra()
                 );
             },
-            InputInterface::class => static function (Container $container) use ($genericPropertyReader) {
+            InputInterface::class => static function (ContainerContract $container) use ($genericPropertyReader) {
                 return $genericPropertyReader($container->get(IOInterface::class), 'input');
             },
             Lock::class => static function () {
-                return new Lock(Util::getAutomaticLockFile());
+                return new Lock(Automatic::getAutomaticLockFile());
             },
-            ClassFinder::class => static function (Container $container) {
+            ClassFinder::class => static function (ContainerContract $container) {
                 return new ClassFinder($container->get('vendor-dir'));
             },
-            ConfiguratorInstaller::class => static function (Container $container) {
+            ConfiguratorInstaller::class => static function (ContainerContract $container) {
                 return new ConfiguratorInstaller(
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
@@ -92,7 +92,7 @@ final class Container implements ContainerContract
                     $container->get(ClassFinder::class)
                 );
             },
-            SkeletonInstaller::class => static function (Container $container) {
+            SkeletonInstaller::class => static function (ContainerContract $container) {
                 return new SkeletonInstaller(
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
@@ -100,26 +100,26 @@ final class Container implements ContainerContract
                     $container->get(ClassFinder::class)
                 );
             },
-            Configurator::class => static function (Container $container) {
+            Configurator::class => static function (ContainerContract $container) {
                 return new Configurator(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
                     $container->get('composer-extra')
                 );
             },
-            OperationsResolver::class => static function (Container $container) {
+            OperationsResolver::class => static function (ContainerContract $container) {
                 return new OperationsResolver(
                     $container->get(Lock::class),
                     $container->get('vendor-dir')
                 );
             },
-            RemoteFilesystem::class => static function (Container $container) {
+            RemoteFilesystem::class => static function (ContainerContract $container) {
                 return Factory::createRemoteFilesystem(
                     $container->get(IOInterface::class),
                     $container->get(Config::class)
                 );
             },
-            ParallelDownloader::class => static function (Container $container) {
+            ParallelDownloader::class => static function (ContainerContract $container) {
                 $rfs = $container->get(RemoteFilesystem::class);
 
                 return new ParallelDownloader(
@@ -129,7 +129,7 @@ final class Container implements ContainerContract
                     $rfs->isTlsDisabled()
                 );
             },
-            Prefetcher::class => static function (Container $container) {
+            Prefetcher::class => static function (ContainerContract $container) {
                 return new Prefetcher(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
@@ -137,7 +137,7 @@ final class Container implements ContainerContract
                     $container->get(ParallelDownloader::class)
                 );
             },
-            ScriptExecutor::class => static function (Container $container) {
+            ScriptExecutor::class => static function (ContainerContract $container) {
                 $scriptExecutor = new ScriptExecutor(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
@@ -150,14 +150,14 @@ final class Container implements ContainerContract
 
                 return $scriptExecutor;
             },
-            PackageConfigurator::class => static function (Container $container) {
+            PackageConfigurator::class => static function (ContainerContract $container) {
                 return new PackageConfigurator(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
                     $container->get('composer-extra')
                 );
             },
-            LegacyTagsManager::class => static function (Container $container) {
+            LegacyTagsManager::class => static function (ContainerContract $container) {
                 return new LegacyTagsManager($container->get(IOInterface::class));
             },
         ];

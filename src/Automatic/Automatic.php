@@ -129,6 +129,16 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Get the automatic.lock file path.
+     *
+     * @return string
+     */
+    public static function getAutomaticLockFile(): string
+    {
+        return \str_replace('composer', self::COMPOSER_EXTRA_KEY, Util::getComposerLockFile());
+    }
+
+    /**
      * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array

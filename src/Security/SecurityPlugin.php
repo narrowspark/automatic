@@ -21,7 +21,6 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
-use Narrowspark\Automatic\Security\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
 use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
@@ -55,11 +54,25 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     protected $foundVulnerabilities = [];
 
     /**
-     * A Container instance.
+     * The composer instance.
      *
-     * @var \Narrowspark\Automatic\Security\Contract\Container
+     * @var \Composer\Composer
      */
-    protected $container;
+    protected $composer;
+
+    /**
+     * The composer io implementation.
+     *
+     * @var \Composer\IO\IOInterface
+     */
+    protected $io;
+
+    /**
+     * A Audit instance.
+     *
+     * @var \Narrowspark\Automatic\Security\Audit
+     */
+    private $audit;
 
     /**
      * Check if the the plugin is activated.
@@ -67,16 +80,6 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
      * @var bool
      */
     private static $activated = true;
-
-    /**
-     * Get the Container instance.
-     *
-     * @return \Narrowspark\Automatic\Security\Contract\Container
-     */
-    public function getContainer(): ContainerContract
-    {
-        return $this->container;
-    }
 
     /**
      * {@inheritdoc}
@@ -119,9 +122,8 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
             }
         }
 
-        $this->container = new Container($composer, $io);
-
-        $extra = $this->container->get('composer-extra');
+        $this->composer = $composer;
+        $this->io       = $io;
 
         if (\extension_loaded('curl')) {
             $downloader = new CurlDownloader();
@@ -129,15 +131,15 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
             $downloader = new ComposerDownloader();
         }
 
+        $extra = $composer->getPackage()->getExtra();
+
         if (isset($extra[self::COMPOSER_EXTRA_KEY]['audit']['timeout'])) {
             $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['audit']['timeout']);
         }
 
-        $this->container->set(Audit::class, static function (Container $container) use ($downloader) {
-            return new Audit($container->get('vendor-dir'), $downloader);
-        });
+        $this->audit = new Audit(\rtrim($composer->getConfig()->get('vendor-dir'), '/'), $downloader);
 
-        $this->securityAdvisories = $this->container->get(Audit::class)->getSecurityAdvisories($io);
+        $this->securityAdvisories = $this->audit->getSecurityAdvisories($io);
     }
 
     /**
@@ -159,7 +161,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
      */
     public function onInit(EventDispatcherEvent $event): void
     {
-        $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
+        $scripts = $this->composer->getPackage()->getScripts();
 
         if (isset($scripts['post-install-out'])) {
             return;
@@ -195,15 +197,12 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     {
         $event->stopPropagation();
 
-        /** @var \Composer\IO\IOInterface $io */
-        $io = $this->container->get(IOInterface::class);
-
         $count = \count(\array_filter($this->foundVulnerabilities));
 
         if ($count !== 0) {
-            $io->write('<error>[!]</> Audit Security Report: ' . \sprintf('%s vulnerabilit%s found - run "composer audit" for more information', $count, $count === 1 ? 'y' : 'ies'));
+            $this->io->write('<error>[!]</> Audit Security Report: ' . \sprintf('%s vulnerabilit%s found - run "composer audit" for more information', $count, $count === 1 ? 'y' : 'ies'));
         } else {
-            $io->write('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
+            $this->io->write('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
         }
     }
 
@@ -228,7 +227,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
             $composerPackage = $operation->getPackage();
         }
 
-        $data = $this->container->get(Audit::class)->checkPackage(
+        $data = $this->audit->checkPackage(
             $composerPackage->getName(),
             $composerPackage->getVersion(),
             $this->securityAdvisories
@@ -254,7 +253,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
             return;
         }
 
-        $data = $this->container->get(Audit::class)->checkLock(Util::getComposerLockFile());
+        $data = $this->audit->checkLock(Util::getComposerLockFile());
 
         if (\count($data) === 0) {
             return;
@@ -314,14 +313,13 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     {
         $composerLockPath = Util::getComposerLockFile();
         $composerJson     = \file_get_contents(Factory::getComposerFile());
-        $composer         = $this->container->get(Composer::class);
 
-        $lockFile = new JsonFile($composerLockPath, null, $this->container->get(IOInterface::class));
+        $lockFile = new JsonFile($composerLockPath, null, $this->io);
         $locker   = new Locker(
-            $this->container->get(IOInterface::class),
+            $this->io,
             $lockFile,
-            $composer->getRepositoryManager(),
-            $composer->getInstallationManager(),
+            $this->composer->getRepositoryManager(),
+            $this->composer->getInstallationManager(),
             (string) $composerJson
         );
 

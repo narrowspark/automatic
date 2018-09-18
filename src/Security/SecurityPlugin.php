@@ -167,21 +167,26 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
             return;
         }
 
-        $manipulator = new JsonManipulator(\file_get_contents(Factory::getComposerFile()));
+        $composerFilePath = Factory::getComposerFile();
+        $manipulator      = new JsonManipulator(\file_get_contents($composerFilePath));
 
-        $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark Automatic to show package messages.');
+        if (\count($scripts) === 0) {
+            $manipulator->addMainKey('scripts', []);
+        }
+
+        $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark to show messages.');
 
         $scriptKey = '@post-install-out';
 
-        if (isset($scripts['post-install-cmd']) && ! \in_array($scriptKey, $scripts['post-install-cmd'], true)) {
+        if (! \in_array($scriptKey, $scripts['post-install-cmd'] ?? [], true)) {
             $manipulator->addSubNode('scripts', 'post-install-cmd', \array_merge($scripts['post-install-cmd'] ?? [], [$scriptKey]));
         }
 
-        if (isset($scripts['post-update-cmd']) && ! \in_array($scriptKey, $scripts['post-update-cmd'], true)) {
+        if (! \in_array($scriptKey, $scripts['post-update-cmd'] ?? [], true)) {
             $manipulator->addSubNode('scripts', 'post-update-cmd', \array_merge($scripts['post-update-cmd'] ?? [], [$scriptKey]));
         }
 
-        \file_put_contents(Factory::getComposerFile(), $manipulator->getContents());
+        \file_put_contents($composerFilePath, $manipulator->getContents());
 
         $this->updateComposerLock();
     }

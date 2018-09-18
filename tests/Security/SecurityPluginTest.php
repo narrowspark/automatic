@@ -3,9 +3,15 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Test;
 
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\EventDispatcher\Event as EventDispatcherEvent;
+use Composer\Installer\InstallationManager;
 use Composer\Installer\PackageEvent;
+use Composer\IO\NullIO;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\Capability\CommandProvider as CommandProviderContract;
+use Composer\Repository\RepositoryManager;
 use Composer\Script\Event;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\CommandProvider;
@@ -29,6 +35,11 @@ final class SecurityPluginTest extends MockeryTestCase
     private $securityPlugin;
 
     /**
+     * @var string
+     */
+    private $tmpFolder;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
@@ -36,6 +47,7 @@ final class SecurityPluginTest extends MockeryTestCase
         $this->arrangeComposerClasses();
 
         $this->securityPlugin = new SecurityPlugin();
+        $this->tmpFolder      = __DIR__ . \DIRECTORY_SEPARATOR . 'tmp';
     }
 
     /**
@@ -45,7 +57,7 @@ final class SecurityPluginTest extends MockeryTestCase
     {
         parent::tearDown();
 
-        (new Filesystem())->remove([__DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark', __DIR__ . DIRECTORY_SEPARATOR . 'tmp']);
+        (new Filesystem())->remove([$this->tmpFolder, __DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark']);
     }
 
     public function testActivate(): void
@@ -135,16 +147,149 @@ final class SecurityPluginTest extends MockeryTestCase
             ->once()
             ->andReturn($operationMock);
 
-        $path = __DIR__ . DIRECTORY_SEPARATOR . 'tmp';
-
-        $audit = new Audit($path, new ComposerDownloader());
+        $audit = new Audit($this->tmpFolder, new ComposerDownloader());
 
         NSA::setProperty($this->securityPlugin, 'audit', $audit);
         NSA::setProperty($this->securityPlugin, 'securityAdvisories', $audit->getSecurityAdvisories());
 
         $this->securityPlugin->auditPackage($eventMock);
 
-        self::assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        static::assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+    }
+
+    public function testAuditPackageWithUninstall(): void
+    {
+        $operationMock = $this->mock(UninstallOperation::class);
+
+        $eventMock = $this->mock(PackageEvent::class);
+        $eventMock->shouldReceive('getOperation')
+            ->once()
+            ->andReturn($operationMock);
+
+        $this->securityPlugin->auditPackage($eventMock);
+
+        static::assertCount(0, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+    }
+
+    public function testAuditPackageWithUpdate(): void
+    {
+        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock->shouldReceive('getName')
+            ->once()
+            ->andReturn('symfony/view');
+        $packageMock->shouldReceive('getVersion')
+            ->once()
+            ->andReturn('v4.1.0');
+
+        $operationMock = $this->mock(UpdateOperation::class);
+        $operationMock->shouldReceive('getTargetPackage')
+            ->once()
+            ->andReturn($packageMock);
+
+        $eventMock = $this->mock(PackageEvent::class);
+        $eventMock->shouldReceive('getOperation')
+            ->once()
+            ->andReturn($operationMock);
+
+        $audit = new Audit($this->tmpFolder, new ComposerDownloader());
+
+        NSA::setProperty($this->securityPlugin, 'audit', $audit);
+        NSA::setProperty($this->securityPlugin, 'securityAdvisories', $audit->getSecurityAdvisories());
+
+        $this->securityPlugin->auditPackage($eventMock);
+
+        static::assertCount(0, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+    }
+
+    public function testAuditComposerLock(): void
+    {
+        \putenv('COMPOSER=' . __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.json');
+
+        $audit = new Audit($this->tmpFolder, new ComposerDownloader());
+
+        NSA::setProperty($this->securityPlugin, 'audit', $audit);
+
+        $this->securityPlugin->auditComposerLock($this->mock(Event::class));
+
+        static::assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+    }
+
+    public function testOnInit(): void
+    {
+        $composerJsonPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_on_init.json';
+        $composerLockPath = \mb_substr($composerJsonPath, 0, -4) . 'lock';
+
+        \file_put_contents($composerJsonPath, \json_encode(['test' => []]));
+        \file_put_contents($composerLockPath, \json_encode(['packages' => []]));
+
+        \putenv('COMPOSER=' . $composerJsonPath);
+
+        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock->shouldReceive('getScripts')
+            ->once()
+            ->andReturn([]);
+
+        $this->composerMock
+            ->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($packageMock);
+
+        $repositoryManagerMock = $this->mock(RepositoryManager::class);
+
+        $this->composerMock->shouldReceive('getRepositoryManager')
+            ->once()
+            ->andReturn($repositoryManagerMock);
+
+        $installationManagerMock = $this->mock(InstallationManager::class);
+
+        $this->composerMock->shouldReceive('getInstallationManager')
+            ->once()
+            ->andReturn($installationManagerMock);
+
+        NSA::setProperty($this->securityPlugin, 'composer', $this->composerMock);
+        NSA::setProperty($this->securityPlugin, 'io', new NullIO());
+
+        $this->securityPlugin->onInit($this->mock(EventDispatcherEvent::class));
+
+        $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
+
+        static::assertTrue(isset($jsonContent['scripts']));
+        static::assertTrue(isset($jsonContent['scripts']['post-install-out']));
+        static::assertTrue(isset($jsonContent['scripts']['post-install-cmd']));
+        static::assertTrue(isset($jsonContent['scripts']['post-update-cmd']));
+        static::assertSame('@post-install-out', $jsonContent['scripts']['post-install-cmd'][0]);
+        static::assertSame('@post-install-out', $jsonContent['scripts']['post-update-cmd'][0]);
+
+        $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
+
+        static::assertInternalType('string', $lockContent['content-hash']);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+        @\unlink($composerJsonPath);
+        @\unlink($composerLockPath);
+    }
+
+    public function testOnInitWithPostInstallOut(): void
+    {
+        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock->shouldReceive('getScripts')
+            ->once()
+            ->andReturn(['post-install-out' => '']);
+
+        $this->composerMock
+            ->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($packageMock);
+
+        $event = $this->mock(EventDispatcherEvent::class);
+
+        NSA::setProperty($this->securityPlugin, 'composer', $this->composerMock);
+
+        $this->securityPlugin->onInit($event);
     }
 
     /**

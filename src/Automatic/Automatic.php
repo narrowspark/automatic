@@ -281,7 +281,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark Automatic to show package messages.');
+        $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark to show messages.');
 
         $scripts = [
             '@auto-scripts',

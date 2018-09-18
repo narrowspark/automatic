@@ -12,6 +12,9 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Security\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
+use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
+use Narrowspark\Automatic\Security\Traits\SecurityPluginTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
@@ -22,14 +25,12 @@ class AuditPlugin implements PluginInterface, EventSubscriberInterface, Capable
     /**
      * @var string
      */
-    public const COMPOSER_EXTRA_KEY = 'automatic';
+    public const VERSION = '0.7.0';
 
     /**
-     * Check if the the plugin is activated.
-     *
-     * @var bool
+     * @var string
      */
-    private static $activated = true;
+    public const COMPOSER_EXTRA_KEY = 'automatic';
 
     /**
      * A Container instance.
@@ -37,6 +38,13 @@ class AuditPlugin implements PluginInterface, EventSubscriberInterface, Capable
      * @var \Narrowspark\Automatic\Security\Contract\Container
      */
     protected $container;
+
+    /**
+     * Check if the the plugin is activated.
+     *
+     * @var bool
+     */
+    private static $activated = true;
 
     /**
      * Get the Container instance.
@@ -89,12 +97,18 @@ class AuditPlugin implements PluginInterface, EventSubscriberInterface, Capable
 
         $this->container = new Container($composer, $io);
 
-        $extra      = $this->container->get('composer-extra');
-        $downloader = new Downloader();
+        $extra = $this->container->get('composer-extra');
+
+        if (\extension_loaded('curl')) {
+            $downloader = new CurlDownloader();
+        } else {
+            $downloader = new ComposerDownloader();
+        }
 
         if (isset($extra[self::COMPOSER_EXTRA_KEY]['audit']['timeout'])) {
             $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['audit']['timeout']);
         }
+
         $this->container->set(Audit::class, static function (Container $container) use ($downloader) {
             return new Audit($container->get('vendor-dir'), $downloader);
         });
@@ -143,7 +157,7 @@ class AuditPlugin implements PluginInterface, EventSubscriberInterface, Capable
     /**
      * Get the composer version.
      *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
+     * @throws \Narrowspark\Automatic\Security\Contract\Exception\RuntimeException
      *
      * @return string
      */

@@ -6,10 +6,10 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
-use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Automatic\QuestionFactory;
 use Narrowspark\Automatic\Test\Fixture\ComposerJsonFactory;
@@ -104,7 +104,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
-            ->with('extra', Util::COMPOSER_EXTRA_KEY, $whitelist);
+            ->with('extra', Automatic::COMPOSER_EXTRA_KEY, $whitelist);
 
         $this->jsonManipulatorMock->shouldReceive('addMainKey')
             ->once()
@@ -156,7 +156,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
-            ->with('extra', Util::COMPOSER_EXTRA_KEY, $whitelist);
+            ->with('extra', Automatic::COMPOSER_EXTRA_KEY, $whitelist);
 
         $this->jsonManipulatorMock->shouldReceive('addMainKey')
             ->once()
@@ -229,7 +229,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
-            ->with('extra', Util::COMPOSER_EXTRA_KEY, $whitelist);
+            ->with('extra', Automatic::COMPOSER_EXTRA_KEY, $whitelist);
 
         $this->jsonManipulatorMock->shouldReceive('addMainKey')
             ->once()
@@ -296,7 +296,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
-            ->with('extra', Util::COMPOSER_EXTRA_KEY, ['composer-script-whitelist' => []]);
+            ->with('extra', Automatic::COMPOSER_EXTRA_KEY, ['composer-script-whitelist' => []]);
 
         $this->jsonManipulatorMock->shouldReceive('addMainKey')
             ->once()

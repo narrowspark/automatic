@@ -7,7 +7,8 @@ use Composer\Package\Package;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\VersionParser;
-use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
+use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
+use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 
 class Audit
@@ -51,17 +52,17 @@ class Audit
     /**
      * A downloader instance.
      *
-     * @var \Narrowspark\Automatic\Security\Downloader
+     * @var \Narrowspark\Automatic\Security\Contract\Downloader
      */
     private $downloader;
 
     /**
      * Create a new Audit instance.
      *
-     * @param string                                     $composerVendorPath
-     * @param \Narrowspark\Automatic\Security\Downloader $downloader
+     * @param string                                              $composerVendorPath
+     * @param \Narrowspark\Automatic\Security\Contract\Downloader $downloader
      */
-    public function __construct(string $composerVendorPath, Downloader $downloader)
+    public function __construct(string $composerVendorPath, DownloaderContract $downloader)
     {
         $this->composerVendorPath = $composerVendorPath;
         $this->downloader         = $downloader;
@@ -98,7 +99,7 @@ class Audit
      *
      * @param string $lock The path to the composer.lock file
      *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException When the lock file does not exist
+     * @throws \Narrowspark\Automatic\Security\Contract\Exception\RuntimeException When the lock file does not exist
      *
      * @return array[]
      */
@@ -147,11 +148,7 @@ class Audit
      */
     public function getSecurityAdvisories(?IOInterface $io = null): array
     {
-        if (! \extension_loaded('curl')) {
-            $sha = $this->downloader->downloadWithComposer(self::SECURITY_ADVISORIES_BASE_URL . self::SECURITY_ADVISORIES_SHA);
-        } else {
-            $sha = $this->downloader->downloadWithCurl(self::SECURITY_ADVISORIES_BASE_URL . self::SECURITY_ADVISORIES_SHA);
-        }
+        $sha = $this->downloader->download(self::SECURITY_ADVISORIES_BASE_URL . self::SECURITY_ADVISORIES_SHA);
 
         $narrowsparkAutomaticPath = $this->composerVendorPath . \DIRECTORY_SEPARATOR . 'narrowspark' . \DIRECTORY_SEPARATOR . 'automatic' . \DIRECTORY_SEPARATOR;
 
@@ -174,11 +171,7 @@ class Audit
             $io->writeError('Downloading the Security Advisories database');
         }
 
-        if (! \extension_loaded('curl')) {
-            $securityAdvisories = $this->downloader->downloadWithComposer(self::SECURITY_ADVISORIES_BASE_URL . self::SECURITY_ADVISORIES);
-        } else {
-            $securityAdvisories = $this->downloader->downloadWithCurl(self::SECURITY_ADVISORIES_BASE_URL . self::SECURITY_ADVISORIES);
-        }
+        $securityAdvisories = $this->downloader->download(self::SECURITY_ADVISORIES_BASE_URL . self::SECURITY_ADVISORIES);
 
         $this->filesystem->dumpFile($securityAdvisoriesShaPath, $sha);
         $this->filesystem->dumpFile($securityAdvisoriesPath, $securityAdvisories);

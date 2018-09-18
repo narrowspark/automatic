@@ -32,10 +32,7 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     {
         parent::__construct($composer, $io, $options);
 
-        [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
-
-        $this->json        = $json;
-        $this->manipulator = $manipulator;
+        [$this->json, $this->manipulator] = Util::getComposerJsonFileAndManipulator();
     }
 
     /**

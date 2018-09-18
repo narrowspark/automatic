@@ -51,8 +51,9 @@ use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\Prefetcher\TruncatedComposerRepository;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\CommandProvider;
-use Narrowspark\Automatic\Security\Downloader;
-use Narrowspark\Automatic\Security\SecurityPluginTrait;
+use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
+use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
+use Narrowspark\Automatic\Security\Traits\SecurityPluginTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
@@ -65,6 +66,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
     use GetGenericPropertyReaderTrait;
     use SecurityPluginTrait;
 
+    /**
+     * @var string
+     */
     public const VERSION = '0.7.0';
 
     /**
@@ -92,7 +96,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
      *
      * @var \Narrowspark\Automatic\Contract\Container
      */
-    private $container;
+    protected $container;
 
     /**
      * Check if the the plugin is activated.
@@ -192,12 +196,18 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
 
         $this->container = new Container($composer, $io);
 
-        $extra      = $this->container->get('composer-extra');
-        $downloader = new Downloader();
+        $extra = $this->container->get('composer-extra');
+
+        if (\extension_loaded('curl')) {
+            $downloader = new CurlDownloader();
+        } else {
+            $downloader = new ComposerDownloader();
+        }
 
         if (isset($extra[self::COMPOSER_EXTRA_KEY]['audit']['timeout'])) {
             $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['audit']['timeout']);
         }
+
         $this->container->set(Audit::class, static function (Container $container) use ($downloader) {
             return new Audit($container->get('vendor-dir'), $downloader);
         });

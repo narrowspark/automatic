@@ -5,8 +5,8 @@ namespace Narrowspark\Automatic\Security;
 use Composer\Composer;
 use Composer\Config;
 use Composer\IO\IOInterface;
-use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Security\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Security\Contract\Exception\InvalidArgumentException;
 
 /**
  * @internal

@@ -51,8 +51,9 @@
     },
     "autoload": {
         "psr-4": {
+            "Narrowspark\\Automatic\\": "src/Automatic/",
             "Narrowspark\\Automatic\\Common\\": "src/Common/",
-            "Narrowspark\\Automatic\\": "src/Automatic/"
+            "Narrowspark\\Automatic\\Security\\": "src/Security/"
         },
         "exclude-from-classmap": [
             "/tests/"
@@ -60,8 +61,9 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Narrowspark\\Automatic\\Test\\": "tests/Automatic/",
             "Narrowspark\\Automatic\\Common\\Test\\": "tests/Common/",
-            "Narrowspark\\Automatic\\Test\\": "tests/Automatic/"
+            "Narrowspark\\Automatic\\Security\\Test\\": "tests/Security/"
         },
         "files": [
             "tests/Automatic/TmpDirMock.php"

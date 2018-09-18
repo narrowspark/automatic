@@ -20,11 +20,6 @@ final class UtilTest extends TestCase
         static::assertInstanceOf(JsonManipulator::class, $manipulator);
     }
 
-    public function testGetAutomaticLockFile(): void
-    {
-        static::assertSame('./automatic.lock', Util::getAutomaticLockFile());
-    }
-
     public function testGetComposerLockFile(): void
     {
         static::assertSame('./composer.lock', Util::getComposerLockFile());

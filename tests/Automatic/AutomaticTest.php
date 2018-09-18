@@ -139,9 +139,6 @@ final class AutomaticTest extends MockeryTestCase
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
             ->andReturn(true);
-        $this->ioMock->shouldReceive('writeError')
-            ->once()
-            ->with('Downloading the Security Advisories database');
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
 
@@ -433,9 +430,6 @@ final class AutomaticTest extends MockeryTestCase
         $this->ioMock->shouldReceive('write')
             ->once()
             ->with(['']);
-        $this->ioMock->shouldReceive('write')
-            ->once()
-            ->with('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
 
         $containerMock = $this->mock(ContainerContract::class);
         $containerMock->shouldReceive('get')

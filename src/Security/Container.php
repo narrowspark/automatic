@@ -39,6 +39,9 @@ final class Container implements ContainerContract
             Composer::class => static function () use ($composer) {
                 return $composer;
             },
+            Config::class => static function (Container $container) {
+                return $container->get(Composer::class)->getConfig();
+            },
             IOInterface::class => static function () use ($io) {
                 return $io;
             },

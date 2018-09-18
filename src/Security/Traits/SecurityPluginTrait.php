@@ -6,6 +6,8 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Installer\PackageEvent;
 use Composer\Script\Event;
+use Narrowspark\Automatic\Security\Audit;
+use Narrowspark\Automatic\Security\Util;
 
 trait SecurityPluginTrait
 {

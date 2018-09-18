@@ -3,9 +3,9 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Test;
 
 use Composer\Util\Filesystem;
-use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Audit;
-use Narrowspark\Automatic\Security\Downloader;
+use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
+use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,13 +19,20 @@ final class AuditTest extends TestCase
     private $audit;
 
     /**
+     * @var string
+     */
+    private $path;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp()
     {
         parent::setUp();
 
-        $this->audit = new Audit(__DIR__, new Downloader());
+        $this->path = __DIR__ . 'audit';
+
+        $this->audit = new Audit($this->path, new ComposerDownloader());
     }
 
     /**
@@ -35,7 +42,7 @@ final class AuditTest extends TestCase
     {
         parent::tearDown();
 
-        (new Filesystem())->remove(__DIR__ . \DIRECTORY_SEPARATOR);
+        (new Filesystem())->remove($this->path . \DIRECTORY_SEPARATOR);
     }
 
     public function testCheckPackageWithSymfony(): void
@@ -61,7 +68,7 @@ final class AuditTest extends TestCase
     public function testCheckLockWithSymfony252(): void
     {
         [$vulnerabilities, $messages] = $this->audit->checkLock(
-            \dirname(__DIR__) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock'
+            __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock'
         );
 
         $this->assertSymfonySecurity(\count($vulnerabilities), $vulnerabilities);
@@ -71,7 +78,7 @@ final class AuditTest extends TestCase
     public function testCheckLockWithComposer171(): void
     {
         [$vulnerabilities, $messages] = $this->audit->checkLock(
-            \dirname(__DIR__) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock'
+            __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock'
         );
 
         static::assertCount(0, $vulnerabilities);

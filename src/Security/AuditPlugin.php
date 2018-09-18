@@ -12,6 +12,7 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Security\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
 use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
 use Narrowspark\Automatic\Security\Traits\SecurityPluginTrait;

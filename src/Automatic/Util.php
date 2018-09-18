@@ -7,6 +7,15 @@ use Narrowspark\Automatic\Common\Util as CommonUtil;
 final class Util
 {
     /**
+     * Private constructor; non-instantiable.
+     *
+     * @codeCoverageIgnore
+     */
+    private function __construct()
+    {
+    }
+
+    /**
      * Get the automatic.lock file path.
      *
      * @return string

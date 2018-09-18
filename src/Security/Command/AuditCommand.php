@@ -10,7 +10,9 @@ use Narrowspark\Automatic\Security\Command\Formatter\JsonFormatter;
 use Narrowspark\Automatic\Security\Command\Formatter\SimpleFormatter;
 use Narrowspark\Automatic\Security\Command\Formatter\TextFormatter;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
-use Narrowspark\Automatic\Security\Downloader;
+use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
+use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
+use Narrowspark\Automatic\Security\Util;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -50,7 +52,11 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $downloader = new Downloader();
+        if (\extension_loaded('curl')) {
+            $downloader = new CurlDownloader();
+        } else {
+            $downloader = new ComposerDownloader();
+        }
 
         if (($timeout = $input->getOption('timeout')) !== null) {
             $downloader->setTimeout((int) $timeout);
@@ -62,7 +68,7 @@ EOF
         if ($input->getOption('composer-lock') !== null) {
             $composerFile = $input->getOption('composer-lock');
         } else {
-            $composerFile = \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
+            $composerFile = Util::getComposerLockFile();
         }
 
         $output = new SymfonyStyle($input, $output);

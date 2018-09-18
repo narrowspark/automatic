@@ -44,7 +44,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
      *
      * @var array<string, array>
      */
-    protected $securityAdvisories;
+    protected $securityAdvisories = [];
 
     /**
      * Found package vulnerabilities.

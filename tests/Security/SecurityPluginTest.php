@@ -2,9 +2,14 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Test;
 
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\Installer\PackageEvent;
+use Composer\Package\PackageInterface;
 use Composer\Plugin\Capability\CommandProvider as CommandProviderContract;
 use Composer\Script\Event;
+use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\CommandProvider;
+use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
 use Narrowspark\Automatic\Security\SecurityPlugin;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -40,7 +45,7 @@ final class SecurityPluginTest extends MockeryTestCase
     {
         parent::tearDown();
 
-        (new Filesystem())->remove(__DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark');
+        (new Filesystem())->remove([__DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark', __DIR__ . DIRECTORY_SEPARATOR . 'tmp']);
     }
 
     public function testActivate(): void
@@ -108,6 +113,38 @@ final class SecurityPluginTest extends MockeryTestCase
         NSA::setProperty($this->securityPlugin, 'io', $this->ioMock);
 
         $this->securityPlugin->postInstallOut($eventMock);
+    }
+
+    public function testAuditPackage(): void
+    {
+        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock->shouldReceive('getName')
+            ->once()
+            ->andReturn('symfony/symfony');
+        $packageMock->shouldReceive('getVersion')
+            ->once()
+            ->andReturn('v2.5.2');
+
+        $operationMock = $this->mock(InstallOperation::class);
+        $operationMock->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($packageMock);
+
+        $eventMock = $this->mock(PackageEvent::class);
+        $eventMock->shouldReceive('getOperation')
+            ->once()
+            ->andReturn($operationMock);
+
+        $path = __DIR__ . DIRECTORY_SEPARATOR . 'tmp';
+
+        $audit = new Audit($path, new ComposerDownloader());
+
+        NSA::setProperty($this->securityPlugin, 'audit', $audit);
+        NSA::setProperty($this->securityPlugin, 'securityAdvisories', $audit->getSecurityAdvisories());
+
+        $this->securityPlugin->auditPackage($eventMock);
+
+        self::assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
     }
 
     /**

@@ -178,8 +178,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         $this->container = new Container($composer, $io);
 
-        $extra = $this->container->get('composer-extra');
-
         /** @var \Composer\Installer\InstallationManager $installationManager */
         $installationManager = $this->container->get(Composer::class)->getInstallationManager();
         $installationManager->addInstaller($this->container->get(ConfiguratorInstaller::class));
@@ -188,7 +186,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         /** @var \Narrowspark\Automatic\LegacyTagsManager $tagsManager */
         $tagsManager = $this->container->get(LegacyTagsManager::class);
 
-        $this->configureLegacyTagsManager($io, $tagsManager, $extra);
+        $this->configureLegacyTagsManager($io, $tagsManager, $this->container->get('composer-extra'));
 
         $composer->setRepositoryManager($this->extendRepositoryManager($composer, $io, $tagsManager));
 

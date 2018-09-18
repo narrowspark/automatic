@@ -159,23 +159,27 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
      */
     public function onInit(EventDispatcherEvent $event): void
     {
-        $json             = new JsonFile(Factory::getComposerFile());
-        $composerJsonData = $json->read();
+        $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
 
-        if (isset($composerJsonData['scripts']['post-install-out'])) {
+        if (isset($scripts['post-install-out'])) {
             return;
         }
 
-        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+        $manipulator = new JsonManipulator(\file_get_contents(Factory::getComposerFile()));
 
         $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark Automatic to show package messages.');
 
-        $scripts = ['@post-install-out'];
+        $scriptKey = '@post-install-out';
 
-        $manipulator->addSubNode('scripts', 'post-install-cmd', $scripts);
-        $manipulator->addSubNode('scripts', 'post-update-cmd', $scripts);
+        if (isset($scripts['post-install-cmd']) && ! \in_array($scriptKey, $scripts['post-install-cmd'], true)) {
+            $manipulator->addSubNode('scripts', 'post-install-cmd', \array_merge($scripts['post-install-cmd'] ?? [], [$scriptKey]));
+        }
 
-        \file_put_contents($json->getPath(), $manipulator->getContents());
+        if (isset($scripts['post-update-cmd']) && ! \in_array($scriptKey, $scripts['post-update-cmd'], true)) {
+            $manipulator->addSubNode('scripts', 'post-update-cmd', \array_merge($scripts['post-update-cmd'] ?? [], [$scriptKey]));
+        }
+
+        \file_put_contents(Factory::getComposerFile(), $manipulator->getContents());
 
         $this->updateComposerLock();
     }

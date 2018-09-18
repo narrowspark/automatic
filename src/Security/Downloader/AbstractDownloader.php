@@ -2,9 +2,9 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Downloader;
 
-use Narrowspark\Automatic\Security\SecurityPlugin;
 use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
+use Narrowspark\Automatic\Security\SecurityPlugin;
 
 abstract class AbstractDownloader implements DownloaderContract
 {

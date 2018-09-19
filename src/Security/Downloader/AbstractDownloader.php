@@ -29,7 +29,7 @@ abstract class AbstractDownloader implements DownloaderContract
     protected function getUserAgent(): string
     {
         return \sprintf(
-            'Narrowspark-Automatic/%s (%s; %s; %s%s)',
+            'Narrowspark-Security-Audit/%s (%s; %s; %s%s)',
             SecurityPlugin::VERSION,
             \function_exists('php_uname') ? \php_uname('s') : 'Unknown',
             \function_exists('php_uname') ? \php_uname('r') : 'Unknown',

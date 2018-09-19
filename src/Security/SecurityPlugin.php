@@ -37,7 +37,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     /**
      * @var string
      */
-    public const COMPOSER_EXTRA_KEY = 'automatic';
+    public const COMPOSER_EXTRA_KEY = 'audit';
 
     /**
      * The SecurityAdvisories database.
@@ -133,8 +133,8 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
 
         $extra = $composer->getPackage()->getExtra();
 
-        if (isset($extra[self::COMPOSER_EXTRA_KEY]['audit']['timeout'])) {
-            $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['audit']['timeout']);
+        if (isset($extra[self::COMPOSER_EXTRA_KEY]['timeout'])) {
+            $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['timeout']);
         }
 
         $this->audit = new Audit(\rtrim($composer->getConfig()->get('vendor-dir'), '/'), $downloader);

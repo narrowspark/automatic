@@ -64,7 +64,7 @@ final class SecurityPluginTest extends MockeryTestCase
     {
         $this->composerMock->shouldReceive('getPackage->getExtra')
             ->once()
-            ->andReturn([SecurityPlugin::COMPOSER_EXTRA_KEY => ['audit' => ['timeout' => 20]]]);
+            ->andReturn([SecurityPlugin::COMPOSER_EXTRA_KEY => ['timeout' => 20]]);
 
         $this->configMock->shouldReceive('get')
             ->once()

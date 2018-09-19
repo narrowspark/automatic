@@ -5,7 +5,6 @@ namespace Narrowspark\Automatic\Security\Test;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
-use Composer\EventDispatcher\Event as EventDispatcherEvent;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\PackageEvent;
 use Composer\IO\NullIO;

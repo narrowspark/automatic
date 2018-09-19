@@ -474,13 +474,18 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             /** @var \Narrowspark\Automatic\ScriptExecutor $scriptExecutor */
             $scriptExecutor = $this->container->get(ScriptExecutor::class);
 
-            foreach ((array) $this->container->get(Lock::class)->get(ScriptExecutor::TYPE) as $name => $extenders) {
+            foreach ((array) $this->container->get(Lock::class)->get(ScriptExecutor::TYPE) as $extenders) {
                 foreach ($extenders as $class => $path) {
                     if (! \class_exists($class)) {
                         require_once $path;
                     }
 
-                    $scriptExecutor->addExtender($class::getType(), $class);
+                    /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $class */
+                    $reflectionClass = new ReflectionClass($class);
+
+                    if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getType')) {
+                        $scriptExecutor->addExtender($class::getType(), $class);
+                    }
                 }
             }
 

@@ -19,12 +19,17 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     /**
      * @var string
      */
-    private const WHITELIST = 'composer-script-whitelist';
+    public const COMPOSER_EXTRA_KEY = 'composer-scripts';
 
     /**
      * @var string
      */
-    private const BLACKLIST = 'composer-script-blacklist';
+    public const WHITELIST = 'whitelist';
+
+    /**
+     * @var string
+     */
+    public const BLACKLIST = 'blacklist';
 
     /**
      * A json instance.
@@ -99,8 +104,8 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
         $composerContent = $this->json->read();
 
-        if (isset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::BLACKLIST])) {
-            $blackList = \array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::BLACKLIST]);
+        if (isset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::BLACKLIST])) {
+            $blackList = \array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::BLACKLIST]);
 
             if (isset($blackList[$package->getName()])) {
                 $this->io->write(\sprintf('Composer scripts for [%s] skipped, because it was found in the [%s]', $package->getPrettyName(), self::BLACKLIST));
@@ -122,8 +127,8 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
         $allowed = false;
 
         if (\count($allowedEvents) !== 0) {
-            if (isset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::WHITELIST])) {
-                $whiteList = \array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::WHITELIST]);
+            if (isset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST])) {
+                $whiteList = \array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST]);
 
                 if (isset($whiteList[$package->getName()])) {
                     $allowed = true;
@@ -147,7 +152,12 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
             $this->manipulator->addSubNode(
                 'extra',
                 Automatic::COMPOSER_EXTRA_KEY,
-                \array_merge($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY] ?? [], [self::WHITELIST => [$package->getName()]])
+                [
+                    self::COMPOSER_EXTRA_KEY => \array_merge(
+                        $composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY] ?? [],
+                        [self::WHITELIST => [$package->getName()]]
+                    ),
+                ]
             );
 
             $this->manipulateAndWrite(\array_merge($this->getComposerScripts(), $allowedEvents));
@@ -171,16 +181,16 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
         $composerContent = $this->json->read();
 
-        if (isset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::WHITELIST])) {
-            $whiteList = \array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::WHITELIST]);
+        if (isset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST])) {
+            $whiteList = \array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST]);
 
             if (isset($whiteList[$package->getName()])) {
-                unset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::WHITELIST][$whiteList[$package->getName()]]);
+                unset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST][$whiteList[$package->getName()]]);
 
                 $this->manipulator->addSubNode(
                     'extra',
                     Automatic::COMPOSER_EXTRA_KEY,
-                    $composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY]
+                    [self::COMPOSER_EXTRA_KEY => $composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY]]
                 );
             }
         }

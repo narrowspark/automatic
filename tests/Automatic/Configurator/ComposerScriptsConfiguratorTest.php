@@ -100,7 +100,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ->once()
             ->andReturn($composerJsonPath);
 
-        $whitelist = ['composer-script-whitelist' => [$package->getName()]];
+        $whitelist = [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::WHITELIST => [$package->getName()]]];
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
@@ -127,7 +127,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
     public function testConfigureWithUpdate(): void
     {
-        $oldWhitelist = ['composer-script-whitelist' => ['stub/stub']];
+        $oldWhitelist = [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::WHITELIST => ['stub/stub']]];
 
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $oldWhitelist);
         $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
@@ -152,7 +152,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ->once()
             ->andReturn($composerJsonPath);
 
-        $whitelist = ['composer-script-whitelist' => [$package->getName()]];
+        $whitelist = [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::WHITELIST => [$package->getName()]]];
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
@@ -177,7 +177,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
     public function testConfigureWithBlacklist(): void
     {
-        $blackList = ['composer-script-blacklist' => ['stub/stub']];
+        $blackList = [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::BLACKLIST => ['stub/stub']]];
 
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $blackList);
         $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
@@ -195,7 +195,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ->andReturn($composerRootJsonData);
         $this->ioMock->shouldReceive('write')
             ->once()
-            ->with('Composer scripts for [Stub/stub] skipped, because it was found in the [composer-script-blacklist]');
+            ->with('Composer scripts for [Stub/stub] skipped, because it was found in the [blacklist]');
 
         $this->configurator->configure($package);
     }
@@ -225,7 +225,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ->once()
             ->andReturn($composerJsonPath);
 
-        $whitelist = ['composer-script-whitelist' => [$package->getName()]];
+        $whitelist = [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::WHITELIST => [$package->getName()]]];
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
@@ -280,7 +280,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ],
         ]);
 
-        $whitelist = ['composer-script-whitelist' => [$package->getName()]];
+        $whitelist = [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::WHITELIST => [$package->getName()]]];
 
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $whitelist);
         $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
@@ -296,7 +296,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->jsonManipulatorMock->shouldReceive('addSubNode')
             ->once()
-            ->with('extra', Automatic::COMPOSER_EXTRA_KEY, ['composer-script-whitelist' => []]);
+            ->with('extra', Automatic::COMPOSER_EXTRA_KEY, [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::WHITELIST => []]]);
 
         $this->jsonManipulatorMock->shouldReceive('addMainKey')
             ->once()

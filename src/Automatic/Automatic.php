@@ -278,16 +278,25 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
+        $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
+
+        if (\count($scripts) === 0) {
+            $manipulator->addMainKey('scripts', []);
+        }
+
         $manipulator->addSubNode('scripts', 'post-messages', 'This key is needed to show messages.');
 
-        $scripts = [
+        $automaticScripts = [
             '@auto-scripts',
             '@post-messages',
         ];
 
-        $manipulator->addSubNode('scripts', 'post-install-cmd', $scripts);
-        $manipulator->addSubNode('scripts', 'post-update-cmd', $scripts);
-        $manipulator->addSubNode('scripts', 'auto-scripts', new \stdClass());
+        $manipulator->addSubNode('scripts', 'post-install-cmd', \array_merge($scripts['post-install-cmd'] ?? [], [$automaticScripts]));
+        $manipulator->addSubNode('scripts', 'post-update-cmd', \array_merge($scripts['post-update-cmd'] ?? [], [$automaticScripts]));
+
+        if (! isset($scripts['auto-scripts'])) {
+            $manipulator->addSubNode('scripts', 'auto-scripts', new \stdClass());
+        }
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
 

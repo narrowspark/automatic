@@ -217,7 +217,7 @@ final class SecurityPluginTest extends MockeryTestCase
         \putenv('COMPOSER');
     }
 
-    public function testOnInit(): void
+    public function testInitMessage(): void
     {
         $composerJsonPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_on_init.json';
         $composerLockPath = \mb_substr($composerJsonPath, 0, -4) . 'lock';
@@ -252,7 +252,7 @@ final class SecurityPluginTest extends MockeryTestCase
         NSA::setProperty($this->securityPlugin, 'composer', $this->composerMock);
         NSA::setProperty($this->securityPlugin, 'io', new NullIO());
 
-        $this->securityPlugin->onInit($this->mock(EventDispatcherEvent::class));
+        $this->securityPlugin->initMessage();
 
         $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
 
@@ -273,7 +273,7 @@ final class SecurityPluginTest extends MockeryTestCase
         @\unlink($composerLockPath);
     }
 
-    public function testOnInitWithpostMessages(): void
+    public function testInitMessageWithpostMessages(): void
     {
         $packageMock = $this->mock(PackageInterface::class);
         $packageMock->shouldReceive('getScripts')
@@ -285,11 +285,9 @@ final class SecurityPluginTest extends MockeryTestCase
             ->once()
             ->andReturn($packageMock);
 
-        $event = $this->mock(EventDispatcherEvent::class);
-
         NSA::setProperty($this->securityPlugin, 'composer', $this->composerMock);
 
-        $this->securityPlugin->onInit($event);
+        $this->securityPlugin->initMessage();
     }
 
     /**

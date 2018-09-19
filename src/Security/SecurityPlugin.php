@@ -91,10 +91,10 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
         }
 
         return [
-            PluginEvents::INIT                  => 'onInit',
             'post-messages'                     => [['postMessages', \PHP_INT_MAX]],
             PackageEvents::POST_PACKAGE_INSTALL => [['auditPackage', \PHP_INT_MAX]],
             PackageEvents::POST_PACKAGE_UPDATE  => [['auditPackage', \PHP_INT_MAX]],
+            ScriptEvents::PRE_AUTOLOAD_DUMP     => 'initMessage',
             ScriptEvents::POST_INSTALL_CMD      => [['auditComposerLock', \PHP_INT_MAX]],
             ScriptEvents::POST_UPDATE_CMD       => [['auditComposerLock', \PHP_INT_MAX]],
         ];
@@ -153,13 +153,13 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     }
 
     /**
-     * Occurs after a Composer instance is done being initialized.
+     * Add post-messages to root composer.json.
      *
-     * @param \Composer\EventDispatcher\Event $event
+     * @throws \Exception
      *
      * @return void
      */
-    public function onInit(EventDispatcherEvent $event): void
+    public function initMessage(): void
     {
         $scripts = $this->composer->getPackage()->getScripts();
 

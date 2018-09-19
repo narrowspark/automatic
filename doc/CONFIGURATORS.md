@@ -9,7 +9,7 @@ Configurators define the different tasks executed when installing a dependency, 
 
 The package only contain the tasks needed to install and configure the dependency, because Narrowspark Automatic Configurators are smart enough to reverse those tasks when uninstalling and unconfiguring the dependencies.
 
-Narrowspark Automatic comes with several types of tasks, which are called **configurators**: `copy`, `env`, `composer-scripts`, `composer-auto-scripts`, `gitignore` and a special configurator `post-install-output`.
+Narrowspark Automatic comes with several types of tasks, which are called **configurators**: `copy`, `env`, `composer-scripts`, `composer-auto-scripts`, `gitignore` and a special configurator `post-messages`.
 
 ### Copy Configurator `copy`
 
@@ -156,7 +156,7 @@ Similar to other configurators, the contents are copied into the `.gitignore`
 file and wrapped with section separators (``###> your-package-name-here ###``)
 that must not be removed or modified.
 
-The package messages `post-install-output`
+The package messages `post-messages`
 
 Displays contents in the command console after the package has been installed.
 Avoid outputting meaningless information and use it only when you need to show
@@ -166,7 +166,7 @@ help messages or the next step actions.
 
 ```json
 {
-    "post-install-output": [
+    "post-messages": [
         "<bg=blue;fg=white>              </>",
         "<bg=blue;fg=white> What's next? </>",
         "<bg=blue;fg=white>              </>"
@@ -174,7 +174,7 @@ help messages or the next step actions.
 }
 ```
 
-This outout will be only shown on the `composer install` and `composer update` command.
+This output will be only shown on the `composer install` and `composer update` command.
 
 How to create Configurators
 ----------------

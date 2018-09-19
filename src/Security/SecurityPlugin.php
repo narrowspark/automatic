@@ -92,7 +92,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
 
         return [
             PluginEvents::INIT                  => 'onInit',
-            'post-install-out'                  => [['postInstallOut', \PHP_INT_MAX]],
+            'post-messages'                     => [['postMessages', \PHP_INT_MAX]],
             PackageEvents::POST_PACKAGE_INSTALL => [['auditPackage', \PHP_INT_MAX]],
             PackageEvents::POST_PACKAGE_UPDATE  => [['auditPackage', \PHP_INT_MAX]],
             ScriptEvents::POST_INSTALL_CMD      => [['auditComposerLock', \PHP_INT_MAX]],
@@ -163,7 +163,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     {
         $scripts = $this->composer->getPackage()->getScripts();
 
-        if (isset($scripts['post-install-out'])) {
+        if (isset($scripts['post-messages'])) {
             return;
         }
 
@@ -174,9 +174,9 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
             $manipulator->addMainKey('scripts', []);
         }
 
-        $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark to show messages.');
+        $manipulator->addSubNode('scripts', 'post-messages', 'This key is needed to show messages.');
 
-        $scriptKey = '@post-install-out';
+        $scriptKey = '@post-messages';
 
         if (! \in_array($scriptKey, $scripts['post-install-cmd'] ?? [], true)) {
             $manipulator->addSubNode('scripts', 'post-install-cmd', \array_merge($scripts['post-install-cmd'] ?? [], [$scriptKey]));
@@ -192,13 +192,13 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     }
 
     /**
-     * Execute on composer post-install-out event.
+     * Execute on composer post-messages event.
      *
      * @param \Composer\Script\Event $event
      *
      * @return void
      */
-    public function postInstallOut(Event $event): void
+    public function postMessages(Event $event): void
     {
         $event->stopPropagation();
 

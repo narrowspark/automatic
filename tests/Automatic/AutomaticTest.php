@@ -417,7 +417,7 @@ final class AutomaticTest extends MockeryTestCase
         $this->automatic->executeAutoScripts($eventMock);
     }
 
-    public function testPostInstallOut(): void
+    public function testpostMessages(): void
     {
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
@@ -434,7 +434,7 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn($this->ioMock);
 
         $this->automatic->setContainer($containerMock);
-        $this->automatic->postInstallOut($eventMock);
+        $this->automatic->postMessages($eventMock);
     }
 
     public function testPopulateFilesCacheDir(): void

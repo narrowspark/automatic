@@ -95,7 +95,7 @@ final class SecurityPluginTest extends MockeryTestCase
         static::assertSame([CommandProviderContract::class => CommandProvider::class], $this->securityPlugin->getCapabilities());
     }
 
-    public function testPostInstallOut(): void
+    public function testpostMessages(): void
     {
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
@@ -107,10 +107,10 @@ final class SecurityPluginTest extends MockeryTestCase
 
         NSA::setProperty($this->securityPlugin, 'io', $this->ioMock);
 
-        $this->securityPlugin->postInstallOut($eventMock);
+        $this->securityPlugin->postMessages($eventMock);
     }
 
-    public function testPostInstallOutWithVulnerability(): void
+    public function testpostMessagesWithVulnerability(): void
     {
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
@@ -124,7 +124,7 @@ final class SecurityPluginTest extends MockeryTestCase
 
         NSA::setProperty($this->securityPlugin, 'io', $this->ioMock);
 
-        $this->securityPlugin->postInstallOut($eventMock);
+        $this->securityPlugin->postMessages($eventMock);
     }
 
     public function testAuditPackage(): void
@@ -257,11 +257,11 @@ final class SecurityPluginTest extends MockeryTestCase
         $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
 
         static::assertTrue(isset($jsonContent['scripts']));
-        static::assertTrue(isset($jsonContent['scripts']['post-install-out']));
+        static::assertTrue(isset($jsonContent['scripts']['post-messages']));
         static::assertTrue(isset($jsonContent['scripts']['post-install-cmd']));
         static::assertTrue(isset($jsonContent['scripts']['post-update-cmd']));
-        static::assertSame('@post-install-out', $jsonContent['scripts']['post-install-cmd'][0]);
-        static::assertSame('@post-install-out', $jsonContent['scripts']['post-update-cmd'][0]);
+        static::assertSame('@post-messages', $jsonContent['scripts']['post-install-cmd'][0]);
+        static::assertSame('@post-messages', $jsonContent['scripts']['post-update-cmd'][0]);
 
         $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
 
@@ -273,12 +273,12 @@ final class SecurityPluginTest extends MockeryTestCase
         @\unlink($composerLockPath);
     }
 
-    public function testOnInitWithPostInstallOut(): void
+    public function testOnInitWithpostMessages(): void
     {
         $packageMock = $this->mock(PackageInterface::class);
         $packageMock->shouldReceive('getScripts')
             ->once()
-            ->andReturn(['post-install-out' => '']);
+            ->andReturn(['post-messages' => '']);
 
         $this->composerMock
             ->shouldReceive('getPackage')

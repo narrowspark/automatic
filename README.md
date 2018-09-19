@@ -12,7 +12,7 @@ Branch Status
 [![Travis branch](https://img.shields.io/travis/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://travis-ci.org/narrowspark/automatic)
 [![Appveyor branch](https://img.shields.io/appveyor/ci/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://ci.appveyor.com/project/narrowspark/automatic/branch/master)
 
-Narrowspark Automatic automates the most common tasks of applications, like installing and removing bundles/providers, copying files, downloading dependencies and other Composer dependencies based configurations.
+Narrowspark Automatic automates the most common tasks of applications, like installing and removing bundles/providers, copying files, boosting dependencies downloads, creating skeletons and other Composer dependencies based configurations.
 
 How Does Narrowspark Automatic Work
 ------------
@@ -137,11 +137,27 @@ With the below example you can see how to add a skip tag to Narrowspark Automati
     }
 }
 ``` 
+
+You can skip auto discovery for a package with this Narrowspark Automatic key `dont-discover` in your composer.json extra `automatic` section with the package name to skip, like in this example:
+
+```json
+{
+    "extra" : {
+        "dont-discover": [
+            "viserio/console"
+        ]
+    }
+}
+```
+
+Auto discovery will now be skipped for `viserio/console`.
+
 Automatic Security Audit
 ------------
 Narrowspark Automatic shows you on every `composer install` and `composer update` known security vulnerabilities for your installed dependencies based on [FriendsOfPHP/security-advisories](https://github.com/FriendsOfPHP/security-advisories) database.
 
 If you like to change the default HTTP `timeout = 20` for the downloader, just add `audit` to your composer.json `extra` section, like in this example:
+
 ```json
 {
     "extra" : {

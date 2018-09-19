@@ -172,6 +172,7 @@ Credits
 
 - [Daniel Bannert](https://github.com/prisis)
 - [All Contributors](../../contributors)
+- Narrowspark Automatic has been inspired by [symfony/flex](https://github.com/symfony/flex)
 
 License
 -------------

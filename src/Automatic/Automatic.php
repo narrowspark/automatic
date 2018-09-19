@@ -116,7 +116,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      *
      * @var string[]
      */
-    private $postInstallOutput = [''];
+    private $postMessages = [''];
 
     /**
      * Get the Container instance.
@@ -149,7 +149,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         return [
             'auto-scripts'                             => 'executeAutoScripts',
-            'post-install-out'                         => 'postInstallOut',
+            'post-messages'                            => 'postMessages',
             InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', \PHP_INT_MAX]],
             InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
@@ -217,20 +217,17 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Execute on composer post-install-out event.
+     * Execute on composer post-messages event.
      *
      * @param \Composer\Script\Event $event
      *
      * @return void
      */
-    public function postInstallOut(Event $event): void
+    public function postMessages(Event $event): void
     {
         $event->stopPropagation();
 
-        /** @var \Composer\IO\IOInterface $io */
-        $io = $this->container->get(IOInterface::class);
-
-        $io->write($this->postInstallOutput);
+        $this->container->get(IOInterface::class)->write($this->postMessages);
     }
 
     /**
@@ -281,11 +278,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark to show messages.');
+        $manipulator->addSubNode('scripts', 'post-messages', 'This key is needed to show messages.');
 
         $scripts = [
             '@auto-scripts',
-            '@post-install-out',
+            '@post-messages',
         ];
 
         $manipulator->addSubNode('scripts', 'post-install-cmd', $scripts);
@@ -432,7 +429,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         if (\count($packages) !== 0) {
             \array_unshift(
-                $this->postInstallOutput,
+                $this->postMessages,
                 '',
                 '<info>Some files may have been created or updated to configure your new packages.</info>',
                 'Please <comment>review</comment>, <comment>edit</comment> and <comment>commit</comment> them: these files are <comment>yours</comment>',
@@ -790,12 +787,12 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         $this->showWarningOnRemainingConfigurators($package, $packageConfigurator, $configurator);
 
-        if ($package->hasConfig('post-install-output')) {
-            foreach ((array) $package->getConfig('post-install-output') as $line) {
-                $this->postInstallOutput[] = self::expandTargetDir($this->container->get('composer-extra'), $line);
+        if ($package->hasConfig('post-messages')) {
+            foreach ((array) $package->getConfig('post-messages') as $line) {
+                $this->postMessages[] = self::expandTargetDir($this->container->get('composer-extra'), $line);
             }
 
-            $this->postInstallOutput[] = '';
+            $this->postMessages[] = '';
         }
 
         $lock->addSub(self::LOCK_PACKAGES, $package->getName(), $package->toArray());

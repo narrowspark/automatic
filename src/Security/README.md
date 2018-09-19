@@ -9,7 +9,7 @@
 
 Branch Status
 ------------
-[![Travis branch](https://img.shields.io/travis/narrowspark/discovery/master.svg?longCache=false&style=for-the-badge)](https://travis-ci.org/narrowspark/discovery)
+[![Travis branch](https://img.shields.io/travis/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://travis-ci.org/narrowspark/automatic)
 [![Appveyor branch](https://img.shields.io/appveyor/ci/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://ci.appveyor.com/project/narrowspark/automatic/branch/master)
 
 > **Note:** This package is part of the [Narrowspark automatic](http://github.com/narrowspark/automatic). 

@@ -8,10 +8,12 @@ if [[ "$PHPUNIT" = true ]]; then
         if [[ -d "$f" && ! -L "$f" ]]; then
             TYPE="$(basename "$f")";
 
-            if [[ "$TYPE" = "Common" ]]; then
-                TESTSUITE="Narrowspark Automatic Common Test Suite";
-            elif [[ "$TYPE" = "Automatic" ]]; then
+            if [[ "$TYPE" = "Automatic" ]]; then
                 TESTSUITE="Narrowspark Automatic Test Suite";
+            elif [[ "$TYPE" = "Common" ]]; then
+                TESTSUITE="Narrowspark Automatic Common Test Suite";
+            elif [[ "$TYPE" = "Security" ]]; then
+                TESTSUITE="Narrowspark Automatic Security Test Suite";
             fi
 
             try

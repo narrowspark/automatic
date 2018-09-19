@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test\Security;
+namespace Narrowspark\Automatic\Security\Test;
 
 use Composer\Console\Application;
 use Narrowspark\Automatic\Security\Command\AuditCommand;
@@ -30,7 +30,7 @@ final class AuditCommandTest extends TestCase
 
     public function testAuditCommand(): void
     {
-        \putenv('COMPOSER=' . \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock');
+        \putenv('COMPOSER=' . \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock');
 
         $commandTester = $this->executeCommand(new AuditCommand());
 
@@ -44,7 +44,7 @@ final class AuditCommandTest extends TestCase
     {
         $commandTester = $this->executeCommand(
             new AuditCommand(),
-            ['--composer-lock' => \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock']
+            ['--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock']
         );
 
         $output = \trim($commandTester->getDisplay(true));
@@ -71,7 +71,7 @@ final class AuditCommandTest extends TestCase
     {
         $commandTester = $this->executeCommand(
             new AuditCommand(),
-            ['--composer-lock' => \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock']
+            ['--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock']
         );
 
         $output = \trim($commandTester->getDisplay(true));
@@ -87,7 +87,7 @@ final class AuditCommandTest extends TestCase
         $commandTester = $this->executeCommand(
             new AuditCommand(),
             [
-                '--composer-lock' => \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
+                '--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
                 '--format'        => 'json',
                 '--timeout'       => '20',
             ]
@@ -119,7 +119,7 @@ final class AuditCommandTest extends TestCase
         $commandTester = $this->executeCommand(
             new AuditCommand(),
             [
-                '--composer-lock' => \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
+                '--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
                 '--format'        => 'simple',
             ]
         );

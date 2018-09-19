@@ -23,8 +23,6 @@ use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\Locker;
-use Composer\Plugin\Capability\CommandProvider as CommandProviderContract;
-use Composer\Plugin\Capable;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
@@ -42,27 +40,27 @@ use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
-use Narrowspark\Automatic\Contract\Container as ContractContainer;
+use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\Prefetcher\TruncatedComposerRepository;
-use Narrowspark\Automatic\Security\Audit;
-use Narrowspark\Automatic\Security\Command\CommandProvider;
-use Narrowspark\Automatic\Security\Downloader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 
-class Automatic implements PluginInterface, EventSubscriberInterface, Capable
+class Automatic implements PluginInterface, EventSubscriberInterface
 {
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
 
+    /**
+     * @var string
+     */
     public const VERSION = '0.7.0';
 
     /**
@@ -79,6 +77,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
      * @var string
      */
     public const PACKAGE_NAME = 'narrowspark/automatic';
+
+    /**
+     * @var string
+     */
+    public const COMPOSER_EXTRA_KEY = 'automatic';
 
     /**
      * A Container instance.
@@ -116,27 +119,23 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
     private $postInstallOutput = [''];
 
     /**
-     * The SecurityAdvisories database.
-     *
-     * @var array<string, array>
-     */
-    private $securityAdvisories;
-
-    /**
-     * Found package vulnerabilities.
-     *
-     * @var array[]
-     */
-    private $foundVulnerabilities = [];
-
-    /**
      * Get the Container instance.
      *
      * @return \Narrowspark\Automatic\Contract\Container
      */
-    public function getContainer(): ContractContainer
+    public function getContainer(): ContainerContract
     {
         return $this->container;
+    }
+
+    /**
+     * Get the automatic.lock file path.
+     *
+     * @return string
+     */
+    public static function getAutomaticLockFile(): string
+    {
+        return \str_replace('composer', self::COMPOSER_EXTRA_KEY, Util::getComposerLockFile());
     }
 
     /**
@@ -155,23 +154,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
             InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_INSTALL        => [['record'], ['auditPackage', \PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_UPDATE         => [['record'], ['auditPackage', \PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_INSTALL        => 'record',
+            PackageEvents::POST_PACKAGE_UPDATE         => 'record',
             PackageEvents::POST_PACKAGE_UNINSTALL      => 'record',
             PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
-            ScriptEvents::POST_INSTALL_CMD             => [['onPostInstall', \PHP_INT_MAX - 1], ['auditComposerLock', \PHP_INT_MAX]],
-            ScriptEvents::POST_UPDATE_CMD              => [['onPostUpdate', \PHP_INT_MAX - 1], ['auditComposerLock', \PHP_INT_MAX]],
+            ScriptEvents::POST_INSTALL_CMD             => [['onPostInstall', \PHP_INT_MAX - 1]],
+            ScriptEvents::POST_UPDATE_CMD              => [['onPostUpdate', \PHP_INT_MAX - 1]],
             ScriptEvents::POST_CREATE_PROJECT_CMD      => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator', ~\PHP_INT_MAX]],
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCapabilities(): array
-    {
-        return [
-            CommandProviderContract::class => CommandProvider::class,
         ];
     }
 
@@ -199,16 +188,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
 
         $this->container = new Container($composer, $io);
 
-        $extra      = $this->container->get('composer-extra');
-        $downloader = new Downloader();
-
-        if (isset($extra[Util::COMPOSER_EXTRA_KEY]['audit']['timeout'])) {
-            $downloader->setTimeout($extra[Util::COMPOSER_EXTRA_KEY]['audit']['timeout']);
-        }
-        $this->container->set(Audit::class, static function (Container $container) use ($downloader) {
-            return new Audit($container->get('vendor-dir'), $downloader);
-        });
-
         /** @var \Composer\Installer\InstallationManager $installationManager */
         $installationManager = $this->container->get(Composer::class)->getInstallationManager();
         $installationManager->addInstaller($this->container->get(ConfiguratorInstaller::class));
@@ -217,7 +196,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
         /** @var \Narrowspark\Automatic\LegacyTagsManager $tagsManager */
         $tagsManager = $this->container->get(LegacyTagsManager::class);
 
-        $this->configureLegacyTagsManager($io, $tagsManager, $extra);
+        $this->configureLegacyTagsManager($io, $tagsManager, $this->container->get('composer-extra'));
 
         $composer->setRepositoryManager($this->extendRepositoryManager($composer, $io, $tagsManager));
 
@@ -235,8 +214,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
                 $container->get(InputInterface::class)
             );
         });
-
-        $this->securityAdvisories = $this->container->get(Audit::class)->getSecurityAdvisories($this->container->get(IOInterface::class));
     }
 
     /**
@@ -254,36 +231,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
         $io = $this->container->get(IOInterface::class);
 
         $io->write($this->postInstallOutput);
-
-        $count = \count(\array_filter($this->foundVulnerabilities));
-
-        if ($count !== 0) {
-            $io->write('<error>[!]</> Audit Security Report: ' . \sprintf('%s vulnerabilit%s found - run "composer audit" for more information', $count, $count === 1 ? 'y' : 'ies'));
-        } else {
-            $io->write('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
-        }
-    }
-
-    /**
-     * Audit composer.lock.
-     *
-     * @param \Composer\Script\Event $event
-     *
-     * @return void
-     */
-    public function auditComposerLock(Event $event): void
-    {
-        if (\count($this->foundVulnerabilities) !== 0) {
-            return;
-        }
-
-        $data = $this->container->get(Audit::class)->checkLock(Util::getComposerLockFile());
-
-        if (\count($data) === 0) {
-            return;
-        }
-
-        $this->foundVulnerabilities += $data[0];
     }
 
     /**
@@ -309,40 +256,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
     }
 
     /**
-     * Audit composer package operations.
-     *
-     * @param \Composer\Installer\PackageEvent $event
-     *
-     * @return void
-     */
-    public function auditPackage(PackageEvent $event): void
-    {
-        $operation = $event->getOperation();
-
-        if ($operation instanceof UninstallOperation) {
-            return;
-        }
-
-        if ($operation instanceof UpdateOperation) {
-            $composerPackage = $operation->getTargetPackage();
-        } else {
-            $composerPackage = $operation->getPackage();
-        }
-
-        $data = $this->container->get(Audit::class)->checkPackage(
-            $composerPackage->getName(),
-            $composerPackage->getVersion(),
-            $this->securityAdvisories
-        );
-
-        if (\count($data) === 0) {
-            return;
-        }
-
-        $this->foundVulnerabilities += $data[0];
-    }
-
-    /**
      * Execute on composer create project event.
      *
      * @param \Composer\Script\Event $event
@@ -363,12 +276,12 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
         $manipulator->removeProperty('description');
 
         foreach ($this->container->get('composer-extra') as $key => $value) {
-            if ($key !== Util::COMPOSER_EXTRA_KEY) {
+            if ($key !== self::COMPOSER_EXTRA_KEY) {
                 $manipulator->addSubNode('extra', $key, $value);
             }
         }
 
-        $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark Automatic to show package messages.');
+        $manipulator->addSubNode('scripts', 'post-install-out', 'This key is needed for Narrowspark to show messages.');
 
         $scripts = [
             '@auto-scripts',
@@ -401,7 +314,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
         $lock->read();
 
         if ($lock->has(SkeletonInstaller::LOCK_KEY)) {
-            $this->operations  = $this->foundVulnerabilities = [];
+            $this->operations = [];
 
             $skeletonGenerator = new SkeletonGenerator(
                 $this->container->get(IOInterface::class),
@@ -450,7 +363,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
 
         /** @var \Narrowspark\Automatic\Lock $lock */
         /** @var \Composer\IO\IOInterface $io */
-        $automaticOptions = $this->container->get('composer-extra')[Util::COMPOSER_EXTRA_KEY];
+        $automaticOptions = $this->container->get('composer-extra')[self::COMPOSER_EXTRA_KEY];
         $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
         $packages         = $this->container->get(OperationsResolver::class)->resolve($this->operations);
         $lock             = $this->container->get(Lock::class);
@@ -750,7 +663,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
      */
     private function updateComposerLock(): void
     {
-        $composerLockPath = \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
+        $composerLockPath = Util::getComposerLockFile();
         $composerJson     = \file_get_contents(Factory::getComposerFile());
         $composer         = $this->container->get(Composer::class);
 
@@ -993,8 +906,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface, Capable
             }
 
             $this->addLegacyTags($io, $requires, $tagsManager);
-        } elseif (isset($extra[Util::COMPOSER_EXTRA_KEY]['require'])) {
-            $this->addLegacyTags($io, $extra[Util::COMPOSER_EXTRA_KEY]['require'], $tagsManager);
+        } elseif (isset($extra[self::COMPOSER_EXTRA_KEY]['require'])) {
+            $this->addLegacyTags($io, $extra[self::COMPOSER_EXTRA_KEY]['require'], $tagsManager);
         }
     }
 

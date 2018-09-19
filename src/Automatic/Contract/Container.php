@@ -9,6 +9,8 @@ interface Container
      *
      * @param string $id identifier of the entry to look for
      *
+     * @throws \Narrowspark\Automatic\Contract\Exception\InvalidArgumentException if no entry is found
+     *
      * @return mixed
      */
     public function get(string $id);

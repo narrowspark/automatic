@@ -5,13 +5,14 @@ namespace Narrowspark\Automatic\Security\Command;
 use Composer\Command\BaseCommand;
 use Composer\Factory;
 use Composer\IO\NullIO;
-use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
-use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\Command\Formatter\JsonFormatter;
 use Narrowspark\Automatic\Security\Command\Formatter\SimpleFormatter;
 use Narrowspark\Automatic\Security\Command\Formatter\TextFormatter;
-use Narrowspark\Automatic\Security\Downloader;
+use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
+use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
+use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
+use Narrowspark\Automatic\Security\Util;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -51,7 +52,11 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $downloader = new Downloader();
+        if (\extension_loaded('curl')) {
+            $downloader = new CurlDownloader();
+        } else {
+            $downloader = new ComposerDownloader();
+        }
 
         if (($timeout = $input->getOption('timeout')) !== null) {
             $downloader->setTimeout((int) $timeout);

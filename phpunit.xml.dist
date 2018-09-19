@@ -15,12 +15,16 @@
     </php>
 
     <testsuites>
+        <testsuite name="Narrowspark Automatic Test Suite">
+            <directory>./tests/Automatic/</directory>
+        </testsuite>
+
         <testsuite name="Narrowspark Automatic Common Test Suite">
             <directory>./tests/Common/</directory>
         </testsuite>
 
-        <testsuite name="Narrowspark Automatic Test Suite">
-            <directory>./tests/Automatic/</directory>
+        <testsuite name="Narrowspark Automatic Security Test Suite">
+            <directory>./tests/Security/</directory>
         </testsuite>
     </testsuites>
 

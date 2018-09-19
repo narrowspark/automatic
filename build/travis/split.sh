@@ -7,12 +7,19 @@ git subsplit init git@github.com:narrowspark/automatic.git
 
 component_array=(
     'src/Common:git@github.com:narrowspark/automatic-common.git'
+    'src/Security:git@github.com:narrowspark/automatic-security-audit.git'
 )
 
 for i in "${component_array[@]}"
 do
     try
-        tfold ${i##*:} "git subsplit publish $i --update --heads='master'";
+        if [[ ! -z "$TRAVIS_TAG" ]]; then
+            OPTION="--tags=\"${TRAVIS_TAG}\"";
+        else
+            OPTION="--heads=\"master\" --no-tags";
+        fi
+
+        tfold ${i##*:} "git subsplit publish $i --update ${OPTION}";
     catch || {
         exit 1
     }

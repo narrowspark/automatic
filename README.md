@@ -141,6 +141,17 @@ Automatic Security Audit
 ------------
 Narrowspark Automatic shows you on every `composer install` and `composer update` known security vulnerabilities for your installed dependencies based on [FriendsOfPHP/security-advisories](https://github.com/FriendsOfPHP/security-advisories) database.
 
+If you like to change the default HTTP `timeout = 20` for the downloader, just add `audit` to your composer.json `extra` section, like in this example:
+```json
+{
+    "extra" : {
+        "audit": {
+            "timeout": "30"
+        }
+    }
+}
+```
+
 Testing
 -------------
 

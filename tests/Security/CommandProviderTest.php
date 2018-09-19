@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Test;
+namespace Narrowspark\Automatic\Security\Test;
 
 use Narrowspark\Automatic\Security\Command\AuditCommand;
-use Narrowspark\Automatic\Security\Command\CommandProvider;
+use Narrowspark\Automatic\Security\CommandProvider;
 use PHPUnit\Framework\TestCase;
 
 /**

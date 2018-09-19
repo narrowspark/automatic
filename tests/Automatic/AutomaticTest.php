@@ -31,7 +31,6 @@ use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
-use Narrowspark\Automatic\Test\Fixture\AutomaticFixture;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
@@ -61,7 +60,12 @@ final class AutomaticTest extends MockeryTestCase
 
         $this->arrangeComposerClasses();
 
-        $this->automatic = new Automatic();
+        $this->automatic = new class() extends Automatic {
+            public function setContainer($container): void
+            {
+                $this->container = $container;
+            }
+        };
     }
 
     /**
@@ -139,9 +143,6 @@ final class AutomaticTest extends MockeryTestCase
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
             ->andReturn(true);
-        $this->ioMock->shouldReceive('writeError')
-            ->once()
-            ->with('Downloading the Security Advisories database');
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
 
@@ -363,8 +364,6 @@ final class AutomaticTest extends MockeryTestCase
     {
         \putenv('COMPOSER=' . __DIR__ . '/Fixture/composer.json');
 
-        $automatic = new AutomaticFixture();
-
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
             ->once();
@@ -391,9 +390,8 @@ final class AutomaticTest extends MockeryTestCase
             ->with(Lock::class)
             ->andReturn($lockMock);
 
-        $automatic->setContainer($containerMock);
-
-        $automatic->executeAutoScripts($eventMock);
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->executeAutoScripts($eventMock);
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -401,8 +399,6 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testExecuteAutoScriptsWithoutScripts(): void
     {
-        $automatic = new AutomaticFixture();
-
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
             ->once();
@@ -417,15 +413,12 @@ final class AutomaticTest extends MockeryTestCase
             ->with(IOInterface::class)
             ->andReturn($this->ioMock);
 
-        $automatic->setContainer($containerMock);
-
-        $automatic->executeAutoScripts($eventMock);
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->executeAutoScripts($eventMock);
     }
 
     public function testPostInstallOut(): void
     {
-        $automatic = new AutomaticFixture();
-
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
             ->once();
@@ -433,9 +426,6 @@ final class AutomaticTest extends MockeryTestCase
         $this->ioMock->shouldReceive('write')
             ->once()
             ->with(['']);
-        $this->ioMock->shouldReceive('write')
-            ->once()
-            ->with('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
 
         $containerMock = $this->mock(ContainerContract::class);
         $containerMock->shouldReceive('get')
@@ -443,15 +433,12 @@ final class AutomaticTest extends MockeryTestCase
             ->with(IOInterface::class)
             ->andReturn($this->ioMock);
 
-        $automatic->setContainer($containerMock);
-
-        $automatic->postInstallOut($eventMock);
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->postInstallOut($eventMock);
     }
 
     public function testPopulateFilesCacheDir(): void
     {
-        $automatic = new AutomaticFixture();
-
         $event = $this->mock(InstallerEvent::class);
 
         $prefetcher = $this->mock(Prefetcher::class);
@@ -465,15 +452,12 @@ final class AutomaticTest extends MockeryTestCase
             ->with(Prefetcher::class)
             ->andReturn($prefetcher);
 
-        $automatic->setContainer($containerMock);
-
-        $automatic->populateFilesCacheDir($event);
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->populateFilesCacheDir($event);
     }
 
     public function testOnFileDownload(): void
     {
-        $automatic = new AutomaticFixture();
-
         $remoteFilesystem = $this->mock(RemoteFilesystem::class);
         $remoteFilesystem->shouldReceive('getOptions')
             ->once()
@@ -499,9 +483,13 @@ final class AutomaticTest extends MockeryTestCase
             ->with(ParallelDownloader::class)
             ->andReturn($downloader);
 
-        $automatic->setContainer($containerMock);
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->onFileDownload($event);
+    }
 
-        $automatic->onFileDownload($event);
+    public function testGetAutomaticLockFile(): void
+    {
+        static::assertSame('./automatic.lock', Automatic::getAutomaticLockFile());
     }
 
     /**

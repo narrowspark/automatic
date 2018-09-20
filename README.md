@@ -138,7 +138,7 @@ With the below example you can see how to add a skip tag to Narrowspark Automati
 }
 ``` 
 
-You can skip auto discovery for a package with this Narrowspark Automatic key `dont-discover` in your composer.json extra `automatic` section with the package name to skip, like in this example:
+You can skip `auto discovery` for packages with this Narrowspark Automatic key `dont-discover` in your composer.json extra `automatic` section. Use the package name to skip the `auto discovery`, like in this example:
 
 ```json
 {

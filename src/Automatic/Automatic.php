@@ -165,6 +165,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             PackageEvents::POST_PACKAGE_UPDATE            => 'record',
             PackageEvents::POST_PACKAGE_UNINSTALL         => [['onPostUninstall', \PHP_INT_MAX - 1]],
             PluginEvents::PRE_FILE_DOWNLOAD               => 'onFileDownload',
+            ComposerScriptEvents::POST_AUTOLOAD_DUMP      => 'onPostAutoloadDump',
             ComposerScriptEvents::POST_INSTALL_CMD        => [['onPostInstall', \PHP_INT_MAX - 1]],
             ComposerScriptEvents::POST_UPDATE_CMD         => [['onPostUpdate', \PHP_INT_MAX - 1]],
             ComposerScriptEvents::POST_CREATE_PROJECT_CMD => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator', ~\PHP_INT_MAX]],
@@ -196,7 +197,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $this->container = new Container($composer, $io);
 
         /** @var \Composer\Installer\InstallationManager $installationManager */
-        $installationManager = $this->container->get(Composer::class)->getInstallationManager();
+        $installationManager = $composer->getInstallationManager();
         $installationManager->addInstaller($this->container->get(ConfiguratorInstaller::class));
         $installationManager->addInstaller($this->container->get(SkeletonInstaller::class));
 
@@ -221,12 +222,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 $container->get(InputInterface::class)
             );
         });
-
-        $this->loadConfigurators();
     }
 
     /**
-     * Execute on composer post-messages event.
+     * Executes on composer post-messages event.
      *
      * @param \Composer\Script\Event $event
      *
@@ -267,21 +266,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
                 return;
             }
-
-            if (\count($this->operations) !== 0 && $this->operations[0] instanceof InstallOperation && $this->operations[0]->getPackage()->getName() === self::PACKAGE_NAME) {
-                $operation = $this->operations[0];
-
-                unset($this->operations[0]);
-
-                \array_unshift($this->operations, $operation);
-            }
         }
 
         $this->operations[] = $operation;
     }
 
     /**
-     * Execute on composer create project event.
+     * Executes on composer create project event.
      *
      * @param \Composer\Script\Event $event
      *
@@ -374,7 +365,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Execute on composer pre-uninstall event.
+     * Executes on composer pre-uninstall event.
      *
      * @param \Composer\Installer\PackageEvent $event
      *
@@ -402,7 +393,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Execute on composer post-uninstall event.
+     * Executes on composer post-uninstall event.
      *
      * @param \Composer\Installer\PackageEvent $event
      *
@@ -459,7 +450,41 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Execute on composer install event.
+     * Executes on composer autoload dump event.
+     *
+     * Load configurators from "automatic-configurator".
+     *
+     * @throws \ReflectionException
+     *
+     * @return void
+     */
+    public function onPostAutoloadDump(): void
+    {
+        $lock         = $this->container->get(Lock::class);
+        $vendorDir    = $this->container->get('vendor-dir');
+        $configurator = $this->container->get(Configurator::class);
+        $classMap     = (array) $lock->get(self::LOCK_CLASSMAP);
+
+        foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
+            foreach ($classMap[$packageName] as $class => $path) {
+                if (! \class_exists($class)) {
+                    require_once \str_replace('%vendor_path%', $vendorDir, $path);
+                }
+            }
+
+            /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */
+            foreach ($classList as $class) {
+                $reflectionClass = new \ReflectionClass($class);
+
+                if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
+                    $configurator->add($class::getName(), $reflectionClass->getName());
+                }
+            }
+        }
+    }
+
+    /**
+     * Executes on composer install event.
      *
      * @param \Composer\Script\Event $event
      *
@@ -473,7 +498,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Execute on composer update event.
+     * Executes on composer update event.
      *
      * @param \Composer\Script\Event $event
      * @param array                  $operations
@@ -587,7 +612,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Execute on composer auto-scripts event.
+     * Executes on composer auto-scripts event.
      *
      * @param \Composer\Script\Event $event
      *
@@ -759,38 +784,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }
 
         return false;
-    }
-
-    /**
-     * Loads configurators from "automatic-configurator".
-     *
-     * @throws \ReflectionException
-     *
-     * @return void
-     */
-    private function loadConfigurators(): void
-    {
-        $lock         = $this->container->get(Lock::class);
-        $vendorDir    = $this->container->get('vendor-dir');
-        $configurator = $this->container->get(Configurator::class);
-        $classMap     = (array) $lock->get(self::LOCK_CLASSMAP);
-
-        foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
-            foreach ($classMap[$packageName] as $class => $path) {
-                if (! \class_exists($class)) {
-                    require_once \str_replace('%vendor_path%', $vendorDir, $path);
-                }
-            }
-
-            /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */
-            foreach ($classList as $class) {
-                $reflectionClass = new \ReflectionClass($class);
-
-                if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
-                    $configurator->add($class::getName(), $reflectionClass->getName());
-                }
-            }
-        }
     }
 
     /**

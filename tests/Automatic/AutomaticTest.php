@@ -85,7 +85,7 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        static::assertCount(14, Automatic::getSubscribedEvents());
+        static::assertCount(15, Automatic::getSubscribedEvents());
 
         NSA::setProperty($this->automatic, 'activated', false);
 

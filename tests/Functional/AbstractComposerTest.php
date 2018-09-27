@@ -4,9 +4,11 @@ namespace Narrowspark\Automatic\Functional\Test;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Process\InputStream;
 use Symfony\Component\Process\Process;
 
+/**
+ * @internal
+ */
 abstract class AbstractComposerTest extends TestCase
 {
     /**
@@ -24,8 +26,6 @@ abstract class AbstractComposerTest extends TestCase
      */
     protected $composer172Path;
 
-    abstract protected function getPackageName(): string;
-
     /**
      * {@inheritdoc}
      */
@@ -33,9 +33,11 @@ abstract class AbstractComposerTest extends TestCase
     {
         parent::setUp();
 
-        $this->fixturePath     = __DIR__ . DIRECTORY_SEPARATOR . 'Fixture' . DIRECTORY_SEPARATOR;
-        $this->composer165Path = $this->fixturePath . 'Composer1-6-5' . DIRECTORY_SEPARATOR . 'composer.phar';
-        $this->composer172Path = $this->fixturePath . 'Composer1-7-2' . DIRECTORY_SEPARATOR . 'composer.phar';
+        $this->fixturePath     = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR;
+        $this->composer165Path = $this->fixturePath . 'Composer1-6-5' . \DIRECTORY_SEPARATOR . 'composer.phar';
+        $this->composer172Path = $this->fixturePath . 'Composer1-7-2' . \DIRECTORY_SEPARATOR . 'composer.phar';
+
+        @\mkdir($this->fixturePath . $this->getFolderName());
     }
 
     /**
@@ -45,15 +47,11 @@ abstract class AbstractComposerTest extends TestCase
     {
         parent::tearDown();
 
-        $workingDirPath = $this->fixturePath . $this->getFolderName();
-
         // remove Test folders
-        (new Filesystem())->remove([
-            $workingDirPath . DIRECTORY_SEPARATOR . 'vendor',
-            $workingDirPath . DIRECTORY_SEPARATOR . 'composer.lock',
-            $workingDirPath . DIRECTORY_SEPARATOR . 'automatic.lock'
-        ]);
+        (new Filesystem())->remove($this->fixturePath . $this->getFolderName());
     }
+
+    abstract protected function getPackageName(): string;
 
     /**
      * @return \Symfony\Component\Process\Process
@@ -80,7 +78,7 @@ abstract class AbstractComposerTest extends TestCase
     {
         $reflect = new \ReflectionClass(static::class);
 
-        return str_replace('Test', '', $reflect->getShortName());
+        return \str_replace('Test', '', $reflect->getShortName());
     }
 
     /**
@@ -115,12 +113,12 @@ abstract class AbstractComposerTest extends TestCase
     private function runComposer(string $composerPharPath, string $composerCommand): Process
     {
         $workingDirPath = $this->fixturePath . $this->getFolderName();
-        $vendor = $workingDirPath . DIRECTORY_SEPARATOR . 'vendor';
+        $vendor         = $workingDirPath . \DIRECTORY_SEPARATOR . 'vendor';
 
         $process = new Process(
-            sprintf(
+            \sprintf(
                 'COMPOSER=%s && COMPOSER_VENDOR_DIR=%s php %s %s --working-dir="%s"',
-                $workingDirPath . DIRECTORY_SEPARATOR . 'composer.json',
+                $workingDirPath . \DIRECTORY_SEPARATOR . 'composer.json',
                 $vendor,
                 $composerPharPath,
                 $composerCommand,
@@ -132,7 +130,7 @@ abstract class AbstractComposerTest extends TestCase
         $process->run();
 
         // remove Test folders
-        (new Filesystem())->remove($vendor . DIRECTORY_SEPARATOR . $this->getPackageName() . DIRECTORY_SEPARATOR . 'tests');
+        (new Filesystem())->remove($vendor . \DIRECTORY_SEPARATOR . $this->getPackageName() . \DIRECTORY_SEPARATOR . 'tests');
 
         return $process;
     }

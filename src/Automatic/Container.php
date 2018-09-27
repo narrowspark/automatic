@@ -15,6 +15,8 @@ use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
+use Narrowspark\Automatic\Operation\Install;
+use Narrowspark\Automatic\Operation\Uninstall;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
@@ -107,10 +109,24 @@ final class Container implements ContainerContract
                     $container->get('composer-extra')
                 );
             },
-            OperationsResolver::class => static function (ContainerContract $container) {
-                return new OperationsResolver(
+            Install::class => static function (ContainerContract $container) {
+                return new Install(
+                    $container->get('vendor-dir'),
                     $container->get(Lock::class),
-                    $container->get('vendor-dir')
+                    $container->get(IOInterface::class),
+                    $container->get(Configurator::class),
+                    $container->get(PackageConfigurator::class),
+                    $container->get(ClassFinder::class)
+                );
+            },
+            Uninstall::class => static function (ContainerContract $container) {
+                return new Uninstall(
+                    $container->get('vendor-dir'),
+                    $container->get(Lock::class),
+                    $container->get(IOInterface::class),
+                    $container->get(Configurator::class),
+                    $container->get(PackageConfigurator::class),
+                    $container->get(ClassFinder::class)
                 );
             },
             RemoteFilesystem::class => static function (ContainerContract $container) {

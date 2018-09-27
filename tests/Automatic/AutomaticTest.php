@@ -5,7 +5,6 @@ namespace Narrowspark\Automatic\Test;
 use Composer\Composer;
 use Composer\Config;
 use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
@@ -20,6 +19,7 @@ use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\Event;
+use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
@@ -29,11 +29,13 @@ use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
+use Narrowspark\Automatic\ScriptEvents;
 use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -83,7 +85,7 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        static::assertCount(13, Automatic::getSubscribedEvents());
+        static::assertCount(15, Automatic::getSubscribedEvents());
 
         NSA::setProperty($this->automatic, 'activated', false);
 
@@ -95,9 +97,15 @@ final class AutomaticTest extends MockeryTestCase
         $this->arrangeAutomaticConfig();
         $this->arrangePackagist();
 
-        $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
-
         $this->composerMock->shouldReceive('getPackage->getExtra')
+            ->once()
+            ->andReturn([]);
+        $this->composerMock->shouldReceive('getPackage->getMinimumStability')
+            ->once()
+            ->andReturn(null);
+
+        $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
+        $localRepositoryMock->shouldReceive('getPackages')
             ->once()
             ->andReturn([]);
 
@@ -143,6 +151,10 @@ final class AutomaticTest extends MockeryTestCase
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
             ->andReturn(true);
+        $this->ioMock->input = new ArrayInput([]);
+        $this->ioMock->shouldReceive('writeError')
+            ->atLeast()
+            ->once();
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
 
@@ -153,6 +165,8 @@ final class AutomaticTest extends MockeryTestCase
             ],
             $this->automatic->getContainer()->get(Lock::class)->get('@readme')
         );
+
+        static::assertInstanceOf(\Narrowspark\Automatic\Installer\InstallationManager::class, $this->automatic->getContainer()->get(\Narrowspark\Automatic\Installer\InstallationManager::class));
     }
 
     public function testActivateWithNoInteractive(): void
@@ -189,37 +203,6 @@ final class AutomaticTest extends MockeryTestCase
         $this->automatic->record($packageEventMock);
     }
 
-    public function testRecordWithUninstallRecord(): void
-    {
-        $packageEventMock = $this->mock(PackageEvent::class);
-
-        $packageMock = $this->mock(Package::class);
-        $packageMock->shouldReceive('getName')
-            ->andReturn('test');
-
-        $updateOperationMock = $this->mock(UninstallOperation::class);
-        $updateOperationMock->shouldReceive('getPackage')
-            ->andReturn($packageMock);
-
-        $packageEventMock->shouldReceive('getOperation')
-            ->twice()
-            ->andReturn($updateOperationMock);
-        $packageEventMock->shouldReceive('isDevMode')
-            ->andReturn(false);
-
-        $packageEventMock->shouldReceive('getComposer->getLocker->getLockData')
-            ->once()
-            ->andReturn([
-                'packages-dev' => [
-                    [
-                        'name' => 'uninstall',
-                    ],
-                ],
-            ]);
-
-        $this->automatic->record($packageEventMock);
-    }
-
     public function testRecordWithInstallRecord(): void
     {
         \putenv('COMPOSER_VENDOR_DIR=' . __DIR__);
@@ -239,16 +222,12 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn($packageMock);
 
         $packageEventMock->shouldReceive('getOperation')
-            ->twice()
+            ->once()
             ->andReturn($installerOperationMock);
         $packageEventMock->shouldReceive('isDevMode')
             ->andReturn(false);
 
-        $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
-
-        $repositoryMock = $this->mock(RepositoryManager::class);
-        $repositoryMock->shouldReceive('getLocalRepository')
-            ->andReturn($localRepositoryMock);
+        $repositoryMock = $this->arrangeLocalRepository();
 
         $rootPackageMock = $this->mock(RootPackage::class);
         $rootPackageMock->shouldReceive('getExtra')
@@ -299,7 +278,7 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn($packageMock);
 
         $packageEventMock->shouldReceive('getOperation')
-            ->twice()
+            ->once()
             ->andReturn($installerOperationMock);
         $packageEventMock->shouldReceive('isDevMode')
             ->andReturn(false);
@@ -318,16 +297,12 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn($automaticPackageMock);
 
         $automaticPackageEventMock->shouldReceive('getOperation')
-            ->twice()
+            ->once()
             ->andReturn($automaticInstallerOperationMock);
         $automaticPackageEventMock->shouldReceive('isDevMode')
             ->andReturn(false);
 
-        $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
-
-        $repositoryMock = $this->mock(RepositoryManager::class);
-        $repositoryMock->shouldReceive('getLocalRepository')
-            ->andReturn($localRepositoryMock);
+        $repositoryMock = $this->arrangeLocalRepository();
 
         $rootPackageMock = $this->mock(RootPackage::class);
         $rootPackageMock->shouldReceive('getExtra')
@@ -417,7 +392,7 @@ final class AutomaticTest extends MockeryTestCase
         $this->automatic->executeAutoScripts($eventMock);
     }
 
-    public function testpostMessages(): void
+    public function testPostMessages(): void
     {
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
@@ -492,6 +467,102 @@ final class AutomaticTest extends MockeryTestCase
         static::assertSame('./automatic.lock', Automatic::getAutomaticLockFile());
     }
 
+    public function testOnPostUninstall(): void
+    {
+        $event = $this->mock(PackageEvent::class);
+        $event->shouldReceive('getOperation->getPackage->getName')
+            ->once()
+            ->andReturn(Automatic::PACKAGE_NAME);
+        $event->shouldReceive('isDevMode')
+            ->once()
+            ->andReturn(true);
+
+        $filePath     = __DIR__ . \DIRECTORY_SEPARATOR . 'composer_uninstall.json';
+        $lockfilePath = \mb_substr($filePath, 0, -4) . 'lock';
+
+        $scripts  = [
+            ScriptEvents::POST_MESSAGES            => '',
+            ComposerScriptEvents::POST_INSTALL_CMD => [
+                '@' . ScriptEvents::POST_MESSAGES,
+                '@' . ScriptEvents::AUTO_SCRIPTS,
+            ],
+            ComposerScriptEvents::POST_UPDATE_CMD => [
+                '@' . ScriptEvents::POST_MESSAGES,
+                '@' . ScriptEvents::AUTO_SCRIPTS,
+            ],
+            'test' => 'this should stay',
+        ];
+
+        \file_put_contents($filePath, \json_encode([
+            'scripts' => $scripts,
+        ]));
+        \file_put_contents($lockfilePath, \json_encode([]));
+
+        \putenv('COMPOSER=' . $filePath);
+
+        $this->composerMock->shouldReceive('getPackage->getScripts')
+            ->once()
+            ->andReturn($scripts);
+
+        $repositoryMock = $this->arrangeLocalRepository();
+
+        $this->composerMock->shouldReceive('getRepositoryManager')
+            ->andReturn($repositoryMock);
+
+        $installationManager = $this->mock(InstallationManager::class);
+
+        $this->composerMock->shouldReceive('getInstallationManager')
+            ->once()
+            ->andReturn($installationManager);
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->twice()
+            ->with(Composer::class)
+            ->andReturn($this->composerMock);
+
+        $this->ioMock->shouldReceive('isDebug')
+            ->once()
+            ->andReturn(false);
+
+        $containerMock->shouldReceive('get')
+            ->twice()
+            ->with(IOInterface::class)
+            ->andReturn($this->ioMock);
+
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->onPostUninstall($event);
+
+        $jsonData = \json_decode(\file_get_contents($filePath), true);
+
+        static::assertArrayNotHasKey(ScriptEvents::POST_MESSAGES, $jsonData['scripts']);
+        static::assertArrayHasKey('test', $jsonData['scripts']);
+        static::assertCount(0, $jsonData['scripts'][ComposerScriptEvents::POST_INSTALL_CMD]);
+        static::assertCount(0, $jsonData['scripts'][ComposerScriptEvents::POST_INSTALL_CMD]);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+
+        @\unlink($filePath);
+        @\unlink($lockfilePath);
+    }
+
+    public function testOnPostUninstallWithWithoutDev(): void
+    {
+        $event = $this->mock(PackageEvent::class);
+
+        $event->shouldReceive('isDevMode')
+            ->once()
+            ->andReturn(false);
+        $event->shouldReceive('getComposer->getLocker->getLockData')
+            ->once()
+            ->andReturn(['packages-dev' => [['name' => Automatic::PACKAGE_NAME]]]);
+        $event->shouldReceive('getOperation->getPackage->getName')
+            ->never();
+
+        $this->automatic->onPostUninstall($event);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -533,5 +604,19 @@ final class AutomaticTest extends MockeryTestCase
 
         $this->composerMock->shouldReceive('getConfig')
             ->andReturn($this->configMock);
+    }
+
+    /**
+     * @return \Mockery\MockInterface
+     */
+    private function arrangeLocalRepository(): \Mockery\MockInterface
+    {
+        $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
+
+        $repositoryMock = $this->mock(RepositoryManager::class);
+        $repositoryMock->shouldReceive('getLocalRepository')
+            ->andReturn($localRepositoryMock);
+
+        return $repositoryMock;
     }
 }

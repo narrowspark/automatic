@@ -6,6 +6,9 @@ use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 
 final class PackageConfigurator extends AbstractConfigurator
 {
+    /**
+     * @var string
+     */
     public const TYPE = 'custom-configurators';
 
     /**

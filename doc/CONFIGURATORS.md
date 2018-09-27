@@ -105,7 +105,8 @@ Only the composer `command`, `installer` and `package` events are supported, you
 }
 ```
 
-You can create your own script executor, create a new class inside your Package Repository in a `Automatic` folder and extend `Narrowspark\Automatic\Common\ScriptExtender\AbstractScriptExtender` the example below shows you how it should look:
+You can create your own script executor, create a new executor class in your `Automatic` folder, inside your Package. The class needs to extend `Narrowspark\Automatic\Common\ScriptExtender\AbstractScriptExtender`.
+You have a example below:
 
 ```php
 <?php
@@ -220,7 +221,7 @@ The following example shows you, how your `composer.json` can look:
 
 ### Creating Package Configurators
 
-Narrowspark Automatic Configurators must be stored inside your Composer package repository in a `Automatic` folder.
+Narrowspark Automatic Configurators must be created inside your Composer Package in a `Automatic` folder.
 
 Add a new key `custom-configurators` to the `automatic.json` file or to `extra automatic ` section in your composer.json file to register new Package Configurator(s).
 
@@ -232,9 +233,9 @@ This example shows you, how to add a new Package Configurator in your `composer.
         "narrowspark/automatic-common": "^0.4.0"
     },
     "automatic": {
-        "custom-configurators" : {
-            "name of the configurator": "Your\\Package\\Configurator"
-        }
+        "custom-configurators" : [
+            "Your\\Package\\Configurator"
+        ]
     }
 }
 ```

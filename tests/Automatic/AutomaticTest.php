@@ -14,6 +14,7 @@ use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\Package;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootPackage;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\RepositoryManager;
@@ -254,6 +255,46 @@ final class AutomaticTest extends MockeryTestCase
         );
 
         $automatic->record($packageEventMock);
+
+        \putenv('COMPOSER_VENDOR_DIR=');
+        \putenv('COMPOSER_VENDOR_DIR');
+    }
+
+    public function testRecordWithInstallRecordAndLock(): void
+    {
+        \putenv('COMPOSER_VENDOR_DIR=' . __DIR__);
+
+        $packageEventMock = $this->mock(PackageEvent::class);
+
+        $name = 'test/foo';
+
+        $packageMock = $this->mock(Package::class);
+        $packageMock->shouldReceive('getName')
+            ->andReturn($name);
+        $packageMock->shouldReceive('getType')
+            ->andReturn('library');
+
+        $installerOperationMock = $this->mock(InstallOperation::class);
+        $installerOperationMock->shouldReceive('getPackage')
+            ->andReturn($packageMock);
+
+        $packageEventMock->shouldReceive('getOperation')
+            ->once()
+            ->andReturn($installerOperationMock);
+        $packageEventMock->shouldReceive('isDevMode')
+            ->andReturn(false);
+
+        $this->lockMock->shouldReceive('has')
+            ->with($name)
+            ->andReturn(true);
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->with(Lock::class)
+            ->andReturn($this->lockMock);
+
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->record($packageEventMock);
 
         \putenv('COMPOSER_VENDOR_DIR=');
         \putenv('COMPOSER_VENDOR_DIR');
@@ -555,6 +596,143 @@ final class AutomaticTest extends MockeryTestCase
         $this->automatic->onPostUpdatePostMessages($this->mock(Event::class));
     }
 
+    public function testInitAutoScripts(): void
+    {
+        $composerJsonPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'testInitAutoScripts.json';
+        $composerLockPath = \mb_substr($composerJsonPath, 0, -4) . 'lock';
+
+        \file_put_contents($composerJsonPath, \json_encode(['test' => []]));
+        \file_put_contents($composerLockPath, \json_encode(['packages' => []]));
+
+        \putenv('COMPOSER=' . $composerJsonPath);
+
+        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock->shouldReceive('getScripts')
+            ->once()
+            ->andReturn([]);
+
+        $this->composerMock
+            ->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($packageMock);
+
+        $this->automatic->setContainer($this->arrangeUpdateComposerLock());
+
+        $this->automatic->initAutoScripts();
+
+        $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
+
+        static::assertTrue(isset($jsonContent['scripts']));
+        static::assertTrue(isset($jsonContent['scripts']['post-install-cmd']));
+        static::assertTrue(isset($jsonContent['scripts']['post-update-cmd']));
+        static::assertSame('@' . ScriptEvents::AUTO_SCRIPTS, $jsonContent['scripts']['post-install-cmd'][0]);
+        static::assertSame('@' . ScriptEvents::AUTO_SCRIPTS, $jsonContent['scripts']['post-update-cmd'][0]);
+
+        $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
+
+        static::assertInternalType('string', $lockContent['content-hash']);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+
+        @\unlink($composerJsonPath);
+        @\unlink($composerLockPath);
+    }
+
+    public function testInitAutoScriptsWithAutoScriptInComposerJson(): void
+    {
+        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock->shouldReceive('getScripts')
+            ->once()
+            ->andReturn([
+                ComposerScriptEvents::POST_UPDATE_CMD => [
+                    '@' . ScriptEvents::AUTO_SCRIPTS,
+                ],
+                ComposerScriptEvents::POST_INSTALL_CMD => [
+                    '@' . ScriptEvents::AUTO_SCRIPTS,
+                ],
+            ]);
+        $this->composerMock
+            ->shouldReceive('getPackage')
+            ->once()
+            ->andReturn($packageMock);
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->with(Composer::class)
+            ->andReturn($this->composerMock);
+
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->initAutoScripts();
+    }
+
+    public function testOnPostCreateProject(): void
+    {
+        $composerJsonPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'testOnPostCreateProject.json';
+        $composerLockPath = \mb_substr($composerJsonPath, 0, -4) . 'lock';
+
+        \file_put_contents($composerJsonPath, \json_encode([
+            'name'        => 'narrowspark/narrowspark',
+            'type'        => 'project',
+            'description' => 'A skeleton to start a new Narrowspark project.',
+            'license'     => 'MIT',
+        ]));
+        \file_put_contents($composerLockPath, \json_encode(['packages' => []]));
+
+        \putenv('COMPOSER=' . $composerJsonPath);
+
+        $containerMock = $this->arrangeUpdateComposerLock();
+        $containerMock->shouldReceive('get')
+            ->with('composer-extra')
+            ->andReturn([
+                'test' => 'foo',
+            ]);
+        $this->automatic->setContainer($containerMock);
+
+        $this->automatic->onPostCreateProject($this->mock(Event::class));
+
+        $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
+
+        static::assertFalse(isset($jsonContent['name']));
+        static::assertFalse(isset($jsonContent['description']));
+        static::assertFalse(isset($jsonContent['description']));
+        static::assertSame('proprietary', $jsonContent['license']);
+        static::assertTrue(isset($jsonContent['extra']));
+        static::assertTrue(isset($jsonContent['extra']['test']));
+        static::assertSame('foo', $jsonContent['extra']['test']);
+
+        $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
+
+        static::assertInternalType('string', $lockContent['content-hash']);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+
+        @\unlink($composerJsonPath);
+        @\unlink($composerLockPath);
+    }
+
+    public function testRunSkeletonGeneratorWithoutInstaller(): void
+    {
+        $this->lockMock->shouldReceive('read')
+            ->once();
+        $this->lockMock->shouldReceive('has')
+            ->once()
+            ->with(SkeletonInstaller::LOCK_KEY)
+            ->andReturn(false);
+        $this->lockMock->shouldReceive('reset')
+            ->once();
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with(Lock::class)
+            ->andReturn($this->lockMock);
+        $this->automatic->setContainer($containerMock);
+
+        $this->automatic->runSkeletonGenerator($this->mock(Event::class));
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -610,5 +788,33 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn($localRepositoryMock);
 
         return $repositoryMock;
+    }
+
+    /**
+     * @return \Mockery\MockInterface|\Narrowspark\Automatic\Contract\Container
+     */
+    private function arrangeUpdateComposerLock()
+    {
+        $repositoryManagerMock = $this->mock(RepositoryManager::class);
+
+        $this->composerMock->shouldReceive('getRepositoryManager')
+            ->once()
+            ->andReturn($repositoryManagerMock);
+
+        $installationManagerMock = $this->mock(InstallationManager::class);
+
+        $this->composerMock->shouldReceive('getInstallationManager')
+            ->once()
+            ->andReturn($installationManagerMock);
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->with(Composer::class)
+            ->andReturn($this->composerMock);
+        $containerMock->shouldReceive('get')
+            ->with(IOInterface::class)
+            ->andReturn(new NullIO());
+
+        return $containerMock;
     }
 }

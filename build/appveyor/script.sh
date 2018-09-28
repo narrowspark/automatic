@@ -24,4 +24,14 @@ for f in ./src/*; do
             exit 1
         }
     fi
+
+    echo "";
+    echo -e "Narrowspark Automatic Functional Test Suite";
+    echo "";
+
+    try
+        sh vendor/bin/phpunit --verbose -c ./phpunit.xml.dist --testsuite="Narrowspark Automatic Functional Test Suite";
+    catch || {
+        exit 1
+    }
 done

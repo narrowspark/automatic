@@ -10,7 +10,7 @@ final class AutomaticPluginActiveTest extends AbstractComposerTest
     public function testAutomaticComposerPluginActive(): void
     {
         \file_put_contents(
-            $this->fixturePath . $this->getFolderName() . \DIRECTORY_SEPARATOR . 'composer.json',
+            $this->testFolderPath . \DIRECTORY_SEPARATOR . 'composer.json',
             '{
     "require": {
         "php": "^7.2",
@@ -25,7 +25,7 @@ final class AutomaticPluginActiveTest extends AbstractComposerTest
         $process = $this->runComposer165Update();
 
         static::assertTrue($process->isSuccessful());
-        static::assertFileExists($this->fixturePath . $this->getFolderName() . \DIRECTORY_SEPARATOR . 'automatic.lock');
+        static::assertFileExists($this->testFolderPath . \DIRECTORY_SEPARATOR . 'automatic.lock');
     }
 
     protected function getPackageName(): string

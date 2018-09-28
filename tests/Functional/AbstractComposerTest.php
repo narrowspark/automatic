@@ -19,6 +19,11 @@ abstract class AbstractComposerTest extends TestCase
     /**
      * @var string
      */
+    protected $testFolderPath;
+
+    /**
+     * @var string
+     */
     protected $composer165Path;
 
     /**
@@ -27,17 +32,24 @@ abstract class AbstractComposerTest extends TestCase
     protected $composer172Path;
 
     /**
+     * @var \Symfony\Component\Filesystem\Filesystem
+     */
+    protected $filesystem;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->filesystem      = new Filesystem();
         $this->fixturePath     = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR;
         $this->composer165Path = $this->fixturePath . 'Composer1-6-5' . \DIRECTORY_SEPARATOR . 'composer.phar';
         $this->composer172Path = $this->fixturePath . 'Composer1-7-2' . \DIRECTORY_SEPARATOR . 'composer.phar';
+        $this->testFolderPath  = $this->fixturePath . $this->getFolderName();
 
-        @\mkdir($this->fixturePath . $this->getFolderName());
+        $this->filesystem->mkdir($this->testFolderPath);
     }
 
     /**
@@ -48,7 +60,7 @@ abstract class AbstractComposerTest extends TestCase
         parent::tearDown();
 
         // remove Test folders
-        (new Filesystem())->remove($this->fixturePath . $this->getFolderName());
+        $this->filesystem->remove($this->testFolderPath);
     }
 
     abstract protected function getPackageName(): string;
@@ -112,25 +124,23 @@ abstract class AbstractComposerTest extends TestCase
      */
     private function runComposer(string $composerPharPath, string $composerCommand): Process
     {
-        $workingDirPath = $this->fixturePath . $this->getFolderName();
-        $vendor         = $workingDirPath . \DIRECTORY_SEPARATOR . 'vendor';
+        $vendor = $this->testFolderPath . \DIRECTORY_SEPARATOR . 'vendor';
 
         $process = new Process(
             \sprintf(
                 'COMPOSER=%s && COMPOSER_VENDOR_DIR=%s php %s %s --working-dir="%s"',
-                $workingDirPath . \DIRECTORY_SEPARATOR . 'composer.json',
+                $this->testFolderPath . \DIRECTORY_SEPARATOR . 'composer.json',
                 $vendor,
                 $composerPharPath,
                 $composerCommand,
-                $workingDirPath
+                $this->testFolderPath
             )
         );
         $process->setTty(true);
-
         $process->run();
 
         // remove Test folders
-        (new Filesystem())->remove($vendor . \DIRECTORY_SEPARATOR . $this->getPackageName() . \DIRECTORY_SEPARATOR . 'tests');
+        $this->filesystem->remove($vendor . \DIRECTORY_SEPARATOR . $this->getPackageName() . \DIRECTORY_SEPARATOR . 'tests');
 
         return $process;
     }

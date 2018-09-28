@@ -19,8 +19,8 @@ before_install:
   - |
     chmod a+x ./build/travis/configure_php.sh
     chmod a+x ./build/travis/script.sh
-    chmod a+x tests/Functional/Fixture/Composer1-6-5/composer.phar
-    chmod a+x tests/Functional/Fixture/Composer1-7-2/composer.phar
+    chmod a+x ./tests/Functional/Fixture/Composer1-6-5/composer.phar
+    chmod a+x ./tests/Functional/Fixture/Composer1-7-2/composer.phar
   - ./build/travis/configure_php.sh
   - composer validate
 

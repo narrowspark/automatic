@@ -97,6 +97,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     private static $activated = true;
 
     /**
+     * Check if the Configurators a loaded.
+     *
+     * @var bool
+     */
+    private static $configuratorsLoaded = true;
+
+    /**
      * Check if composer.lock should be updated.
      *
      * @var bool
@@ -476,6 +483,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function onPostAutoloadDump(): void
     {
+        if (static::$configuratorsLoaded) {
+            return;
+        }
+
         $lock         = $this->container->get(Lock::class);
         $vendorDir    = $this->container->get('vendor-dir');
         $configurator = $this->container->get(Configurator::class);
@@ -497,6 +508,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 }
             }
         }
+
+        static::$configuratorsLoaded = true;
     }
 
     /**

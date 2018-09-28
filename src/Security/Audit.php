@@ -168,7 +168,7 @@ class Audit
         }
 
         if ($io !== null) {
-            $io->writeError('Downloading the Security Advisories database...');
+            $io->writeError('Downloading the Security Advisories database...', true, IOInterface::VERBOSE);
         }
 
         $securityAdvisories = $this->downloader->download(self::SECURITY_ADVISORIES_BASE_URL . self::SECURITY_ADVISORIES);

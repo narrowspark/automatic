@@ -12,13 +12,4 @@ class ScriptEvents
      * @var string
      */
     public const AUTO_SCRIPTS = 'auto-scripts';
-
-    /**
-     * The POST_MESSAGES event occurs after a package is installed or updated.
-     *
-     * The event listener method receives a Composer\Script\Event instance.
-     *
-     * @var string
-     */
-    public const POST_MESSAGES = 'post-messages';
 }

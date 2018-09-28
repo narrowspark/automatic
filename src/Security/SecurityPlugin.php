@@ -6,13 +6,9 @@ use Composer\Composer;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\EventDispatcher\EventSubscriberInterface;
-use Composer\Factory;
 use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
-use Composer\Json\JsonFile;
-use Composer\Json\JsonManipulator;
-use Composer\Package\Locker;
 use Composer\Plugin\Capability\CommandProvider as CommandProviderContract;
 use Composer\Plugin\Capable;
 use Composer\Plugin\PluginInterface;
@@ -94,13 +90,10 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
         }
 
         return [
-            ScriptEvents::POST_MESSAGES             => [['postMessages', \PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_INSTALL     => [['auditPackage', \PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_UPDATE      => [['auditPackage', \PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_UNINSTALL   => 'onPostUninstall',
-            ComposerScriptEvents::PRE_AUTOLOAD_DUMP => 'initMessage',
+            PackageEvents::POST_PACKAGE_INSTALL     => [['auditPackage', ~\PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_UPDATE      => [['auditPackage', ~\PHP_INT_MAX]],
             ComposerScriptEvents::POST_INSTALL_CMD  => [['auditComposerLock', \PHP_INT_MAX]],
-            ComposerScriptEvents::POST_UPDATE_CMD   => [['auditComposerLock', \PHP_INT_MAX]],
+            ComposerScriptEvents::POST_UPDATE_CMD   => [['auditComposerLock', \PHP_INT_MAX], ['onPostUpdatePostMessages', ~\PHP_INT_MAX]],
         ];
     }
 
@@ -112,7 +105,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
         if (($errorMessage = $this->getErrorMessage()) !== null) {
             self::$activated = false;
 
-            $io->writeError('<warning>Narrowspark Automatic has been disabled. ' . $errorMessage . '</warning>');
+            $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
 
             return;
         }
@@ -157,119 +150,14 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     }
 
     /**
-     * Execute on composer post-uninstall event.
-     *
-     * @param \Composer\Installer\PackageEvent $event
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    public function onPostUninstall(PackageEvent $event): void
-    {
-        /** @var \Composer\DependencyResolver\Operation\UninstallOperation $operation */
-        $operation = $event->getOperation();
-
-        if ($operation->getPackage()->getName() !== self::PACKAGE_NAME) {
-            return;
-        }
-
-        $scripts = $this->composer->getPackage()->getScripts();
-
-        if (\count($scripts) === 0 || ! isset($scripts[ScriptEvents::POST_MESSAGES])) {
-            return;
-        }
-
-        $composerFilePath = Factory::getComposerFile();
-        $manipulator      = new JsonManipulator(\file_get_contents($composerFilePath));
-
-        $manipulator->removeSubNode('scripts', ScriptEvents::POST_MESSAGES);
-
-        $scriptKey = '@' . ScriptEvents::POST_MESSAGES;
-
-        if (\in_array($scriptKey, $scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], true)) {
-            foreach ((array) $scripts[ComposerScriptEvents::POST_INSTALL_CMD] as $key => $script) {
-                if ($script === $scriptKey) {
-                    unset($scripts[ComposerScriptEvents::POST_INSTALL_CMD][$key]);
-                }
-            }
-
-            $manipulator->addSubNode('scripts', ComposerScriptEvents::POST_INSTALL_CMD, $scripts[ComposerScriptEvents::POST_INSTALL_CMD]);
-        }
-
-        if (\in_array($scriptKey, $scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], true)) {
-            foreach ((array) $scripts[ComposerScriptEvents::POST_UPDATE_CMD] as $key => $script) {
-                if ($script === $scriptKey) {
-                    unset($scripts[ComposerScriptEvents::POST_UPDATE_CMD][$key]);
-                }
-            }
-
-            $manipulator->addSubNode('scripts', ComposerScriptEvents::POST_UPDATE_CMD, $scripts[ComposerScriptEvents::POST_UPDATE_CMD]);
-        }
-
-        \file_put_contents($composerFilePath, $manipulator->getContents());
-
-        $this->updateComposerLock();
-    }
-
-    /**
-     * Add post-messages to root composer.json.
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    public function initMessage(): void
-    {
-        $scripts = $this->composer->getPackage()->getScripts();
-
-        if (isset($scripts[ScriptEvents::POST_MESSAGES])) {
-            return;
-        }
-
-        $composerFilePath = Factory::getComposerFile();
-        $manipulator      = new JsonManipulator(\file_get_contents($composerFilePath));
-
-        if (\count($scripts) === 0) {
-            $manipulator->addMainKey('scripts', []);
-        }
-
-        $manipulator->addSubNode('scripts', ScriptEvents::POST_MESSAGES, 'This key is needed to show messages.');
-
-        $scriptKey = '@' . ScriptEvents::POST_MESSAGES;
-
-        if (! \in_array($scriptKey, $scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], true)) {
-            $manipulator->addSubNode(
-                'scripts',
-                ComposerScriptEvents::POST_INSTALL_CMD,
-                \array_merge($scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], [$scriptKey])
-            );
-        }
-
-        if (! \in_array($scriptKey, $scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], true)) {
-            $manipulator->addSubNode(
-                'scripts',
-                ComposerScriptEvents::POST_UPDATE_CMD,
-                \array_merge($scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], [$scriptKey])
-            );
-        }
-
-        \file_put_contents($composerFilePath, $manipulator->getContents());
-
-        $this->updateComposerLock();
-    }
-
-    /**
      * Execute on composer post-messages event.
      *
      * @param \Composer\Script\Event $event
      *
      * @return void
      */
-    public function postMessages(Event $event): void
+    public function onPostUpdatePostMessages(Event $event): void
     {
-        $event->stopPropagation();
-
         $count = \count(\array_filter($this->foundVulnerabilities));
 
         if ($count !== 0) {
@@ -373,32 +261,5 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
         }
 
         throw new RuntimeException('No composer version found.');
-    }
-
-    /**
-     * Update composer.lock file with the composer.json change.
-     *
-     * @throws \Exception
-     *
-     * @return void
-     */
-    private function updateComposerLock(): void
-    {
-        $composerLockPath = Util::getComposerLockFile();
-        $composerJson     = \file_get_contents(Factory::getComposerFile());
-
-        $lockFile = new JsonFile($composerLockPath, null, $this->io);
-        $locker   = new Locker(
-            $this->io,
-            $lockFile,
-            $this->composer->getRepositoryManager(),
-            $this->composer->getInstallationManager(),
-            (string) $composerJson
-        );
-
-        $lockData                  = $locker->getLockData();
-        $lockData['content-hash']  = Locker::getContentHash((string) $composerJson);
-
-        $lockFile->write($lockData);
     }
 }

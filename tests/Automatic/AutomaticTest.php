@@ -392,26 +392,6 @@ final class AutomaticTest extends MockeryTestCase
         $this->automatic->executeAutoScripts($eventMock);
     }
 
-    public function testPostMessages(): void
-    {
-        $eventMock = $this->mock(Event::class);
-        $eventMock->shouldReceive('stopPropagation')
-            ->once();
-
-        $this->ioMock->shouldReceive('write')
-            ->once()
-            ->with(['']);
-
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
-            ->once()
-            ->with(IOInterface::class)
-            ->andReturn($this->ioMock);
-
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->postMessages($eventMock);
-    }
-
     public function testPopulateFilesCacheDir(): void
     {
         $event = $this->mock(InstallerEvent::class);
@@ -481,13 +461,10 @@ final class AutomaticTest extends MockeryTestCase
         $lockfilePath = \mb_substr($filePath, 0, -4) . 'lock';
 
         $scripts  = [
-            ScriptEvents::POST_MESSAGES            => '',
             ComposerScriptEvents::POST_INSTALL_CMD => [
-                '@' . ScriptEvents::POST_MESSAGES,
                 '@' . ScriptEvents::AUTO_SCRIPTS,
             ],
             ComposerScriptEvents::POST_UPDATE_CMD => [
-                '@' . ScriptEvents::POST_MESSAGES,
                 '@' . ScriptEvents::AUTO_SCRIPTS,
             ],
             'test' => 'this should stay',
@@ -535,7 +512,6 @@ final class AutomaticTest extends MockeryTestCase
 
         $jsonData = \json_decode(\file_get_contents($filePath), true);
 
-        static::assertArrayNotHasKey(ScriptEvents::POST_MESSAGES, $jsonData['scripts']);
         static::assertArrayHasKey('test', $jsonData['scripts']);
         static::assertCount(0, $jsonData['scripts'][ComposerScriptEvents::POST_INSTALL_CMD]);
         static::assertCount(0, $jsonData['scripts'][ComposerScriptEvents::POST_INSTALL_CMD]);
@@ -561,6 +537,22 @@ final class AutomaticTest extends MockeryTestCase
             ->never();
 
         $this->automatic->onPostUninstall($event);
+    }
+
+    public function testOnPostUpdatePostMessages(): void
+    {
+        $this->ioMock->shouldReceive('write')
+            ->once();
+
+        $container = $this->mock(ContainerContract::class);
+        $container->shouldReceive('get')
+            ->once()
+            ->with(IOInterface::class)
+            ->andReturn($this->ioMock);
+
+        $this->automatic->setContainer($container);
+
+        $this->automatic->onPostUpdatePostMessages($this->mock(Event::class));
     }
 
     /**

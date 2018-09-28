@@ -2,7 +2,10 @@
 # Ignoring those within your global gitignore will make it so
 # they will never get commited within any project you have.
 
-composer.phar
+!/tests/Functional/Fixture/Composer1-6-5/composer.phar
+!/tests/Functional/Fixture/Composer1-7-2/composer.phar
+
+/composer.phar
 composer.lock
 
 .php_cs.cache

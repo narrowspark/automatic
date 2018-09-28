@@ -23,4 +23,10 @@ if [[ "$PHPUNIT" = true ]]; then
             }
         fi
     done
+
+    try
+        tfold "Narrowspark Automatic Functional Test Suite" "$TEST -c ./phpunit.xml.dist --testsuite=\"Narrowspark Automatic Functional Test Suite\"";
+    catch || {
+        exit 1
+    }
 fi

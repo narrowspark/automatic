@@ -26,6 +26,10 @@
         <testsuite name="Narrowspark Automatic Security Test Suite">
             <directory>./tests/Security/</directory>
         </testsuite>
+
+        <testsuite name="Narrowspark Automatic Functional Test Suite">
+            <directory>./tests/Functional/</directory>
+        </testsuite>
     </testsuites>
 
     <filter>

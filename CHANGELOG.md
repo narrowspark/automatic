@@ -1,3 +1,24 @@
+## v0.8.0
+
+- Total issues resolved: **5**
+- Total pull requests resolved: **4**
+- Total contributors: **1**
+
+### Added
+
+ - [73: Add documentation about dont-discover](https://github.com/narrowspark/automatic/issues/73) thanks to @prisis
+ - [72: Add symfony flex to the readme](https://github.com/narrowspark/automatic/issues/72) thanks to @prisis
+
+### Changed
+
+ - [77: changed extra key for composer scripts configurator](https://github.com/narrowspark/automatic/pull/77) thanks to @prisis
+ - [76: changed post-install-out to post-messages](https://github.com/narrowspark/automatic/pull/76) thanks to @prisis
+ - [75: split audit to a new component and composer plugin](https://github.com/narrowspark/automatic/pull/75) thanks to @prisis
+
+### Changed,Fixed
+
+ - [74: Refactor Install, Update and Uninstall Events in Automatic](https://github.com/narrowspark/automatic/pull/74) thanks to @prisis
+
 ## v0.7.0
 
 - Total issues resolved: **2**

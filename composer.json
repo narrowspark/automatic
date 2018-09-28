@@ -37,8 +37,7 @@
         "narrowspark/coding-standard": "^1.2.0",
         "narrowspark/testing-helper": "^7.0.0",
         "nyholm/nsa": "^1.1.0",
-        "phpunit/phpunit": "^7.2.0",
-        "symfony/process": "^4.1"
+        "phpunit/phpunit": "^7.2.0"
     },
     "config": {
         "optimize-autoloader": true,

@@ -1,3 +1,13 @@
+## v0.8.1
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Fixed
+
+ - [84: removed post-messages from root composer.json](https://github.com/narrowspark/automatic/pull/84) thanks to @prisis
+
 ## v0.8.0
 
 - Total issues resolved: **5**

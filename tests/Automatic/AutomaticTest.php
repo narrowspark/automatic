@@ -539,6 +539,22 @@ final class AutomaticTest extends MockeryTestCase
         $this->automatic->onPostUninstall($event);
     }
 
+    public function testOnPostUpdatePostMessages(): void
+    {
+        $this->ioMock->shouldReceive('write')
+            ->once();
+
+        $container = $this->mock(ContainerContract::class);
+        $container->shouldReceive('get')
+            ->once()
+            ->with(IOInterface::class)
+            ->andReturn($this->ioMock);
+
+        $this->automatic->setContainer($container);
+
+        $this->automatic->onPostUpdatePostMessages($this->mock(Event::class));
+    }
+
     /**
      * {@inheritdoc}
      */

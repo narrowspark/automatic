@@ -80,7 +80,7 @@ final class ScriptExecutor
      *
      * @return void
      */
-    public function addExtender(string $name, string $extender): void
+    public function add(string $name, string $extender): void
     {
         if (isset($this->extenders[$name])) {
             throw new InvalidArgumentException(\sprintf('Script executor with the name [%s] already exists.', $name));

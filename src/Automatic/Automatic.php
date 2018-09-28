@@ -483,14 +483,16 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function onPostAutoloadDump(): void
     {
+        /** @var \Narrowspark\Automatic\Configurator $configurator */
+        $configurator = $this->container->get(Configurator::class);
+
         if (static::$configuratorsLoaded) {
-            return;
+            $configurator->reset();
         }
 
-        $lock         = $this->container->get(Lock::class);
-        $vendorDir    = $this->container->get('vendor-dir');
-        $configurator = $this->container->get(Configurator::class);
-        $classMap     = (array) $lock->get(self::LOCK_CLASSMAP);
+        $lock      = $this->container->get(Lock::class);
+        $vendorDir = $this->container->get('vendor-dir');
+        $classMap  = (array) $lock->get(self::LOCK_CLASSMAP);
 
         foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
             foreach ($classMap[$packageName] as $class => $path) {
@@ -671,7 +673,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                     $reflectionClass = new ReflectionClass($class);
 
                     if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getType')) {
-                        $scriptExecutor->addExtender($class::getType(), $class);
+                        $scriptExecutor->add($class::getType(), $class);
                     }
                 }
             }

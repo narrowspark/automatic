@@ -161,8 +161,8 @@ final class Container implements ContainerContract
                     $container->get('composer-extra')
                 );
 
-                $scriptExecutor->addExtender(ScriptExtender::getType(), ScriptExtender::class);
-                $scriptExecutor->addExtender(PhpScriptExtender::getType(), PhpScriptExtender::class);
+                $scriptExecutor->add(ScriptExtender::getType(), ScriptExtender::class);
+                $scriptExecutor->add(PhpScriptExtender::getType(), PhpScriptExtender::class);
 
                 return $scriptExecutor;
             },

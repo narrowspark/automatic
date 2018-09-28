@@ -5,12 +5,10 @@ namespace Narrowspark\Automatic\Security\Test;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
-use Composer\Installer\InstallationManager;
 use Composer\Installer\PackageEvent;
-use Composer\IO\NullIO;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\Capability\CommandProvider as CommandProviderContract;
-use Composer\Repository\RepositoryManager;
 use Composer\Script\Event;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\CommandProvider;
@@ -75,14 +73,14 @@ final class SecurityPluginTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with('Downloading the Security Advisories database...');
+            ->with('Downloading the Security Advisories database...', true, IOInterface::VERBOSE);
 
         $this->securityPlugin->activate($this->composerMock, $this->ioMock);
     }
 
     public function testGetSubscribedEvents(): void
     {
-        static::assertCount(7, SecurityPlugin::getSubscribedEvents());
+        static::assertCount(4, SecurityPlugin::getSubscribedEvents());
 
         NSA::setProperty($this->securityPlugin, 'activated', false);
 
@@ -94,11 +92,9 @@ final class SecurityPluginTest extends MockeryTestCase
         static::assertSame([CommandProviderContract::class => CommandProvider::class], $this->securityPlugin->getCapabilities());
     }
 
-    public function testPostMessages(): void
+    public function testOnPostUpdatePostMessages(): void
     {
         $eventMock = $this->mock(Event::class);
-        $eventMock->shouldReceive('stopPropagation')
-            ->once();
 
         $this->ioMock->shouldReceive('write')
             ->once()
@@ -106,14 +102,12 @@ final class SecurityPluginTest extends MockeryTestCase
 
         NSA::setProperty($this->securityPlugin, 'io', $this->ioMock);
 
-        $this->securityPlugin->postMessages($eventMock);
+        $this->securityPlugin->onPostUpdatePostMessages($eventMock);
     }
 
-    public function testPostMessagesWithVulnerability(): void
+    public function testOnPostUpdatePostMessagesWithVulnerability(): void
     {
         $eventMock = $this->mock(Event::class);
-        $eventMock->shouldReceive('stopPropagation')
-            ->once();
 
         NSA::setProperty($this->securityPlugin, 'foundVulnerabilities', ['test']);
 
@@ -123,7 +117,7 @@ final class SecurityPluginTest extends MockeryTestCase
 
         NSA::setProperty($this->securityPlugin, 'io', $this->ioMock);
 
-        $this->securityPlugin->postMessages($eventMock);
+        $this->securityPlugin->onPostUpdatePostMessages($eventMock);
     }
 
     public function testAuditPackage(): void
@@ -214,141 +208,6 @@ final class SecurityPluginTest extends MockeryTestCase
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
-    }
-
-    public function testInitMessage(): void
-    {
-        $composerJsonPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_on_init.json';
-        $composerLockPath = \mb_substr($composerJsonPath, 0, -4) . 'lock';
-
-        \file_put_contents($composerJsonPath, \json_encode(['test' => []]));
-        \file_put_contents($composerLockPath, \json_encode(['packages' => []]));
-
-        \putenv('COMPOSER=' . $composerJsonPath);
-
-        $packageMock = $this->mock(PackageInterface::class);
-        $packageMock->shouldReceive('getScripts')
-            ->once()
-            ->andReturn([]);
-
-        $this->composerMock
-            ->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($packageMock);
-
-        $repositoryManagerMock = $this->mock(RepositoryManager::class);
-
-        $this->composerMock->shouldReceive('getRepositoryManager')
-            ->once()
-            ->andReturn($repositoryManagerMock);
-
-        $installationManagerMock = $this->mock(InstallationManager::class);
-
-        $this->composerMock->shouldReceive('getInstallationManager')
-            ->once()
-            ->andReturn($installationManagerMock);
-
-        NSA::setProperty($this->securityPlugin, 'composer', $this->composerMock);
-        NSA::setProperty($this->securityPlugin, 'io', new NullIO());
-
-        $this->securityPlugin->initMessage();
-
-        $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
-
-        static::assertTrue(isset($jsonContent['scripts']));
-        static::assertTrue(isset($jsonContent['scripts']['post-messages']));
-        static::assertTrue(isset($jsonContent['scripts']['post-install-cmd']));
-        static::assertTrue(isset($jsonContent['scripts']['post-update-cmd']));
-        static::assertSame('@post-messages', $jsonContent['scripts']['post-install-cmd'][0]);
-        static::assertSame('@post-messages', $jsonContent['scripts']['post-update-cmd'][0]);
-
-        $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
-
-        static::assertInternalType('string', $lockContent['content-hash']);
-
-        \putenv('COMPOSER=');
-        \putenv('COMPOSER');
-        @\unlink($composerJsonPath);
-        @\unlink($composerLockPath);
-    }
-
-    public function testInitMessageWithPostMessages(): void
-    {
-        $packageMock = $this->mock(PackageInterface::class);
-        $packageMock->shouldReceive('getScripts')
-            ->once()
-            ->andReturn(['post-messages' => '']);
-
-        $this->composerMock
-            ->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($packageMock);
-
-        NSA::setProperty($this->securityPlugin, 'composer', $this->composerMock);
-
-        $this->securityPlugin->initMessage();
-    }
-
-    public function testOnPostUninstall(): void
-    {
-        $composerJsonPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_on_init.json';
-        $composerLockPath = \mb_substr($composerJsonPath, 0, -4) . 'lock';
-
-        $scripts = ['post-messages' => 'test', 'post-install-cmd' => ['@post-messages', 'foo'], 'post-update-cmd' => ['@post-messages', 'bar']];
-
-        \file_put_contents($composerJsonPath, \json_encode(['name' => 'test', 'scripts' => $scripts]));
-        \file_put_contents($composerLockPath, \json_encode(['packages' => []]));
-
-        \putenv('COMPOSER=' . $composerJsonPath);
-
-        $packageMock = $this->mock(PackageInterface::class);
-        $packageMock->shouldReceive('getScripts')
-            ->once()
-            ->andReturn($scripts);
-
-        $this->composerMock
-            ->shouldReceive('getPackage')
-            ->once()
-            ->andReturn($packageMock);
-
-        $repositoryManagerMock = $this->mock(RepositoryManager::class);
-
-        $this->composerMock->shouldReceive('getRepositoryManager')
-            ->once()
-            ->andReturn($repositoryManagerMock);
-
-        $installationManagerMock = $this->mock(InstallationManager::class);
-
-        $this->composerMock->shouldReceive('getInstallationManager')
-            ->once()
-            ->andReturn($installationManagerMock);
-
-        NSA::setProperty($this->securityPlugin, 'io', new NullIO());
-        NSA::setProperty($this->securityPlugin, 'composer', $this->composerMock);
-
-        $event = $this->mock(PackageEvent::class);
-        $event->shouldReceive('getOperation->getPackage->getName')
-            ->andReturn(SecurityPlugin::PACKAGE_NAME);
-
-        $this->securityPlugin->onPostUninstall($event);
-
-        $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
-
-        static::assertTrue(isset($jsonContent['scripts']));
-        static::assertFalse(isset($jsonContent['scripts']['post-messages']));
-        static::assertTrue(isset($jsonContent['scripts']['post-install-cmd']));
-        static::assertTrue(isset($jsonContent['scripts']['post-update-cmd']));
-        static::assertCount(1, $jsonContent['scripts']['post-install-cmd']);
-        static::assertCount(1, $jsonContent['scripts']['post-update-cmd']);
-
-        $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
-
-        static::assertInternalType('string', $lockContent['content-hash']);
-
-        \putenv('COMPOSER=');
-        \putenv('COMPOSER');
-        @\unlink($composerJsonPath);
-        @\unlink($composerLockPath);
     }
 
     /**

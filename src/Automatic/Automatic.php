@@ -155,20 +155,24 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         return [
             ScriptEvents::AUTO_SCRIPTS                    => 'executeAutoScripts',
-            ScriptEvents::POST_MESSAGES                   => 'postMessages',
             InstallerEvents::PRE_DEPENDENCIES_SOLVING     => [['onPreDependenciesSolving', \PHP_INT_MAX]],
             InstallerEvents::POST_DEPENDENCIES_SOLVING    => [['populateFilesCacheDir', \PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_INSTALL            => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_UPDATE             => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_UNINSTALL          => [['onPreUninstall', \PHP_INT_MAX - 1]],
+            PackageEvents::PRE_PACKAGE_UNINSTALL          => 'onPreUninstall',
             PackageEvents::POST_PACKAGE_INSTALL           => 'record',
             PackageEvents::POST_PACKAGE_UPDATE            => 'record',
-            PackageEvents::POST_PACKAGE_UNINSTALL         => [['onPostUninstall', \PHP_INT_MAX - 1]],
+            PackageEvents::POST_PACKAGE_UNINSTALL         => 'onPostUninstall',
             PluginEvents::PRE_FILE_DOWNLOAD               => 'onFileDownload',
+            PluginEvents::INIT                            => 'initAutoScripts',
             ComposerScriptEvents::POST_AUTOLOAD_DUMP      => 'onPostAutoloadDump',
-            ComposerScriptEvents::POST_INSTALL_CMD        => [['onPostInstall', \PHP_INT_MAX - 1]],
-            ComposerScriptEvents::POST_UPDATE_CMD         => [['onPostUpdate', \PHP_INT_MAX - 1]],
-            ComposerScriptEvents::POST_CREATE_PROJECT_CMD => [['onPostCreateProject', \PHP_INT_MAX], ['runSkeletonGenerator', ~\PHP_INT_MAX]],
+            ComposerScriptEvents::POST_INSTALL_CMD        => 'onPostInstall',
+            ComposerScriptEvents::POST_UPDATE_CMD         => [['onPostUpdate', \PHP_INT_MAX], ['onPostUpdatePostMessages', ~\PHP_INT_MAX + 1]],
+            ComposerScriptEvents::POST_CREATE_PROJECT_CMD => [
+                ['onPostCreateProject', \PHP_INT_MAX],
+                ['runSkeletonGenerator', \PHP_INT_MAX - 1],
+                ['initAutoScripts', \PHP_INT_MAX - 2],
+            ],
         ];
     }
 
@@ -225,16 +229,14 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Executes on composer post-messages event.
+     * Executes on composer post-update event.
      *
      * @param \Composer\Script\Event $event
      *
      * @return void
      */
-    public function postMessages(Event $event): void
+    public function onPostUpdatePostMessages(Event $event): void
     {
-        $event->stopPropagation();
-
         $this->container->get(IOInterface::class)->write($this->postMessages);
     }
 
@@ -272,6 +274,54 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Add auto-scripts to root composer.json.
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    public function initAutoScripts(): void
+    {
+        $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
+
+        $autoScript = '@' . ScriptEvents::AUTO_SCRIPTS;
+
+        if (isset($scripts[ComposerScriptEvents::POST_INSTALL_CMD], $scripts[ComposerScriptEvents::POST_UPDATE_CMD]) &&
+            \in_array($autoScript, $scripts[ComposerScriptEvents::POST_INSTALL_CMD], true) &&
+            \in_array($autoScript, $scripts[ComposerScriptEvents::POST_UPDATE_CMD], true)
+        ) {
+            return;
+        }
+
+        /** @var \Composer\Json\JsonFile $json */
+        /** @var \Composer\Json\JsonManipulator $manipulator */
+        [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
+
+        if (\count($scripts) === 0) {
+            $manipulator->addMainKey('scripts', []);
+        }
+
+        $manipulator->addSubNode(
+            'scripts',
+            ComposerScriptEvents::POST_INSTALL_CMD,
+            \array_merge($scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], [$autoScript])
+        );
+        $manipulator->addSubNode(
+            'scripts',
+            ComposerScriptEvents::POST_UPDATE_CMD,
+            \array_merge($scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], [$autoScript])
+        );
+
+        if (! isset($scripts[ScriptEvents::AUTO_SCRIPTS])) {
+            $manipulator->addSubNode('scripts', ScriptEvents::AUTO_SCRIPTS, new \stdClass());
+        }
+
+        \file_put_contents($json->getPath(), $manipulator->getContents());
+
+        $this->updateComposerLock();
+    }
+
+    /**
      * Executes on composer create project event.
      *
      * @param \Composer\Script\Event $event
@@ -295,34 +345,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             if ($key !== self::COMPOSER_EXTRA_KEY) {
                 $manipulator->addSubNode('extra', $key, $value);
             }
-        }
-
-        $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
-
-        if (\count($scripts) === 0) {
-            $manipulator->addMainKey('scripts', []);
-        }
-
-        $manipulator->addSubNode('scripts', ScriptEvents::POST_MESSAGES, 'This key is needed to show messages.');
-
-        $automaticScripts = [
-            '@' . ScriptEvents::AUTO_SCRIPTS,
-            '@' . ScriptEvents::POST_MESSAGES,
-        ];
-
-        $manipulator->addSubNode(
-            'scripts',
-            ComposerScriptEvents::POST_INSTALL_CMD,
-            \array_merge($scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], [$automaticScripts])
-        );
-        $manipulator->addSubNode(
-            'scripts',
-            ComposerScriptEvents::POST_UPDATE_CMD,
-            \array_merge($scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], [$automaticScripts])
-        );
-
-        if (! isset($scripts[ScriptEvents::AUTO_SCRIPTS])) {
-            $manipulator->addSubNode('scripts', ScriptEvents::AUTO_SCRIPTS, new \stdClass());
         }
 
         \file_put_contents($json->getPath(), $manipulator->getContents());
@@ -413,7 +435,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         if ($operation->getPackage()->getName() === self::PACKAGE_NAME) {
             $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
 
-            if (\count($scripts) === 0 || ! isset($scripts[ScriptEvents::POST_MESSAGES])) {
+            if (\count($scripts) === 0) {
                 return;
             }
 
@@ -421,12 +443,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             /** @var \Composer\Json\JsonManipulator $manipulator */
             [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
-            $manipulator->removeSubNode('scripts', ScriptEvents::POST_MESSAGES);
-
             foreach ((array) $scripts[ComposerScriptEvents::POST_INSTALL_CMD] as $key => $script) {
-                if ($script === '@' . ScriptEvents::POST_MESSAGES) {
-                    unset($scripts[ComposerScriptEvents::POST_INSTALL_CMD][$key]);
-                } elseif ($script === '@' . ScriptEvents::AUTO_SCRIPTS) {
+                if ($script === '@' . ScriptEvents::AUTO_SCRIPTS) {
                     unset($scripts[ComposerScriptEvents::POST_INSTALL_CMD][$key]);
                 }
             }
@@ -434,9 +452,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $manipulator->addSubNode('scripts', ComposerScriptEvents::POST_INSTALL_CMD, $scripts[ComposerScriptEvents::POST_INSTALL_CMD]);
 
             foreach ((array) $scripts[ComposerScriptEvents::POST_UPDATE_CMD] as $key => $script) {
-                if ($script === '@' . ScriptEvents::POST_MESSAGES) {
-                    unset($scripts[ComposerScriptEvents::POST_UPDATE_CMD][$key]);
-                } elseif ($script === '@' . ScriptEvents::AUTO_SCRIPTS) {
+                if ($script === '@' . ScriptEvents::AUTO_SCRIPTS) {
                     unset($scripts[ComposerScriptEvents::POST_UPDATE_CMD][$key]);
                 }
             }
@@ -576,8 +592,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
                 $install->transform($package);
 
-                if ($package->hasConfig(ScriptEvents::POST_MESSAGES)) {
-                    foreach ((array) $package->getConfig(ScriptEvents::POST_MESSAGES) as $line) {
+                if ($package->hasConfig('post-install-output')) {
+                    foreach ((array) $package->getConfig('post-install-output') as $line) {
                         $this->postMessages[] = self::expandTargetDir($this->container->get('composer-extra'), $line);
                     }
 

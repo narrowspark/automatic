@@ -3,14 +3,10 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic;
 
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
+use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 
-final class PackageConfigurator extends AbstractConfigurator
+final class PackageConfigurator extends AbstractConfigurator implements PackageConfiguratorContract
 {
-    /**
-     * @var string
-     */
-    public const TYPE = 'custom-configurators';
-
     /**
      * Get a package configurator.
      *

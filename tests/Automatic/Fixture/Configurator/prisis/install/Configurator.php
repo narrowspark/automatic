@@ -1,5 +1,6 @@
 <?php
-declare(strict_types=1); namespace Test;
+declare(strict_types=1);
+namespace Test;
 
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;

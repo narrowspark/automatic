@@ -11,8 +11,10 @@ use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
+use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Contract\Exception\InvalidArgumentException;
+use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Operation\Install;
@@ -102,8 +104,15 @@ final class Container implements ContainerContract
                     $container->get(ClassFinder::class)
                 );
             },
-            Configurator::class => static function (ContainerContract $container) {
+            ConfiguratorContract::class => static function (ContainerContract $container) {
                 return new Configurator(
+                    $container->get(Composer::class),
+                    $container->get(IOInterface::class),
+                    $container->get('composer-extra')
+                );
+            },
+            PackageConfiguratorContract::class => static function (ContainerContract $container) {
+                return new PackageConfigurator(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
                     $container->get('composer-extra')
@@ -114,8 +123,8 @@ final class Container implements ContainerContract
                     $container->get('vendor-dir'),
                     $container->get(Lock::class),
                     $container->get(IOInterface::class),
-                    $container->get(Configurator::class),
-                    $container->get(PackageConfigurator::class),
+                    $container->get(ConfiguratorContract::class),
+                    $container->get(PackageConfiguratorContract::class),
                     $container->get(ClassFinder::class)
                 );
             },
@@ -124,8 +133,8 @@ final class Container implements ContainerContract
                     $container->get('vendor-dir'),
                     $container->get(Lock::class),
                     $container->get(IOInterface::class),
-                    $container->get(Configurator::class),
-                    $container->get(PackageConfigurator::class),
+                    $container->get(ConfiguratorContract::class),
+                    $container->get(PackageConfiguratorContract::class),
                     $container->get(ClassFinder::class)
                 );
             },
@@ -165,13 +174,6 @@ final class Container implements ContainerContract
                 $scriptExecutor->add(PhpScriptExtender::getType(), PhpScriptExtender::class);
 
                 return $scriptExecutor;
-            },
-            PackageConfigurator::class => static function (ContainerContract $container) {
-                return new PackageConfigurator(
-                    $container->get(Composer::class),
-                    $container->get(IOInterface::class),
-                    $container->get('composer-extra')
-                );
             },
             LegacyTagsManager::class => static function (ContainerContract $container) {
                 return new LegacyTagsManager($container->get(IOInterface::class));

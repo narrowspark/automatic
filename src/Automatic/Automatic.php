@@ -37,6 +37,7 @@ use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager;
@@ -101,7 +102,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      *
      * @var bool
      */
-    private static $configuratorsLoaded = true;
+    private static $configuratorsLoaded = false;
 
     /**
      * Check if composer.lock should be updated.
@@ -477,16 +478,18 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      *
      * Load configurators from "automatic-configurator".
      *
+     * @param \Composer\Script\Event $event
+     *
      * @throws \ReflectionException
      *
      * @return void
      */
-    public function onPostAutoloadDump(): void
+    public function onPostAutoloadDump(Event $event): void
     {
         /** @var \Narrowspark\Automatic\Configurator $configurator */
-        $configurator = $this->container->get(Configurator::class);
+        $configurator = $this->container->get(ConfiguratorContract::class);
 
-        if (static::$configuratorsLoaded) {
+        if (self::$configuratorsLoaded === true) {
             $configurator->reset();
         }
 
@@ -511,7 +514,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        static::$configuratorsLoaded = true;
+        self::$configuratorsLoaded = true;
     }
 
     /**

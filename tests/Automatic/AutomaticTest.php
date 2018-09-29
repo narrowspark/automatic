@@ -24,8 +24,10 @@ use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
+use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
+use Narrowspark\Automatic\Installer\InstallationManager as NarrowsparkInstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
@@ -167,7 +169,10 @@ final class AutomaticTest extends MockeryTestCase
             $this->automatic->getContainer()->get(Lock::class)->get('@readme')
         );
 
-        static::assertInstanceOf(\Narrowspark\Automatic\Installer\InstallationManager::class, $this->automatic->getContainer()->get(\Narrowspark\Automatic\Installer\InstallationManager::class));
+        static::assertInstanceOf(
+            NarrowsparkInstallationManager::class,
+            $this->automatic->getContainer()->get(NarrowsparkInstallationManager::class)
+        );
     }
 
     public function testActivateWithNoInteractive(): void
@@ -731,6 +736,100 @@ final class AutomaticTest extends MockeryTestCase
         $this->automatic->setContainer($containerMock);
 
         $this->automatic->runSkeletonGenerator($this->mock(Event::class));
+    }
+
+    public function testOnPostAutoloadDump(): void
+    {
+        $containerMock    = $this->mock(ContainerContract::class);
+        $configuratorMock = $this->mock(ConfiguratorContract::class);
+        $configuratorMock->shouldReceive('reset')
+            ->never();
+        $configuratorMock->shouldReceive('add')
+            ->once()
+            ->with('test', 'Test\Configurator');
+
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with(ConfiguratorContract::class)
+            ->andReturn($configuratorMock);
+
+        $this->lockMock->shouldReceive('get')
+            ->once()
+            ->with(Automatic::LOCK_CLASSMAP)
+            ->andReturn([
+                'prisis/install' => [
+                    '\Test\Configurator' => '%vendor_path%/prisis/install/Configurator.php',
+                ],
+            ]);
+        $this->lockMock->shouldReceive('get')
+            ->with(ConfiguratorInstaller::LOCK_KEY)
+            ->andReturn([
+                'prisis/install' => [
+                    '\Test\Configurator',
+                ],
+            ]);
+
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with(Lock::class)
+            ->andReturn($this->lockMock);
+        $containerMock->shouldReceive('get')
+            ->once()
+            ->with('vendor-dir')
+            ->andReturn(__DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'Configurator');
+
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->onPostAutoloadDump($this->mock(Event::class));
+
+        NSA::setProperty($this->automatic, 'configuratorsLoaded', false);
+    }
+
+    public function testOnPostAutoloadDumpWithReset(): void
+    {
+        $containerMock    = $this->mock(ContainerContract::class);
+        $configuratorMock = $this->mock(ConfiguratorContract::class);
+        $configuratorMock->shouldReceive('reset')
+            ->once();
+        $configuratorMock->shouldReceive('add')
+            ->twice()
+            ->with('test', 'Test\Configurator');
+
+        $containerMock->shouldReceive('get')
+            ->twice()
+            ->with(ConfiguratorContract::class)
+            ->andReturn($configuratorMock);
+
+        $this->lockMock->shouldReceive('get')
+            ->twice()
+            ->with(Automatic::LOCK_CLASSMAP)
+            ->andReturn([
+                'prisis/install' => [
+                    '\Test\Configurator' => '%vendor_path%/prisis/install/Configurator.php',
+                ],
+            ]);
+        $this->lockMock->shouldReceive('get')
+            ->twice()
+            ->with(ConfiguratorInstaller::LOCK_KEY)
+            ->andReturn([
+                'prisis/install' => [
+                    '\Test\Configurator',
+                ],
+            ]);
+
+        $containerMock->shouldReceive('get')
+            ->twice()
+            ->with(Lock::class)
+            ->andReturn($this->lockMock);
+        $containerMock->shouldReceive('get')
+            ->twice()
+            ->with('vendor-dir')
+            ->andReturn(__DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'Configurator');
+
+        $event = $this->mock(Event::class);
+
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->onPostAutoloadDump($event);
+        $this->automatic->onPostAutoloadDump($event);
     }
 
     /**

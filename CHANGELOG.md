@@ -1,3 +1,13 @@
+## v0.8.2
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Fixed
+
+ - [85: added reset call if configurator was called in onPostAutoloadDump](https://github.com/narrowspark/automatic/pull/85) thanks to @prisis
+
 ## v0.8.1
 
 - Total issues resolved: **0**

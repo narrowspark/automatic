@@ -37,6 +37,7 @@ use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager;
@@ -95,6 +96,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      * @var bool
      */
     private static $activated = true;
+
+    /**
+     * Check if the Configurators a loaded.
+     *
+     * @var bool
+     */
+    private static $configuratorsLoaded = false;
 
     /**
      * Check if composer.lock should be updated.
@@ -470,16 +478,24 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      *
      * Load configurators from "automatic-configurator".
      *
+     * @param \Composer\Script\Event $event
+     *
      * @throws \ReflectionException
      *
      * @return void
      */
-    public function onPostAutoloadDump(): void
+    public function onPostAutoloadDump(Event $event): void
     {
-        $lock         = $this->container->get(Lock::class);
-        $vendorDir    = $this->container->get('vendor-dir');
-        $configurator = $this->container->get(Configurator::class);
-        $classMap     = (array) $lock->get(self::LOCK_CLASSMAP);
+        /** @var \Narrowspark\Automatic\Configurator $configurator */
+        $configurator = $this->container->get(ConfiguratorContract::class);
+
+        if (self::$configuratorsLoaded === true) {
+            $configurator->reset();
+        }
+
+        $lock      = $this->container->get(Lock::class);
+        $vendorDir = $this->container->get('vendor-dir');
+        $classMap  = (array) $lock->get(self::LOCK_CLASSMAP);
 
         foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
             foreach ($classMap[$packageName] as $class => $path) {
@@ -497,6 +513,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 }
             }
         }
+
+        self::$configuratorsLoaded = true;
     }
 
     /**
@@ -658,7 +676,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                     $reflectionClass = new ReflectionClass($class);
 
                     if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getType')) {
-                        $scriptExecutor->addExtender($class::getType(), $class);
+                        $scriptExecutor->add($class::getType(), $class);
                     }
                 }
             }

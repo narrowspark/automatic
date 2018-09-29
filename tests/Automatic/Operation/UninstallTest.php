@@ -8,8 +8,8 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Configurator;
+use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Operation\Uninstall;
-use Narrowspark\Automatic\PackageConfigurator;
 use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\Automatic\Test\Operation\Traits\ArrangeOperationsClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -172,11 +172,11 @@ final class UninstallTest extends MockeryTestCase
             ->andReturn(false);
         $package->shouldReceive('hasConfig')
             ->once()
-            ->with(PackageConfigurator::TYPE)
+            ->with(PackageConfiguratorContract::TYPE)
             ->andReturn(true);
         $package->shouldReceive('getConfig')
             ->once()
-            ->with(PackageConfigurator::TYPE)
+            ->with(PackageConfiguratorContract::TYPE)
             ->andReturn(['test' => Configurator\EnvConfigurator::class]);
         $package->shouldReceive('getConfig')
             ->once()

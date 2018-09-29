@@ -4,12 +4,12 @@ namespace Narrowspark\Automatic\Operation;
 
 use Composer\IO\IOInterface;
 use Narrowspark\Automatic\Common\ClassFinder;
-use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
+use Narrowspark\Automatic\Common\Contract\Configurator as CommonConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
-use Narrowspark\Automatic\Configurator;
+use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Contract\Operation as OperationContract;
+use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Lock;
-use Narrowspark\Automatic\PackageConfigurator;
 
 abstract class AbstractOperation implements OperationContract
 {
@@ -37,14 +37,14 @@ abstract class AbstractOperation implements OperationContract
     /**
      * A configurator instance.
      *
-     * @var \Narrowspark\Automatic\Configurator
+     * @var \Narrowspark\Automatic\Contract\Configurator
      */
     protected $configurator;
 
     /**
      * A package configurator instance.
      *
-     * @var \Narrowspark\Automatic\PackageConfigurator
+     * @var \Narrowspark\Automatic\Contract\PackageConfigurator
      */
     protected $packageConfigurator;
 
@@ -58,19 +58,19 @@ abstract class AbstractOperation implements OperationContract
     /**
      * Base functions for Install and Uninstall Operation.
      *
-     * @param string                                     $vendorDir
-     * @param \Narrowspark\Automatic\Lock                $lock
-     * @param \Composer\IO\IOInterface                   $io
-     * @param \Narrowspark\Automatic\Configurator        $configurator
-     * @param \Narrowspark\Automatic\PackageConfigurator $packageConfigurator
-     * @param \Narrowspark\Automatic\Common\ClassFinder  $classFinder
+     * @param string                                              $vendorDir
+     * @param \Narrowspark\Automatic\Lock                         $lock
+     * @param \Composer\IO\IOInterface                            $io
+     * @param \Narrowspark\Automatic\Contract\Configurator        $configurator
+     * @param \Narrowspark\Automatic\Contract\PackageConfigurator $packageConfigurator
+     * @param \Narrowspark\Automatic\Common\ClassFinder           $classFinder
      */
     public function __construct(
         string $vendorDir,
         Lock $lock,
         IOInterface $io,
-        Configurator $configurator,
-        PackageConfigurator $packageConfigurator,
+        ConfiguratorContract $configurator,
+        PackageConfiguratorContract $packageConfigurator,
         ClassFinder $classFinder
     ) {
         $this->vendorDir           = $vendorDir;
@@ -84,18 +84,18 @@ abstract class AbstractOperation implements OperationContract
     /**
      * Show a waring if remaining configurators are found in package config.
      *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param \Narrowspark\Automatic\PackageConfigurator     $packageConfigurator
-     * @param \Narrowspark\Automatic\Configurator            $configurator
+     * @param \Narrowspark\Automatic\Common\Contract\Package      $package
+     * @param \Narrowspark\Automatic\Contract\PackageConfigurator $packageConfigurator
+     * @param \Narrowspark\Automatic\Contract\Configurator        $configurator
      *
      * @return void
      */
     protected function showWarningOnRemainingConfigurators(
         PackageContract $package,
-        PackageConfigurator $packageConfigurator,
-        Configurator $configurator
+        PackageConfiguratorContract $packageConfigurator,
+        ConfiguratorContract $configurator
     ): void {
-        $packageConfigurators = \array_keys((array) $package->getConfig(ConfiguratorContract::TYPE));
+        $packageConfigurators = \array_keys((array) $package->getConfig(CommonConfiguratorContract::TYPE));
 
         foreach (\array_keys($configurator->getConfigurators()) as $key => $value) {
             if (isset($packageConfigurators[$key])) {
@@ -129,9 +129,9 @@ abstract class AbstractOperation implements OperationContract
      */
     protected function addPackageConfigurators(PackageContract $package): void
     {
-        if ($package->hasConfig(PackageConfigurator::TYPE)) {
+        if ($package->hasConfig(PackageConfiguratorContract::TYPE)) {
             /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */
-            foreach ((array) $package->getConfig(PackageConfigurator::TYPE) as $name => $class) {
+            foreach ((array) $package->getConfig(PackageConfiguratorContract::TYPE) as $class) {
                 $reflectionClass = new \ReflectionClass($class);
 
                 if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {

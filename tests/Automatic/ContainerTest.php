@@ -13,7 +13,9 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Container;
+use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Contract\Exception\InvalidArgumentException;
+use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\LegacyTagsManager;
@@ -122,14 +124,14 @@ final class ContainerTest extends MockeryTestCase
             [ClassFinder::class, ClassFinder::class],
             [ConfiguratorInstaller::class, ConfiguratorInstaller::class],
             [SkeletonInstaller::class, SkeletonInstaller::class],
-            [Configurator::class, Configurator::class],
+            [ConfiguratorContract::class, Configurator::class],
             [Install::class, Install::class],
             [Uninstall::class, Uninstall::class],
             [RemoteFilesystem::class, RemoteFilesystem::class],
             [ParallelDownloader::class, ParallelDownloader::class],
             [Prefetcher::class, Prefetcher::class],
             [ScriptExecutor::class, ScriptExecutor::class],
-            [PackageConfigurator::class, PackageConfigurator::class],
+            [PackageConfiguratorContract::class, PackageConfigurator::class],
             [LegacyTagsManager::class, LegacyTagsManager::class],
         ];
     }

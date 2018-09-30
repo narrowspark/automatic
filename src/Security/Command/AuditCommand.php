@@ -58,7 +58,7 @@ EOF
             $downloader = new ComposerDownloader();
         }
 
-        /** @var null|int $timeout */
+        /** @var null|string $timeout */
         $timeout = $input->getOption('timeout');
 
         if ($timeout !== null) {

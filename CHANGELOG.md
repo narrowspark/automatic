@@ -1,3 +1,13 @@
+## v0.8.3
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Fixed
+
+ - [86: added missing configurators after reset](https://github.com/narrowspark/automatic/pull/86) thanks to @prisis
+
 ## v0.8.2
 
 - Total issues resolved: **0**

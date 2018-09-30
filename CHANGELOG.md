@@ -1,3 +1,13 @@
+## v0.8.4
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Fixed
+
+ - [87: moved skeleton generate before the dependencies install](https://github.com/narrowspark/automatic/pull/87) thanks to @prisis
+
 ## v0.8.3
 
 - Total issues resolved: **0**

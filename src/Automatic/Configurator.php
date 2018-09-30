@@ -36,7 +36,13 @@ final class Configurator extends AbstractConfigurator
      */
     public function reset(): void
     {
-        $this->configurators = [];
+        $this->configurators = [
+            'composer-auto-scripts' => ComposerAutoScriptsConfigurator::class,
+            'composer-scripts'      => ComposerScriptsConfigurator::class,
+            'copy'                  => CopyFromPackageConfigurator::class,
+            'env'                   => EnvConfigurator::class,
+            'gitignore'             => GitIgnoreConfigurator::class,
+        ];
         $this->cache         = [];
     }
 

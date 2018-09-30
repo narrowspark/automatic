@@ -106,6 +106,8 @@ final class SkeletonGenerator
 
         $this->io->write(\sprintf('%sGenerating [%s] skeleton.%s', "\n", $generatorTypes[$answer], "\n"));
 
+        $generator->generate();
+
         $this->installationManager->install(
             $this->transformToPackages($generator->getDependencies()),
             $this->transformToPackages($generator->getDevDependencies())
@@ -118,7 +120,6 @@ final class SkeletonGenerator
             exit($status);
         }
         // @codeCoverageIgnoreEnd
-        $generator->generate();
     }
 
     /**

@@ -58,16 +58,20 @@ EOF
             $downloader = new ComposerDownloader();
         }
 
-        if (($timeout = $input->getOption('timeout')) !== null) {
+        /** @var null|string $timeout */
+        $timeout = $input->getOption('timeout');
+
+        if ($timeout !== null) {
             $downloader->setTimeout((int) $timeout);
         }
 
         $config = Factory::createConfig(new NullIO());
         $audit  = new Audit(\rtrim($config->get('vendor-dir'), '/'), $downloader);
 
-        if ($input->getOption('composer-lock') !== null) {
-            $composerFile = $input->getOption('composer-lock');
-        } else {
+        /** @var null|string $composerFile */
+        $composerFile = $input->getOption('composer-lock');
+
+        if ($composerFile === null) {
             $composerFile = Util::getComposerLockFile();
         }
 

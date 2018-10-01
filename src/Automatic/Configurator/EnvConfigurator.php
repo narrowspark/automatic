@@ -38,13 +38,17 @@ final class EnvConfigurator extends AbstractConfigurator
                 continue;
             }
 
-            $value = self::expandTargetDir($this->options, (string) $value);
+            if (\is_string($value)) {
+                $value = self::expandTargetDir($this->options, $value);
+            } elseif (\filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE) !== null) {
+                $value = \var_export($value, true);
+            }
 
             if (\strpbrk($value, " \t\n&!\"") !== false) {
                 $value = '"' . \str_replace(['\\', '"', "\t", "\n"], ['\\\\', '\\"', '\t', '\n'], $value) . '"';
             }
 
-            $data .= "${key}=${value}\n";
+            $data .= $key . '=' . $value . "\n";
         }
 
         if (! \file_exists($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env')) {

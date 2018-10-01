@@ -1,3 +1,13 @@
+## v0.8.5
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Fixed
+
+ - [88: fixed env value, should always be a string](https://github.com/narrowspark/automatic/pull/88) thanks to @prisis
+
 ## v0.8.4
 
 - Total issues resolved: **0**

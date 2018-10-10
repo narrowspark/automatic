@@ -91,6 +91,8 @@ EOF;
 /vendor/
 ###< Bar/Bundle ###
 EOF;
+        $gitignoreContents1 = \str_replace("\n", \PHP_EOL, $gitignoreContents1);
+        $gitignoreContents2 = \str_replace("\n", \PHP_EOL, $gitignoreContents2);
 
         $this->configurator->configure($package);
 
@@ -136,6 +138,8 @@ EOF;
 /public/css/
 ###< Foo/Bundle ###
 EOF;
+        $gitignoreContents1 = \str_replace("\n", \PHP_EOL, $gitignoreContents1);
+
         static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
     }
 

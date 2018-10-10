@@ -114,6 +114,8 @@ VALID_NUMBER_TRUE=1
 ###< fixtures/test ###
 
 EOF;
+        $envContents = \str_replace("\n", \PHP_EOL, $envContents);
+
         // Skip on second call
         $this->configurator->configure($package);
 
@@ -148,6 +150,8 @@ APP_SECRET=s3cretf0rt3st
 ###< fixtures/env2 ###
 
 EOF;
+        $envContents = \str_replace("\n", \PHP_EOL, $envContents);
+
         static::assertStringEqualsFile($this->envDistPath, $envContents);
         static::assertStringEqualsFile($this->envPath, $envContents);
 

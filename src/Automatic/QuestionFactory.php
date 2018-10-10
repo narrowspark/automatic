@@ -29,7 +29,7 @@ PHP;
             return \sprintf($message, $name);
         }
 
-        return \sprintf("    Review the package from %s.\n" . $message, \str_replace('.git', '', $url), $name);
+        return \sprintf('    Review the package from %s.' . \PHP_EOL . $message, \str_replace('.git', '', $url), $name);
     }
 
     /**

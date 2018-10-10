@@ -33,7 +33,7 @@ final class EnvConfigurator extends AbstractConfigurator
 
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $key => $value) {
             if ($key[0] === '#' && \is_numeric(\mb_substr($key, 1))) {
-                $data .= '# ' . $value . "\n";
+                $data .= '# ' . $value . \PHP_EOL;
 
                 continue;
             }
@@ -48,7 +48,7 @@ final class EnvConfigurator extends AbstractConfigurator
                 $value = '"' . \str_replace(['\\', '"', "\t", "\n"], ['\\\\', '\\"', '\t', '\n'], $value) . '"';
             }
 
-            $data .= $key . '=' . $value . "\n";
+            $data .= $key . '=' . $value . \PHP_EOL;
         }
 
         if (! \file_exists($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env')) {
@@ -78,7 +78,7 @@ final class EnvConfigurator extends AbstractConfigurator
             /** @codeCoverageIgnoreEnd */
             $count    = 0;
             $contents = \preg_replace(
-                \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getPrettyName(), $package->getPrettyName(), "\n"),
+                \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', \PHP_EOL, $package->getPrettyName(), $package->getPrettyName(), "\n"),
                 '',
                 (string) \file_get_contents($env),
                 -1,

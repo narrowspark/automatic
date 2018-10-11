@@ -32,7 +32,7 @@ final class EnvConfigurator extends AbstractConfigurator
         $data = '';
 
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $key => $value) {
-            if ($key[0] === '#' && \is_numeric(\mb_substr($key, 1))) {
+            if (\mb_strpos($key, '#') === 0 && \is_numeric(\mb_substr($key, 1))) {
                 $data .= '# ' . $value . \PHP_EOL;
 
                 continue;
@@ -78,7 +78,7 @@ final class EnvConfigurator extends AbstractConfigurator
             /** @codeCoverageIgnoreEnd */
             $count    = 0;
             $contents = \preg_replace(
-                \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', \PHP_EOL, $package->getPrettyName(), $package->getPrettyName(), "\n"),
+                \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', \PHP_EOL, $package->getPrettyName(), $package->getPrettyName(), \PHP_EOL),
                 '',
                 (string) \file_get_contents($env),
                 -1,

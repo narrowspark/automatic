@@ -96,7 +96,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
             ->with('Please select a skeleton:', ['console'], 'console')
             ->andReturn(0);
         $this->ioMock->shouldReceive('write')
-            ->with(\PHP_EOL . "Generating [console] skeleton.\n");
+            ->with(\PHP_EOL . 'Generating [console] skeleton.' . \PHP_EOL);
 
         $this->skeletonGenerator->run();
     }
@@ -122,7 +122,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
             ->with('Please select a skeleton:', ['console', 'framework'], 'framework')
             ->andReturn(1);
         $this->ioMock->shouldReceive('write')
-            ->with(\PHP_EOL . "Generating [framework] skeleton.\n");
+            ->with(\PHP_EOL . 'Generating [framework] skeleton.' . \PHP_EOL);
 
         $this->skeletonGenerator->run();
     }

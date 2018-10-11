@@ -78,7 +78,7 @@ final class EnvConfigurator extends AbstractConfigurator
             /** @codeCoverageIgnoreEnd */
             $count    = 0;
             $contents = \preg_replace(
-                \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), "\n"),
+                \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), \PHP_EOL),
                 '',
                 (string) \file_get_contents($env),
                 -1,

@@ -49,10 +49,10 @@ final class EnvConfiguratorTest extends MockeryTestCase
         $this->composer = new Composer();
         $this->nullIo   = new NullIO();
 
-        $this->configurator = new EnvConfigurator($this->composer, $this->nullIo, []);
+        $this->configurator = new EnvConfigurator($this->composer, $this->nullIo, ['root-dir' => __DIR__]);
 
-        $this->envDistPath = \sys_get_temp_dir() . '/.env.dist';
-        $this->envPath     = \sys_get_temp_dir() . '/.env';
+        $this->envPath     = __DIR__ . '/.env';
+        $this->envDistPath = $this->envPath . '.dist';
 
         \touch($this->envDistPath);
     }
@@ -146,9 +146,6 @@ final class EnvConfiguratorTest extends MockeryTestCase
 
         static::assertStringEqualsFile($this->envDistPath, $envContents);
         static::assertStringEqualsFile($this->envPath, $envContents);
-
-        $package = new Package('fixtures/env2', '1.1.0');
-        $package->setConfig([ConfiguratorContract::TYPE => [EnvConfigurator::getName() => $envConfig]]);
 
         $this->configurator->unconfigure($package);
 

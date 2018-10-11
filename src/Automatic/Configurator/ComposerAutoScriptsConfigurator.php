@@ -92,6 +92,6 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     {
         $this->manipulator->addSubNode('scripts', 'auto-scripts', $autoScripts);
 
-        \file_put_contents($this->json->getPath(), $this->manipulator->getContents());
+        $this->filesystem->dumpFile($this->json->getPath(), $this->manipulator->getContents());
     }
 }

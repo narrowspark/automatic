@@ -57,8 +57,8 @@ final class EnvConfigurator extends AbstractConfigurator
 
         $data = $this->markData($package->getPrettyName(), $data);
 
-        \file_put_contents($distenv, $data, \FILE_APPEND);
-        \file_put_contents($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env', $data, \FILE_APPEND);
+        $this->filesystem->appendToFile($distenv, $data);
+        $this->filesystem->appendToFile($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env', $data);
     }
 
     /**
@@ -78,7 +78,7 @@ final class EnvConfigurator extends AbstractConfigurator
             /** @codeCoverageIgnoreEnd */
             $count    = 0;
             $contents = \preg_replace(
-                \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', \PHP_EOL, $package->getPrettyName(), $package->getPrettyName(), \PHP_EOL),
+                \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), "\n"),
                 '',
                 (string) \file_get_contents($env),
                 -1,
@@ -93,7 +93,7 @@ final class EnvConfigurator extends AbstractConfigurator
 
             $this->write(\sprintf('Removing environment variables from %s', $file));
 
-            \file_put_contents($env, $contents);
+            $this->filesystem->dumpFile($env, $contents);
         }
     }
 }

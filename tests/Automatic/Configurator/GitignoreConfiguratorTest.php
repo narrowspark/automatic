@@ -96,20 +96,20 @@ EOF;
 
         $this->configurator->configure($package);
 
-        static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents1 . \PHP_EOL);
 
         $this->configurator->configure($package2);
 
-        static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n\n" . $gitignoreContents2 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents1 . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
 
         $this->configurator->configure($package);
         $this->configurator->configure($package2);
 
-        static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n\n" . $gitignoreContents2 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents1 . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
 
         $this->configurator->unconfigure($package);
 
-        static::assertStringEqualsFile($this->gitignorePath, $gitignoreContents2 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, $gitignoreContents2 . \PHP_EOL);
 
         $this->configurator->unconfigure($package2);
 
@@ -140,7 +140,7 @@ EOF;
 EOF;
         $gitignoreContents1 = \str_replace("\n", \PHP_EOL, $gitignoreContents1);
 
-        static::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents1 . "\n");
+        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents1 . \PHP_EOL);
     }
 
     /**

@@ -28,12 +28,12 @@ final class QuestionFactoryTest extends TestCase
     public function testGetPackageQuestionWithoutUrl(): void
     {
         static::assertSame(
-            '    Do you want to execute this package [foo/bar]?
+            \str_replace("\n", \PHP_EOL, '    Do you want to execute this package [foo/bar]?
     [<comment>y</comment>] Yes
     [<comment>n</comment>] No
     [<comment>a</comment>] Yes for all packages, only for the current installation session
     [<comment>p</comment>] Yes permanently, never ask again for this project
-    (defaults to <comment>n</comment>): ',
+    (defaults to <comment>n</comment>): '),
             QuestionFactory::getPackageQuestion('foo/bar', null)
         );
     }

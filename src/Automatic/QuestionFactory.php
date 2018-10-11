@@ -29,7 +29,11 @@ PHP;
             return \sprintf($message, $name);
         }
 
-        return \sprintf('    Review the package from %s.' . \PHP_EOL . $message, \str_replace('.git', '', $url), $name);
+        return \str_replace(
+            "\n",
+            \PHP_EOL,
+            \sprintf('    Review the package from %s.' . \PHP_EOL . $message, \str_replace('.git', '', $url), $name)
+        );
     }
 
     /**
@@ -46,7 +50,7 @@ PHP;
     (defaults to <comment>no</comment>): 
 PHP;
 
-        return \sprintf($message, $name);
+        return \str_replace("\n", \PHP_EOL, \sprintf($message, $name));
     }
 
     /**

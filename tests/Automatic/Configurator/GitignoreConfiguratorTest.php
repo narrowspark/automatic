@@ -73,39 +73,33 @@ final class GitignoreConfiguratorTest extends TestCase
             '/%PUBLIC_DIR%/css/',
         ]);
 
-        $gitignoreContents1 = <<<'EOF'
-###> Foo/Bundle ###
-.env
-/public/css/
-###< Foo/Bundle ###
-EOF;
+        $gitignoreContents = '###> Foo/Bundle ###' . \PHP_EOL;
+        $gitignoreContents .= '.env' . \PHP_EOL;
+        $gitignoreContents .= '/public/css/' . \PHP_EOL;
+        $gitignoreContents .= '###< Foo/Bundle ###';
 
         $package2 = $this->arrangePackageWithConfig('Bar/Bundle', [
             '/var/',
             '/vendor/',
         ]);
 
-        $gitignoreContents2 = <<<'EOF'
-###> Bar/Bundle ###
-/var/
-/vendor/
-###< Bar/Bundle ###
-EOF;
-        $gitignoreContents1 = \str_replace("\n", \PHP_EOL, $gitignoreContents1);
-        $gitignoreContents2 = \str_replace("\n", \PHP_EOL, $gitignoreContents2);
+        $gitignoreContents2 = '###> Bar/Bundle ###' . \PHP_EOL;
+        $gitignoreContents2 .= '/var/' . \PHP_EOL;
+        $gitignoreContents2 .= '/vendor/' . \PHP_EOL;
+        $gitignoreContents2 .= '###< Bar/Bundle ###';
 
         $this->configurator->configure($package);
 
-        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents1 . \PHP_EOL);
+        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL);
 
         $this->configurator->configure($package2);
 
-        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents1 . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
+        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
 
         $this->configurator->configure($package);
         $this->configurator->configure($package2);
 
-        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents1 . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
+        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
 
         $this->configurator->unconfigure($package);
 
@@ -132,15 +126,12 @@ EOF;
 
         $this->configurator->unconfigure($package);
 
-        $gitignoreContents1 = <<<'EOF'
-###> Foo/Bundle ###
-.env
-/public/css/
-###< Foo/Bundle ###
-EOF;
-        $gitignoreContents1 = \str_replace("\n", \PHP_EOL, $gitignoreContents1);
+        $gitignoreContents = '###> Foo/Bundle ###' . \PHP_EOL;
+        $gitignoreContents .= '.env' . \PHP_EOL;
+        $gitignoreContents .= '/public/css/' . \PHP_EOL;
+        $gitignoreContents .= '###< Foo/Bundle ###';
 
-        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents1 . \PHP_EOL);
+        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL);
     }
 
     /**

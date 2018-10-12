@@ -17,7 +17,7 @@ class TextFormatter implements FormatterContract
                 $output->section(\sprintf('%s (%s)', $dependency, $issues['version']));
 
                 $details = \array_map(function ($value) {
-                    return \sprintf("<info>%s</>: %s\n    %s", $value['cve'] ?: '(no CVE ID)', $value['title'], $value['link']);
+                    return \sprintf('<info>%s</>: %s' . \PHP_EOL . '    %s', $value['cve'] ?: '(no CVE ID)', $value['title'], $value['link']);
                 }, $issues['advisories']);
 
                 $output->listing($details);

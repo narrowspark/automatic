@@ -25,6 +25,7 @@ parameters:
         - '#Parameter \#1 \$stream of class Symfony\\Component\\Console\\Output\\StreamOutput constructor expects resource, resource\|false given#'
 
         - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
+        - '#Call to function method_exists\(\) with Symfony\\Component\\Filesystem\\Filesystem and #'
 
         # Automatic
         - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'

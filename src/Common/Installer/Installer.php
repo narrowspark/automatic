@@ -100,7 +100,7 @@ final class Installer
                 // noop
                 break;
         }
-        /** @codeCoverageIgnoreEnd */
+        // @codeCoverageIgnoreEnd
         $preferSource = self::getOption($input, 'prefer-source', $preferSource);
         $preferDist   = self::getOption($input, 'prefer-dist', $preferDist);
 

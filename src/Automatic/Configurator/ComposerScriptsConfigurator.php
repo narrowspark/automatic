@@ -221,6 +221,6 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         $this->manipulator->addMainKey('scripts', $scripts);
 
-        \file_put_contents($this->json->getPath(), $this->manipulator->getContents());
+        $this->filesystem->dumpFile($this->json->getPath(), $this->manipulator->getContents());
     }
 }

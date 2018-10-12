@@ -5,9 +5,12 @@ namespace Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Configurator\Traits\AppendToFileTrait;
 
 final class GitIgnoreConfigurator extends AbstractConfigurator
 {
+    use AppendToFileTrait;
+
     /**
      * {@inheritdoc}
      */
@@ -33,10 +36,10 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
 
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $value) {
             $value = self::expandTargetDir($this->options, $value);
-            $data .= "${value}\n";
+            $data .= $value . \PHP_EOL;
         }
 
-        \file_put_contents($gitignore, "\n" . \ltrim($this->markData($package->getPrettyName(), $data), "\r\n"), \FILE_APPEND);
+        $this->appendToFile($gitignore, \PHP_EOL . \ltrim($this->markData($package->getPrettyName(), $data), "\r\n"));
     }
 
     /**
@@ -50,11 +53,11 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
         if (! \file_exists($file)) {
             return;
         }
-        /** @codeCoverageIgnoreEnd */
+        // @codeCoverageIgnoreEnd
         $count    = 0;
         $contents = \preg_replace(
-            \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getPrettyName(), $package->getPrettyName(), "\n"),
-            "\n",
+            \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), \PHP_EOL),
+            \PHP_EOL,
             (string) \file_get_contents($file),
             -1,
             $count
@@ -66,6 +69,6 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
 
         $this->write('Removed entries in .gitignore');
 
-        \file_put_contents($file, \ltrim($contents, "\r\n"));
+        $this->filesystem->dumpFile($file, \ltrim($contents, "\r\n"));
     }
 }

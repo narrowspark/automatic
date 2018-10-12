@@ -5,9 +5,12 @@ namespace Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Configurator\Traits\AppendToFileTrait;
 
 final class GitIgnoreConfigurator extends AbstractConfigurator
 {
+    use AppendToFileTrait;
+
     /**
      * {@inheritdoc}
      */
@@ -36,7 +39,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
             $data .= $value . \PHP_EOL;
         }
 
-        $this->filesystem->appendToFile($gitignore, \PHP_EOL . \ltrim($this->markData($package->getPrettyName(), $data), "\r\n"));
+        $this->appendToFile($gitignore, \PHP_EOL . \ltrim($this->markData($package->getPrettyName(), $data), "\r\n"));
     }
 
     /**

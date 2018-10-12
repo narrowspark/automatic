@@ -5,9 +5,12 @@ namespace Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Configurator\Traits\AppendToFileTrait;
 
 final class EnvConfigurator extends AbstractConfigurator
 {
+    use AppendToFileTrait;
+
     /**
      * {@inheritdoc}
      */
@@ -57,8 +60,8 @@ final class EnvConfigurator extends AbstractConfigurator
 
         $data = $this->markData($package->getPrettyName(), $data);
 
-        $this->filesystem->appendToFile($distenv, $data);
-        $this->filesystem->appendToFile($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env', $data);
+        $this->appendToFile($distenv, $data);
+        $this->appendToFile($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env', $data);
     }
 
     /**

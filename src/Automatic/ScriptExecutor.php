@@ -116,7 +116,7 @@ final class ScriptExecutor
             $this->io->isDecorated()
         );
 
-        /** @codeCoverageIgnoreStart */
+        // @codeCoverageIgnoreStart
         $outputHandler = function ($type, $buffer) use ($cmdOutput): void {
             $cmdOutput->write($buffer, false, OutputInterface::OUTPUT_RAW);
         };

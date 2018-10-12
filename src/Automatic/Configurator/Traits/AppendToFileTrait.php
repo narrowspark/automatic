@@ -25,7 +25,7 @@ trait AppendToFileTrait
 
             return;
         }
-
+        // @codeCoverageIgnoreStart
         $dir = \dirname($filename);
 
         if (! \is_dir($dir)) {
@@ -39,5 +39,6 @@ trait AppendToFileTrait
         if (false === @\file_put_contents($filename, $content, \FILE_APPEND)) {
             throw new IOException(\sprintf('Failed to write file "%s".', $filename), 0, null, $filename);
         }
+        // @codeCoverageIgnoreEnd
     }
 }

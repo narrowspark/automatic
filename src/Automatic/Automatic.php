@@ -61,7 +61,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     /**
      * @var string
      */
-    public const VERSION = '0.8.5';
+    public const VERSION = '0.8.6';
 
     /**
      * @var string

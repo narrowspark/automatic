@@ -1,3 +1,13 @@
+## v0.8.6
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+### Changed
+
+ - [89: changed \n to PHP&#95;EOL](https://github.com/narrowspark/automatic/pull/89) thanks to @prisis
+
 ## v0.8.5
 
 - Total issues resolved: **0**

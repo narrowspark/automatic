@@ -36,14 +36,14 @@ final class LockTest extends TestCase
     {
         $this->lock->add('test', ['version' => '1']);
 
-        static::assertTrue($this->lock->has('test'));
+        $this->assertTrue($this->lock->has('test'));
     }
 
     public function testAddSubWithNotFoundMainKey(): void
     {
         $this->lock->addSub('test', 'providers', ['version' => '1']);
 
-        static::assertTrue($this->lock->has('test', 'providers'));
+        $this->assertTrue($this->lock->has('test', 'providers'));
     }
 
     public function testAddSub(): void
@@ -51,7 +51,7 @@ final class LockTest extends TestCase
         $this->lock->add('test2', ['providers' => ['version' => 1]]);
         $this->lock->addSub('test2', 'providers', ['test' => '1']);
 
-        static::assertTrue($this->lock->has('test2', 'providers'));
+        $this->assertTrue($this->lock->has('test2', 'providers'));
     }
 
     public function testRemove(): void
@@ -60,7 +60,7 @@ final class LockTest extends TestCase
 
         $this->lock->remove('testRemove');
 
-        static::assertFalse($this->lock->has('testRemove'));
+        $this->assertFalse($this->lock->has('testRemove'));
     }
 
     public function testRemoveWithMainKey(): void
@@ -74,24 +74,24 @@ final class LockTest extends TestCase
         $this->lock->add('automatic', ['providers' => $providers]);
         $this->lock->remove('automatic', 'providers');
 
-        static::assertFalse($this->lock->has('automatic', 'providers'));
+        $this->assertFalse($this->lock->has('automatic', 'providers'));
     }
 
     public function testHasWithMainKey(): void
     {
-        static::assertFalse($this->lock->has('automatic', 'providers'));
+        $this->assertFalse($this->lock->has('automatic', 'providers'));
     }
 
     public function testWriteAndRead(): void
     {
         $this->lock->write();
 
-        static::assertCount(0, $this->lock->read());
+        $this->assertCount(0, $this->lock->read());
 
         $this->lock->add('tests', ['version' => '3']);
         $this->lock->write();
 
-        static::assertCount(1, $this->lock->read());
+        $this->assertCount(1, $this->lock->read());
     }
 
     public function testGet(): void
@@ -104,9 +104,9 @@ final class LockTest extends TestCase
 
         $this->lock->add('hash', $execptedHash);
 
-        static::assertSame($execptedArray, $this->lock->get('test'));
-        static::assertSame($execptedHash, $this->lock->get('hash'));
-        static::assertNull($this->lock->get('test2'));
+        $this->assertSame($execptedArray, $this->lock->get('test'));
+        $this->assertSame($execptedHash, $this->lock->get('hash'));
+        $this->assertNull($this->lock->get('test2'));
     }
 
     public function testGetWithMainKey(): void
@@ -119,7 +119,7 @@ final class LockTest extends TestCase
 
         $this->lock->add('automatic', ['providers' => $providers]);
 
-        static::assertSame($providers, $this->lock->get('automatic', 'providers'));
+        $this->assertSame($providers, $this->lock->get('automatic', 'providers'));
     }
 
     public function testReset(): void
@@ -127,6 +127,6 @@ final class LockTest extends TestCase
         $this->lock->add('test', ['version' => '1']);
         $this->lock->reset();
 
-        static::assertFalse($this->lock->has('test'));
+        $this->assertFalse($this->lock->has('test'));
     }
 }

@@ -44,11 +44,11 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
 
     public function testAdd(): void
     {
-        static::assertFalse($this->configurator->has(MockConfigurator::getName()));
+        $this->assertFalse($this->configurator->has(MockConfigurator::getName()));
 
         $this->configurator->add(MockConfigurator::getName(), MockConfigurator::class);
 
-        static::assertTrue($this->configurator->has(MockConfigurator::getName()));
+        $this->assertTrue($this->configurator->has(MockConfigurator::getName()));
     }
 
     public function testAddWithExistingConfiguratorName(): void
@@ -72,11 +72,11 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
     {
         $this->configurator->add(MockConfigurator::getName(), MockConfigurator::class);
 
-        static::assertTrue($this->configurator->has(MockConfigurator::getName()));
+        $this->assertTrue($this->configurator->has(MockConfigurator::getName()));
 
         $this->configurator->reset();
 
-        static::assertFalse($this->configurator->has(MockConfigurator::getName()));
+        $this->assertFalse($this->configurator->has(MockConfigurator::getName()));
     }
 
     /**

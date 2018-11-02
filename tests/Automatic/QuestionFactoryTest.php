@@ -13,38 +13,45 @@ final class QuestionFactoryTest extends TestCase
 {
     public function testGetPackageQuestion(): void
     {
-        static::assertSame(
-            '    Review the package from www.example.com.
-    Do you want to execute this package [foo/bar]?
-    [<comment>y</comment>] Yes
-    [<comment>n</comment>] No
-    [<comment>a</comment>] Yes for all packages, only for the current installation session
-    [<comment>p</comment>] Yes permanently, never ask again for this project
-    (defaults to <comment>n</comment>): ',
-            QuestionFactory::getPackageQuestion('foo/bar', 'www.example.com')
-        );
+        $name = 'foo/bar';
+        $url  = 'www.example.com';
+
+        $message = QuestionFactory::getPackageQuestion($name, $url);
+
+        $this->assertNotEmpty($message);
+        $this->assertContains($url, $message);
+        $this->assertContains($name, $message);
     }
 
     public function testGetPackageQuestionWithoutUrl(): void
     {
-        static::assertSame(
-            '    Do you want to execute this package [foo/bar]?
-    [<comment>y</comment>] Yes
-    [<comment>n</comment>] No
-    [<comment>a</comment>] Yes for all packages, only for the current installation session
-    [<comment>p</comment>] Yes permanently, never ask again for this project
-    (defaults to <comment>n</comment>): ',
-            QuestionFactory::getPackageQuestion('foo/bar', null)
-        );
+        $name = 'foo/bar';
+        $url  = 'www.example.com';
+
+        $message = QuestionFactory::getPackageQuestion($name, null);
+
+        $this->assertNotEmpty($message);
+        $this->assertNotContains($url, $message);
+        $this->assertContains($name, $message);
+    }
+
+    public function testGetPackageScriptsQuestion(): void
+    {
+        $name = 'foo/bar';
+
+        $message = QuestionFactory::getPackageScriptsQuestion($name);
+
+        $this->assertNotEmpty($message);
+        $this->assertContains($name, $message);
     }
 
     public function testValidatePackageQuestionAnswer(): void
     {
-        static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer(null));
-        static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('n'));
-        static::assertSame('y', QuestionFactory::validatePackageQuestionAnswer('y'));
-        static::assertSame('a', QuestionFactory::validatePackageQuestionAnswer('a'));
-        static::assertSame('p', QuestionFactory::validatePackageQuestionAnswer('p'));
+        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer(null));
+        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer('n'));
+        $this->assertSame('y', QuestionFactory::validatePackageQuestionAnswer('y'));
+        $this->assertSame('a', QuestionFactory::validatePackageQuestionAnswer('a'));
+        $this->assertSame('p', QuestionFactory::validatePackageQuestionAnswer('p'));
     }
 
     public function testValidatePackageQuestionAnswerThrowException(): void
@@ -52,6 +59,6 @@ final class QuestionFactoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid choice');
 
-        static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));
+        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));
     }
 }

@@ -29,11 +29,11 @@ final class ScriptExtenderTest extends TestCase
 
     public function testGetType(): void
     {
-        static::assertSame('script', ScriptExtender::getType());
+        $this->assertSame('script', ScriptExtender::getType());
     }
 
     public function testExpand(): void
     {
-        static::assertSame('php -v', $this->extender->expand('php -v'));
+        $this->assertSame('php -v', $this->extender->expand('php -v'));
     }
 }

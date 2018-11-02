@@ -259,6 +259,14 @@ final class Package implements PackageContract
     /**
      * {@inheritdoc}
      */
+    public function isDev(): bool
+    {
+        return $this->isDev;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setIsDev(bool $bool = true): PackageContract
     {
         $this->isDev = $bool;
@@ -297,14 +305,6 @@ final class Package implements PackageContract
         }
 
         return $package;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isDev(): bool
-    {
-        return $this->isDev;
     }
 
     /**

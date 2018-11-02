@@ -46,7 +46,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        static::assertSame('copy', CopyFromPackageConfigurator::getName());
+        $this->assertSame('copy', CopyFromPackageConfigurator::getName());
     }
 
     public function testCopyFileFromPackage(): void
@@ -66,7 +66,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
-        static::assertFileExists($filePath);
+        $this->assertFileExists($filePath);
 
         \unlink($filePath);
     }
@@ -89,8 +89,8 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         $dirPath  = \sys_get_temp_dir() . '/css';
         $filePath = $dirPath . '/style.css';
 
-        static::assertDirectoryExists($dirPath);
-        static::assertFileExists($filePath);
+        $this->assertDirectoryExists($dirPath);
+        $this->assertFileExists($filePath);
 
         \unlink($filePath);
         \rmdir($dirPath);
@@ -113,7 +113,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . '/' . $toFileName;
 
-        static::assertFileNotExists($filePath);
+        $this->assertFileNotExists($filePath);
     }
 
     public function testUnconfigureAFileFromPackage(): void
@@ -167,7 +167,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $dirPath = \sys_get_temp_dir() . '/css';
 
-        static::assertDirectoryExists($dirPath);
+        $this->assertDirectoryExists($dirPath);
 
         \rmdir($dirPath);
     }
@@ -208,7 +208,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         \unlink($dirPath . '/style.css');
 
-        static::assertDirectoryExists($dirPath);
+        $this->assertDirectoryExists($dirPath);
 
         \rmdir($dirPath);
     }
@@ -230,7 +230,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . '/test/' . $toFileName;
 
-        static::assertFileExists($filePath);
+        $this->assertFileExists($filePath);
 
         \unlink($filePath);
         \rmdir(\sys_get_temp_dir() . '/test/');

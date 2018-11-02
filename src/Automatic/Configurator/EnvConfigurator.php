@@ -5,9 +5,12 @@ namespace Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
+use Narrowspark\Automatic\Configurator\Traits\AppendToFileTrait;
 
 final class EnvConfigurator extends AbstractConfigurator
 {
+    use AppendToFileTrait;
+
     /**
      * {@inheritdoc}
      */
@@ -32,8 +35,8 @@ final class EnvConfigurator extends AbstractConfigurator
         $data = '';
 
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $key => $value) {
-            if ($key[0] === '#' && \is_numeric(\mb_substr($key, 1))) {
-                $data .= '# ' . $value . "\n";
+            if (\mb_strpos($key, '#') === 0 && \is_numeric(\mb_substr($key, 1))) {
+                $data .= '# ' . $value . \PHP_EOL;
 
                 continue;
             }
@@ -48,7 +51,7 @@ final class EnvConfigurator extends AbstractConfigurator
                 $value = '"' . \str_replace(['\\', '"', "\t", "\n"], ['\\\\', '\\"', '\t', '\n'], $value) . '"';
             }
 
-            $data .= $key . '=' . $value . "\n";
+            $data .= $key . '=' . $value . \PHP_EOL;
         }
 
         if (! \file_exists($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env')) {
@@ -57,8 +60,8 @@ final class EnvConfigurator extends AbstractConfigurator
 
         $data = $this->markData($package->getPrettyName(), $data);
 
-        \file_put_contents($distenv, $data, \FILE_APPEND);
-        \file_put_contents($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env', $data, \FILE_APPEND);
+        $this->appendToFile($distenv, $data);
+        $this->appendToFile($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env', $data);
     }
 
     /**
@@ -75,10 +78,10 @@ final class EnvConfigurator extends AbstractConfigurator
             if (! \file_exists($env)) {
                 continue;
             }
-            /** @codeCoverageIgnoreEnd */
+            // @codeCoverageIgnoreEnd
             $count    = 0;
             $contents = \preg_replace(
-                \sprintf('{%s*###> %s ###.*###< %s ###%s+}s', "\n", $package->getPrettyName(), $package->getPrettyName(), "\n"),
+                \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), \PHP_EOL),
                 '',
                 (string) \file_get_contents($env),
                 -1,
@@ -93,7 +96,7 @@ final class EnvConfigurator extends AbstractConfigurator
 
             $this->write(\sprintf('Removing environment variables from %s', $file));
 
-            \file_put_contents($env, $contents);
+            $this->filesystem->dumpFile($env, (string) $contents);
         }
     }
 }

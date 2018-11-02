@@ -49,14 +49,14 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         $this->configurator->configure($package);
 
-        static::assertFileExists($this->copyPath);
+        $this->assertFileExists($this->copyPath);
 
         \unlink($this->copyPath);
     }
 
     public function testGetConfigurators(): void
     {
-        static::assertCount(5, $this->configurator->getConfigurators());
+        $this->assertCount(5, $this->configurator->getConfigurators());
     }
 
     public function testUnconfigureWithCopy(): void
@@ -75,7 +75,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         $this->configurator->configure($package);
 
-        static::assertFileExists($this->copyPath);
+        $this->assertFileExists($this->copyPath);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -87,7 +87,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         $this->configurator->unconfigure($package);
 
-        static::assertFileNotExists($this->copyPath);
+        $this->assertFileNotExists($this->copyPath);
     }
 
     /**

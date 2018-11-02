@@ -27,12 +27,12 @@ final class PathTest extends TestCase
 
     public function testGetWorkingDir(): void
     {
-        static::assertSame(__DIR__, $this->path->getWorkingDir());
+        $this->assertSame(__DIR__, $this->path->getWorkingDir());
     }
 
     public function testRelativize(): void
     {
-        static::assertSame(
+        $this->assertSame(
             './',
             $this->path->relativize(__DIR__)
         );
@@ -40,7 +40,7 @@ final class PathTest extends TestCase
 
     public function testConcatenateOnWindows(): void
     {
-        static::assertEquals(
+        $this->assertEquals(
             'c:\\my-project/src/kernel.php',
             $this->path->concatenate(['c:\\my-project', 'src/', 'kernel.php'])
         );

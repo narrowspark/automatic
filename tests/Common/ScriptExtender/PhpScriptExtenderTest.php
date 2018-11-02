@@ -29,16 +29,16 @@ final class PhpScriptExtenderTest extends TestCase
 
     public function testGetType(): void
     {
-        static::assertSame('php-script', PhpScriptExtender::getType());
+        $this->assertSame('php-script', PhpScriptExtender::getType());
     }
 
     public function testExpand(): void
     {
         $output = $this->extender->expand('echo "hallo";');
 
-        static::assertContains('php', $output);
-        static::assertContains('php.ini', $output);
-        static::assertContains('echo "hallo";', $output);
+        $this->assertContains('php', $output);
+        $this->assertContains('php.ini', $output);
+        $this->assertContains('echo "hallo";', $output);
     }
 
     public function testExpandWithIniLoad(): void
@@ -49,8 +49,8 @@ final class PhpScriptExtenderTest extends TestCase
 
         $output = $this->extender->expand('echo "hallo";');
 
-        static::assertContains('php', $output);
-        static::assertContains('php.ini', $output);
-        static::assertContains('echo "hallo";', $output);
+        $this->assertContains('php', $output);
+        $this->assertContains('php.ini', $output);
+        $this->assertContains('echo "hallo";', $output);
     }
 }

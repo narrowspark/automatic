@@ -20,7 +20,7 @@ Installation
 Use [Composer](https://getcomposer.org/) to install this package:
 
 ```sh
-composer require narrowspark/automatic-audit
+composer require narrowspark/automatic-security-audit
 ```
 
 Usage

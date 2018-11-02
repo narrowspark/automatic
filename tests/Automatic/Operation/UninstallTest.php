@@ -68,7 +68,7 @@ final class UninstallTest extends MockeryTestCase
         $this->uninstallOperationMock->shouldReceive('getPackage')
             ->andReturn($packageMock);
 
-        static::assertFalse($this->uninstall->supports($this->uninstallOperationMock));
+        $this->assertFalse($this->uninstall->supports($this->uninstallOperationMock));
     }
 
     public function testSupportsWithLock(): void
@@ -87,7 +87,7 @@ final class UninstallTest extends MockeryTestCase
         $this->uninstallOperationMock->shouldReceive('getPackage')
             ->andReturn($packageMock);
 
-        static::assertTrue($this->uninstall->supports($this->uninstallOperationMock));
+        $this->assertTrue($this->uninstall->supports($this->uninstallOperationMock));
     }
 
     public function testResolve(): void
@@ -132,13 +132,13 @@ final class UninstallTest extends MockeryTestCase
 
         $package = $this->uninstall->resolve($this->uninstallOperationMock);
 
-        static::assertSame($name, $package->getName());
-        static::assertSame($name, $package->getPrettyName());
-        static::assertSame('1.0-dev', $package->getPrettyVersion());
-        static::assertSame('library', $package->getType());
-        static::assertNull($package->getUrl());
-        static::assertSame('uninstall', $package->getOperation());
-        static::assertSame(['viserio/contract' => 'dev-master'], $package->getRequires());
+        $this->assertSame($name, $package->getName());
+        $this->assertSame($name, $package->getPrettyName());
+        $this->assertSame('1.0-dev', $package->getPrettyVersion());
+        $this->assertSame('library', $package->getType());
+        $this->assertNull($package->getUrl());
+        $this->assertSame('uninstall', $package->getOperation());
+        $this->assertSame(['viserio/contract' => 'dev-master'], $package->getRequires());
     }
 
     public function testTransform(): void

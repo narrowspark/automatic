@@ -66,7 +66,7 @@ final class InstallerTest extends MockeryTestCase
 
         $installer = Installer::create($this->ioMock, $this->composerMock, $this->inputMock);
 
-        static::assertInstanceOf(BaseInstaller::class, $installer);
+        $this->assertInstanceOf(BaseInstaller::class, $installer);
     }
 
     /**

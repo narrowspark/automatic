@@ -104,7 +104,7 @@ final class SkeletonGenerator
         /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $generator */
         $generator = $generators[$answer];
 
-        $this->io->write(\sprintf('%sGenerating [%s] skeleton.%s', "\n", $generatorTypes[$answer], "\n"));
+        $this->io->write(\sprintf('%sGenerating [%s] skeleton.%s', \PHP_EOL, $generatorTypes[$answer], \PHP_EOL));
 
         $generator->generate();
 

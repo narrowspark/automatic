@@ -61,7 +61,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     /**
      * @var string
      */
-    public const VERSION = '0.8.5';
+    public const VERSION = '0.8.6';
 
     /**
      * @var string
@@ -632,7 +632,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 '',
                 '<info>Some files may have been created or updated to configure your new packages.</info>',
                 'Please <comment>review</comment>, <comment>edit</comment> and <comment>commit</comment> them: these files are <comment>yours</comment>',
-                "\nTo show the package suggests run <comment>composer suggests</comment>"
+                \PHP_EOL . 'To show the package suggests run <comment>composer suggests</comment>'
             );
         }
 

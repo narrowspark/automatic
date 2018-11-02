@@ -50,7 +50,7 @@ final class AuditTest extends TestCase
         [$vulnerabilities, $messages] = $this->audit->checkPackage('symfony/symfony', 'v2.5.2', $this->audit->getSecurityAdvisories());
 
         $this->assertSymfonySecurity(\count($vulnerabilities), $vulnerabilities);
-        static::assertCount(0, $messages);
+        $this->assertCount(0, $messages);
     }
 
     public function testCheckPackageWithSymfonyAndCache(): void
@@ -58,7 +58,7 @@ final class AuditTest extends TestCase
         [$vulnerabilities, $messages] = $this->audit->checkPackage('symfony/symfony', 'v2.5.2', $this->audit->getSecurityAdvisories());
 
         $this->assertSymfonySecurity(\count($vulnerabilities), $vulnerabilities);
-        static::assertCount(0, $messages);
+        $this->assertCount(0, $messages);
 
         [$vulnerabilities, $messages] = $this->audit->checkPackage('symfony/symfony', 'v2.5.2', $this->audit->getSecurityAdvisories());
 
@@ -72,7 +72,7 @@ final class AuditTest extends TestCase
         );
 
         $this->assertSymfonySecurity(\count($vulnerabilities), $vulnerabilities);
-        static::assertCount(0, $messages);
+        $this->assertCount(0, $messages);
     }
 
     public function testCheckLockWithComposer171(): void
@@ -81,8 +81,8 @@ final class AuditTest extends TestCase
             __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock'
         );
 
-        static::assertCount(0, $vulnerabilities);
-        static::assertCount(0, $messages);
+        $this->assertCount(0, $vulnerabilities);
+        $this->assertCount(0, $messages);
     }
 
     public function testCheckLockThrowsException(): void
@@ -95,7 +95,7 @@ final class AuditTest extends TestCase
 
     public function testCheckPackageWithCustomPackage(): void
     {
-        static::assertCount(0, $this->audit->checkPackage('fooa/fooa', 'v2.5.2', $this->audit->getSecurityAdvisories()));
+        $this->assertCount(0, $this->audit->checkPackage('fooa/fooa', 'v2.5.2', $this->audit->getSecurityAdvisories()));
     }
 
     /**
@@ -106,8 +106,8 @@ final class AuditTest extends TestCase
      */
     private function assertSymfonySecurity(int $vulnerabilitiesCount, array $vulnerabilities): void
     {
-        static::assertSame(1, $vulnerabilitiesCount);
-        static::assertEquals(
+        $this->assertSame(1, $vulnerabilitiesCount);
+        $this->assertEquals(
             [
                 'symfony/symfony' => [
                     'version'    => 'v2.5.2',

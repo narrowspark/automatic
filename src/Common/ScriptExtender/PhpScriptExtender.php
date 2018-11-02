@@ -25,7 +25,7 @@ class PhpScriptExtender extends AbstractScriptExtender
         if (($php = $phpFinder->find(false)) === false) {
             throw new RuntimeException('The PHP executable could not be found, add it to your PATH and try again.');
         }
-        /** @codeCoverageIgnoreEnd */
+        // @codeCoverageIgnoreEnd
         $arguments = $phpFinder->findArguments();
 
         if (($env = \getenv('COMPOSER_ORIGINAL_INIS')) !== false) {

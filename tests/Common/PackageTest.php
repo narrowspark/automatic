@@ -28,30 +28,30 @@ final class PackageTest extends TestCase
 
     public function testGetName(): void
     {
-        static::assertSame('test/test', $this->package->getName());
+        $this->assertSame('test/test', $this->package->getName());
 
         $this->package->setName('test/test2');
 
-        static::assertSame('test/test2', $this->package->getName());
+        $this->assertSame('test/test2', $this->package->getName());
     }
 
     public function testGetPrettyName(): void
     {
-        static::assertSame('test/Test', $this->package->getPrettyName());
+        $this->assertSame('test/Test', $this->package->getPrettyName());
     }
 
     public function testGetPrettyVersion(): void
     {
-        static::assertSame('1', $this->package->getPrettyVersion());
+        $this->assertSame('1', $this->package->getPrettyVersion());
     }
 
     public function testIsDev(): void
     {
-        static::assertFalse($this->package->isDev());
+        $this->assertFalse($this->package->isDev());
 
         $this->package->setIsDev();
 
-        static::assertTrue($this->package->isDev());
+        $this->assertTrue($this->package->isDev());
     }
 
     public function testSetAndGetUrl(): void
@@ -60,14 +60,14 @@ final class PackageTest extends TestCase
 
         $this->package->setUrl($url);
 
-        static::assertSame($url, $this->package->getUrl());
+        $this->assertSame($url, $this->package->getUrl());
     }
 
     public function testSetAndGetOperation(): void
     {
         $this->package->setOperation(Package::INSTALL_OPERATION);
 
-        static::assertSame(Package::INSTALL_OPERATION, $this->package->getOperation());
+        $this->assertSame(Package::INSTALL_OPERATION, $this->package->getOperation());
     }
 
     public function testGetType(): void
@@ -76,7 +76,7 @@ final class PackageTest extends TestCase
 
         $this->package->setType($type);
 
-        static::assertSame($type, $this->package->getType());
+        $this->assertSame($type, $this->package->getType());
     }
 
     public function testSetAndGetRequire(): void
@@ -85,7 +85,7 @@ final class PackageTest extends TestCase
 
         $this->package->setRequires($requires);
 
-        static::assertSame($requires, $this->package->getRequires());
+        $this->assertSame($requires, $this->package->getRequires());
     }
 
     public function testSetAndGetConfigs(): void
@@ -94,8 +94,8 @@ final class PackageTest extends TestCase
 
         $this->package->setConfig($config);
 
-        static::assertTrue($this->package->getConfig('cut'));
-        static::assertEquals($config, $this->package->getConfigs());
+        $this->assertTrue($this->package->getConfig('cut'));
+        $this->assertEquals($config, $this->package->getConfigs());
     }
 
     public function testGetConfigWithMainKeyAndName(): void
@@ -104,8 +104,8 @@ final class PackageTest extends TestCase
 
         $this->package->setConfig($config);
 
-        static::assertTrue($this->package->getConfig('test', 'cut'));
-        static::assertNull($this->package->getConfig('test', 'noop'));
+        $this->assertTrue($this->package->getConfig('test', 'cut'));
+        $this->assertNull($this->package->getConfig('test', 'noop'));
     }
 
     public function testHasConfigWithMainKeyAndName(): void
@@ -114,11 +114,11 @@ final class PackageTest extends TestCase
 
         $this->package->setConfig($config);
 
-        static::assertFalse($this->package->hasConfig('noop'));
-        static::assertFalse($this->package->hasConfig('test', 'noop'));
-        static::assertFalse($this->package->hasConfig('noop', 'noop'));
-        static::assertTrue($this->package->hasConfig('test'));
-        static::assertTrue($this->package->hasConfig('test', 'cut'));
+        $this->assertFalse($this->package->hasConfig('noop'));
+        $this->assertFalse($this->package->hasConfig('test', 'noop'));
+        $this->assertFalse($this->package->hasConfig('noop', 'noop'));
+        $this->assertTrue($this->package->hasConfig('test'));
+        $this->assertTrue($this->package->hasConfig('test', 'cut'));
     }
 
     public function testSetAndGetParentName(): void
@@ -127,7 +127,7 @@ final class PackageTest extends TestCase
 
         $this->package->setParentName($name);
 
-        static::assertSame($name, $this->package->getParentName());
+        $this->assertSame($name, $this->package->getParentName());
     }
 
     public function testSetAndGetTime(): void
@@ -136,7 +136,7 @@ final class PackageTest extends TestCase
 
         $this->package->setTime($time);
 
-        static::assertSame($time, $this->package->getTime());
+        $this->assertSame($time, $this->package->getTime());
     }
 
     public function testSetAndGetAutoload(): void
@@ -150,14 +150,14 @@ final class PackageTest extends TestCase
 
         $this->package->setAutoload($array);
 
-        static::assertSame($array, $this->package->getAutoload());
+        $this->assertSame($array, $this->package->getAutoload());
     }
 
     public function testToArray(): void
     {
         $array = $this->package->toArray();
 
-        static::assertSame(
+        $this->assertSame(
             [
                 'pretty-name'     => 'test/Test',
                 'version'         => '1',
@@ -190,6 +190,6 @@ final class PackageTest extends TestCase
             'created'         => $this->package->getTime(),
         ];
 
-        static::assertInstanceOf(ContractPackage::class, Package::createFromLock('test/test', $lockdata));
+        $this->assertInstanceOf(ContractPackage::class, Package::createFromLock('test/test', $lockdata));
     }
 }

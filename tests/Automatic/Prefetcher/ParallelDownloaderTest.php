@@ -45,14 +45,14 @@ final class ParallelDownloaderTest extends MockeryTestCase
         $options = $this->parallelDownloader->getOptions();
 
         // reset to default after call
-        static::assertCount(1, $this->parallelDownloader->getOptions());
+        $this->assertCount(1, $this->parallelDownloader->getOptions());
 
-        static::assertArrayHasKey('ssl', $options);
-        static::assertCount(2, $options);
+        $this->assertArrayHasKey('ssl', $options);
+        $this->assertCount(2, $options);
     }
 
     public function testGetLastHeaders(): void
     {
-        static::assertNull($this->parallelDownloader->getLastHeaders());
+        $this->assertNull($this->parallelDownloader->getLastHeaders());
     }
 }

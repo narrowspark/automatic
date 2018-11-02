@@ -92,7 +92,7 @@ abstract class AbstractConfigurator implements ConfiguratorContract
      */
     protected function isFileMarked(string $packageName, string $file): bool
     {
-        return \is_file($file) && \mb_strpos((string) \file_get_contents($file), \sprintf('###> %s ###', $packageName)) !== false;
+        return \is_file($file) && \strpos((string) \file_get_contents($file), \sprintf('###> %s ###', $packageName)) !== false;
     }
 
     /**
@@ -122,6 +122,6 @@ abstract class AbstractConfigurator implements ConfiguratorContract
      */
     protected function doInsertStringBeforePosition(string $string, string $insertStr, int $position): string
     {
-        return \mb_substr($string, 0, $position) . $insertStr . \mb_substr($string, $position);
+        return \substr($string, 0, $position) . $insertStr . \substr($string, $position);
     }
 }

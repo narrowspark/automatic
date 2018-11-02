@@ -30,7 +30,7 @@ class InstallationManager extends AbstractInstallationManager
         $rootPackages = [];
 
         foreach ($this->getRootRequires() as $link) {
-            $rootPackages[\mb_strtolower($link->getTarget())] = (string) $link->getConstraint();
+            $rootPackages[\strtolower($link->getTarget())] = (string) $link->getConstraint();
         }
 
         $requiresToInstall    = $this->preparePackagesToInstall($requires, $rootPackages);
@@ -124,7 +124,7 @@ class InstallationManager extends AbstractInstallationManager
             // Check if package is currently installed, if so, use installed constraint.
             if (isset($toInstall[$packageName])) {
                 $version    = $toInstall[$packageName];
-                $constraint = \mb_strpos($version, 'dev') === false ? '^' . $version : $version;
+                $constraint = \strpos($version, 'dev') === false ? '^' . $version : $version;
 
                 $toInstall[$packageName] = $constraint;
 

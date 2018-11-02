@@ -99,7 +99,7 @@ final class Install extends AbstractOperation
         $version = $package->getPrettyVersion();
         $extra   = $package->getExtra();
 
-        if (isset($extra['branch-alias']) && \mb_strpos($version, 'dev-') === 0) {
+        if (isset($extra['branch-alias']) && \strpos($version, 'dev-') === 0) {
             $branchAliases = $extra['branch-alias'];
 
             if (
@@ -131,7 +131,7 @@ final class Install extends AbstractOperation
         foreach ($composerPackage->getRequires() as $link) {
             $target = $link->getTarget();
 
-            if ($target === 'php' || \mb_strpos($target, 'ext-') === 0) {
+            if ($target === 'php' || \strpos($target, 'ext-') === 0) {
                 continue;
             }
 

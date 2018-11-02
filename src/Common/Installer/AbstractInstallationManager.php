@@ -131,7 +131,7 @@ abstract class AbstractInstallationManager
         $this->localRepository = $this->composer->getRepositoryManager()->getLocalRepository();
 
         foreach ($this->localRepository->getPackages() as $package) {
-            $this->installedPackages[\mb_strtolower($package->getName())] = \ltrim($package->getPrettyVersion(), 'v');
+            $this->installedPackages[\strtolower($package->getName())] = \ltrim($package->getPrettyVersion(), 'v');
         }
     }
 

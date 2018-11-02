@@ -155,7 +155,7 @@ abstract class AbstractOperation implements OperationContract
         if (\count($composerAutoload) !== 0) {
             $classes = $this->classFinder->setComposerAutoload($name, $composerAutoload)
                 ->setFilter(function (\SplFileInfo $fileInfo) use ($name) {
-                    return \mb_strpos((string) \mb_strstr($fileInfo->getPathname(), $name), \DIRECTORY_SEPARATOR . 'Automatic' . \DIRECTORY_SEPARATOR) !== false;
+                    return \strpos((string) \strstr($fileInfo->getPathname(), $name), \DIRECTORY_SEPARATOR . 'Automatic' . \DIRECTORY_SEPARATOR) !== false;
                 })
                 ->find()
                 ->getAll();

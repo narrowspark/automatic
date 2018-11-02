@@ -26,7 +26,6 @@
     ],
     "require": {
         "php": "^7.1",
-        "ext-mbstring": "*",
         "ext-json": "*",
         "ext-tokenizer": "*",
         "composer-plugin-api": "^1.0"

@@ -39,6 +39,6 @@ final class Util
      */
     public static function getComposerLockFile(): string
     {
-        return \mb_substr(Factory::getComposerFile(), 0, -4) . 'lock';
+        return \substr(Factory::getComposerFile(), 0, -4) . 'lock';
     }
 }

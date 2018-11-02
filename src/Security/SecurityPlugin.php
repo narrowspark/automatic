@@ -114,7 +114,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
         // that way, we are sure to use all files from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
             /** @var \SplFileInfo $file */
-            if (\mb_substr($file->getFilename(), -4) === '.php') {
+            if (\substr($file->getFilename(), -4) === '.php') {
                 require_once $file;
             }
         }

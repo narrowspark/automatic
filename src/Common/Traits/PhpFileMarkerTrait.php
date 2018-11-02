@@ -14,7 +14,7 @@ trait PhpFileMarkerTrait
      */
     protected function isFileMarked(string $packageName, string $file): bool
     {
-        return \is_file($file) && \mb_strpos(\file_get_contents($file), \sprintf('/** > %s **/', $packageName)) !== false;
+        return \is_file($file) && \strpos(\file_get_contents($file), \sprintf('/** > %s **/', $packageName)) !== false;
     }
 
     /**

@@ -73,7 +73,7 @@ final class LegacyTagsManager
         foreach ($this->legacyTags as $name => $constraint) {
             [$namespace, $packageName] = \explode('/', $name, 2);
 
-            if (\mb_strpos($file, \sprintf('provider-%s$', $namespace)) !== false) {
+            if (\strpos($file, \sprintf('provider-%s$', $namespace)) !== false) {
                 return true;
             }
         }

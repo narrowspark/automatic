@@ -113,7 +113,7 @@ class Prefetcher
 
         if ($pluginManager instanceof PluginManager) {
             foreach ($pluginManager->getPlugins() as $plugin) {
-                if (\mb_strpos(\get_class($plugin), PrestissimoPlugin::class) === 0) {
+                if (\strpos(\get_class($plugin), PrestissimoPlugin::class) === 0) {
                     if (\method_exists($remoteFilesystem, 'getRemoteContents')) {
                         $plugin->disable();
                     } else {

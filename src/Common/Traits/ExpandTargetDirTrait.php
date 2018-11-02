@@ -18,7 +18,7 @@ trait ExpandTargetDirTrait
             return $target;
         }
 
-        $option = \str_replace('_', '-', \mb_strtolower($matches[1]));
+        $option = \str_replace('_', '-', \strtolower($matches[1]));
 
         if (! isset($options[$option])) {
             return $matches[0];

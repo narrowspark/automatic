@@ -101,7 +101,7 @@ final class Package implements PackageContract
     public function __construct(string $name, ?string $prettyVersion)
     {
         $this->prettyName    = $name;
-        $this->name          = \mb_strtolower($name);
+        $this->name          = \strtolower($name);
         $this->prettyVersion = $prettyVersion;
         $this->created       = (new \DateTimeImmutable())->format(\DateTime::RFC3339);
     }

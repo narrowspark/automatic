@@ -123,7 +123,7 @@ final class CurlDownloader
         } else {
             $headers[] = 'Connection: keep-alive';
 
-            if (\mb_strpos($url, 'https://') === 0 && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (\CURL_VERSION_HTTP2 & \curl_version()['features'])) {
+            if (\strpos($url, 'https://') === 0 && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (\CURL_VERSION_HTTP2 & \curl_version()['features'])) {
                 \curl_setopt($ch, \CURLOPT_HTTP_VERSION, \CURL_HTTP_VERSION_2_0);
             }
         }

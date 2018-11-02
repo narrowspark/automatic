@@ -200,7 +200,7 @@ class Audit
                     'version' => $package['version'],
                 ];
 
-                if (isset($package['time']) && false !== \mb_strpos($package['version'], 'dev')) {
+                if (isset($package['time']) && false !== \strpos($package['version'], 'dev')) {
                     $data['time'] = $package['time'];
                 }
 
@@ -248,7 +248,7 @@ class Audit
                         $op = null;
 
                         foreach (Constraint::getSupportedOperators() as $operators) {
-                            if (\mb_strpos($version, $operators) === 0) {
+                            if (\strpos($version, $operators) === 0) {
                                 $op = $operators;
 
                                 break;
@@ -261,14 +261,14 @@ class Audit
                             continue;
                         }
 
-                        $constraints[] = new Constraint($op, \mb_substr($version, \mb_strlen($op)));
+                        $constraints[] = new Constraint($op, \substr($version, \strlen($op)));
                     }
 
                     $affectedConstraint = new MultiConstraint($constraints);
                     $affectedPackage    = $affectedConstraint->matches(new Constraint('==', $package->getVersion()));
 
                     if ($affectedPackage) {
-                        $composerPackage = \mb_substr($advisoryData['reference'], 11);
+                        $composerPackage = \substr($advisoryData['reference'], 11);
 
                         $vulnerabilities[$composerPackage] = $vulnerabilities[$composerPackage] ?? [
                             'version'    => $package->getPrettyVersion(),

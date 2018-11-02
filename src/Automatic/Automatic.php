@@ -201,7 +201,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         // that way, we are sure to use all files from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
             /** @var \SplFileInfo $file */
-            if (\mb_substr($file->getFilename(), -4) === '.php') {
+            if (\substr($file->getFilename(), -4) === '.php') {
                 require_once $file;
             }
         }
@@ -743,7 +743,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }, clone $pool, $pool)();
 
         foreach ($event->getRequest()->getJobs() as $job) {
-            if ($job['cmd'] !== 'install' || \mb_strpos($job['packageName'], '/') === false) {
+            if ($job['cmd'] !== 'install' || \strpos($job['packageName'], '/') === false) {
                 continue;
             }
 
@@ -756,7 +756,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
                 /** @var \Composer\Package\Link $link */
                 foreach (\array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) as $link) {
-                    if (isset($listed[$link->getTarget()]) || \mb_strpos($link->getTarget(), '/') === false) {
+                    if (isset($listed[$link->getTarget()]) || \strpos($link->getTarget(), '/') === false) {
                         continue;
                     }
 
@@ -838,7 +838,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 continue;
             }
 
-            if (\mb_strpos($name, '/') === false) {
+            if (\strpos($name, '/') === false) {
                 $io->writeError(\sprintf('Constrain [%s] skipped, package name [%s] without a slash is not supported', $version, $name));
 
                 continue;

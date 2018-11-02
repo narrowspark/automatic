@@ -60,7 +60,7 @@ final class QuestionFactory
             return 'n';
         }
 
-        $value = \mb_strtolower($value[0]);
+        $value = \strtolower($value[0]);
 
         if (! \in_array($value, ['y', 'n', 'a', 'p'], true)) {
             throw new InvalidArgumentException('Invalid choice.');

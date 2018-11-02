@@ -45,7 +45,7 @@ class CurlDownloader extends AbstractDownloader
             throw new RuntimeException(\sprintf('An error occurred: %s.', $error));
         }
 
-        $body       = \mb_substr((string) $response, \curl_getinfo($curl, \CURLINFO_HEADER_SIZE));
+        $body       = \substr((string) $response, \curl_getinfo($curl, \CURLINFO_HEADER_SIZE));
         $statusCode = (int) \curl_getinfo($curl, \CURLINFO_HTTP_CODE);
 
         \curl_close($curl);

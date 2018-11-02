@@ -1,3 +1,17 @@
+v0.9.0
+======
+
+- Total issues resolved: **2**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+Changed
+-------
+
+ - [94: removed dependency on ext-mbstring](https://github.com/narrowspark/automatic/pull/94) thanks to @prisis
+ - [93: upgrade coding-standard to v1.4.0](https://github.com/narrowspark/automatic/issues/93) thanks to @prisis
+ - [92: changed min version of php to 7.1](https://github.com/narrowspark/automatic/issues/92) thanks to @prisis
+
 ## v0.8.6
 
 - Total issues resolved: **0**

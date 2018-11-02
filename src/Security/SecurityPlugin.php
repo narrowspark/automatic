@@ -26,7 +26,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     /**
      * @var string
      */
-    public const VERSION = '0.8.6';
+    public const VERSION = '0.9.0';
 
     /**
      * @var string

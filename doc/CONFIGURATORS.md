@@ -72,7 +72,7 @@ The `###> your-package-name-here ###` section separators are needed by Narrowspa
 to detect the contents added by this dependency in case you uninstall it later.
 > !!! Don't remove or modify these separators.
 
-Composer Auto Scripts Configurator `composer-auto-scripts`
+### Composer Auto Scripts Configurator `composer-auto-scripts`
 
 Registers `auto-scripts` in the `composer-scripts` section of the root `composer.json` file
 to execute them automatically when running `composer install` and `composer update`.
@@ -88,7 +88,7 @@ The value is an associative array where the key is the script to execute (includ
     }
 }
 ```
-Composer Scripts Configurator `composer-scripts`
+### Composer Scripts Configurator `composer-scripts`
 
 Registers [composer scripts](https://getcomposer.org/doc/articles/scripts.md) in the `composer-scripts` section of the root `composer.json` file.
 Only the composer `command`, `installer` and `package` events are supported, you will get a warning if other events a used.
@@ -134,7 +134,7 @@ final class ScriptExtender extends AbstractScriptExtender
 }
 ```
 
-Git ignore Configurator `gitignore`
+### Gitignore Configurator `gitignore`
 
 Adds patterns to the ``.gitignore`` file in your project. Define those
 patterns as a simple array of strings (a `PHP_EOL` character is added after
@@ -157,7 +157,7 @@ Similar to other configurators, the contents are copied into the `.gitignore`
 file and wrapped with section separators (``###> your-package-name-here ###``)
 that must not be removed or modified.
 
-The package messages `post-messages`
+### The package messages `post-messages`
 
 Displays contents in the command console after the package has been installed.
 Avoid outputting meaningless information and use it only when you need to show

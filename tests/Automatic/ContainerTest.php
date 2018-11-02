@@ -94,9 +94,9 @@ final class ContainerTest extends MockeryTestCase
         $value = self::$staticContainer->get($key);
 
         if (\is_string($value) || \is_array($value)) {
-            static::assertSame($expected, $value);
+            $this->assertSame($expected, $value);
         } else {
-            static::assertInstanceOf($expected, $value);
+            $this->assertInstanceOf($expected, $value);
         }
     }
 
@@ -146,17 +146,17 @@ final class ContainerTest extends MockeryTestCase
 
     public function testGetCache(): void
     {
-        static::assertSame('/vendor', static::$staticContainer->get('vendor-dir'));
+        $this->assertSame('/vendor', static::$staticContainer->get('vendor-dir'));
 
         static::$staticContainer->set('vendor-dir', static function () {
             return 'test';
         });
 
-        static::assertNotSame('test', static::$staticContainer->get('vendor-dir'));
+        $this->assertNotSame('test', static::$staticContainer->get('vendor-dir'));
     }
 
     public function testGetAll(): void
     {
-        static::assertCount(19, static::$staticContainer->getAll());
+        $this->assertCount(19, static::$staticContainer->getAll());
     }
 }

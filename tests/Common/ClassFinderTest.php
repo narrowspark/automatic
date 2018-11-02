@@ -43,18 +43,18 @@ final class ClassFinderTest extends TestCase
             ->addPsr4('Fixture/Finder', [''])
             ->find();
 
-        static::assertArrayHasKey(DummyClass::class, $this->loader->getClasses());
-        static::assertArrayHasKey(DummyClassTwo::class, $this->loader->getClasses());
-        static::assertArrayHasKey(DummyClassNested::class, $this->loader->getClasses());
-        static::assertArrayHasKey(StaticFunctionAndClasses::class, $this->loader->getClasses());
-        static::assertArrayHasKey(FooTrait::class, $this->loader->getTraits());
-        static::assertArrayHasKey(AbstractClass::class, $this->loader->getAbstractClasses());
-        static::assertArrayHasKey(DummyInterface::class, $this->loader->getInterfaces());
+        $this->assertArrayHasKey(DummyClass::class, $this->loader->getClasses());
+        $this->assertArrayHasKey(DummyClassTwo::class, $this->loader->getClasses());
+        $this->assertArrayHasKey(DummyClassNested::class, $this->loader->getClasses());
+        $this->assertArrayHasKey(StaticFunctionAndClasses::class, $this->loader->getClasses());
+        $this->assertArrayHasKey(FooTrait::class, $this->loader->getTraits());
+        $this->assertArrayHasKey(AbstractClass::class, $this->loader->getAbstractClasses());
+        $this->assertArrayHasKey(DummyInterface::class, $this->loader->getInterfaces());
 
-        static::assertCount(4, $this->loader->getClasses());
-        static::assertCount(1, $this->loader->getTraits());
-        static::assertCount(1, $this->loader->getAbstractClasses());
-        static::assertCount(1, $this->loader->getInterfaces());
+        $this->assertCount(4, $this->loader->getClasses());
+        $this->assertCount(1, $this->loader->getTraits());
+        $this->assertCount(1, $this->loader->getAbstractClasses());
+        $this->assertCount(1, $this->loader->getInterfaces());
     }
 
     public function testWithEmptyFolder(): void
@@ -69,10 +69,10 @@ final class ClassFinderTest extends TestCase
             ->addPsr0('/Fixture/empty', [''])
             ->find();
 
-        static::assertSame([], $this->loader->getClasses());
-        static::assertSame([], $this->loader->getTraits());
-        static::assertSame([], $this->loader->getAbstractClasses());
-        static::assertSame([], $this->loader->getInterfaces());
+        $this->assertSame([], $this->loader->getClasses());
+        $this->assertSame([], $this->loader->getTraits());
+        $this->assertSame([], $this->loader->getAbstractClasses());
+        $this->assertSame([], $this->loader->getInterfaces());
 
         @\unlink($filePath);
         @\rmdir($dir);
@@ -92,7 +92,7 @@ final class ClassFinderTest extends TestCase
 
         $genericPropertyReader = $this->getGenericPropertyReader();
 
-        static::assertSame(
+        $this->assertSame(
             [
                 'psr0'     => [
                     'foo/bar' => [],
@@ -106,7 +106,7 @@ final class ClassFinderTest extends TestCase
             ],
             $genericPropertyReader($this->loader, 'paths')
         );
-        static::assertSame([], $genericPropertyReader($this->loader, 'excludes'));
+        $this->assertSame([], $genericPropertyReader($this->loader, 'excludes'));
     }
 
     public function testSetFilter(): void
@@ -117,12 +117,12 @@ final class ClassFinderTest extends TestCase
             return false;
         });
 
-        static::assertInstanceOf(\Closure::class, $genericPropertyReader($this->loader, 'filter'));
+        $this->assertInstanceOf(\Closure::class, $genericPropertyReader($this->loader, 'filter'));
 
         $this->loader
             ->addPsr4('Fixture/Finder', [''])
             ->find();
 
-        static::assertSame([], $this->loader->getAll());
+        $this->assertSame([], $this->loader->getAll());
     }
 }

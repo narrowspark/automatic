@@ -12,6 +12,6 @@ final class UtilTest extends TestCase
 {
     public function testGetComposerLockFile(): void
     {
-        static::assertSame('./composer.lock', Util::getComposerLockFile());
+        $this->assertSame('./composer.lock', Util::getComposerLockFile());
     }
 }

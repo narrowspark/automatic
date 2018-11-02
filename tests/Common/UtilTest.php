@@ -16,12 +16,12 @@ final class UtilTest extends TestCase
     {
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
-        static::assertInstanceOf(JsonFile::class, $json);
-        static::assertInstanceOf(JsonManipulator::class, $manipulator);
+        $this->assertInstanceOf(JsonFile::class, $json);
+        $this->assertInstanceOf(JsonManipulator::class, $manipulator);
     }
 
     public function testGetComposerLockFile(): void
     {
-        static::assertSame('./composer.lock', Util::getComposerLockFile());
+        $this->assertSame('./composer.lock', Util::getComposerLockFile());
     }
 }

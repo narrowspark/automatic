@@ -104,7 +104,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 
     public function testSupports(): void
     {
-        static::assertTrue($this->configuratorInstaller->supports($this->installerClass::TYPE));
+        $this->assertTrue($this->configuratorInstaller->supports($this->installerClass::TYPE));
     }
 
     public function testInstallWithEmptyPsr4(): void

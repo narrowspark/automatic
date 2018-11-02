@@ -80,16 +80,16 @@ final class SecurityPluginTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        static::assertCount(4, SecurityPlugin::getSubscribedEvents());
+        $this->assertCount(4, SecurityPlugin::getSubscribedEvents());
 
         NSA::setProperty($this->securityPlugin, 'activated', false);
 
-        static::assertCount(0, SecurityPlugin::getSubscribedEvents());
+        $this->assertCount(0, SecurityPlugin::getSubscribedEvents());
     }
 
     public function testGetCapabilities(): void
     {
-        static::assertSame([CommandProviderContract::class => CommandProvider::class], $this->securityPlugin->getCapabilities());
+        $this->assertSame([CommandProviderContract::class => CommandProvider::class], $this->securityPlugin->getCapabilities());
     }
 
     public function testOnPostUpdatePostMessages(): void
@@ -147,7 +147,7 @@ final class SecurityPluginTest extends MockeryTestCase
 
         $this->securityPlugin->auditPackage($eventMock);
 
-        static::assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        $this->assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
     }
 
     public function testAuditPackageWithUninstall(): void
@@ -161,7 +161,7 @@ final class SecurityPluginTest extends MockeryTestCase
 
         $this->securityPlugin->auditPackage($eventMock);
 
-        static::assertCount(0, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        $this->assertCount(0, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
     }
 
     public function testAuditPackageWithUpdate(): void
@@ -191,7 +191,7 @@ final class SecurityPluginTest extends MockeryTestCase
 
         $this->securityPlugin->auditPackage($eventMock);
 
-        static::assertCount(0, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        $this->assertCount(0, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
     }
 
     public function testAuditComposerLock(): void
@@ -204,7 +204,7 @@ final class SecurityPluginTest extends MockeryTestCase
 
         $this->securityPlugin->auditComposerLock($this->mock(Event::class));
 
-        static::assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        $this->assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');

@@ -63,7 +63,7 @@ final class GitignoreConfiguratorTest extends TestCase
 
     public function testGetName(): void
     {
-        static::assertSame('gitignore', GitIgnoreConfigurator::getName());
+        $this->assertSame('gitignore', GitIgnoreConfigurator::getName());
     }
 
     public function testConfigureAndUnconfigure(): void
@@ -90,24 +90,24 @@ final class GitignoreConfiguratorTest extends TestCase
 
         $this->configurator->configure($package);
 
-        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL);
+        $this->assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL);
 
         $this->configurator->configure($package2);
 
-        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
+        $this->assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
 
         $this->configurator->configure($package);
         $this->configurator->configure($package2);
 
-        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
+        $this->assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
 
         $this->configurator->unconfigure($package);
 
-        static::assertStringEqualsFile($this->gitignorePath, $gitignoreContents2 . \PHP_EOL);
+        $this->assertStringEqualsFile($this->gitignorePath, $gitignoreContents2 . \PHP_EOL);
 
         $this->configurator->unconfigure($package2);
 
-        static::assertStringEqualsFile($this->gitignorePath, '');
+        $this->assertStringEqualsFile($this->gitignorePath, '');
     }
 
     public function testUnconfigureWithNotFoundPackage(): void
@@ -131,7 +131,7 @@ final class GitignoreConfiguratorTest extends TestCase
         $gitignoreContents .= '/public/css/' . \PHP_EOL;
         $gitignoreContents .= '###< Foo/Bundle ###';
 
-        static::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL);
+        $this->assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL);
     }
 
     /**

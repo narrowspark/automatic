@@ -70,7 +70,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        static::assertSame('env', EnvConfigurator::getName());
+        $this->assertSame('env', EnvConfigurator::getName());
     }
 
     public function testConfigure(): void
@@ -115,8 +115,8 @@ final class EnvConfiguratorTest extends MockeryTestCase
         // Skip on second call
         $this->configurator->configure($package);
 
-        static::assertStringEqualsFile($this->envDistPath, $envContents);
-        static::assertStringEqualsFile($this->envPath, $envContents);
+        $this->assertStringEqualsFile($this->envDistPath, $envContents);
+        $this->assertStringEqualsFile($this->envPath, $envContents);
     }
 
     public function testUnconfigure(): void
@@ -144,18 +144,18 @@ final class EnvConfiguratorTest extends MockeryTestCase
         $envContents .= 'APP_SECRET=s3cretf0rt3st' . \PHP_EOL;
         $envContents .= '###< fixtures/env2 ###' . \PHP_EOL;
 
-        static::assertStringEqualsFile($this->envDistPath, $envContents);
-        static::assertStringEqualsFile($this->envPath, $envContents);
+        $this->assertStringEqualsFile($this->envDistPath, $envContents);
+        $this->assertStringEqualsFile($this->envPath, $envContents);
 
         $this->configurator->unconfigure($package);
 
-        static::assertStringEqualsFile(
+        $this->assertStringEqualsFile(
             $this->envDistPath,
             <<<'EOF'
 
 EOF
         );
-        static::assertStringEqualsFile(
+        $this->assertStringEqualsFile(
             $this->envPath,
             <<<'EOF'
 

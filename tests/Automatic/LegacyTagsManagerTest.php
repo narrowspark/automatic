@@ -59,12 +59,12 @@ final class LegacyTagsManagerTest extends MockeryTestCase
             }
         }
 
-        static::assertSame(2, $count);
+        $this->assertSame(2, $count);
     }
 
     public function testRemoveLegacyTagsWithoutDataPackages(): void
     {
-        static::assertSame([], $this->tagsManger->removeLegacyTags([]));
+        $this->assertSame([], $this->tagsManger->removeLegacyTags([]));
     }
 
     public function testRemoveLegacyTagsWithSymfony(): void
@@ -78,14 +78,14 @@ final class LegacyTagsManagerTest extends MockeryTestCase
 
         $data = $this->tagsManger->removeLegacyTags($originalData);
 
-        static::assertNotSame($originalData['packages'], $data['packages']);
+        $this->assertNotSame($originalData['packages'], $data['packages']);
     }
 
     public function testRemoveLegacyTagsSkipIfNoProviderFound(): void
     {
         $originalData = \json_decode(\file_get_contents($this->downloadFileList['codeigniter$framework']), true);
 
-        static::assertSame($originalData, $this->tagsManger->removeLegacyTags($originalData));
+        $this->assertSame($originalData, $this->tagsManger->removeLegacyTags($originalData));
     }
 
     public function testRemoveLegacyTagsWithCakePHP(): void
@@ -99,7 +99,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
 
         $data = $this->tagsManger->removeLegacyTags($originalData);
 
-        static::assertNotSame($originalData['packages'], $data['packages']);
+        $this->assertNotSame($originalData['packages'], $data['packages']);
     }
 
     /**
@@ -117,7 +117,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError');
 
-        static::assertSame(['packages' => $expected], $this->tagsManger->removeLegacyTags(['packages' => $packages]));
+        $this->assertSame(['packages' => $expected], $this->tagsManger->removeLegacyTags(['packages' => $packages]));
     }
 
     /**
@@ -228,7 +228,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     /**
      * {@inheritdoc}
      */
-    protected function allowMockingNonExistentMethods(bool $allow = false): void
+    protected function allowMockingNonExistentMethods($allow = false): void
     {
         parent::allowMockingNonExistentMethods(true);
     }

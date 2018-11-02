@@ -17,6 +17,6 @@ final class CommandProviderTest extends TestCase
 
         $commands = $provider->getCommands();
 
-        static::assertInstanceOf(AuditCommand::class, $commands[0]);
+        $this->assertInstanceOf(AuditCommand::class, $commands[0]);
     }
 }

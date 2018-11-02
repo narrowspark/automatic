@@ -34,7 +34,7 @@ final class AuditCommandTest extends TestCase
 
         $commandTester = $this->executeCommand(new AuditCommand());
 
-        static::assertContains('[+] No known vulnerabilities found', \trim($commandTester->getDisplay(true)));
+        $this->assertContains('[+] No known vulnerabilities found', \trim($commandTester->getDisplay(true)));
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -49,9 +49,9 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        static::assertContains('=== Audit Security Report ===', $output);
-        static::assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        static::assertContains('[+] No known vulnerabilities found', $output);
+        $this->assertContains('=== Audit Security Report ===', $output);
+        $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
+        $this->assertContains('[+] No known vulnerabilities found', $output);
     }
 
     public function testAuditCommandWithEmptyComposerLockPath(): void
@@ -63,8 +63,8 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        static::assertContains(\trim('=== Audit Security Report ==='), $output);
-        static::assertContains(\trim('Lock file does not exist.'), $output);
+        $this->assertContains(\trim('=== Audit Security Report ==='), $output);
+        $this->assertContains(\trim('Lock file does not exist.'), $output);
     }
 
     public function testAuditCommandWithError(): void
@@ -76,10 +76,10 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        static::assertContains('=== Audit Security Report ===', $output);
-        static::assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        static::assertContains('symfony/symfony (v2.5.2)', $output);
-        static::assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains('=== Audit Security Report ===', $output);
+        $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
+        $this->assertContains('symfony/symfony (v2.5.2)', $output);
+        $this->assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     public function testAuditCommandWithErrorAndJsonFormat(): void
@@ -108,10 +108,10 @@ final class AuditCommandTest extends TestCase
             $output
         );
 
-        static::assertJson($jsonOutput);
-        static::assertContains('=== Audit Security Report ===', $output);
-        static::assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        static::assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertJson($jsonOutput);
+        $this->assertContains('=== Audit Security Report ===', $output);
+        $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
+        $this->assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     public function testAuditCommandWithErrorAndSimpleFormat(): void
@@ -126,12 +126,12 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        static::assertContains('=== Audit Security Report ===', $output);
-        static::assertContains(\trim('symfony/symfony (v2.5.2)
+        $this->assertContains('=== Audit Security Report ===', $output);
+        $this->assertContains(\trim('symfony/symfony (v2.5.2)
 ------------------------
 '), $output);
-        static::assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        static::assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
+        $this->assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     /**

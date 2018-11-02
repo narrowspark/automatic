@@ -32,6 +32,6 @@ final class ComposerDownloaderTest extends TestCase
 
     public function testDownload(): void
     {
-        static::assertNotEmpty($this->downloader->download(self::SECURITY_ADVISORIES_SHA));
+        $this->assertNotEmpty($this->downloader->download(self::SECURITY_ADVISORIES_SHA));
     }
 }

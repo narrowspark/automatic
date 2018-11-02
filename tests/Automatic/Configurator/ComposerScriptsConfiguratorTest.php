@@ -73,7 +73,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        static::assertSame('composer-scripts', ComposerScriptsConfigurator::getName());
+        $this->assertSame('composer-scripts', ComposerScriptsConfigurator::getName());
     }
 
     public function testConfigure(): void

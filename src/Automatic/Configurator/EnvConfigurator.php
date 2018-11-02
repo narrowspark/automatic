@@ -96,7 +96,7 @@ final class EnvConfigurator extends AbstractConfigurator
 
             $this->write(\sprintf('Removing environment variables from %s', $file));
 
-            $this->filesystem->dumpFile($env, $contents);
+            $this->filesystem->dumpFile($env, (string) $contents);
         }
     }
 }

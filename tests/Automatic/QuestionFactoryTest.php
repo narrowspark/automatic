@@ -18,9 +18,9 @@ final class QuestionFactoryTest extends TestCase
 
         $message = QuestionFactory::getPackageQuestion($name, $url);
 
-        static::assertNotEmpty($message);
-        static::assertContains($url, $message);
-        static::assertContains($name, $message);
+        $this->assertNotEmpty($message);
+        $this->assertContains($url, $message);
+        $this->assertContains($name, $message);
     }
 
     public function testGetPackageQuestionWithoutUrl(): void
@@ -30,9 +30,9 @@ final class QuestionFactoryTest extends TestCase
 
         $message = QuestionFactory::getPackageQuestion($name, null);
 
-        static::assertNotEmpty($message);
-        static::assertNotContains($url, $message);
-        static::assertContains($name, $message);
+        $this->assertNotEmpty($message);
+        $this->assertNotContains($url, $message);
+        $this->assertContains($name, $message);
     }
 
     public function testGetPackageScriptsQuestion(): void
@@ -41,17 +41,17 @@ final class QuestionFactoryTest extends TestCase
 
         $message = QuestionFactory::getPackageScriptsQuestion($name);
 
-        static::assertNotEmpty($message);
-        static::assertContains($name, $message);
+        $this->assertNotEmpty($message);
+        $this->assertContains($name, $message);
     }
 
     public function testValidatePackageQuestionAnswer(): void
     {
-        static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer(null));
-        static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('n'));
-        static::assertSame('y', QuestionFactory::validatePackageQuestionAnswer('y'));
-        static::assertSame('a', QuestionFactory::validatePackageQuestionAnswer('a'));
-        static::assertSame('p', QuestionFactory::validatePackageQuestionAnswer('p'));
+        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer(null));
+        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer('n'));
+        $this->assertSame('y', QuestionFactory::validatePackageQuestionAnswer('y'));
+        $this->assertSame('a', QuestionFactory::validatePackageQuestionAnswer('a'));
+        $this->assertSame('p', QuestionFactory::validatePackageQuestionAnswer('p'));
     }
 
     public function testValidatePackageQuestionAnswerThrowException(): void
@@ -59,6 +59,6 @@ final class QuestionFactoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid choice');
 
-        static::assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));
+        $this->assertSame('n', QuestionFactory::validatePackageQuestionAnswer('0'));
     }
 }

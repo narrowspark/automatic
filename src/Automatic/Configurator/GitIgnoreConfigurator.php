@@ -69,6 +69,6 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
 
         $this->write('Removed entries in .gitignore');
 
-        $this->filesystem->dumpFile($file, \ltrim($contents, "\r\n"));
+        $this->filesystem->dumpFile($file, \ltrim((string) $contents, "\r\n"));
     }
 }

@@ -12,14 +12,18 @@ trait ExpandTargetDirTrait
      */
     public static function expandTargetDir(array $options, string $target): string
     {
-        return \preg_replace_callback('{%(.+?)%}', function ($matches) use ($options) {
-            $option = \str_replace('_', '-', \mb_strtolower($matches[1]));
+        $found = \preg_match('{%(.+?)%}', $target, $matches);
 
-            if (! isset($options[$option])) {
-                return $matches[0];
-            }
+        if ($found !== 1) {
+            return $target;
+        }
 
-            return \rtrim($options[$option], '/');
-        }, $target);
+        $option = \str_replace('_', '-', \mb_strtolower($matches[1]));
+
+        if (! isset($options[$option])) {
+            return $matches[0];
+        }
+
+        return \str_replace($matches[0], \rtrim($options[$option], '/'), $target);
     }
 }

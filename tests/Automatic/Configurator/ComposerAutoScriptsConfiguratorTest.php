@@ -71,7 +71,7 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        static::assertSame('composer-auto-scripts', ComposerAutoScriptsConfigurator::getName());
+        $this->assertSame('composer-auto-scripts', ComposerAutoScriptsConfigurator::getName());
     }
 
     public function testConfigure(): void

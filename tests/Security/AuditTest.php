@@ -42,7 +42,8 @@ final class AuditTest extends TestCase
     {
         parent::tearDown();
 
-        (new Filesystem())->remove($this->path . \DIRECTORY_SEPARATOR);
+        $this->delete($this->path);
+        @\rmdir($this->path);
     }
 
     public function testCheckPackageWithSymfony(): void
@@ -247,5 +248,19 @@ final class AuditTest extends TestCase
             ],
             $vulnerabilities
         );
+    }
+
+    private function delete(string $path): void
+    {
+        \array_map(function ($value) {
+            if (\is_dir($value)) {
+                $this->delete($value);
+
+                @\rmdir($value);
+            } else {
+                @\unlink($value);
+            }
+
+        }, \glob($path . \DIRECTORY_SEPARATOR . '*'));
     }
 }

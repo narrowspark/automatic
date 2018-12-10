@@ -60,7 +60,7 @@ final class AutomaticTest extends MockeryTestCase
     {
         $this->composerCachePath = __DIR__ . '/AutomaticTest';
 
-        \mkdir($this->composerCachePath);
+        @\mkdir($this->composerCachePath);
         \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
 
         $this->arrangeComposerClasses();
@@ -83,7 +83,14 @@ final class AutomaticTest extends MockeryTestCase
         \putenv('COMPOSER_CACHE_DIR=');
         \putenv('COMPOSER_CACHE_DIR');
 
-        (new Filesystem())->remove([$this->composerCachePath, __DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark']);
+        $narrowsparkPath = __DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark';
+
+        $this->delete($this->composerCachePath);
+        $this->delete($narrowsparkPath);
+
+        @\unlink($this->composerCachePath . \DIRECTORY_SEPARATOR . '.htaccess');
+        @\rmdir($this->composerCachePath);
+        @\rmdir($narrowsparkPath);
     }
 
     public function testGetSubscribedEvents(): void
@@ -915,5 +922,19 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn(new NullIO());
 
         return $containerMock;
+    }
+
+    private function delete(string $path): void
+    {
+        \array_map(function ($value) {
+            if (\is_dir($value)) {
+                $this->delete($value);
+
+                @\rmdir($value);
+            } else {
+                @\unlink($value);
+            }
+
+        }, \glob($path . \DIRECTORY_SEPARATOR . '*'));
     }
 }

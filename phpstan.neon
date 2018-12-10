@@ -29,4 +29,4 @@ parameters:
 
         # Automatic
         - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'
-        - '#Call to function method_exists\(\) with Symfony\\Component\\Console\\Style\\SymfonyStyle and \'comment\' will always evaluate to true#'
+        - '#Call to function method_exists\(\) with Symfony\\Component\\Console\\Style\\SymfonyStyle and#'

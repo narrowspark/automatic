@@ -1,3 +1,16 @@
+v0.10.0
+=======
+
+- Total issues resolved: **2**
+- Total pull requests resolved: **0**
+- Total contributors: **1**
+
+Added
+-----
+
+ - [99: Add php7.3 support](https://github.com/narrowspark/automatic/issues/99) thanks to @prisis
+ - [98: Add prettyci](https://github.com/narrowspark/automatic/issues/98) thanks to @prisis
+
 v0.9.0
 ======
 

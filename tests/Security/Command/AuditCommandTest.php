@@ -111,7 +111,7 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        $this->assertJson(\strstr(\substr($output, 0, \strrpos($output, '}') + 1),'{'));
+        $this->assertJson(\strstr(\substr($output, 0, \strrpos($output, '}') + 1), '{'));
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
         $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);

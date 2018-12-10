@@ -234,13 +234,13 @@ final class AuditTest extends TestCase
                         ],
                         'CVE-2018-19789' => [
                             'title' => 'CVE-2018-19789: Temporary uploaded file path disclosure',
-                            'link' => 'https://symfony.com/cve-2018-19789',
-                            'cve' => 'CVE-2018-19789',
+                            'link'  => 'https://symfony.com/cve-2018-19789',
+                            'cve'   => 'CVE-2018-19789',
                         ],
                         'CVE-2018-19790' => [
                             'title' => 'CVE-2018-19790: Open Redirect Vulnerability on login',
-                            'link' => 'https://symfony.com/cve-2018-19790',
-                            'cve' => 'CVE-2018-19790',
+                            'link'  => 'https://symfony.com/cve-2018-19790',
+                            'cve'   => 'CVE-2018-19790',
                         ]
                     ],
                 ],

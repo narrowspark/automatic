@@ -19,6 +19,16 @@ final class AuditCommandTest extends TestCase
     private $application;
 
     /**
+     * @var string
+     */
+    private $greenString;
+
+    /**
+     * @var string
+     */
+    private $redString;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
@@ -26,6 +36,9 @@ final class AuditCommandTest extends TestCase
         parent::setUp();
 
         $this->application = new Application();
+
+        $this->greenString = \DIRECTORY_SEPARATOR === '\\' ? '<fg=black;bg=green>[+]</>' : '[+]';
+        $this->redString = \DIRECTORY_SEPARATOR === '\\' ? '<error>[!]</>' : '[!]';
     }
 
     public function testAuditCommand(): void
@@ -34,7 +47,7 @@ final class AuditCommandTest extends TestCase
 
         $commandTester = $this->executeCommand(new AuditCommand());
 
-        $this->assertContains('[+] No known vulnerabilities found', \trim($commandTester->getDisplay(true)));
+        $this->assertContains($this->greenString . ' No known vulnerabilities found', \trim($commandTester->getDisplay(true)));
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -51,7 +64,7 @@ final class AuditCommandTest extends TestCase
 
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertContains('[+] No known vulnerabilities found', $output);
+        $this->assertContains($this->greenString . ' No known vulnerabilities found', $output);
     }
 
     public function testAuditCommandWithEmptyComposerLockPath(): void
@@ -79,7 +92,7 @@ final class AuditCommandTest extends TestCase
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
         $this->assertContains('symfony/symfony (v2.5.2)', $output);
-        $this->assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     public function testAuditCommandWithErrorAndJsonFormat(): void
@@ -102,7 +115,7 @@ final class AuditCommandTest extends TestCase
                 'This checker can only detect vulnerabilities that are referenced',
                 'in the',
                 'SensioLabs security advisories database.',
-                '[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.',
+                $this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.',
             ],
             '',
             $output
@@ -111,7 +124,7 @@ final class AuditCommandTest extends TestCase
         $this->assertJson($jsonOutput);
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     public function testAuditCommandWithErrorAndSimpleFormat(): void
@@ -131,7 +144,7 @@ final class AuditCommandTest extends TestCase
 ------------------------
 '), $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     /**

@@ -39,7 +39,6 @@ use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal

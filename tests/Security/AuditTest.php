@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Test;
 
-use Composer\Util\Filesystem;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;

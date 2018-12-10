@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Test;
 
 use Composer\Console\Application;
+use Muglug\PackageVersions\Versions;
 use Narrowspark\Automatic\Security\Command\AuditCommand;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
@@ -19,6 +20,16 @@ final class AuditCommandTest extends TestCase
     private $application;
 
     /**
+     * @var string
+     */
+    private $greenString;
+
+    /**
+     * @var string
+     */
+    private $redString;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
@@ -26,6 +37,11 @@ final class AuditCommandTest extends TestCase
         parent::setUp();
 
         $this->application = new Application();
+
+        $consoleVersion = \version_compare(Versions::getShortVersion('symfony/console'), '3.0.0', '<');
+
+        $this->greenString = $consoleVersion ? '' : '[+]';
+        $this->redString   = $consoleVersion ? '' : '[!]';
     }
 
     public function testAuditCommand(): void
@@ -34,7 +50,7 @@ final class AuditCommandTest extends TestCase
 
         $commandTester = $this->executeCommand(new AuditCommand());
 
-        $this->assertContains('[+] No known vulnerabilities found', \trim($commandTester->getDisplay(true)));
+        $this->assertContains($this->greenString . ' No known vulnerabilities found', \trim($commandTester->getDisplay(true)));
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -51,7 +67,7 @@ final class AuditCommandTest extends TestCase
 
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertContains('[+] No known vulnerabilities found', $output);
+        $this->assertContains($this->greenString . ' No known vulnerabilities found', $output);
     }
 
     public function testAuditCommandWithEmptyComposerLockPath(): void
@@ -79,7 +95,7 @@ final class AuditCommandTest extends TestCase
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
         $this->assertContains('symfony/symfony (v2.5.2)', $output);
-        $this->assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     public function testAuditCommandWithErrorAndJsonFormat(): void
@@ -95,23 +111,10 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        $jsonOutput = \str_replace(
-            [
-                '=== Audit Security Report ===',
-                '//',
-                'This checker can only detect vulnerabilities that are referenced',
-                'in the',
-                'SensioLabs security advisories database.',
-                '[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.',
-            ],
-            '',
-            $output
-        );
-
-        $this->assertJson($jsonOutput);
+        $this->assertJson(\strstr(\substr($output, 0, \strrpos($output, '}') + 1), '{'));
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     public function testAuditCommandWithErrorAndSimpleFormat(): void
@@ -131,7 +134,7 @@ final class AuditCommandTest extends TestCase
 ------------------------
 '), $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertContains('[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     /**

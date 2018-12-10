@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Test;
 
-use Composer\Util\Filesystem;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
@@ -42,7 +41,8 @@ final class AuditTest extends TestCase
     {
         parent::tearDown();
 
-        (new Filesystem())->remove($this->path . \DIRECTORY_SEPARATOR);
+        $this->delete($this->path);
+        @\rmdir($this->path);
     }
 
     public function testCheckPackageWithSymfony(): void
@@ -232,10 +232,33 @@ final class AuditTest extends TestCase
                             'link'  => 'https://symfony.com/cve-2017-16790',
                             'cve'   => 'CVE-2017-16790',
                         ],
+                        'CVE-2018-19789' => [
+                            'title' => 'CVE-2018-19789: Temporary uploaded file path disclosure',
+                            'link'  => 'https://symfony.com/cve-2018-19789',
+                            'cve'   => 'CVE-2018-19789',
+                        ],
+                        'CVE-2018-19790' => [
+                            'title' => 'CVE-2018-19790: Open Redirect Vulnerability on login',
+                            'link'  => 'https://symfony.com/cve-2018-19790',
+                            'cve'   => 'CVE-2018-19790',
+                        ],
                     ],
                 ],
             ],
             $vulnerabilities
         );
+    }
+
+    private function delete(string $path): void
+    {
+        \array_map(function ($value) {
+            if (\is_dir($value)) {
+                $this->delete($value);
+
+                @\rmdir($value);
+            } else {
+                @\unlink($value);
+            }
+        }, \glob($path . \DIRECTORY_SEPARATOR . '*'));
     }
 }

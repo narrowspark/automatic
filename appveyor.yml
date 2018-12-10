@@ -7,18 +7,18 @@ clone_folder: C:\projects\automatic
 
 environment:
   matrix:
-    - dependencies: basic
-      PHP_VERSION: 7.2
-    - dependencies: high
-      PHP_VERSION: 7.2
     - dependencies: lowest
       PHP_VERSION: 7.2
+      COMPOSER_VERSION: 1.6.5
+    - dependencies: high
+      PHP_VERSION: 7.2
+      COMPOSER_VERSION: 1.7.0
+    - dependencies: high
+      PHP_VERSION: 7.3
+      COMPOSER_VERSION: 1.8.0
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - dependencies: lowest
-      PHP_VERSION: 7.2
 
 services:
   - memcached
@@ -54,23 +54,25 @@ install:
           throw "There are newer queued builds for this pull request, failing early." }
   # Install PHP
   - IF EXIST C:\tools\php (SET PHP=0)
-  - IF %PHP%==1 appveyor DownloadFile "https://raw.githubusercontent.com/prisis/ps-install-php/master/Install-PHP.ps1"
+  - IF %PHP%==0 exit 1;
+  - appveyor DownloadFile "https://raw.githubusercontent.com/prisis/ps-install-php/master/Install-PHP.ps1"
   - ps: if (-not (Test-Path C:\tools\php)) {.\Install-PHP.ps1 -InstallPath C:\tools\php -Version $Env:PHP_VERSION -Highest -Arch $Env:PLATFORM -Extensions mbstring,intl,openssl,fileinfo,curl}
   # PHP settings and extensions
-  - IF %PHP%==1 cd C:\tools\php
-  - IF %PHP%==1 echo zend_extension=php_opcache.dll >> php.ini
-  - IF %PHP%==1 echo max_execution_time=1200 >> php.ini
-  - IF %PHP%==1 echo date.timezone="Europe/Berlin" >> php.ini
-  - IF %PHP%==1 echo opcache.enable_cli=1 >> php.ini
-  - IF %PHP%==1 echo apc.enable_cli=1 >> php.ini
+  - cd C:\tools\php
+  - echo zend_extension=php_opcache.dll >> php.ini
+  - echo max_execution_time=1200 >> php.ini
+  - echo date.timezone="Europe/Berlin" >> php.ini
+  - echo opcache.enable_cli=1 >> php.ini
+  - echo apc.enable_cli=1 >> php.ini
   - IF %APPVEYOR_REPO_BRANCH%==master (SET COMPOSER_ROOT_VERSION=dev-master) ELSE (SET COMPOSER_ROOT_VERSION=%APPVEYOR_REPO_BRANCH%.x-dev)
   - cd C:\projects\automatic
   - php -r "readfile('https://getcomposer.org/installer');" | php
   # Matrix
   - php composer.phar global require hirak/prestissimo
-  - IF %dependencies%==basic appveyor-retry %COMPOSER_UP%
+  - php composer.phar self-update %COMPOSER_VERSION%
   - IF %dependencies%==lowest appveyor-retry %COMPOSER_UP% --prefer-lowest --prefer-stable
   - IF %dependencies%==high appveyor-retry %COMPOSER_UP%
+  - php composer.phar require composer/composer:%COMPOSER_VERSION% --dev
   - cd build/appveyor
   - appveyor DownloadFile https://cdn.rawgit.com/prisis/43a2a7b137998ac92e24ee4daaa8e296/raw/681b89b8e156750de46558ead661509c468fb9a2/try_catch.sh
 

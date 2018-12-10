@@ -933,7 +933,6 @@ final class AutomaticTest extends MockeryTestCase
             } else {
                 @\unlink($value);
             }
-
         }, \glob($path . \DIRECTORY_SEPARATOR . '*'));
     }
 }

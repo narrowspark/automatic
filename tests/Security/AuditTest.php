@@ -259,7 +259,6 @@ final class AuditTest extends TestCase
             } else {
                 @\unlink($value);
             }
-
         }, \glob($path . \DIRECTORY_SEPARATOR . '*'));
     }
 }

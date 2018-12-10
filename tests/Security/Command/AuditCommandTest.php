@@ -2,10 +2,9 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Test;
 
-use Composer\Composer;
 use Composer\Console\Application;
-use Narrowspark\Automatic\Security\Command\AuditCommand;
 use Muglug\PackageVersions\Versions;
+use Narrowspark\Automatic\Security\Command\AuditCommand;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -42,7 +41,7 @@ final class AuditCommandTest extends TestCase
         $consoleVersion = \version_compare(Versions::getShortVersion('symfony/console'), '3.0.0', '<');
 
         $this->greenString = $consoleVersion ? '' : '[+]';
-        $this->redString = $consoleVersion ? '' : '[!]';
+        $this->redString   = $consoleVersion ? '' : '[!]';
     }
 
     public function testAuditCommand(): void

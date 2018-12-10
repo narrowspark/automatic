@@ -35,7 +35,6 @@ cache:
   - '%LOCALAPPDATA%\Composer\files -> composer.json'
 
 init:
-  - SET PHP=1
   - SET PATH=C:\Program Files\OpenSSL;C:\tools\php;%PATH%
   - SET ANSICON=121x90 (121x90)
   - SET COMPOSER_NO_INTERACTION=1
@@ -53,8 +52,6 @@ install:
         Where-Object pullRequestId -eq $Env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
           throw "There are newer queued builds for this pull request, failing early." }
   # Install PHP
-  - IF EXIST C:\tools\php (SET PHP=0)
-  - IF %PHP%==0 exit 1;
   - appveyor DownloadFile "https://raw.githubusercontent.com/prisis/ps-install-php/master/Install-PHP.ps1"
   - ps: if (-not (Test-Path C:\tools\php)) {.\Install-PHP.ps1 -InstallPath C:\tools\php -Version $Env:PHP_VERSION -Highest -Arch $Env:PLATFORM -Extensions mbstring,intl,openssl,fileinfo,curl}
   # PHP settings and extensions

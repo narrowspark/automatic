@@ -2,8 +2,10 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Test;
 
+use Composer\Composer;
 use Composer\Console\Application;
 use Narrowspark\Automatic\Security\Command\AuditCommand;
+use Muglug\PackageVersions\Versions;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -37,8 +39,10 @@ final class AuditCommandTest extends TestCase
 
         $this->application = new Application();
 
-        $this->greenString = \DIRECTORY_SEPARATOR === '\\' ? '<fg=black;bg=green>[+]</>' : '[+]';
-        $this->redString = \DIRECTORY_SEPARATOR === '\\' ? '<error>[!]</>' : '[!]';
+        $consoleVersion = \version_compare(Versions::getShortVersion('symfony/console'), '3.0.0', '<');
+
+        $this->greenString = $consoleVersion ? '' : '[+]';
+        $this->redString = $consoleVersion ? '' : '[!]';
     }
 
     public function testAuditCommand(): void
@@ -97,6 +101,10 @@ final class AuditCommandTest extends TestCase
 
     public function testAuditCommandWithErrorAndJsonFormat(): void
     {
+        if (\version_compare(Composer::VERSION, '1.7.0', '<')) {
+            $this->markTestSkipped('Test is skiped on composer < 1.7.0');
+        }
+
         $commandTester = $this->executeCommand(
             new AuditCommand(),
             [

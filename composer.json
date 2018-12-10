@@ -89,8 +89,5 @@
     },
     "suggest": {
         "narrowspark/coding-standard": "You can use this to check the style before pushing (^1.4.0)"
-    },
-    "config": {
-        "optimize-autoloader": true
     }
 }

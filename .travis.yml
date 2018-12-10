@@ -32,6 +32,7 @@ install:
     elif [[ "$SETUP" = "lowest" ]]; then
       $COMPOSER_UP --prefer-lowest --prefer-stable;
     fi
+  - composer require composer/composer:${COMPOSER_VERSION} --dev
 
 before_script:
   - wget https://cdn.rawgit.com/prisis/43a2a7b137998ac92e24ee4daaa8e296/raw/681b89b8e156750de46558ead661509c468fb9a2/try_catch.sh -P ./build/travis

@@ -101,10 +101,6 @@ final class AuditCommandTest extends TestCase
 
     public function testAuditCommandWithErrorAndJsonFormat(): void
     {
-        if (\version_compare(Composer::VERSION, '1.7.0', '<')) {
-            $this->markTestSkipped('Test is skiped on composer < 1.7.0');
-        }
-
         $commandTester = $this->executeCommand(
             new AuditCommand(),
             [
@@ -123,7 +119,7 @@ final class AuditCommandTest extends TestCase
                 'This checker can only detect vulnerabilities that are referenced',
                 'in the',
                 'SensioLabs security advisories database.',
-                $this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.',
+                '[!] 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.',
             ],
             '',
             $output

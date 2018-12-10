@@ -241,7 +241,7 @@ final class AuditTest extends TestCase
                             'title' => 'CVE-2018-19790: Open Redirect Vulnerability on login',
                             'link'  => 'https://symfony.com/cve-2018-19790',
                             'cve'   => 'CVE-2018-19790',
-                        ]
+                        ],
                     ],
                 ],
             ],

@@ -89,14 +89,13 @@ EOF
             return 1;
         }
 
-        $output->block(
-            'This checker can only detect vulnerabilities that are referenced in the SensioLabs security advisories database.',
-            null,
-            null,
-            '<fg=default;bg=default> // </>',
-            false,
-            false
-        );
+        $message = 'This checker can only detect vulnerabilities that are referenced in the SensioLabs security advisories database.';
+
+        if (\method_exists($output, 'comment')) {
+            $output->comment($message);
+        } else {
+            $output->writeln(sprintf('<comment>%s</>', $message));
+        }
 
         if (\count($messages) !== 0) {
             $output->note('Please report this found messages to https://github.com/narrowspark/security-advisories.');

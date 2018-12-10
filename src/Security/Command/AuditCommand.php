@@ -94,7 +94,7 @@ EOF
         if (\method_exists($output, 'comment')) {
             $output->comment($message);
         } else {
-            $output->writeln(sprintf('<comment>%s</>', $message));
+            $output->writeln(\sprintf('<comment>%s</>', $message));
         }
 
         if (\count($messages) !== 0) {

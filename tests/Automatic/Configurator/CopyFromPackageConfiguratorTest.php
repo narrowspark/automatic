@@ -107,7 +107,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - Created <fg=green>"' . \DIRECTORY_SEPARATOR . 'css' . \DIRECTORY_SEPARATOR . 'style.css"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"' . \DIRECTORY_SEPARATOR . 'css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -121,7 +121,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         \rmdir($dirPath);
     }
 
-    public function testTryCopyAFileThatIsNotFoundFromPackage(): void
+    public function testTryCopyFileThatIsNotFoundFromPackage(): void
     {
         $toFileName = 'notfound.txt';
 
@@ -132,7 +132,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . __DIR__ . \DIRECTORY_SEPARATOR . 'Stub/stub/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
+            ->with(['    - <fg=red>Failed to find the from folder or file path for "' . __DIR__ . \DIRECTORY_SEPARATOR . 'Stub/stub/notfound.txt" in "' .$package->getName() . '" package</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 

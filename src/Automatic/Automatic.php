@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic;
 
 use Closure;
+use Composer\Command\GlobalCommand;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Console\Application;
@@ -131,6 +132,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      * @var string[]
      */
     private $postMessages = [''];
+
+    /**
+     * Check for global command.
+     *
+     * @var bool
+     */
+    private static $isGlobalCommand = false;
 
     /**
      * Get the Container instance.
@@ -290,6 +298,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function initAutoScripts(): void
     {
+        if (self::$isGlobalCommand) {
+            return;
+        }
+
         $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
 
         $autoScript = '@' . ScriptEvents::AUTO_SCRIPTS;
@@ -338,6 +350,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function onPostCreateProject(Event $event): void
     {
+        if (self::$isGlobalCommand) {
+            return;
+        }
+
         /** @var \Composer\Json\JsonFile $json */
         /** @var \Composer\Json\JsonManipulator $manipulator */
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
@@ -371,6 +387,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function runSkeletonGenerator(Event $event): void
     {
+        if (self::$isGlobalCommand) {
+            return;
+        }
+
         /** @var \Narrowspark\Automatic\Lock $lock */
         $lock = $this->container->get(Lock::class);
 
@@ -996,6 +1016,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         foreach ($backtrace as $trace) {
             if (! isset($trace['object']) || ! isset($trace['args'][0])) {
                 continue;
+            }
+
+            if ($trace['object'] instanceof GlobalCommand) {
+                self::$isGlobalCommand = true;
             }
 
             if (! $trace['object'] instanceof Application || ! $trace['args'][0] instanceof ArgvInput) {

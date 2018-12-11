@@ -105,7 +105,7 @@ final class AuditCommandTest extends TestCase
             new AuditCommand(),
             [
                 '--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
-                '--disable-exit' => null,
+                '--disable-exit'  => null,
             ]
         );
 

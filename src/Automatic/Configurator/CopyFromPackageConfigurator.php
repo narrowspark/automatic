@@ -26,9 +26,9 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
 
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $from => $to) {
             $target = self::expandTargetDir($this->options, $to);
-            $from = $this->path->concatenate([$this->composer->getConfig()->get('vendor-dir') . \DIRECTORY_SEPARATOR . $package->getPrettyName() . \DIRECTORY_SEPARATOR, $from]);
+            $from   = $this->path->concatenate([$this->composer->getConfig()->get('vendor-dir') . \DIRECTORY_SEPARATOR . $package->getPrettyName() . \DIRECTORY_SEPARATOR, $from]);
 
-            if (! is_dir($from) && ! is_file($from)) {
+            if (! \is_dir($from) && ! \is_file($from)) {
                 $this->write(\sprintf(
                     '<fg=red>Failed to find the from folder or file path for "%s" in "%s" package</>',
                     $this->path->relativize($from),
@@ -45,7 +45,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
                     $functionName = 'mirror';
                 }
 
-                $this->filesystem->$functionName(
+                $this->filesystem->{$functionName}(
                     $from,
                     $this->path->concatenate([$this->path->getWorkingDir(), $target])
                 );

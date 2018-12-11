@@ -424,11 +424,34 @@ final class AutomaticTest extends MockeryTestCase
         \putenv('COMPOSER');
     }
 
+    public function testExecuteAutoScriptsWithNumericArray(): void
+    {
+        \putenv('COMPOSER=' . __DIR__ . '/Fixture/composer-with-numeric-scripts.json');
+
+        $eventMock = $this->mock(Event::class);
+        $eventMock->shouldReceive('stopPropagation')
+            ->never();
+
+        $containerMock = $this->mock(ContainerContract::class);
+        $containerMock->shouldReceive('get')
+            ->never()
+            ->with(ScriptExecutor::class);
+        $containerMock->shouldReceive('get')
+            ->never()
+            ->with(Lock::class);
+
+        $this->automatic->setContainer($containerMock);
+        $this->automatic->executeAutoScripts($eventMock);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+    }
+
     public function testExecuteAutoScriptsWithoutScripts(): void
     {
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
-            ->once();
+            ->never();
 
         $this->ioMock->shouldReceive('write')
             ->once()

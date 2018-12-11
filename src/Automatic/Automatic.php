@@ -676,36 +676,42 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     public function executeAutoScripts(Event $event): void
     {
-        $event->stopPropagation();
-
         // force reloading scripts as we might have added and removed during this run
         $json         = new JsonFile(Factory::getComposerFile());
         $jsonContents = $json->read();
 
-        if (isset($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS])) {
-            /** @var \Narrowspark\Automatic\ScriptExecutor $scriptExecutor */
-            $scriptExecutor = $this->container->get(ScriptExecutor::class);
+        if (! isset($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS])) {
+            $this->container->get(IOInterface::class)->write('No auto-scripts section was found under scripts', true, IOInterface::VERBOSE);
 
-            foreach ((array) $this->container->get(Lock::class)->get(ScriptExecutor::TYPE) as $extenders) {
-                foreach ($extenders as $class => $path) {
-                    if (! \class_exists($class)) {
-                        require_once $path;
-                    }
+            return;
+        }
 
-                    /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $class */
-                    $reflectionClass = new ReflectionClass($class);
+        if (\in_array(true, \array_map('\is_numeric', \array_keys($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS])), true)) {
+            return;
+        }
 
-                    if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getType')) {
-                        $scriptExecutor->add($class::getType(), $class);
-                    }
+        $event->stopPropagation();
+
+        /** @var \Narrowspark\Automatic\ScriptExecutor $scriptExecutor */
+        $scriptExecutor = $this->container->get(ScriptExecutor::class);
+
+        foreach ((array) $this->container->get(Lock::class)->get(ScriptExecutor::TYPE) as $extenders) {
+            foreach ($extenders as $class => $path) {
+                if (! \class_exists($class)) {
+                    require_once $path;
+                }
+
+                /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $class */
+                $reflectionClass = new ReflectionClass($class);
+
+                if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getType')) {
+                    $scriptExecutor->add($class::getType(), $class);
                 }
             }
+        }
 
-            foreach ($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS] as $cmd => $type) {
-                $scriptExecutor->execute($type, $cmd);
-            }
-        } else {
-            $this->container->get(IOInterface::class)->write('No auto-scripts section was found under scripts', true, IOInterface::VERBOSE);
+        foreach ($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS] as $cmd => $type) {
+            $scriptExecutor->execute($type, $cmd);
         }
     }
 

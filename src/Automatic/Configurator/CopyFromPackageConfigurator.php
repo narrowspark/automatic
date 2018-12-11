@@ -31,7 +31,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
             if (! \is_dir($from) && ! \is_file($from)) {
                 $this->write(\sprintf(
                     '<fg=red>Failed to find the from folder or file path for "%s" in "%s" package</>',
-                    $this->path->relativize($from),
+                    $from,
                     $package->getName()
                 ));
 

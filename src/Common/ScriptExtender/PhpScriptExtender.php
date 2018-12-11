@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Common\ScriptExtender;
 
+use Composer\Util\ProcessExecutor;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Symfony\Component\Process\PhpExecutableFinder;
 
@@ -39,8 +40,8 @@ class PhpScriptExtender extends AbstractScriptExtender
             $arguments[] = '--php-ini=' . $ini;
         }
 
-        $phpArgs = \implode(' ', \array_map('escapeshellarg', $arguments));
+        $phpArgs = \implode(' ', \array_map([ProcessExecutor::class, 'escape'], $arguments));
 
-        return \escapeshellarg((string) $php) . ($phpArgs !== '' ? ' ' . $phpArgs : '') . ' ' . $cmd;
+        return ProcessExecutor::escape((string) $php) . ($phpArgs !== '' ? ' ' . $phpArgs : '') . ' ' . $cmd;
     }
 }

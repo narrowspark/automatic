@@ -1,3 +1,22 @@
+v0.11.0
+=======
+
+- Total issues resolved: **3**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+Added
+-----
+
+ - [106: CopyFromPackageConfigurator should copy folder with files in it](https://github.com/narrowspark/automatic/issues/106) thanks to @prisis
+ - [103: add disable-exit on security command](https://github.com/narrowspark/automatic/issues/103) thanks to @prisis
+
+Fixed
+-----
+
+ - [104: Dont run onPostCreateProject, runSkeletonGenerator and initAutoScripts on global composer](https://github.com/narrowspark/automatic/issues/104) thanks to @prisis
+ - [102: fixed automatic auto-scripts not to throw a exception if array is a n&hellip;](https://github.com/narrowspark/automatic/pull/102) thanks to @prisis
+
 v0.10.0
 =======
 

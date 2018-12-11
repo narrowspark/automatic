@@ -33,7 +33,7 @@ final class PathTest extends TestCase
     public function testRelativize(): void
     {
         $this->assertSame(
-            './',
+            '.' . \DIRECTORY_SEPARATOR,
             $this->path->relativize(__DIR__)
         );
     }
@@ -41,8 +41,8 @@ final class PathTest extends TestCase
     public function testConcatenateOnWindows(): void
     {
         $this->assertEquals(
-            'c:\\my-project/src/kernel.php',
-            $this->path->concatenate(['c:\\my-project', 'src/', 'kernel.php'])
+            'c:' . \DIRECTORY_SEPARATOR . 'my-project' . \DIRECTORY_SEPARATOR . 'src' . \DIRECTORY_SEPARATOR . 'kernel.php',
+            $this->path->concatenate(['c:' . \DIRECTORY_SEPARATOR . 'my-project', 'src' . \DIRECTORY_SEPARATOR, 'kernel.php'])
         );
     }
 }

@@ -132,7 +132,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - <fg=red>Failed to find the from folder or file path for "' . __DIR__ . \DIRECTORY_SEPARATOR . 'Stub/stub/notfound.txt" in "' . $package->getName() . '" package</>'], true, IOInterface::VERBOSE);
+            ->with(['    - <fg=red>Failed to find the from folder or file path for "' . __DIR__ . \DIRECTORY_SEPARATOR . 'Stub' . \DIRECTORY_SEPARATOR . 'stub' . \DIRECTORY_SEPARATOR . 'notfound.txt" in "' . $package->getName() . '" package</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 

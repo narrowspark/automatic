@@ -64,7 +64,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
 
-        $filePath = \sys_get_temp_dir() . '/' . $toFileName;
+        $filePath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . '' . $toFileName;
 
         $this->assertFileExists($filePath);
 
@@ -73,7 +73,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
     public function testCopyDirWithFileFromPackage(): void
     {
-        $toAndFromFileName = '/css/style.css';
+        $toAndFromFileName = \DIRECTORY_SEPARATOR . 'css' . \DIRECTORY_SEPARATOR . 'style.css';
 
         $package = $this->arrangePackageWithConfig($toAndFromFileName, $toAndFromFileName);
 
@@ -82,12 +82,12 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"' . \DIRECTORY_SEPARATOR . 'css' . \DIRECTORY_SEPARATOR . 'style.css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
-        $dirPath  = \sys_get_temp_dir() . '/css';
-        $filePath = $dirPath . '/style.css';
+        $dirPath  = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'css';
+        $filePath = $dirPath . \DIRECTORY_SEPARATOR . 'style.css';
 
         $this->assertDirectoryExists($dirPath);
         $this->assertFileExists($filePath);
@@ -96,7 +96,32 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         \rmdir($dirPath);
     }
 
-    public function testTryCopyAFileThatIsNotFoundFromPackage(): void
+    public function testCopyDirFromPackage(): void
+    {
+        $toAndFromFileName = \DIRECTORY_SEPARATOR . 'css';
+
+        $package = $this->arrangePackageWithConfig($toAndFromFileName, $toAndFromFileName);
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with(['    - Copying files'], true, IOInterface::VERBOSE);
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with(['    - Created <fg=green>"' . \DIRECTORY_SEPARATOR . 'css"</>'], true, IOInterface::VERBOSE);
+
+        $this->configurator->configure($package);
+
+        $dirPath  = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'css';
+        $filePath = $dirPath . \DIRECTORY_SEPARATOR . 'style.css';
+
+        $this->assertDirectoryExists($dirPath);
+        $this->assertFileExists($filePath);
+
+        \unlink($filePath);
+        \rmdir($dirPath);
+    }
+
+    public function testTryCopyFileThatIsNotFoundFromPackage(): void
     {
         $toFileName = 'notfound.txt';
 
@@ -107,11 +132,11 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - <fg=red>Failed to create "notfound.txt"</>; Error message: Failed to copy "' . __DIR__ . '/Stub/stub/notfound.txt" because file does not exist.'], true, IOInterface::VERBOSE);
+            ->with(['    - <fg=red>Failed to find the from folder or file path for "' . __DIR__ . \DIRECTORY_SEPARATOR . 'Stub' . \DIRECTORY_SEPARATOR . 'stub' . \DIRECTORY_SEPARATOR . 'notfound.txt" in "' . $package->getName() . '" package</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
-        $filePath = \sys_get_temp_dir() . '/' . $toFileName;
+        $filePath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . '' . $toFileName;
 
         $this->assertFileNotExists($filePath);
     }
@@ -143,7 +168,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
     public function testUnconfigureADirWithFileFromPackage(): void
     {
-        $toAndFromFileName = '/css/style.css';
+        $toAndFromFileName = \DIRECTORY_SEPARATOR . 'css' . \DIRECTORY_SEPARATOR . 'style.css';
 
         $package = $this->arrangePackageWithConfig($toAndFromFileName, $toAndFromFileName);
 
@@ -152,7 +177,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"' . \DIRECTORY_SEPARATOR . 'css' . \DIRECTORY_SEPARATOR . 'style.css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -161,11 +186,11 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    - Removing files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - Removed <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Removed <fg=green>"' . \DIRECTORY_SEPARATOR . 'css' . \DIRECTORY_SEPARATOR . 'style.css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->unconfigure($package);
 
-        $dirPath = \sys_get_temp_dir() . '/css';
+        $dirPath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'css';
 
         $this->assertDirectoryExists($dirPath);
 
@@ -174,7 +199,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
     public function testUnconfigureWithAIOException(): void
     {
-        $toAndFromFileName = '/css/style.css';
+        $toAndFromFileName = \DIRECTORY_SEPARATOR . 'css' . \DIRECTORY_SEPARATOR . 'style.css';
 
         $package = $this->arrangePackageWithConfig($toAndFromFileName, $toAndFromFileName);
 
@@ -183,7 +208,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - Created <fg=green>"/css/style.css"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"' . \DIRECTORY_SEPARATOR . 'css' . \DIRECTORY_SEPARATOR . 'style.css"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
@@ -200,13 +225,13 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
             ->with(['    - Removing files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - <fg=red>Failed to remove "/css/style.css"</>; Error message: '], true, IOInterface::VERBOSE);
+            ->with(['    - <fg=red>Failed to remove "' . \DIRECTORY_SEPARATOR . 'css' . \DIRECTORY_SEPARATOR . 'style.css"</>; Error message: '], true, IOInterface::VERBOSE);
 
         $this->configurator->unconfigure($package);
 
-        $dirPath = \sys_get_temp_dir() . '/css';
+        $dirPath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'css';
 
-        \unlink($dirPath . '/style.css');
+        \unlink($dirPath . \DIRECTORY_SEPARATOR . 'style.css');
 
         $this->assertDirectoryExists($dirPath);
 
@@ -217,23 +242,23 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     {
         $toFileName = 'copy_of_copy.txt';
 
-        $package = $this->arrangePackageWithConfig('copy.txt', '%SELF_DIR%/' . $toFileName);
+        $package = $this->arrangePackageWithConfig('copy.txt', '%SELF_DIR%' . \DIRECTORY_SEPARATOR . $toFileName);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
             ->with(['    - Copying files'], true, IOInterface::VERBOSE);
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(['    - Created <fg=green>"test/copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
+            ->with(['    - Created <fg=green>"test' . \DIRECTORY_SEPARATOR . 'copy_of_copy.txt"</>'], true, IOInterface::VERBOSE);
 
         $this->configurator->configure($package);
 
-        $filePath = \sys_get_temp_dir() . '/test/' . $toFileName;
+        $filePath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'test' . \DIRECTORY_SEPARATOR . $toFileName;
 
         $this->assertFileExists($filePath);
 
         \unlink($filePath);
-        \rmdir(\sys_get_temp_dir() . '/test/');
+        \rmdir(\sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'test' . \DIRECTORY_SEPARATOR);
     }
 
     /**

@@ -36,13 +36,12 @@ class AuditCommand extends BaseCommand
                 new InputOption('composer-lock', '', InputOption::VALUE_REQUIRED, 'Path to a composer.lock'),
                 new InputOption('format', '', InputOption::VALUE_REQUIRED, 'The output format', 'txt'),
                 new InputOption('timeout', '', InputOption::VALUE_REQUIRED, 'The HTTP timeout in seconds'),
+                new InputOption('disable-exit', '', InputOption::VALUE_NONE, 'Only shows which vulnerabilities was found or not (without exit code)'),
             ])
             ->setDescription('Checks security issues in your project dependencies')
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command looks for security issues in the
-project dependencies:
-<info>%command.full_name%</info>
+The <info>%command.name%</info> command looks for security issues in the project dependencies.
 EOF
             );
     }
@@ -78,6 +77,12 @@ EOF
         $output = new SymfonyStyle($input, $output);
         $output->writeln('=== Audit Security Report ===');
 
+        $errorExitCode = 1;
+
+        if ($input->getOption('disable-exit') !== false) {
+            $errorExitCode = 0;
+        }
+
         try {
             [$vulnerabilities, $messages] = $audit->checkLock($composerFile);
         } catch (RuntimeException $exception) {
@@ -86,7 +91,7 @@ EOF
 
             $output->writeln($formatter->formatBlock($exception->getMessage(), 'error', true));
 
-            return 1;
+            return $errorExitCode;
         }
 
         $message = 'This checker can only detect vulnerabilities that are referenced in the SensioLabs security advisories database.';
@@ -123,10 +128,11 @@ EOF
             }
 
             $formatter->displayResults($output, $vulnerabilities);
+
             $output->writeln('<error>[!]</> ' . \sprintf('%s vulnerabilit%s found - ', $count, $count === 1 ? 'y' : 'ies') .
                 'We recommend you to check the related security advisories and upgrade these dependencies.');
 
-            return 1;
+            return $errorExitCode;
         }
 
         $output->writeln('<fg=black;bg=green>[+]</> No known vulnerabilities found');

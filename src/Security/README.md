@@ -20,13 +20,13 @@ Installation
 Use [Composer](https://getcomposer.org/) to install this package:
 
 ```sh
-composer require narrowspark/automatic-security-audit
+composer require narrowspark/automatic-security-audit --dev
 ```
 
 Usage
 -------------
 
-The checker will be executed when you launch `composer install` or `composer update`.
+The checker will be executed when you launch `composer require` , `composer install` or `composer update`.
 If you have alerts in your composer.lock, `composer audit` will print them.
 
 Contributing

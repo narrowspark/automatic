@@ -40,7 +40,7 @@ final class Path
     {
         $relativePath = \str_replace($this->workingDirectory, '.', $absolutePath);
 
-        return \is_dir($absolutePath) ? \rtrim($relativePath, '/') . '/' : $relativePath;
+        return \is_dir($absolutePath) ? \rtrim($relativePath, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR : $relativePath;
     }
 
     /**
@@ -53,7 +53,7 @@ final class Path
         $first = \array_shift($parts);
 
         return \array_reduce($parts, function (string $initial, string $next): string {
-            return \rtrim($initial, '/') . '/' . \ltrim($next, '/');
+            return \rtrim($initial, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR . \ltrim($next, \DIRECTORY_SEPARATOR);
         }, $first);
     }
 }

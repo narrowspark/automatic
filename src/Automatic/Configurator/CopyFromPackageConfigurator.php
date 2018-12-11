@@ -28,8 +28,14 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
             $target = self::expandTargetDir($this->options, $to);
 
             try {
-                $this->filesystem->copy(
-                    $this->path->concatenate([$this->composer->getConfig()->get('vendor-dir') . '/' . $package->getPrettyName() . '/', $from]),
+                $functionName = 'copy';
+
+                if (\is_dir($target)) {
+                    $functionName = 'mirror';
+                }
+
+                $this->filesystem->$functionName(
+                    $this->path->concatenate([$this->composer->getConfig()->get('vendor-dir') . \DIRECTORY_SEPARATOR . $package->getPrettyName() . \DIRECTORY_SEPARATOR, $from]),
                     $this->path->concatenate([$this->path->getWorkingDir(), $target])
                 );
 

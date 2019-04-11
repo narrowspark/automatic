@@ -53,7 +53,6 @@ final class CurlDownloader
             'proxy'   => \CURLOPT_PROXY,
         ],
         'ssl' => [
-            'ciphers' => \CURLOPT_SSL_CIPHER_LIST,
             'cafile'  => \CURLOPT_CAINFO,
             'capath'  => \CURLOPT_CAPATH,
         ],

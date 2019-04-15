@@ -50,7 +50,6 @@ final class CurlDownloader
         'http' => [
             'method'  => \CURLOPT_CUSTOMREQUEST,
             'content' => \CURLOPT_POSTFIELDS,
-            'proxy'   => \CURLOPT_PROXY,
         ],
         'ssl' => [
             'cafile'  => \CURLOPT_CAINFO,

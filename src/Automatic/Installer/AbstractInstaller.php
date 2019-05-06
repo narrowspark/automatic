@@ -3,17 +3,25 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Installer;
 
 use Composer\Composer;
+use Composer\EventDispatcher\EventSubscriberInterface;
+use Composer\Installer\InstallerEvents;
 use Composer\Installer\LibraryInstaller;
+use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Plugin\PluginEvents;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
+use Narrowspark\Automatic\Prefetcher\PrefetcherTrait;
+use Narrowspark\Automatic\Contract\Container as ContainerContract;
 
-abstract class AbstractInstaller extends LibraryInstaller
+abstract class AbstractInstaller extends LibraryInstaller implements EventSubscriberInterface
 {
+    use PrefetcherTrait;
+
     /**
      * @var string
      */
@@ -39,15 +47,27 @@ abstract class AbstractInstaller extends LibraryInstaller
     protected $loader;
 
     /**
+     * A Container instance.
+     *
+     * @var \Narrowspark\Automatic\Contract\Container
+     */
+    protected $container;
+
+    /**
      * Create a new Installer instance.
      *
      * @param \Composer\IO\IOInterface                  $io
      * @param \Composer\Composer                        $composer
      * @param \Narrowspark\Automatic\Lock               $lock
      * @param \Narrowspark\Automatic\Common\ClassFinder $loader
+     * @param \Narrowspark\Automatic\Contract\Container $container
      */
-    public function __construct(IOInterface $io, Composer $composer, Lock $lock, ClassFinder $loader)
+    public function __construct(IOInterface $io, Composer $composer, Lock $lock, ClassFinder $loader, ContainerContract $container)
     {
+        $this->container = $container;
+
+        $composer->getEventDispatcher()->addSubscriber($this);
+
         parent::__construct($io, $composer, static::TYPE);
 
         $this->lock   = $lock;
@@ -113,6 +133,21 @@ abstract class AbstractInstaller extends LibraryInstaller
         $this->removeFromLock($package, static::LOCK_KEY);
 
         $this->lock->remove(Automatic::LOCK_CLASSMAP, $package->getName());
+    }
+
+    /**
+     * @return array|void
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', \PHP_INT_MAX]],
+            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
+
+        ];
     }
 
     /**

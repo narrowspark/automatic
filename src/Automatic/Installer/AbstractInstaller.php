@@ -16,7 +16,7 @@ use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Lock;
-use Narrowspark\Automatic\Prefetcher\PrefetcherTrait;
+use Narrowspark\Automatic\Prefetcher\Traits\PrefetcherTrait;
 
 abstract class AbstractInstaller extends LibraryInstaller implements EventSubscriberInterface
 {

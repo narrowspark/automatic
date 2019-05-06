@@ -41,7 +41,7 @@ use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Operation\Install;
 use Narrowspark\Automatic\Operation\Uninstall;
 use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
-use Narrowspark\Automatic\Prefetcher\PrefetcherTrait;
+use Narrowspark\Automatic\Prefetcher\Traits\PrefetcherTrait;
 use Narrowspark\Automatic\Prefetcher\TruncatedComposerRepository;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Narrowspark\Automatic\Prefetcher;
+namespace Narrowspark\Automatic\Prefetcher\Traits;
 
 use Composer\DependencyResolver\Pool;
 use Composer\Installer\InstallerEvent;

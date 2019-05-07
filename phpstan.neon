@@ -32,4 +32,4 @@ parameters:
         - '#Call to function method_exists\(\) with Symfony\\Component\\Console\\Style\\SymfonyStyle and#'
 
         # AbstractInstaller
-        - '#Property class\@anonymous/Automatic/Prefetcher/Traits/PrefetcherTrait.php\:27\:\:\$repo has no typehint specified#'
+        - '#Property class\@anonymous/Automatic/Prefetcher/Traits/PrefetcherTrait.php\:29\:\:\$repo has no typehint specified#'

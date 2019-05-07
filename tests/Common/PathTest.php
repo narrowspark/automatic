@@ -16,7 +16,7 @@ final class PathTest extends TestCase
     private $path;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {

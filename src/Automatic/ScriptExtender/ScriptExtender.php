@@ -7,7 +7,7 @@ use Narrowspark\Automatic\Common\ScriptExtender\AbstractScriptExtender;
 final class ScriptExtender extends AbstractScriptExtender
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getType(): string
     {
@@ -15,7 +15,7 @@ final class ScriptExtender extends AbstractScriptExtender
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function expand(string $cmd): string
     {

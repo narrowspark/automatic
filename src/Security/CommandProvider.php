@@ -11,7 +11,7 @@ use Narrowspark\Automatic\Security\Command\AuditCommand;
 final class CommandProvider implements CommandProviderContract
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getCommands(): array
     {

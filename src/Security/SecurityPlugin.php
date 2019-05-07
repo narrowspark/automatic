@@ -81,7 +81,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     private static $activated = true;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getSubscribedEvents(): array
     {
@@ -98,7 +98,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
@@ -140,7 +140,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getCapabilities(): array
     {

@@ -19,7 +19,7 @@ class ComposerRepository extends BaseComposerRepository
     private $providerFiles;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function loadProviderListings($data): void
     {
@@ -50,7 +50,7 @@ class ComposerRepository extends BaseComposerRepository
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function fetchFile($filename, $cacheKey = null, $sha256 = null, $storeLastModifiedTime = false): array
     {

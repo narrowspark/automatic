@@ -52,7 +52,7 @@ final class Path
     {
         $first = \array_shift($parts);
 
-        return \array_reduce($parts, function (string $initial, string $next): string {
+        return \array_reduce($parts, static function (string $initial, string $next): string {
             return \rtrim($initial, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR . \ltrim($next, \DIRECTORY_SEPARATOR);
         }, $first);
     }

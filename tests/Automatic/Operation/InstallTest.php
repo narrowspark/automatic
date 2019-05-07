@@ -41,7 +41,7 @@ final class InstallTest extends MockeryTestCase
     private $install;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -291,7 +291,7 @@ final class InstallTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

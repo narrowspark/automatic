@@ -21,7 +21,7 @@ final class ParallelDownloaderTest extends MockeryTestCase
     private $parallelDownloader;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {

@@ -9,7 +9,7 @@ use Symfony\Component\Process\PhpExecutableFinder;
 class PhpScriptExtender extends AbstractScriptExtender
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getType(): string
     {
@@ -17,7 +17,7 @@ class PhpScriptExtender extends AbstractScriptExtender
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function expand(string $cmd): string
     {

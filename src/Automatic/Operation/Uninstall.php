@@ -15,7 +15,7 @@ use Narrowspark\Automatic\ScriptExecutor;
 final class Uninstall extends AbstractOperation
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function supports(OperationInterface $operation): bool
     {
@@ -23,7 +23,7 @@ final class Uninstall extends AbstractOperation
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function resolve(OperationInterface $operation): PackageContract
     {
@@ -37,7 +37,7 @@ final class Uninstall extends AbstractOperation
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function transform(PackageContract $package): void
     {

@@ -168,7 +168,7 @@ final class SkeletonGenerator
 
         $options = $this->options;
 
-        \array_walk($foundGenerators, static function (&$class) use ($options) {
+        \array_walk($foundGenerators, static function (&$class) use ($options): void {
             /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $class */
             $class = new $class(new Filesystem(), $options);
         });

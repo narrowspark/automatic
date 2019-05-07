@@ -5,6 +5,7 @@ namespace Narrowspark\Automatic\Test;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Downloader\DownloadManager;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\BufferIO;
 use Composer\IO\IOInterface;
 use Composer\Package\RootPackageInterface;
@@ -40,9 +41,9 @@ final class ContainerTest extends MockeryTestCase
     private static $staticContainer;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
 
@@ -71,6 +72,11 @@ final class ContainerTest extends MockeryTestCase
             ->andReturn([]);
 
         $composer->setPackage($package);
+
+        $eventDispatcherMock = \Mockery::mock(EventDispatcher::class);
+        $eventDispatcherMock->shouldReceive('addSubscriber');
+
+        $composer->setEventDispatcher($eventDispatcherMock);
 
         $downloadManager = \Mockery::mock(DownloadManager::class);
         $downloadManager->shouldReceive('getDownloader')

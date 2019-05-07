@@ -8,7 +8,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class TextFormatter implements FormatterContract
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function displayResults(SymfonyStyle $output, array $vulnerabilities): void
     {
@@ -16,7 +16,7 @@ class TextFormatter implements FormatterContract
             foreach ($vulnerabilities as $dependency => $issues) {
                 $output->section(\sprintf('%s (%s)', $dependency, $issues['version']));
 
-                $details = \array_map(function ($value) {
+                $details = \array_map(static function ($value) {
                     return \sprintf('<info>%s</>: %s' . \PHP_EOL . '    %s', $value['cve'] ?: '(no CVE ID)', $value['title'], $value['link']);
                 }, $issues['advisories']);
 

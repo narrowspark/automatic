@@ -23,7 +23,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
     private $copyPath;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -91,7 +91,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {
@@ -116,7 +116,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function getConfiguratorClass(): string
     {

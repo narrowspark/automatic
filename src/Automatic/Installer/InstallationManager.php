@@ -145,7 +145,7 @@ class InstallationManager extends AbstractInstallationManager
                         'Enter the version of <info>%s</info> to require (or leave blank to use the latest version): ',
                         $packageName
                     ),
-                    function ($input) {
+                    static function ($input) {
                         return \trim($input) ?? false;
                     }
                 );

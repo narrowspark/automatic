@@ -10,7 +10,7 @@ use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 final class ConfiguratorInstallerTest extends AbstractInstallerTest
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected $installerClass = ConfiguratorInstaller::class;
 }

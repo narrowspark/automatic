@@ -27,7 +27,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     private $tagsManger;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -127,7 +127,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     {
         yield 'no-symfony/symfony' => [[123], [123], '~1'];
 
-        $branchAlias = function ($versionAlias) {
+        $branchAlias = static function ($versionAlias) {
             return [
                 'extra' => [
                     'branch-alias' => [
@@ -226,7 +226,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

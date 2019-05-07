@@ -93,7 +93,8 @@ final class Container implements ContainerContract
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
                     $container->get(Lock::class),
-                    $container->get(ClassFinder::class)
+                    $container->get(ClassFinder::class),
+                    $container
                 );
             },
             SkeletonInstaller::class => static function (ContainerContract $container) {
@@ -101,7 +102,8 @@ final class Container implements ContainerContract
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
                     $container->get(Lock::class),
-                    $container->get(ClassFinder::class)
+                    $container->get(ClassFinder::class),
+                    $container
                 );
             },
             ConfiguratorContract::class => static function (ContainerContract $container) {
@@ -182,7 +184,7 @@ final class Container implements ContainerContract
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function set(string $id, callable $callback): void
     {
@@ -190,7 +192,7 @@ final class Container implements ContainerContract
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function get(string $id)
     {
@@ -206,7 +208,7 @@ final class Container implements ContainerContract
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getAll(): array
     {

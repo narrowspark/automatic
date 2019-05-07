@@ -29,7 +29,7 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
     protected $configurator;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -80,7 +80,7 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

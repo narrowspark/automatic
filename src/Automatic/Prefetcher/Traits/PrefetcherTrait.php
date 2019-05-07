@@ -7,6 +7,8 @@ use Composer\Installer\InstallerEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
 use Composer\Repository\RepositoryInterface;
+use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
+use Narrowspark\Automatic\Prefetcher\Prefetcher;
 
 trait PrefetcherTrait
 {

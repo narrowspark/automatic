@@ -12,7 +12,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     use AppendToFileTrait;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getName(): string
     {
@@ -20,7 +20,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function configure(PackageContract $package): void
     {
@@ -43,7 +43,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function unconfigure(PackageContract $package): void
     {

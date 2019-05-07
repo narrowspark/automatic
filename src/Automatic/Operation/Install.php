@@ -19,7 +19,7 @@ use Narrowspark\Automatic\ScriptExecutor;
 final class Install extends AbstractOperation
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function supports(OperationInterface $operation): bool
     {
@@ -35,7 +35,7 @@ final class Install extends AbstractOperation
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function resolve(OperationInterface $operation): PackageContract
     {
@@ -57,7 +57,7 @@ final class Install extends AbstractOperation
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function transform(PackageContract $package): void
     {

@@ -41,7 +41,7 @@ trait PrefetcherTrait
                     }
 
                     /**
-                     * {@inheritdoc}
+                     * {@inheritDoc}
                      */
                     public function whatProvides(Pool $pool, $name, $bypassFilters = false)
                     {
@@ -72,7 +72,7 @@ trait PrefetcherTrait
             $packages[]                  = [$job['packageName'], $job['constraint']];
         }
 
-        $this->container->get(ParallelDownloader::class)->download($packages, function ($packageName, $constraint) use (&$listed, &$packages, $pool): void {
+        $this->container->get(ParallelDownloader::class)->download($packages, static function ($packageName, $constraint) use (&$listed, &$packages, $pool): void {
             /** @var \Composer\Package\PackageInterface $package */
             foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
                 /** @var \Composer\Package\Link $link */

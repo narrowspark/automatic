@@ -3,11 +3,16 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test\Installer;
 
 use Composer\Downloader\DownloadManager;
+use Composer\EventDispatcher\EventDispatcher;
+use Composer\Installer\InstallerEvents;
+use Composer\Installer\PackageEvents;
 use Composer\Package\PackageInterface;
+use Composer\Plugin\PluginEvents;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
+use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -45,6 +50,11 @@ abstract class AbstractInstallerTest extends MockeryTestCase
     protected $downloadManagerMock;
 
     /**
+     * @var \Narrowspark\Automatic\Contract\Container|\Mockery\MockInterface
+     */
+    private $containerMock;
+
+    /**
      * @var string
      */
     protected $composerJsonPath;
@@ -60,7 +70,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
     protected $installerClass;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -95,7 +105,17 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->once()
             ->andReturn($this->downloadManagerMock);
 
-        $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new ClassFinder($this->configuratorPath));
+        $eventDispatcherMock = $this->mock(EventDispatcher::class);
+        $eventDispatcherMock->shouldReceive('addSubscriber')
+            ->once();
+
+        $this->composerMock->shouldReceive('getEventDispatcher')
+            ->once()
+            ->andReturn($eventDispatcherMock);
+
+        $this->containerMock = $this->mock(ContainerContract::class);
+
+        $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new ClassFinder($this->configuratorPath), $this->containerMock);
 
         $this->repositoryMock    = $this->mock(InstalledRepositoryInterface::class);
         $this->packageMock       = $this->mock(PackageInterface::class);
@@ -239,8 +259,22 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
     }
 
+    public function testGetSubscribedEvents(): void
+    {
+        $this->assertSame(
+            $this->configuratorInstaller->getSubscribedEvents(),
+            [
+                InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', \PHP_INT_MAX]],
+                InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
+                PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+                PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+                PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
+            ]
+        );
+    }
+
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

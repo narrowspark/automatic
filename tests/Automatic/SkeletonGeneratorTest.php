@@ -40,7 +40,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     private $skeletonGenerator;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -60,9 +60,9 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 
@@ -77,7 +77,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     {
         $this->installationManagerMock->shouldReceive('install')
             ->once()
-            ->withArgs(function ($requires, $devRequires) {
+            ->withArgs(static function ($requires, $devRequires) {
                 Assert::assertInstanceOf(Package::class, $requires[0]);
                 Assert::assertInternalType('array', $devRequires);
 
@@ -153,7 +153,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

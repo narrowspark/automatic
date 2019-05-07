@@ -157,7 +157,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getSubscribedEvents(): array
     {
@@ -189,7 +189,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
@@ -975,7 +975,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $this->container->get(ParallelDownloader::class)
         );
 
-        $setRepositories = Closure::bind(function (RepositoryManager $manager) use ($tagsManager) {
+        $setRepositories = Closure::bind(function (RepositoryManager $manager) use ($tagsManager): void {
             $manager->repositoryClasses = $this->repositoryClasses;
             $manager->setRepositoryClass('composer', TruncatedComposerRepository::class);
             $manager->repositories = $this->repositories;

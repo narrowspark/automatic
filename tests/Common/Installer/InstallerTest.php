@@ -22,7 +22,7 @@ final class InstallerTest extends MockeryTestCase
     use ArrangeComposerClasses;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -70,7 +70,7 @@ final class InstallerTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

@@ -46,7 +46,7 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
     private $configurator;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {

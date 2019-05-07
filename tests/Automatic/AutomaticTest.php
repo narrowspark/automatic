@@ -53,7 +53,7 @@ final class AutomaticTest extends MockeryTestCase
     private $automatic;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -73,7 +73,7 @@ final class AutomaticTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function tearDown(): void
     {
@@ -143,9 +143,13 @@ final class AutomaticTest extends MockeryTestCase
             ->twice()
             ->andReturn($downloadManagerMock);
 
+        $eventDispatcherMock = \Mockery::mock(EventDispatcher::class);
+        $eventDispatcherMock->shouldReceive('addSubscriber')
+            ->twice();
+
         $this->composerMock->shouldReceive('getEventDispatcher')
-            ->once()
-            ->andReturn($this->mock(EventDispatcher::class));
+            ->times(3)
+            ->andReturn($eventDispatcherMock);
 
         $this->composerMock->shouldReceive('setRepositoryManager')
             ->with(\Mockery::type(RepositoryManager::class))
@@ -163,6 +167,8 @@ final class AutomaticTest extends MockeryTestCase
         $this->ioMock->input = new ArrayInput([]);
         $this->ioMock->shouldReceive('writeError')
             ->atLeast()
+            ->once();
+        $this->ioMock->shouldReceive('loadConfiguration')
             ->once();
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
@@ -252,11 +258,17 @@ final class AutomaticTest extends MockeryTestCase
         $composer->setRepositoryManager($repositoryMock);
         $composer->setPackage($rootPackageMock);
 
+        $eventDispatcherMock = \Mockery::mock(EventDispatcher::class);
+        $eventDispatcherMock->shouldReceive('addSubscriber')
+            ->twice();
+
+        $composer->setEventDispatcher($eventDispatcherMock);
+
         $automatic->activate(
             $composer,
             new class() extends NullIO {
                 /**
-                 * {@inheritdoc}
+                 * {@inheritDoc}
                  */
                 public function isInteractive(): bool
                 {
@@ -367,11 +379,17 @@ final class AutomaticTest extends MockeryTestCase
         $composer->setRepositoryManager($repositoryMock);
         $composer->setPackage($rootPackageMock);
 
+        $eventDispatcherMock = \Mockery::mock(EventDispatcher::class);
+        $eventDispatcherMock->shouldReceive('addSubscriber')
+            ->twice();
+
+        $composer->setEventDispatcher($eventDispatcherMock);
+
         $automatic->activate(
             $composer,
             new class() extends NullIO {
                 /**
-                 * {@inheritdoc}
+                 * {@inheritDoc}
                  */
                 public function isInteractive(): bool
                 {
@@ -862,7 +880,7 @@ final class AutomaticTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {
@@ -948,7 +966,7 @@ final class AutomaticTest extends MockeryTestCase
 
     private function delete(string $path): void
     {
-        \array_map(function ($value) {
+        \array_map(function ($value): void {
             if (\is_dir($value)) {
                 $this->delete($value);
 

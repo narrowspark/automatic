@@ -32,7 +32,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     private $configurator;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -262,7 +262,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function assertPreConditions(): void
     {

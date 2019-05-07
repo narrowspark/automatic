@@ -37,7 +37,7 @@ final class SecurityPluginTest extends MockeryTestCase
     private $tmpFolder;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -48,7 +48,7 @@ final class SecurityPluginTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function tearDown(): void
     {
@@ -204,14 +204,14 @@ final class SecurityPluginTest extends MockeryTestCase
 
         $this->securityPlugin->auditComposerLock($this->mock(Event::class));
 
-        $this->assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        $this->assertCount(2, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

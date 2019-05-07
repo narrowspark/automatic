@@ -28,9 +28,9 @@ final class ClassFinderTest extends TestCase
     private $loader;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -113,7 +113,7 @@ final class ClassFinderTest extends TestCase
     {
         $genericPropertyReader = $this->getGenericPropertyReader();
 
-        $this->loader->setFilter(function () {
+        $this->loader->setFilter(static function () {
             return false;
         });
 

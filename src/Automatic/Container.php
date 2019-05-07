@@ -184,7 +184,7 @@ final class Container implements ContainerContract
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function set(string $id, callable $callback): void
     {
@@ -192,7 +192,7 @@ final class Container implements ContainerContract
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function get(string $id)
     {
@@ -208,7 +208,7 @@ final class Container implements ContainerContract
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getAll(): array
     {

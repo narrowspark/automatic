@@ -14,9 +14,9 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
+use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\Prefetcher\PrefetcherTrait;
-use Narrowspark\Automatic\Contract\Container as ContainerContract;
 
 abstract class AbstractInstaller extends LibraryInstaller implements EventSubscriberInterface
 {
@@ -62,8 +62,13 @@ abstract class AbstractInstaller extends LibraryInstaller implements EventSubscr
      * @param \Narrowspark\Automatic\Common\ClassFinder $loader
      * @param \Narrowspark\Automatic\Contract\Container $container
      */
-    public function __construct(IOInterface $io, Composer $composer, Lock $lock, ClassFinder $loader, ContainerContract $container)
-    {
+    public function __construct(
+        IOInterface $io,
+        Composer $composer,
+        Lock $lock,
+        ClassFinder $loader,
+        ContainerContract $container
+    ) {
         $this->container = $container;
 
         $composer->getEventDispatcher()->addSubscriber($this);
@@ -75,7 +80,7 @@ abstract class AbstractInstaller extends LibraryInstaller implements EventSubscr
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function supports($packageType): bool
     {
@@ -83,7 +88,7 @@ abstract class AbstractInstaller extends LibraryInstaller implements EventSubscr
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package): void
     {
@@ -110,7 +115,7 @@ abstract class AbstractInstaller extends LibraryInstaller implements EventSubscr
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function update(
         InstalledRepositoryInterface $repo,
@@ -124,7 +129,7 @@ abstract class AbstractInstaller extends LibraryInstaller implements EventSubscr
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package): void
     {
@@ -146,7 +151,6 @@ abstract class AbstractInstaller extends LibraryInstaller implements EventSubscr
             PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
             PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
-
         ];
     }
 

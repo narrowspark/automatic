@@ -12,7 +12,7 @@ final class EnvConfigurator extends AbstractConfigurator
     use AppendToFileTrait;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getName(): string
     {
@@ -20,7 +20,7 @@ final class EnvConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function configure(PackageContract $package): void
     {
@@ -65,7 +65,7 @@ final class EnvConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function unconfigure(PackageContract $package): void
     {

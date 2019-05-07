@@ -16,7 +16,7 @@ abstract class AbstractDownloader implements DownloaderContract
     protected $timeout = 20;
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function setTimeout(int $timeout): void
     {

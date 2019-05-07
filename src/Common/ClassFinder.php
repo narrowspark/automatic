@@ -325,7 +325,7 @@ final class ClassFinder implements ResettableContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function reset(): void
     {

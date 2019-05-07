@@ -23,7 +23,7 @@ final class LockTest extends TestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {

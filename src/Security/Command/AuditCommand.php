@@ -26,7 +26,7 @@ class AuditCommand extends BaseCommand
     protected static $defaultName = 'audit';
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function configure(): void
     {
@@ -47,7 +47,7 @@ EOF
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

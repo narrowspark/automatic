@@ -74,7 +74,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     ];
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function __construct(Composer $composer, IOInterface $io, array $options = [])
     {
@@ -84,7 +84,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public static function getName(): string
     {
@@ -92,7 +92,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configure(PackageContract $package): void
     {
@@ -165,7 +165,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function unconfigure(PackageContract $package): void
     {

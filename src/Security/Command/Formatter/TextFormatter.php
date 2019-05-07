@@ -8,7 +8,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class TextFormatter implements FormatterContract
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function displayResults(SymfonyStyle $output, array $vulnerabilities): void
     {

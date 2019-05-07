@@ -54,7 +54,7 @@ abstract class AbstractConfigurator implements MainConfiguratorContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getConfigurators(): array
     {
@@ -62,7 +62,7 @@ abstract class AbstractConfigurator implements MainConfiguratorContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function add(string $name, string $configurator): void
     {
@@ -78,7 +78,7 @@ abstract class AbstractConfigurator implements MainConfiguratorContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function has(string $name): bool
     {
@@ -86,7 +86,7 @@ abstract class AbstractConfigurator implements MainConfiguratorContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configure(PackageContract $package): void
     {
@@ -98,7 +98,7 @@ abstract class AbstractConfigurator implements MainConfiguratorContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function unconfigure(PackageContract $package): void
     {
@@ -110,7 +110,7 @@ abstract class AbstractConfigurator implements MainConfiguratorContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function reset(): void
     {

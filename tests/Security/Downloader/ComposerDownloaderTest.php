@@ -21,7 +21,7 @@ final class ComposerDownloaderTest extends TestCase
     private $downloader;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {

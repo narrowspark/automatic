@@ -7,7 +7,7 @@ use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 class UpdateConfigurator implements ConfiguratorContract
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public static function getName(): string
     {
@@ -15,14 +15,14 @@ class UpdateConfigurator implements ConfiguratorContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configure(PackageContract $package): void
     {
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function unconfigure(PackageContract $package): void
     {

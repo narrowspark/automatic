@@ -32,7 +32,7 @@ final class UninstallTest extends MockeryTestCase
     private $uninstall;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -201,7 +201,7 @@ final class UninstallTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

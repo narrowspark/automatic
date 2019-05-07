@@ -43,7 +43,7 @@ trait PrefetcherTrait
                     }
 
                     /**
-                     * {@inheritDoc}
+                     * {@inheritdoc}
                      */
                     public function whatProvides(Pool $pool, $name, $bypassFilters = false)
                     {

@@ -2,17 +2,50 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Installer;
 
+use Composer\Composer;
+use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Factory;
+use Composer\Installer\InstallerEvents;
+use Composer\Installer\PackageEvents;
+use Composer\IO\IOInterface;
+use Composer\Plugin\PluginEvents;
 use Narrowspark\Automatic\Common\Installer\AbstractInstallationManager;
+use Narrowspark\Automatic\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Prefetcher\Traits\PrefetcherTrait;
+use Symfony\Component\Console\Input\InputInterface;
 
-class InstallationManager extends AbstractInstallationManager
+class InstallationManager extends AbstractInstallationManager implements EventSubscriberInterface
 {
+    use PrefetcherTrait;
+
+    /**
+     * A Container instance.
+     *
+     * @var \Narrowspark\Automatic\Contract\Container
+     */
+    protected $container;
+
     /**
      * List of white listed packages.
      *
      * @var array
      */
     private $whiteList = [];
+
+    /**
+     * Create a new InstallationManager instance.
+     *
+     * @param \Composer\Composer                        $composer
+     * @param \Narrowspark\Automatic\Contract\Container $container
+     */
+    public function __construct(Composer $composer, ContainerContract $container)
+    {
+        $this->container = $container;
+
+        $composer->getEventDispatcher()->addSubscriber($this);
+
+        parent::__construct($composer, $container->get(IOInterface::class), $container->get(InputInterface::class));
+    }
 
     /**
      * Install required and required-dev packages.
@@ -97,6 +130,20 @@ class InstallationManager extends AbstractInstallationManager
         }
 
         return $status;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', \PHP_INT_MAX]],
+            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
+        ];
     }
 
     /**

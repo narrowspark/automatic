@@ -40,7 +40,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
     private $envPath;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -58,7 +58,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function tearDown(): void
     {

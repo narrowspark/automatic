@@ -10,7 +10,7 @@ use Symfony\Component\Filesystem\Exception\IOException;
 final class CopyFromPackageConfigurator extends AbstractConfigurator
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public static function getName(): string
     {
@@ -18,7 +18,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configure(PackageContract $package): void
     {
@@ -66,7 +66,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function unconfigure(PackageContract $package): void
     {

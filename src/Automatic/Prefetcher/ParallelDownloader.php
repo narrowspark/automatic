@@ -136,7 +136,7 @@ class ParallelDownloader extends RemoteFilesystem
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getLastHeaders(): ?array
     {
@@ -208,7 +208,7 @@ class ParallelDownloader extends RemoteFilesystem
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getOptions(): array
     {
@@ -253,7 +253,7 @@ class ParallelDownloader extends RemoteFilesystem
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getContents($originUrl, $fileUrl, $progress = true, $options = [])
     {
@@ -261,7 +261,7 @@ class ParallelDownloader extends RemoteFilesystem
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @internal
      */
@@ -330,7 +330,7 @@ class ParallelDownloader extends RemoteFilesystem
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function getRemoteContents($originUrl, $fileUrl, $context, array &$responseHeaders = null)
     {

@@ -28,7 +28,7 @@ final class ClassFinderTest extends TestCase
     private $loader;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {

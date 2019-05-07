@@ -48,7 +48,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
     private $configurator;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -311,7 +311,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function assertPreConditions(): void
     {

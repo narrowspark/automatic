@@ -37,7 +37,7 @@ final class ScriptExecutorTest extends MockeryTestCase
     private $scriptExecutor;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -195,7 +195,7 @@ final class ScriptExecutorTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

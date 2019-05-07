@@ -7,17 +7,17 @@ use Composer\Package\PackageInterface;
 class SkeletonInstaller extends AbstractInstaller
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public const TYPE = 'automatic-skeleton';
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public const LOCK_KEY = 'skeleton';
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function removeFromLock(PackageInterface $package, string $key): void
     {

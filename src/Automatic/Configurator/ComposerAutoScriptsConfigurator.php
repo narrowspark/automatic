@@ -26,7 +26,7 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     private $manipulator;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function __construct(Composer $composer, IOInterface $io, array $options = [])
     {
@@ -36,7 +36,7 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public static function getName(): string
     {
@@ -44,7 +44,7 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configure(PackageContract $package): void
     {
@@ -56,7 +56,7 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function unconfigure(PackageContract $package): void
     {

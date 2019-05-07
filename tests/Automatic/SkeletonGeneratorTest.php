@@ -40,7 +40,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     private $skeletonGenerator;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -60,7 +60,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function tearDown(): void
     {
@@ -153,7 +153,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

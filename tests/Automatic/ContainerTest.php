@@ -41,7 +41,7 @@ final class ContainerTest extends MockeryTestCase
     private static $staticContainer;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public static function setUpBeforeClass(): void
     {

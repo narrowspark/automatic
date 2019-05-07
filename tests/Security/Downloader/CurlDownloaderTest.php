@@ -21,7 +21,7 @@ final class CurlDownloaderTest extends TestCase
     private $downloader;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {

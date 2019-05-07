@@ -27,7 +27,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     private $tagsManger;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -226,7 +226,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

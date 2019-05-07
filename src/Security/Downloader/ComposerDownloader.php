@@ -9,7 +9,7 @@ use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 class ComposerDownloader extends AbstractDownloader
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function download(string $url): string
     {

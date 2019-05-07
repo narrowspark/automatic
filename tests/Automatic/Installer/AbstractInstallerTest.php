@@ -3,11 +3,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test\Installer;
 
 use Composer\Downloader\DownloadManager;
-use Composer\EventDispatcher\EventDispatcher;
-use Composer\Installer\InstallerEvents;
-use Composer\Installer\PackageEvents;
 use Composer\Package\PackageInterface;
-use Composer\Plugin\PluginEvents;
 use Composer\Repository\InstalledRepositoryInterface;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
@@ -50,11 +46,6 @@ abstract class AbstractInstallerTest extends MockeryTestCase
     protected $downloadManagerMock;
 
     /**
-     * @var \Narrowspark\Automatic\Contract\Container|\Mockery\MockInterface
-     */
-    private $containerMock;
-
-    /**
      * @var string
      */
     protected $composerJsonPath;
@@ -70,7 +61,12 @@ abstract class AbstractInstallerTest extends MockeryTestCase
     protected $installerClass;
 
     /**
-     * {@inheritDoc}
+     * @var \Mockery\MockInterface|\Narrowspark\Automatic\Contract\Container
+     */
+    private $containerMock;
+
+    /**
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -104,14 +100,6 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->composerMock->shouldReceive('getDownloadManager')
             ->once()
             ->andReturn($this->downloadManagerMock);
-
-        $eventDispatcherMock = $this->mock(EventDispatcher::class);
-        $eventDispatcherMock->shouldReceive('addSubscriber')
-            ->once();
-
-        $this->composerMock->shouldReceive('getEventDispatcher')
-            ->once()
-            ->andReturn($eventDispatcherMock);
 
         $this->containerMock = $this->mock(ContainerContract::class);
 
@@ -259,22 +247,8 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
     }
 
-    public function testGetSubscribedEvents(): void
-    {
-        $this->assertSame(
-            $this->configuratorInstaller->getSubscribedEvents(),
-            [
-                InstallerEvents::PRE_DEPENDENCIES_SOLVING  => [['onPreDependenciesSolving', \PHP_INT_MAX]],
-                InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
-                PackageEvents::PRE_PACKAGE_INSTALL         => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-                PackageEvents::PRE_PACKAGE_UPDATE          => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-                PluginEvents::PRE_FILE_DOWNLOAD            => 'onFileDownload',
-            ]
-        );
-    }
-
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

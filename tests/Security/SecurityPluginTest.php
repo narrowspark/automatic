@@ -37,7 +37,7 @@ final class SecurityPluginTest extends MockeryTestCase
     private $tmpFolder;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -48,7 +48,7 @@ final class SecurityPluginTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function tearDown(): void
     {
@@ -211,7 +211,7 @@ final class SecurityPluginTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

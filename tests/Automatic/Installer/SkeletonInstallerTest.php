@@ -10,7 +10,7 @@ use Narrowspark\Automatic\Installer\SkeletonInstaller;
 final class SkeletonInstallerTest extends AbstractInstallerTest
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected $installerClass = SkeletonInstaller::class;
 

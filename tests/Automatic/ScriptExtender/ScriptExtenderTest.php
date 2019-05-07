@@ -18,7 +18,7 @@ final class ScriptExtenderTest extends TestCase
     private $extender;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {

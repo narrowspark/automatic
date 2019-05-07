@@ -8,7 +8,7 @@ use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 class CurlDownloader extends AbstractDownloader
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function download(string $url): string
     {

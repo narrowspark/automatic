@@ -47,7 +47,6 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Input\InputInterface;
 
 class Automatic implements PluginInterface, EventSubscriberInterface
 {
@@ -157,7 +156,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {
@@ -189,7 +188,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
@@ -232,11 +231,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         $this->extendComposer(\debug_backtrace());
 
         $this->container->set(InstallationManager::class, static function (Container $container) use ($composer) {
-            return new InstallationManager(
-                $composer,
-                $container->get(IOInterface::class),
-                $container->get(InputInterface::class)
-            );
+            return new InstallationManager($composer, $container);
         });
     }
 

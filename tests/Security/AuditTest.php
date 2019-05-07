@@ -23,7 +23,7 @@ final class AuditTest extends TestCase
     private $path;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -35,7 +35,7 @@ final class AuditTest extends TestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function tearDown(): void
     {

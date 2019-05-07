@@ -58,7 +58,7 @@ final class PackageConfiguratorTest extends AbstractConfiguratorTest
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {
@@ -66,7 +66,7 @@ final class PackageConfiguratorTest extends AbstractConfiguratorTest
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function getConfiguratorClass(): string
     {

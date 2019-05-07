@@ -30,7 +30,7 @@ final class AuditCommandTest extends TestCase
     private $redString;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {

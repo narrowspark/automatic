@@ -17,7 +17,7 @@ final class PackageTest extends TestCase
     private $package;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {

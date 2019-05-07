@@ -7,17 +7,17 @@ use Composer\Package\PackageInterface;
 final class ConfiguratorInstaller extends AbstractInstaller
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public const TYPE = 'automatic-configurator';
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public const LOCK_KEY = 'configurators';
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function removeFromLock(PackageInterface $package, string $key): void
     {

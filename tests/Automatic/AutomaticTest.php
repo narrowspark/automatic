@@ -53,7 +53,7 @@ final class AutomaticTest extends MockeryTestCase
     private $automatic;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -73,7 +73,7 @@ final class AutomaticTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function tearDown(): void
     {
@@ -145,10 +145,10 @@ final class AutomaticTest extends MockeryTestCase
 
         $eventDispatcherMock = \Mockery::mock(EventDispatcher::class);
         $eventDispatcherMock->shouldReceive('addSubscriber')
-            ->twice();
+            ->once();
 
         $this->composerMock->shouldReceive('getEventDispatcher')
-            ->times(3)
+            ->twice()
             ->andReturn($eventDispatcherMock);
 
         $this->composerMock->shouldReceive('setRepositoryManager')
@@ -257,17 +257,11 @@ final class AutomaticTest extends MockeryTestCase
         $composer->setRepositoryManager($repositoryMock);
         $composer->setPackage($rootPackageMock);
 
-        $eventDispatcherMock = \Mockery::mock(EventDispatcher::class);
-        $eventDispatcherMock->shouldReceive('addSubscriber')
-            ->twice();
-
-        $composer->setEventDispatcher($eventDispatcherMock);
-
         $automatic->activate(
             $composer,
             new class() extends NullIO {
                 /**
-                 * {@inheritDoc}
+                 * {@inheritdoc}
                  */
                 public function isInteractive(): bool
                 {
@@ -378,17 +372,11 @@ final class AutomaticTest extends MockeryTestCase
         $composer->setRepositoryManager($repositoryMock);
         $composer->setPackage($rootPackageMock);
 
-        $eventDispatcherMock = \Mockery::mock(EventDispatcher::class);
-        $eventDispatcherMock->shouldReceive('addSubscriber')
-            ->twice();
-
-        $composer->setEventDispatcher($eventDispatcherMock);
-
         $automatic->activate(
             $composer,
             new class() extends NullIO {
                 /**
-                 * {@inheritDoc}
+                 * {@inheritdoc}
                  */
                 public function isInteractive(): bool
                 {
@@ -879,7 +867,7 @@ final class AutomaticTest extends MockeryTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function allowMockingNonExistentMethods($allow = false): void
     {

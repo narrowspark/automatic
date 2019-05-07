@@ -8,7 +8,7 @@ use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 class DummyClassNested implements ConfiguratorContract
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public static function getName(): string
     {
@@ -16,14 +16,14 @@ class DummyClassNested implements ConfiguratorContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configure(PackageContract $package): void
     {
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function unconfigure(PackageContract $package): void
     {

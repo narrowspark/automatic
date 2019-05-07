@@ -107,7 +107,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getName(): string
     {
@@ -115,7 +115,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setName(string $name): PackageContract
     {
@@ -125,7 +125,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPrettyName(): string
     {
@@ -133,7 +133,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getParentName(): ?string
     {
@@ -141,7 +141,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setParentName(string $name): PackageContract
     {
@@ -151,7 +151,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPrettyVersion(): ?string
     {
@@ -159,7 +159,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getType(): ?string
     {
@@ -167,7 +167,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setType(string $type): PackageContract
     {
@@ -177,7 +177,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getUrl(): ?string
     {
@@ -185,7 +185,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setUrl(string $url): PackageContract
     {
@@ -195,7 +195,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getOperation(): ?string
     {
@@ -203,7 +203,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOperation(string $operation): PackageContract
     {
@@ -213,7 +213,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getRequires(): array
     {
@@ -221,7 +221,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setRequires(array $requires): PackageContract
     {
@@ -231,7 +231,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getConfigs(): array
     {
@@ -239,7 +239,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAutoload(): array
     {
@@ -247,7 +247,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setAutoload(array $autoload): PackageContract
     {
@@ -257,7 +257,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function isDev(): bool
     {
@@ -265,7 +265,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setIsDev(bool $bool = true): PackageContract
     {
@@ -308,7 +308,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setConfig(array $configs): PackageContract
     {
@@ -318,7 +318,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function hasConfig(string $mainKey, ?string $name = null): bool
     {
@@ -336,7 +336,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getConfig(string $mainKey, ?string $name = null)
     {
@@ -354,7 +354,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setTime(string $time): PackageContract
     {
@@ -364,7 +364,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getTime(): string
     {
@@ -372,7 +372,7 @@ final class Package implements PackageContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function toArray(): array
     {

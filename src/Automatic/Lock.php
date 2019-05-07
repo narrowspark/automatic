@@ -160,7 +160,7 @@ class Lock implements ResettableContract
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function reset(): void
     {

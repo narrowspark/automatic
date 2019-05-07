@@ -19,7 +19,7 @@ use Narrowspark\Automatic\LegacyTagsManager;
 class TruncatedComposerRepository extends BaseComposerRepository
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function __construct(
         array $repoConfig,
@@ -50,7 +50,7 @@ class TruncatedComposerRepository extends BaseComposerRepository
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function fetchFile($filename, $cacheKey = null, $sha256 = null, $storeLastModifiedTime = false)
     {

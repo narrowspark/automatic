@@ -35,7 +35,7 @@ final class GitignoreConfiguratorTest extends TestCase
     private $gitignorePath;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -52,7 +52,7 @@ final class GitignoreConfiguratorTest extends TestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function tearDown(): void
     {

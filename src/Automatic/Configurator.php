@@ -32,7 +32,7 @@ final class Configurator extends AbstractConfigurator
     private $cache = [];
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function reset(): void
     {

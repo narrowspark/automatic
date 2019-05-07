@@ -168,8 +168,7 @@ final class AutomaticTest extends MockeryTestCase
         $this->ioMock->shouldReceive('writeError')
             ->atLeast()
             ->once();
-        $this->ioMock->shouldReceive('loadConfiguration')
-            ->once();
+        $this->ioMock->shouldReceive('loadConfiguration');
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
 

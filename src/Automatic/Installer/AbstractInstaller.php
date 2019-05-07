@@ -141,7 +141,7 @@ abstract class AbstractInstaller extends LibraryInstaller implements EventSubscr
     }
 
     /**
-     * @return array|void
+     * {@inheritDoc}
      */
     public static function getSubscribedEvents(): array
     {

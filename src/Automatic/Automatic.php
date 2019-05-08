@@ -1006,8 +1006,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      * Extend the composer object with some automatic settings.
      *
      * @param array                                    $backtrace
-     * @param \Composer\Composer                       $composer
-     * @param \Composer\Repository\RepositoryManager   $manager
      * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
      *
      * @return void

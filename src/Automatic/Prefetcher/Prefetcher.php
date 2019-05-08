@@ -59,11 +59,6 @@ class Prefetcher
     private $config;
 
     /**
-     * @var bool
-     */
-    private $cacheDirPopulated = false;
-
-    /**
      * Patch to the file cache.
      *
      * @var string
@@ -71,9 +66,18 @@ class Prefetcher
     private $cacheFilesDir;
 
     /**
+     * Check if the repo cache should be populated.
+     *
      * @var null|bool
      */
     private $populateRepoCacheDir;
+
+    /**
+     * Check if the dir cache should be populated.
+     *
+     * @var bool
+     */
+    private $cacheDirPopulated = false;
 
     /**
      * @var array

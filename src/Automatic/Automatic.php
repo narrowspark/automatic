@@ -216,17 +216,22 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         $this->container = new Container($composer, $io);
 
-        /** @var \Composer\Installer\InstallationManager $installationManager */
-        $installationManager = $composer->getInstallationManager();
-        $installationManager->addInstaller($this->container->get(ConfiguratorInstaller::class));
-        $installationManager->addInstaller($this->container->get(SkeletonInstaller::class));
-
         /** @var \Narrowspark\Automatic\LegacyTagsManager $tagsManager */
         $tagsManager = $this->container->get(LegacyTagsManager::class);
 
         $this->configureLegacyTagsManager($io, $tagsManager, $this->container->get('composer-extra'));
 
         $composer->setRepositoryManager($this->extendRepositoryManager($composer, $io, $tagsManager));
+
+        // overwrite composer instance
+        $this->container->set(Composer::class, static function () use ($composer) {
+            return $composer;
+        });
+
+        /** @var \Composer\Installer\InstallationManager $installationManager */
+        $installationManager = $composer->getInstallationManager();
+        $installationManager->addInstaller($this->container->get(ConfiguratorInstaller::class));
+        $installationManager->addInstaller($this->container->get(SkeletonInstaller::class));
 
         $this->container->get(Lock::class)->add('@readme', [
             'This file locks the automatic information of your project to a known state',
@@ -237,9 +242,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         $this->extendComposer(\debug_backtrace(), $tagsManager);
 
-        $this->container->set(InstallationManager::class, static function (Container $container) use ($composer) {
+        $this->container->set(InstallationManager::class, static function (Container $container) {
             return new InstallationManager(
-                $composer,
+                $container->get(Composer::class),
                 $container->get(IOInterface::class),
                 $container->get(InputInterface::class)
             );
@@ -1077,7 +1082,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Extend the repository manager with a truncated composer repository.
+     * Extend the repository manager with a truncated composer repository and parallel downloader.
      *
      * @param \Composer\Composer                       $composer
      * @param \Composer\IO\IOInterface                 $io

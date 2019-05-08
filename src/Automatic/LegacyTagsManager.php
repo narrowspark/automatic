@@ -5,8 +5,9 @@ namespace Narrowspark\Automatic;
 use Composer\IO\IOInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\VersionParser;
+use Narrowspark\Automatic\Common\Contract\Resettable;
 
-final class LegacyTagsManager
+final class LegacyTagsManager implements Resettable
 {
     /**
      * The composer io implementation.
@@ -170,5 +171,13 @@ final class LegacyTagsManager
         }
 
         return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function reset(): void
+    {
+        $this->legacyTags = [];
     }
 }

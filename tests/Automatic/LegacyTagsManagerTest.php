@@ -62,6 +62,22 @@ final class LegacyTagsManagerTest extends MockeryTestCase
         $this->assertSame(2, $count);
     }
 
+    public function testReset(): void
+    {
+        $count = 0;
+
+        $this->tagsManger->addConstraint('symfony/security-guard', '>=4.1');
+        $this->tagsManger->reset();
+
+        foreach ($this->downloadFileList as $file) {
+            if ($this->tagsManger->hasProvider($file)) {
+                $count++;
+            }
+        }
+
+        $this->assertSame(0, $count);
+    }
+
     public function testRemoveLegacyTagsWithoutDataPackages(): void
     {
         $this->assertSame([], $this->tagsManger->removeLegacyTags([]));

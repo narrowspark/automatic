@@ -233,7 +233,9 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             'This file is @generated automatically',
         ]);
 
-        $this->extendComposer(\debug_backtrace());
+        $this->container->get(Prefetcher::class)->populateRepoCacheDir();
+
+        $this->extendComposer(\debug_backtrace(), $tagsManager);
 
         $this->container->set(InstallationManager::class, static function (Container $container) use ($composer) {
             return new InstallationManager(
@@ -1003,11 +1005,12 @@ class Automatic implements PluginInterface, EventSubscriberInterface
     /**
      * Extend the composer object with some automatic settings.
      *
-     * @param array $backtrace
+     * @param array                                    $backtrace
+     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
      *
      * @return void
      */
-    private function extendComposer($backtrace): void
+    private function extendComposer($backtrace, LegacyTagsManager $tagsManager): void
     {
         foreach ($backtrace as $trace) {
             if (isset($trace['object']) && $trace['object'] instanceof Installer) {
@@ -1052,6 +1055,8 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 }
             } elseif ($command === 'suggests') {
                 $input->setOption('by-package', true);
+            } elseif ('outdated' === $command) {
+                $tagsManager->reset();
             }
 
             if ($input->hasOption('no-suggest')) {
@@ -1064,6 +1069,10 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             if ($input->hasParameterOption('--prefer-lowest', true)) {
                 BasePackage::$stabilities['dev'] = 1 + BasePackage::STABILITY_STABLE;
             }
+
+            $this->container->get(Prefetcher::class)->prefetchComposerRepositories();
+
+            break;
         }
     }
 

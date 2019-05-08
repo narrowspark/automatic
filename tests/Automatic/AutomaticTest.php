@@ -6,6 +6,7 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\Downloader\DownloaderInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
@@ -16,6 +17,7 @@ use Composer\IO\NullIO;
 use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackage;
+use Composer\Plugin\PluginManager;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
@@ -103,6 +105,10 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testActivate(): void
     {
+        $this->configMock->shouldReceive('get')
+            ->with('cache-files-dir')
+            ->andReturn('');
+
         $this->arrangeAutomaticConfig();
         $this->arrangePackagist();
 
@@ -138,9 +144,12 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn($installationManager);
 
         $downloadManagerMock = $this->mock(DownloadManager::class);
+        $downloadManagerMock->shouldReceive('getDownloader')
+            ->with('file')
+            ->andReturn($this->mock(DownloaderInterface::class));
 
         $this->composerMock->shouldReceive('getDownloadManager')
-            ->twice()
+            ->times(3)
             ->andReturn($downloadManagerMock);
 
         $this->composerMock->shouldReceive('getEventDispatcher')
@@ -156,6 +165,15 @@ final class AutomaticTest extends MockeryTestCase
                 ->once()
                 ->with('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);
         }
+
+        $pluginManagerMock = $this->mock(PluginManager::class);
+        $pluginManagerMock->shouldReceive('getPlugins')
+            ->once()
+            ->andReturn([]);
+
+        $this->composerMock->shouldReceive('getPluginManager')
+            ->once()
+            ->andReturn($pluginManagerMock);
 
         $this->ioMock->shouldReceive('isInteractive')
             ->once()
@@ -253,9 +271,23 @@ final class AutomaticTest extends MockeryTestCase
         $composer->setRepositoryManager($repositoryMock);
         $composer->setPackage($rootPackageMock);
 
+        $downloadManagerMock = $this->mock(DownloadManager::class);
+        $downloadManagerMock->shouldReceive('getDownloader')
+            ->with('file')
+            ->andReturn($this->mock(DownloaderInterface::class));
+
+        $composer->setDownloadManager($downloadManagerMock);
+
         $automatic->activate(
             $composer,
             new class() extends NullIO {
+                protected $input;
+
+                public function __construct()
+                {
+                    $this->input = new ArrayInput([]);
+                }
+
                 /**
                  * {@inheritdoc}
                  */
@@ -368,9 +400,23 @@ final class AutomaticTest extends MockeryTestCase
         $composer->setRepositoryManager($repositoryMock);
         $composer->setPackage($rootPackageMock);
 
+        $downloadManagerMock = $this->mock(DownloadManager::class);
+        $downloadManagerMock->shouldReceive('getDownloader')
+            ->with('file')
+            ->andReturn($this->mock(DownloaderInterface::class));
+
+        $composer->setDownloadManager($downloadManagerMock);
+
         $automatic->activate(
             $composer,
             new class() extends NullIO {
+                protected $input;
+
+                public function __construct()
+                {
+                    $this->input = new ArrayInput([]);
+                }
+
                 /**
                  * {@inheritdoc}
                  */

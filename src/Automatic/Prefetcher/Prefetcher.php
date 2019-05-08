@@ -10,7 +10,6 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginManager;
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
-use Composer\Util\RemoteFilesystem;
 use Hirak\Prestissimo\Plugin as PrestissimoPlugin;
 use Narrowspark\Automatic\Common\Util;
 use Symfony\Component\Console\Input\InputInterface;
@@ -72,6 +71,11 @@ class Prefetcher
     private $cacheFilesDir;
 
     /**
+     * @var null|bool
+     */
+    private $populateRepoCacheDir;
+
+    /**
      * @var array
      */
     private static $repoReadingCommands = [
@@ -102,34 +106,42 @@ class Prefetcher
     }
 
     /**
-     * @param \Composer\Util\RemoteFilesystem $remoteFilesystem
+     * Should the repo- and dir cache be populated.
      *
      * @return void
      */
-    public function prefetchComposerRepositories(RemoteFilesystem $remoteFilesystem): void
+    public function populateRepoCacheDir(): void
     {
-        $populateRepoCacheDir = __CLASS__ === self::class;
-        $pluginManager        = $this->composer->getPluginManager();
+        $this->populateRepoCacheDir = __CLASS__ === self::class;
+        $pluginManager              = $this->composer->getPluginManager();
 
         if ($pluginManager instanceof PluginManager) {
             foreach ($pluginManager->getPlugins() as $plugin) {
                 if (\strpos(\get_class($plugin), PrestissimoPlugin::class) === 0) {
-                    if (\method_exists($remoteFilesystem, 'getRemoteContents')) {
+                    if (\method_exists($this->rfs, 'getRemoteContents')) {
                         $plugin->disable();
                     } else {
                         $this->cacheDirPopulated = true;
                     }
 
-                    $populateRepoCacheDir = false;
+                    $this->populateRepoCacheDir = false;
 
                     break;
                 }
             }
         }
+    }
 
+    /**
+     * @param \Composer\Util\RemoteFilesystem $remoteFilesystem
+     *
+     * @return void
+     */
+    public function prefetchComposerRepositories(): void
+    {
         $command = $this->input->getFirstArgument();
 
-        if ($populateRepoCacheDir === true &&
+        if ($this->populateRepoCacheDir === true &&
             isset(self::$repoReadingCommands[$command]) &&
             ($command !== 'install' || (\file_exists(Factory::getComposerFile()) && ! \file_exists(Util::getComposerLockFile())))
         ) {
@@ -199,9 +211,7 @@ class Prefetcher
                 continue;
             }
 
-            @\mkdir(\dirname($destination), 0775, true);
-
-            if (! \is_dir(\dirname($destination))) {
+            if (! @\mkdir($concurrentDirectory = \dirname($destination), 0775, true) && ! \is_dir($concurrentDirectory)) {
                 continue;
             }
 

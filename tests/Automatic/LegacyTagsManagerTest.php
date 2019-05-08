@@ -127,7 +127,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     {
         yield 'no-symfony/symfony' => [[123], [123], '~1'];
 
-        $branchAlias = function ($versionAlias) {
+        $branchAlias = static function ($versionAlias) {
             return [
                 'extra' => [
                     'branch-alias' => [

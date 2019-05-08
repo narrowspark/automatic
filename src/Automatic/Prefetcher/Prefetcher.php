@@ -148,7 +148,7 @@ class Prefetcher
                 $repos[] = [new ComposerRepository($repo, $this->io, $this->config, null, $this->rfs)];
             }
 
-            $this->rfs->download($repos, function (BaseComposerRepository $repo): void {
+            $this->rfs->download($repos, static function (BaseComposerRepository $repo): void {
                 ParallelDownloader::$cacheNext = true;
 
                 $repo->getProviderNames();
@@ -182,6 +182,7 @@ class Prefetcher
                     $package = $operation->getTargetPackage();
 
                     break;
+
                 default:
                     continue 2;
             }

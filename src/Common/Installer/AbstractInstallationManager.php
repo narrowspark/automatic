@@ -105,7 +105,7 @@ abstract class AbstractInstallationManager
     protected $composerBackup;
 
     /**
-     * Create a new ExtraDependencyInstaller instance.
+     * Use this class to create a new Installation manager.
      *
      * @param \Composer\Composer                              $composer
      * @param \Composer\IO\IOInterface                        $io

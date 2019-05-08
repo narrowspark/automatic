@@ -1,0 +1,61 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "66c1e565c9e491030d3407a3cc754f00",
+    "packages": [
+        {
+            "name": "3f/pygmentize",
+            "version": "1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dedalozzo/pygmentize.git",
+                "reference": "29b27b222a31ab322f5b6a3f5a2c36035017b089"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dedalozzo/pygmentize/zipball/29b27b222a31ab322f5b6a3f5a2c36035017b089",
+                "reference": "29b27b222a31ab322f5b6a3f5a2c36035017b089",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Pygmentize\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Filippo Fadda",
+                    "email": "filippo.fadda@gmail.com",
+                    "homepage": "http://www.linkedin.com/in/filippofadda"
+                }
+            ],
+            "description": "Pygmentize is a wrapper to `pygmentize`, the command line interface provided by Pygments, a python syntax highlighter.",
+            "homepage": "https://github.com/dedalozzo/pygmentize",
+            "keywords": [
+                "Syntax highlighter",
+                "pygmentize",
+                "pygments"
+            ],
+            "time": "2017-11-13T17:53:28+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

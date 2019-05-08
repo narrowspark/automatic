@@ -204,7 +204,7 @@ final class SecurityPluginTest extends MockeryTestCase
 
         $this->securityPlugin->auditComposerLock($this->mock(Event::class));
 
-        $this->assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        $this->assertCount(2, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');

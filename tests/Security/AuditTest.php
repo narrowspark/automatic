@@ -25,7 +25,7 @@ final class AuditTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -37,7 +37,7 @@ final class AuditTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 
@@ -106,9 +106,8 @@ final class AuditTest extends TestCase
      */
     private function assertSymfonySecurity(int $vulnerabilitiesCount, array $vulnerabilities): void
     {
-        $this->assertSame(1, $vulnerabilitiesCount);
         $this->assertEquals(
-            [
+            \array_merge([
                 'symfony/symfony' => [
                     'version'    => 'v2.5.2',
                     'advisories' => [
@@ -242,16 +241,50 @@ final class AuditTest extends TestCase
                             'link'  => 'https://symfony.com/cve-2018-19790',
                             'cve'   => 'CVE-2018-19790',
                         ],
+                        'CVE-2019-10909' => [
+                            'title' => 'CVE-2019-10909: Escape validation messages in the PHP templating engine',
+                            'link'  => 'https://symfony.com/cve-2019-10909',
+                            'cve'   => 'CVE-2019-10909',
+                        ],
+                        'CVE-2019-10910' => [
+                            'title' => 'CVE-2019-10910: Check service IDs are valid',
+                            'link'  => 'https://symfony.com/cve-2019-10910',
+                            'cve'   => 'CVE-2019-10910',
+                        ],
+                        'CVE-2019-10911' => [
+                            'title' => 'CVE-2019-10911: Add a separator in the remember me cookie hash',
+                            'link'  => 'https://symfony.com/cve-2019-10911',
+                            'cve'   => 'CVE-2019-10911',
+                        ],
+                        'CVE-2019-10912' => [
+                            'title' => 'CVE-2019-10912: Prevent destructors with side-effects from being unserialized',
+                            'link'  => 'https://symfony.com/cve-2019-10912',
+                            'cve'   => 'CVE-2019-10912',
+                        ],
+                        'CVE-2019-10913' => [
+                            'title' => 'CVE-2019-10913: Reject invalid HTTP method overrides',
+                            'link'  => 'https://symfony.com/cve-2019-10913',
+                            'cve'   => 'CVE-2019-10913',
+                        ],
                     ],
                 ],
-            ],
+            ], $vulnerabilitiesCount === 2 ? ['twig/twig' => [
+                'version'    => 'v1.35.4',
+                'advisories' => [
+                    '2019-03-12' => [
+                        'title' => 'Sandbox Information Disclosure',
+                        'link'  => 'https://symfony.com/blog/twig-sandbox-information-disclosure',
+                        'cve'   => null,
+                    ],
+                ],
+            ]] : []),
             $vulnerabilities
         );
     }
 
     private function delete(string $path): void
     {
-        \array_map(function ($value) {
+        \array_map(function ($value): void {
             if (\is_dir($value)) {
                 $this->delete($value);
 

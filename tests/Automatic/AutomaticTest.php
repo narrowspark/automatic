@@ -164,6 +164,7 @@ final class AutomaticTest extends MockeryTestCase
         $this->ioMock->shouldReceive('writeError')
             ->atLeast()
             ->once();
+        $this->ioMock->shouldReceive('loadConfiguration');
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
 
@@ -948,7 +949,7 @@ final class AutomaticTest extends MockeryTestCase
 
     private function delete(string $path): void
     {
-        \array_map(function ($value) {
+        \array_map(function ($value): void {
             if (\is_dir($value)) {
                 $this->delete($value);
 

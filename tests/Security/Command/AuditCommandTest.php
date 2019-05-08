@@ -2,8 +2,8 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Security\Test;
 
-use Muglug\PackageVersions\Versions;
 use Narrowspark\Automatic\Security\Command\AuditCommand;
+use PackageVersions\Versions;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -38,7 +38,7 @@ final class AuditCommandTest extends TestCase
 
         $this->application = new Application();
 
-        $consoleVersion = \version_compare(Versions::getShortVersion('symfony/console'), '3.0.0', '<');
+        $consoleVersion = \version_compare(Versions::getVersion('symfony/console'), '3.0.0', '<');
 
         $this->greenString = $consoleVersion ? '' : '[+]';
         $this->redString   = $consoleVersion ? '' : '[!]';
@@ -95,7 +95,7 @@ final class AuditCommandTest extends TestCase
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
         $this->assertContains('symfony/symfony (v2.5.2)', $output);
-        $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
         $this->assertSame(1, $commandTester->getStatusCode());
     }
 
@@ -114,6 +114,25 @@ final class AuditCommandTest extends TestCase
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
         $this->assertContains('symfony/symfony (v2.5.2)', $output);
+        $this->assertContains($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertSame(0, $commandTester->getStatusCode());
+    }
+
+    public function testAuditCommandWithErrorZeroExitCodeAndOneVulnerability(): void
+    {
+        $commandTester = $this->executeCommand(
+            new AuditCommand(),
+            [
+                '--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'pygmentize_1.1_composer.lock',
+                '--disable-exit'  => null,
+            ]
+        );
+
+        $output = \trim($commandTester->getDisplay(true));
+
+        $this->assertContains('=== Audit Security Report ===', $output);
+        $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
+        $this->assertContains('3f/pygmentize (1.1)', $output);
         $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
         $this->assertSame(0, $commandTester->getStatusCode());
     }
@@ -134,7 +153,7 @@ final class AuditCommandTest extends TestCase
         $this->assertJson(\strstr(\substr($output, 0, \strrpos($output, '}') + 1), '{'));
         $this->assertContains('=== Audit Security Report ===', $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     public function testAuditCommandWithErrorAndSimpleFormat(): void
@@ -154,7 +173,7 @@ final class AuditCommandTest extends TestCase
 ------------------------
 '), $output);
         $this->assertContains('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertContains($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        $this->assertContains($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     /**

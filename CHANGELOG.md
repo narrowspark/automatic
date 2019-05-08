@@ -1,3 +1,21 @@
+v0.12.0
+=======
+
+- Total issues resolved: **1**
+- Total pull requests resolved: **2**
+- Total contributors: **1**
+
+Added
+-----
+
+ - [113: Ignore legacy tags in outdated](https://github.com/narrowspark/automatic/pull/113) thanks to @prisis
+ - [96: use prefetcher in skeleton installer](https://github.com/narrowspark/automatic/issues/96) thanks to @prisis
+
+Fixed
+-----
+
+ - [112: Fixing broken security tests](https://github.com/narrowspark/automatic/pull/112) thanks to @prisis
+
 v0.11.0
 =======
 

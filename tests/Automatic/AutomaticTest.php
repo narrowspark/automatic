@@ -59,6 +59,8 @@ final class AutomaticTest extends MockeryTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->composerCachePath = __DIR__ . '/AutomaticTest';
 
         @\mkdir($this->composerCachePath);
@@ -120,9 +122,6 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn(null);
 
         $localRepositoryMock = $this->mock(WritableRepositoryInterface::class);
-        $localRepositoryMock->shouldReceive('getPackages')
-            ->once()
-            ->andReturn([]);
 
         $repositoryMock = $this->mock(RepositoryManager::class);
         $repositoryMock->shouldReceive('getLocalRepository')

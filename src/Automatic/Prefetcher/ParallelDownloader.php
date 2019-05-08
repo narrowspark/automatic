@@ -108,7 +108,7 @@ class ParallelDownloader extends RemoteFilesystem
     {
         $this->io = $io;
 
-        if (! \method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
+        if (! \method_exists(parent::class, 'getRemoteContents')) {
             $this->io->writeError('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);
         // @codeCoverageIgnoreStart
         } elseif (! \extension_loaded('curl')) {

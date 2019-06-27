@@ -784,11 +784,15 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $packages[]                  = [$job['packageName'], $job['constraint']];
         }
 
-        $this->container->get(ParallelDownloader::class)->download($packages, static function ($packageName, $constraint) use (&$listed, &$packages, $pool): void {
+        $loadExtraRepos = !(new \ReflectionMethod(Pool::class, 'match'))->isPublic(); // Detect Composer < 1.7.3
+
+        $this->container->get(ParallelDownloader::class)->download($packages, static function ($packageName, $constraint) use (&$listed, &$packages, $pool, $loadExtraRepos): void {
             /** @var \Composer\Package\PackageInterface $package */
             foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
+                $links = $loadExtraRepos ? \array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) : $package->getRequires();
+
                 /** @var \Composer\Package\Link $link */
-                foreach (\array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) as $link) {
+                foreach ($links as $link) {
                     if (isset($listed[$link->getTarget()]) || \strpos($link->getTarget(), '/') === false) {
                         continue;
                     }

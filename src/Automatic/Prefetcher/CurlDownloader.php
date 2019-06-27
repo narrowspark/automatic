@@ -78,7 +78,7 @@ final class CurlDownloader
     {
         $this->multiHandle = $mh = \curl_multi_init();
 
-        \curl_multi_setopt($mh, \CURLMOPT_PIPELINING, /*CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX*/ 3);
+        \curl_multi_setopt($mh, \CURLMOPT_PIPELINING, /*CURLPIPE_MULTIPLEX*/ 2);
 
         if (\defined('CURLMOPT_MAX_HOST_CONNECTIONS')) {
             \curl_multi_setopt($mh, \CURLMOPT_MAX_HOST_CONNECTIONS, 10);

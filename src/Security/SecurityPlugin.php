@@ -109,7 +109,7 @@ final class SecurityPlugin implements Capable, EventSubscriberInterface, PluginI
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
             /** @var \SplFileInfo $file */
             if (\substr($file->getFilename(), -4) === '.php') {
-                class_exists(__NAMESPACE__.str_replace('/', '\\', substr($file, \strlen(__DIR__), -4)));
+                \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file, \strlen(__DIR__), -4)));
             }
         }
 

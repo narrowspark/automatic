@@ -174,8 +174,12 @@ class ParallelDownloader extends RemoteFilesystem
                 $this->io->writeError('<warning>Enable the "cURL" PHP extension for faster downloads</warning>');
             }
 
-            $note = \DIRECTORY_SEPARATOR === '\\' ? '' : (\stripos(\PHP_OS, 'darwin') !== false ? '🎵' : '🎶');
-            $note .= $this->downloader !== null ? (\DIRECTORY_SEPARATOR !== '\\' ? ' 💨' : '') : '';
+            $note = '';
+
+            if ($this->io->isDecorated()) {
+                $note = \DIRECTORY_SEPARATOR === '\\' ? '' : (false !== \stripos(\PHP_OS, 'darwin') ? '🎵' : '🎶');
+                $note .= $this->downloader ? (\DIRECTORY_SEPARATOR !== '\\' ? ' 💨' : '') : '';
+            }
 
             $this->io->writeError('');
             $this->io->writeError(\sprintf('<info>Prefetching %d packages</info> %s', $this->downloadCount, $note));

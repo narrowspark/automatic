@@ -96,6 +96,8 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
+        NSA::setProperty($this->automatic, 'activated', true);
+
         $this->assertCount(15, Automatic::getSubscribedEvents());
 
         NSA::setProperty($this->automatic, 'activated', false);
@@ -493,6 +495,8 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testExecuteAutoScriptsWithoutScripts(): void
     {
+        \putenv('COMPOSER=' . __DIR__ . '/Fixture/composer-empty-scripts.json');
+
         $eventMock = $this->mock(Event::class);
         $eventMock->shouldReceive('stopPropagation')
             ->never();
@@ -509,6 +513,9 @@ final class AutomaticTest extends MockeryTestCase
 
         $this->automatic->setContainer($containerMock);
         $this->automatic->executeAutoScripts($eventMock);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
     }
 
     public function testPopulateFilesCacheDir(): void
@@ -815,6 +822,9 @@ final class AutomaticTest extends MockeryTestCase
     {
         $containerMock    = $this->mock(ContainerContract::class);
         $configuratorMock = $this->mock(ConfiguratorContract::class);
+
+        NSA::setProperty($this->automatic, 'configuratorsLoaded', false);
+
         $configuratorMock->shouldReceive('reset')
             ->never();
         $configuratorMock->shouldReceive('add')

@@ -225,7 +225,7 @@ final class SecurityPlugin implements Capable, EventSubscriberInterface, PluginI
     private function getErrorMessage(): ?string
     {
         // @codeCoverageIgnoreStart
-        if (\version_compare(self::getComposerVersion(), '1.6.0', '<')) {
+        if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd

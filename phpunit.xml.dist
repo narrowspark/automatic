@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/8.3/phpunit.xsd"
+    xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
     cacheResult="true"
     bootstrap="vendor/autoload.php"
     colors="true"
@@ -8,10 +8,15 @@
     failOnRisky="true"
     failOnWarning="true"
     backupGlobals="true"
+    columns="max"
+    executionOrder="random"
     convertErrorsToExceptions="true"
     convertNoticesToExceptions="true"
     convertWarningsToExceptions="true"
     resolveDependencies="true"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    beStrictAboutResourceUsageDuringSmallTests="true"
+    beStrictAboutChangesToGlobalState="true"
 >
     <php>
         <ini name="error_reporting" value="-1" />

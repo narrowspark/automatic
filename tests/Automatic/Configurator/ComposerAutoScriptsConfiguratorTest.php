@@ -131,4 +131,12 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 
         \unlink($composerJsonPath);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowMockingNonExistentMethods(bool $allow = false): void
+    {
+        parent::allowMockingNonExistentMethods(true);
+    }
 }

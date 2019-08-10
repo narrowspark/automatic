@@ -9,7 +9,7 @@ environment:
   matrix:
     - dependencies: lowest
       PHP_VERSION: 7.2
-      COMPOSER_VERSION: 1.6.5
+      COMPOSER_VERSION: 1.7.0
     - dependencies: high
       PHP_VERSION: 7.2
       COMPOSER_VERSION: 1.7.0

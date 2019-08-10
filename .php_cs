@@ -8,6 +8,8 @@ $config = new Config(null, [
         ],
     ],
     'comment_to_phpdoc' => false,
+    'final_class' => false,
+    'PhpCsFixerCustomFixers/no_commented_out_code' => false,
 ]);
 $config->getFinder()
     ->files()

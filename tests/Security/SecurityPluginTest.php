@@ -26,14 +26,10 @@ final class SecurityPluginTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
-    /**
-     * @var \Narrowspark\Automatic\Security\SecurityPlugin
-     */
+    /** @var \Narrowspark\Automatic\Security\SecurityPlugin */
     private $securityPlugin;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $tmpFolder;
 
     /**

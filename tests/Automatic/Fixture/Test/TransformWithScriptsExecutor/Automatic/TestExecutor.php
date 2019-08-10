@@ -4,7 +4,7 @@ namespace Narrowspark\Automatic\Test\Fixture\Test\TransformWithScriptsExecutor\A
 
 use Narrowspark\Automatic\Common\ScriptExtender\AbstractScriptExtender;
 
-class TestExecutor extends AbstractScriptExtender
+final class TestExecutor extends AbstractScriptExtender
 {
     public static function getType(): string
     {

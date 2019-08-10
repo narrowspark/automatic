@@ -49,9 +49,7 @@ final class AutomaticTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
-    /**
-     * @var \Narrowspark\Automatic\Automatic
-     */
+    /** @var \Narrowspark\Automatic\Automatic */
     private $automatic;
 
     /**
@@ -710,7 +708,7 @@ final class AutomaticTest extends MockeryTestCase
 
         $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
 
-        $this->assertInternalType('string', $lockContent['content-hash']);
+        $this->assertIsString($lockContent['content-hash']);
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -783,7 +781,7 @@ final class AutomaticTest extends MockeryTestCase
 
         $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
 
-        $this->assertInternalType('string', $lockContent['content-hash']);
+        $this->assertIsString($lockContent['content-hash']);
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');

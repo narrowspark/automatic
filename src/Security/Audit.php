@@ -11,21 +11,15 @@ use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 
-class Audit
+final class Audit
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private const SECURITY_ADVISORIES_BASE_URL = 'https://raw.githubusercontent.com/narrowspark/security-advisories/master/';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private const SECURITY_ADVISORIES_SHA = 'security-advisories-sha';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private const SECURITY_ADVISORIES = 'security-advisories.json';
 
     /**
@@ -33,7 +27,7 @@ class Audit
      *
      * @var \Symfony\Component\Filesystem\Filesystem
      */
-    protected $filesystem;
+    private $filesystem;
 
     /**
      * A version parser instance.
@@ -236,11 +230,11 @@ class Audit
                 continue;
             }
 
-            foreach ($advisoryData['branches'] as $name => $branch) {
+            foreach ($advisoryData['branches'] as $n => $branch) {
                 if (! isset($branch['versions'])) {
-                    $messages[$name][] = \sprintf('Key [versions] is not set for branch [%s].', $key);
+                    $messages[$n][] = \sprintf('Key [versions] is not set for branch [%s].', $key);
                 } elseif (! \is_array($branch['versions'])) {
-                    $messages[$name][] = \sprintf('Key [versions] is expected to be an array for branch [%s].', $key);
+                    $messages[$n][] = \sprintf('Key [versions] is expected to be an array for branch [%s].', $key);
                 } else {
                     $constraints = [];
 
@@ -256,7 +250,7 @@ class Audit
                         }
 
                         if (null === $op) {
-                            $messages[$name][] = \sprintf('Version [%s] does not contain a supported operator.', $version);
+                            $messages[$n][] = \sprintf('Version [%s] does not contain a supported operator.', $version);
 
                             continue;
                         }

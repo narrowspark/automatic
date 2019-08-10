@@ -30,3 +30,18 @@ parameters:
         # Automatic
         - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'
         - '#Call to function method_exists\(\) with Symfony\\Component\\Console\\Style\\SymfonyStyle and#'
+
+        # CopyFromPackageConfigurator
+        - '#Variable method call on Symfony\\Component\\Filesystem\\Filesystem#'
+
+        # EnvConfigurator - phpstan missing support
+        - '#Strict comparison using \!== between bool and null will always evaluate to true#'
+
+        # Package
+        - '#Variable method call on Narrowspark\\Automatic\\Common\\Package#'
+
+        # PhpScriptExtender
+        - "#Casting to string something that's already string#"
+
+        # GetGenericPropertyReaderTrait
+        - '#Variable property access on mixed#'

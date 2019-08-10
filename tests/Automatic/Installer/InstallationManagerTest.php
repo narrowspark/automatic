@@ -20,14 +20,10 @@ final class InstallationManagerTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
-    /**
-     * @var \Composer\Package\Package|\Mockery\MockInterface
-     */
+    /** @var \Composer\Package\Package|\Mockery\MockInterface */
     private $rootPackageMock;
 
-    /**
-     * @var \Composer\Repository\RepositoryInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\Repository\RepositoryInterface|\Mockery\MockInterface */
     private $localRepositoryMock;
 
     /**

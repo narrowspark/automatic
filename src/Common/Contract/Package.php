@@ -15,7 +15,7 @@ interface Package
      *
      * @param string $name
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * @return self
      */
     public function setName(string $name): self;
 
@@ -45,7 +45,7 @@ interface Package
      *
      * @param bool $bool
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * @return self
      */
     public function setIsDev(bool $bool = true): self;
 
@@ -61,7 +61,7 @@ interface Package
      *
      * @param array $autoload
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * @return self
      */
     public function setAutoload(array $autoload): self;
 
@@ -77,7 +77,7 @@ interface Package
      *
      * @param string $url
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * @return self
      */
     public function setUrl(string $url): self;
 
@@ -109,7 +109,7 @@ interface Package
      *
      * @param string $operation
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * @return self
      */
     public function setOperation(string $operation): self;
 
@@ -125,7 +125,7 @@ interface Package
      *
      * @param string[] $requires
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * @return self
      */
     public function setRequires(array $requires): self;
 
@@ -141,7 +141,7 @@ interface Package
      *
      * @param array $configs
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * @return self
      */
     public function setConfig(array $configs): self;
 
@@ -177,7 +177,7 @@ interface Package
      *
      * @param string $name
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * @return self
      */
     public function setParentName(string $name): self;
 
@@ -193,7 +193,7 @@ interface Package
      *
      * @param string $time this \DateTime::RFC3339 format should be used
      *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
+     * @return self
      */
     public function setTime(string $time): self;
 

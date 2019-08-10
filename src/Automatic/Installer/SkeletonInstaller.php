@@ -4,7 +4,7 @@ namespace Narrowspark\Automatic\Installer;
 
 use Composer\Package\PackageInterface;
 
-class SkeletonInstaller extends AbstractInstaller
+final class SkeletonInstaller extends AbstractInstaller
 {
     /**
      * {@inheritdoc}

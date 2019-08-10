@@ -18,11 +18,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class AuditCommand extends BaseCommand
+final class AuditCommand extends BaseCommand
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     protected static $defaultName = 'audit';
 
     /**
@@ -105,8 +103,8 @@ EOF
         if (\count($messages) !== 0) {
             $output->note('Please report this found messages to https://github.com/narrowspark/security-advisories.');
 
-            foreach ($messages as $key => $message) {
-                $output->writeln($key . ': ' . $message);
+            foreach ($messages as $key => $msg) {
+                $output->writeln($key . ': ' . $msg);
             }
         }
 
@@ -129,8 +127,8 @@ EOF
 
             $formatter->displayResults($output, $vulnerabilities);
 
-            $output->writeln('<error>[!]</> ' . \sprintf('%s vulnerabilit%s found - ', $count, $count === 1 ? 'y' : 'ies') .
-                'We recommend you to check the related security advisories and upgrade these dependencies.');
+            $output->writeln('<error>[!]</> ' . \sprintf('%s vulnerabilit%s found - ', $count, $count === 1 ? 'y' : 'ies')
+                . 'We recommend you to check the related security advisories and upgrade these dependencies.');
 
             return $errorExitCode;
         }

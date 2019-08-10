@@ -6,7 +6,7 @@ use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 
-class MockConfigurator extends AbstractConfigurator
+final class MockConfigurator extends AbstractConfigurator
 {
     public static function getName(): string
     {

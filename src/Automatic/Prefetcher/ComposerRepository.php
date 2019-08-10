@@ -11,11 +11,9 @@ use Composer\Repository\ComposerRepository as BaseComposerRepository;
  *
  * (c) Nicolas Grekas <p@tchwork.com>
  */
-class ComposerRepository extends BaseComposerRepository
+final class ComposerRepository extends BaseComposerRepository
 {
-    /**
-     * @var null|array
-     */
+    /** @var null|array */
     private $providerFiles;
 
     /**

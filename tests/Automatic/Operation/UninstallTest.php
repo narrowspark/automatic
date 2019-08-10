@@ -21,14 +21,10 @@ final class UninstallTest extends MockeryTestCase
 {
     use ArrangeOperationsClasses;
 
-    /**
-     * @var \Composer\DependencyResolver\Operation\UninstallOperation|\Mockery\MockInterface
-     */
+    /** @var \Composer\DependencyResolver\Operation\UninstallOperation|\Mockery\MockInterface */
     private $uninstallOperationMock;
 
-    /**
-     * @var \Narrowspark\Automatic\Operation\Install
-     */
+    /** @var \Narrowspark\Automatic\Operation\Install */
     private $uninstall;
 
     /**

@@ -13,19 +13,13 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
  */
 abstract class AbstractConfiguratorTest extends MockeryTestCase
 {
-    /**
-     * @var \Composer\Composer|\Mockery\MockInterface
-     */
+    /** @var \Composer\Composer|\Mockery\MockInterface */
     protected $composerMock;
 
-    /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     protected $ioMock;
 
-    /**
-     * @var \Narrowspark\Automatic\Configurator
-     */
+    /** @var \Narrowspark\Automatic\Configurator */
     protected $configurator;
 
     /**

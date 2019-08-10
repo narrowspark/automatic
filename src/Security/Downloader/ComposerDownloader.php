@@ -6,7 +6,7 @@ use Composer\CaBundle\CaBundle;
 use Composer\Util\StreamContextFactory;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 
-class ComposerDownloader extends AbstractDownloader
+final class ComposerDownloader extends AbstractDownloader
 {
     /**
      * {@inheritdoc}

@@ -12,14 +12,10 @@ use Narrowspark\Automatic\Configurator;
  */
 final class ConfiguratorTest extends AbstractConfiguratorTest
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $copyFileName;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $copyPath;
 
     /**

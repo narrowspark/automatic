@@ -4,8 +4,6 @@ namespace Narrowspark\Automatic\Contract;
 
 interface PackageConfigurator extends Configurator
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public const TYPE = 'custom-configurators';
 }

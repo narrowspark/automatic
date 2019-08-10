@@ -12,9 +12,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class PhpScriptExtenderTest extends TestCase
 {
-    /**
-     * @var \Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender
-     */
+    /** @var \Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender */
     private $extender;
 
     /**

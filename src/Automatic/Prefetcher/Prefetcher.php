@@ -79,9 +79,7 @@ class Prefetcher
      */
     private $cacheDirPopulated = false;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private static $repoReadingCommands = [
         'create-project' => true,
         'outdated'       => true,
@@ -137,17 +135,15 @@ class Prefetcher
     }
 
     /**
-     * @param \Composer\Util\RemoteFilesystem $remoteFilesystem
-     *
      * @return void
      */
     public function prefetchComposerRepositories(): void
     {
         $command = $this->input->getFirstArgument();
 
-        if ($this->populateRepoCacheDir === true &&
-            isset(self::$repoReadingCommands[$command]) &&
-            ($command !== 'install' || (\file_exists(Factory::getComposerFile()) && ! \file_exists(Util::getComposerLockFile())))
+        if ($this->populateRepoCacheDir === true
+            && isset(self::$repoReadingCommands[$command])
+            && ($command !== 'install' || (\file_exists(Factory::getComposerFile()) && ! \file_exists(Util::getComposerLockFile())))
         ) {
             $repos = [];
 
@@ -188,7 +184,6 @@ class Prefetcher
         $downloads = [];
 
         foreach ($event->getOperations() as $i => $operation) {
-            /** @var \Composer\Package\PackageInterface $package */
             switch ($operation->getJobType()) {
                 case 'install':
                     $package = $operation->getPackage();
@@ -219,8 +214,8 @@ class Prefetcher
                 continue;
             }
 
-            if (\preg_match('#^https://github\.com/#', $package->getSourceUrl()) &&
-                \preg_match('#^https://api\.github\.com/repos(/[^/]++/[^/]++/)zipball(.++)$#', $url, $matches)
+            if (\preg_match('#^https://github\.com/#', $package->getSourceUrl())
+                && \preg_match('#^https://api\.github\.com/repos(/[^/]++/[^/]++/)zipball(.++)$#', $url, $matches)
             ) {
                 $url = \sprintf('https://codeload.github.com%slegacy.zip%s', $matches[1], $matches[2]);
             }

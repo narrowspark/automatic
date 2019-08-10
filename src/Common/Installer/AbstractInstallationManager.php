@@ -24,14 +24,10 @@ abstract class AbstractInstallationManager
 {
     use GetGenericPropertyReaderTrait;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected const ADD = 1;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected const REMOVE = 0;
 
     /**

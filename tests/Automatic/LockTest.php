@@ -10,9 +10,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class LockTest extends TestCase
 {
-    /**
-     * @var \Narrowspark\Automatic\Lock
-     */
+    /** @var \Narrowspark\Automatic\Lock */
     private $lock;
 
     public static function tearDownAfterClass(): void

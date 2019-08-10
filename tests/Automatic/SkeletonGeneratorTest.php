@@ -19,24 +19,16 @@ use PHPUnit\Framework\Assert;
  */
 final class SkeletonGeneratorTest extends MockeryTestCase
 {
-    /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     private $ioMock;
 
-    /**
-     * @var \Mockery\MockInterface|\Narrowspark\Automatic\Installer\InstallationManager
-     */
+    /** @var \Mockery\MockInterface|\Narrowspark\Automatic\Installer\InstallationManager */
     private $installationManagerMock;
 
-    /**
-     * @var \Mockery\MockInterface|\Narrowspark\Automatic\Lock
-     */
+    /** @var \Mockery\MockInterface|\Narrowspark\Automatic\Lock */
     private $lockMock;
 
-    /**
-     * @var \Narrowspark\Automatic\SkeletonGenerator
-     */
+    /** @var \Narrowspark\Automatic\SkeletonGenerator */
     private $skeletonGenerator;
 
     /**
@@ -79,7 +71,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
             ->once()
             ->withArgs(static function ($requires, $devRequires) {
                 Assert::assertInstanceOf(Package::class, $requires[0]);
-                Assert::assertInternalType('array', $devRequires);
+                Assert::assertIsArray($devRequires);
 
                 return true;
             });

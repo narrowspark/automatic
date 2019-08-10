@@ -5,7 +5,7 @@ namespace Narrowspark\Automatic\Common\Test\Fixture\Finder;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 
-class DummyClassTwo implements ConfiguratorContract
+final class DummyClassTwo implements ConfiguratorContract
 {
     /**
      * {@inheritdoc}

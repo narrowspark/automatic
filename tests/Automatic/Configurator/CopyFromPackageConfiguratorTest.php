@@ -16,19 +16,13 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 {
-    /**
-     * @var \Composer\Composer|\Mockery\MockInterface
-     */
+    /** @var \Composer\Composer|\Mockery\MockInterface */
     private $composerMock;
 
-    /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     private $ioMock;
 
-    /**
-     * @var \Narrowspark\Automatic\Configurator\CopyFromPackageConfigurator
-     */
+    /** @var \Narrowspark\Automatic\Configurator\CopyFromPackageConfigurator */
     private $configurator;
 
     /**

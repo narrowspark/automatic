@@ -16,24 +16,16 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
  */
 final class ScriptExecutorTest extends MockeryTestCase
 {
-    /**
-     * @var \Composer\Composer
-     */
+    /** @var \Composer\Composer */
     private $composer;
 
-    /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     private $ioMock;
 
-    /**
-     * @var \Composer\Util\ProcessExecutor|\Mockery\MockInterface
-     */
+    /** @var \Composer\Util\ProcessExecutor|\Mockery\MockInterface */
     private $processExecutorMock;
 
-    /**
-     * @var \Narrowspark\Automatic\ScriptExecutor
-     */
+    /** @var \Narrowspark\Automatic\ScriptExecutor */
     private $scriptExecutor;
 
     /**

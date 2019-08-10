@@ -20,29 +20,19 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 {
     use GetGenericPropertyReaderTrait;
 
-    /**
-     * @var \Composer\Composer
-     */
+    /** @var \Composer\Composer */
     private $composer;
 
-    /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     private $ioMock;
 
-    /**
-     * @var \Composer\Json\JsonFile|\Mockery\MockInterface
-     */
+    /** @var \Composer\Json\JsonFile|\Mockery\MockInterface */
     private $jsonMock;
 
-    /**
-     * @var \Composer\Json\JsonManipulator|\Mockery\MockInterface
-     */
+    /** @var \Composer\Json\JsonManipulator|\Mockery\MockInterface */
     private $jsonManipulatorMock;
 
-    /**
-     * @var \Narrowspark\Automatic\Configurator\ComposerAutoScriptsConfigurator
-     */
+    /** @var \Narrowspark\Automatic\Configurator\ComposerAutoScriptsConfigurator */
     private $configurator;
 
     /**

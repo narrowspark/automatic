@@ -14,14 +14,10 @@ use Narrowspark\Automatic\Lock;
 
 abstract class AbstractInstaller extends LibraryInstaller
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public const TYPE = null;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const LOCK_KEY = null;
 
     /**

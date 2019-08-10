@@ -11,19 +11,13 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
  */
 final class LegacyTagsManagerTest extends MockeryTestCase
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     private $downloadFileList;
 
-    /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     private $ioMock;
 
-    /**
-     * @var \Narrowspark\Automatic\LegacyTagsManager
-     */
+    /** @var \Narrowspark\Automatic\LegacyTagsManager */
     private $tagsManger;
 
     /**

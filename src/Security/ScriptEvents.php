@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Security;
 
-class ScriptEvents
+final class ScriptEvents
 {
     /**
      * The POST_MESSAGES event occurs after a package is installed or updated.

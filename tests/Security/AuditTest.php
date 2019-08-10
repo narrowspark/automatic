@@ -12,14 +12,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class AuditTest extends TestCase
 {
-    /**
-     * @var \Narrowspark\Automatic\Security\Audit
-     */
+    /** @var \Narrowspark\Automatic\Security\Audit */
     private $audit;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $path;
 
     /**

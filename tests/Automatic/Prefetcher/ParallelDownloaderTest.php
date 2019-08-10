@@ -15,9 +15,7 @@ final class ParallelDownloaderTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
-    /**
-     * @var \Narrowspark\Automatic\Prefetcher\ParallelDownloader
-     */
+    /** @var \Narrowspark\Automatic\Prefetcher\ParallelDownloader */
     private $parallelDownloader;
 
     /**

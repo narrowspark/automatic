@@ -58,9 +58,7 @@ class ParallelDownloader extends RemoteFilesystem
      */
     private $progress = true;
 
-    /**
-     * @var null|callable
-     */
+    /** @var null|callable */
     private $nextCallback;
 
     /**

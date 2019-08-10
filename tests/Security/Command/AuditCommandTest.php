@@ -14,19 +14,13 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 final class AuditCommandTest extends TestCase
 {
-    /**
-     * @var \Composer\Console\Application
-     */
+    /** @var \Composer\Console\Application */
     private $application;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $greenString;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $redString;
 
     /**

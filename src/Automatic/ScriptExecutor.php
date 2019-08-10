@@ -16,9 +16,7 @@ final class ScriptExecutor
 {
     use ExpandTargetDirTrait;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const TYPE = 'script-extenders';
 
     /**

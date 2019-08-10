@@ -5,7 +5,7 @@ namespace Narrowspark\Automatic\Security\Downloader;
 use Composer\CaBundle\CaBundle;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 
-class CurlDownloader extends AbstractDownloader
+final class CurlDownloader extends AbstractDownloader
 {
     /**
      * {@inheritdoc}

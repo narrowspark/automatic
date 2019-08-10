@@ -7,7 +7,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Viserio\Component\View\ViewFactory;
 
-class StaticFunctionAndClasses
+final class StaticFunctionAndClasses
 {
     public static function getInstanceIdentifier()
     {

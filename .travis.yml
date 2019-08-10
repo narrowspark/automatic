@@ -44,7 +44,7 @@ script:
 jobs:
   allow_failures:
     - php: nightly
-    - php: 7.4
+    - php: 7.4snapshot
   include:
     - stage: Test
       php: 7.2
@@ -59,7 +59,7 @@ jobs:
       php: 7.3
       env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.9.0
     - stage: Test
-      php: 7.4
+      php: 7.4snapshot
       env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.9.0
     - stage: Test
       php: nightly

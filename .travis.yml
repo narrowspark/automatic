@@ -80,7 +80,7 @@ jobs:
       php: 7.2
       env: REMOVE_XDEBUG=true SETUP=high COMPOSER_VERSION=1.9.0
       script:
-        - ulimit -n 4096 && phpdbg -qrr ./vendor/bin/infection -vvv --test-framework-options='--testsuite=unit' --min-msi=48 --min-covered-msi=70
+        - ulimit -n 4096 && phpdbg -qrr ./vendor/bin/infection -vvv --min-msi=40 --min-covered-msi=60
 
     - stage: Coverage
       php: 7.2

@@ -48,9 +48,6 @@ jobs:
   include:
     - stage: Test
       php: 7.2
-      env: PHPUNIT=true SETUP=lowest REMOVE_XDEBUG=true COMPOSER_VERSION=1.6.5
-    - stage: Test
-      php: 7.2
       env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.7.0
     - stage: Test
       php: 7.3

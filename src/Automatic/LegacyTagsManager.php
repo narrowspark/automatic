@@ -108,6 +108,8 @@ final class LegacyTagsManager implements Resettable
             foreach ($data['packages'][$name] as $version => $composerJson) {
                 if ($version === 'dev-master' && null !== $devMasterVersion = $composerJson['extra']['branch-alias']['dev-master'] ?? null) {
                     $normalizedVersion = $this->versionParser->normalize($devMasterVersion);
+                } elseif (!isset($composerJson['version_normalized'])) {
+                    continue;
                 } else {
                     $normalizedVersion = $composerJson['version_normalized'];
                 }

@@ -200,7 +200,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
             /** @var \SplFileInfo $file */
             if (\substr($file->getFilename(), -4) === '.php') {
-                \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file, \strlen(__DIR__), -4)));
+                \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file->getFilename(), \strlen(__DIR__), -4)));
             }
         }
 

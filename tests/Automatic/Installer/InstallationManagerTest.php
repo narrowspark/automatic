@@ -122,8 +122,8 @@ final class InstallationManagerTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->withArgs(static function ($string) {
-                Assert::assertContains('Using version <info>', $string);
-                Assert::assertContains('for <info>symfony/symfony</info>', $string);
+                Assert::assertStringContainsString('Using version <info>', $string);
+                Assert::assertStringContainsString('for <info>symfony/symfony</info>', $string);
 
                 return true;
             });

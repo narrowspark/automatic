@@ -19,8 +19,8 @@ final class QuestionFactoryTest extends TestCase
         $message = QuestionFactory::getPackageQuestion($name, $url);
 
         $this->assertNotEmpty($message);
-        $this->assertContains($url, $message);
-        $this->assertContains($name, $message);
+        $this->assertStringContainsString($url, $message);
+        $this->assertStringContainsString($name, $message);
     }
 
     public function testGetPackageQuestionWithoutUrl(): void
@@ -31,8 +31,8 @@ final class QuestionFactoryTest extends TestCase
         $message = QuestionFactory::getPackageQuestion($name, null);
 
         $this->assertNotEmpty($message);
-        $this->assertNotContains($url, $message);
-        $this->assertContains($name, $message);
+        $this->assertStringNotContainsString($url, $message);
+        $this->assertStringContainsString($name, $message);
     }
 
     public function testGetPackageScriptsQuestion(): void
@@ -42,7 +42,7 @@ final class QuestionFactoryTest extends TestCase
         $message = QuestionFactory::getPackageScriptsQuestion($name);
 
         $this->assertNotEmpty($message);
-        $this->assertContains($name, $message);
+        $this->assertStringContainsString($name, $message);
     }
 
     public function testValidatePackageQuestionAnswer(): void

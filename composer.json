@@ -25,17 +25,17 @@
         }
     ],
     "require": {
-        "php": "^7.1",
+        "php": "^7.2",
         "ext-json": "*",
         "ext-tokenizer": "*",
         "composer-plugin-api": "^1.0"
     },
     "require-dev": {
-        "composer/composer": "^1.6.5 || ^1.7.0 || ^1.8.0",
+        "composer/composer": "^1.6.5 || ^1.7.0 || ^1.8.0 || ^1.9.0",
         "mockery/mockery": "^1.0.0",
-        "narrowspark/testing-helper": "^6.0.0",
+        "narrowspark/testing-helper": "^8.0.0",
         "nyholm/nsa": "^1.1.0",
-        "phpunit/phpunit": "^7.2.0",
+        "phpunit/phpunit": "^8.3.3",
         "ocramius/package-versions": "^1.4.0",
         "narrowspark/coding-standard": "^2.0.0"
     },

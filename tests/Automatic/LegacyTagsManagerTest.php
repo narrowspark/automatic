@@ -173,7 +173,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
 
         yield 'empty-intersection-ignores' => [$packages, $packages, '~2.0'];
 
-        yield 'empty-intersection-ignores' => [$packages, $packages, '~4.0'];
+        yield 'empty-intersection-ignores2' => [$packages, $packages, '~4.0'];
 
         $expected = $packages;
 

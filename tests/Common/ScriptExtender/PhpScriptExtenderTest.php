@@ -34,9 +34,9 @@ final class PhpScriptExtenderTest extends TestCase
     {
         $output = $this->extender->expand('echo "hallo";');
 
-        $this->assertContains('php', $output);
-        $this->assertContains('php.ini', $output);
-        $this->assertContains('echo "hallo";', $output);
+        $this->assertStringContainsString('php', $output);
+        $this->assertStringContainsString('php.ini', $output);
+        $this->assertStringContainsString('echo "hallo";', $output);
     }
 
     public function testExpandWithIniLoad(): void
@@ -47,8 +47,8 @@ final class PhpScriptExtenderTest extends TestCase
 
         $output = $this->extender->expand('echo "hallo";');
 
-        $this->assertContains('php', $output);
-        $this->assertContains('php.ini', $output);
-        $this->assertContains('echo "hallo";', $output);
+        $this->assertStringContainsString('php', $output);
+        $this->assertStringContainsString('php.ini', $output);
+        $this->assertStringContainsString('echo "hallo";', $output);
     }
 }

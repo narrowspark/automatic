@@ -43,6 +43,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
             }
 
             try {
+                /* @var string $functionName */
                 $functionName = 'copy';
 
                 if (\is_dir($from)) {

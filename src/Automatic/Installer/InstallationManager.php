@@ -46,7 +46,7 @@ class InstallationManager extends AbstractInstallationManager
     }
 
     /**
-     * Install required and required-dev packages.
+     * Uninstall required and required-dev packages.
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package[] $requires
      * @param \Narrowspark\Automatic\Common\Contract\Package[] $devRequires
@@ -57,7 +57,7 @@ class InstallationManager extends AbstractInstallationManager
      *
      * @return void
      */
-    public function uninstall(array $requires, array $devRequires): void
+    public function uninstall(array $requires, array $devRequires = []): void
     {
         $requires    = $this->preparePackagesToUninstall($requires);
         $devRequires = $this->preparePackagesToUninstall($devRequires);

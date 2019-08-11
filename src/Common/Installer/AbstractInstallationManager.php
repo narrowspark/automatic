@@ -24,14 +24,10 @@ abstract class AbstractInstallationManager
 {
     use GetGenericPropertyReaderTrait;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected const ADD = 1;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected const REMOVE = 0;
 
     /**
@@ -159,7 +155,7 @@ abstract class AbstractInstallationManager
 
         if ($package === false) {
             throw new InvalidArgumentException(\sprintf(
-                'Could not find package %s at any version for your minimum-stability (%s).'
+                'Could not find package [%s] at any version for your minimum-stability [%s].'
                 . ' Check the package spelling or your minimum-stability.',
                 $name,
                 $this->stability

@@ -11,9 +11,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class PackageTest extends TestCase
 {
-    /**
-     * @var \Narrowspark\Automatic\Common\Package
-     */
+    /** @var \Narrowspark\Automatic\Common\Package */
     private $package;
 
     /**

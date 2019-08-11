@@ -19,44 +19,28 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
-    /**
-     * @var \Composer\Repository\InstalledRepositoryInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\Repository\InstalledRepositoryInterface|\Mockery\MockInterface */
     protected $repositoryMock;
 
-    /**
-     * @var \Composer\Package\PackageInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\Package\PackageInterface|\Mockery\MockInterface */
     protected $packageMock;
 
-    /**
-     * @var \Composer\Package\PackageInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\Package\PackageInterface|\Mockery\MockInterface */
     protected $targetPackageMock;
 
-    /**
-     * @var \Narrowspark\Automatic\Installer\AbstractInstaller
-     */
+    /** @var \Narrowspark\Automatic\Installer\AbstractInstaller */
     protected $configuratorInstaller;
 
-    /**
-     * @var \Composer\Downloader\DownloadManager|\Mockery\MockInterface
-     */
+    /** @var \Composer\Downloader\DownloadManager|\Mockery\MockInterface */
     protected $downloadManagerMock;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $composerJsonPath;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $configuratorPath;
 
-    /**
-     * @var \Narrowspark\Automatic\Installer\AbstractInstaller
-     */
+    /** @var \Narrowspark\Automatic\Installer\AbstractInstaller */
     protected $installerClass;
 
     /**

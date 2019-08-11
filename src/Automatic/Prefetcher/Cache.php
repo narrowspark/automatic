@@ -12,7 +12,7 @@ use Narrowspark\Automatic\LegacyTagsManager;
  *
  * (c) Nicolas Grekas <p@tchwork.com>
  */
-class Cache extends BaseComposerCache
+final class Cache extends BaseComposerCache
 {
     /**
      * A tags manager instance.
@@ -34,7 +34,7 @@ class Cache extends BaseComposerCache
     }
 
     /**
-     * @param string $file
+     * @param mixed $file
      *
      * @return bool|string
      */

@@ -14,24 +14,16 @@ use PHPUnit\Framework\TestCase;
  */
 final class GitignoreConfiguratorTest extends TestCase
 {
-    /**
-     * @var \Composer\Composer
-     */
+    /** @var \Composer\Composer */
     private $composer;
 
-    /**
-     * @var \Composer\IO\NullIo
-     */
+    /** @var \Composer\IO\NullIo */
     private $nullIo;
 
-    /**
-     * @var \Narrowspark\Automatic\Configurator\GitignoreConfigurator
-     */
+    /** @var \Narrowspark\Automatic\Configurator\GitignoreConfigurator */
     private $configurator;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $gitignorePath;
 
     /**

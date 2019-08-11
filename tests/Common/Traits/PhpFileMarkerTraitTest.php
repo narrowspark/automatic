@@ -12,9 +12,7 @@ final class PhpFileMarkerTraitTest extends TestCase
 {
     use PhpFileMarkerTrait;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $path;
 
     protected function setUp(): void

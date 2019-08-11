@@ -34,9 +34,7 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 final class ContainerTest extends MockeryTestCase
 {
-    /**
-     * @var \Narrowspark\Automatic\Container
-     */
+    /** @var \Narrowspark\Automatic\Container */
     private static $staticContainer;
 
     /**

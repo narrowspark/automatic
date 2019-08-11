@@ -11,19 +11,13 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
  */
 final class LegacyTagsManagerTest extends MockeryTestCase
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     private $downloadFileList;
 
-    /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     private $ioMock;
 
-    /**
-     * @var \Narrowspark\Automatic\LegacyTagsManager
-     */
+    /** @var \Narrowspark\Automatic\LegacyTagsManager */
     private $tagsManger;
 
     /**
@@ -179,7 +173,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
 
         yield 'empty-intersection-ignores' => [$packages, $packages, '~2.0'];
 
-        yield 'empty-intersection-ignores' => [$packages, $packages, '~4.0'];
+        yield 'empty-intersection-ignores2' => [$packages, $packages, '~4.0'];
 
         $expected = $packages;
 

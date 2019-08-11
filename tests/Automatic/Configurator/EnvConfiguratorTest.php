@@ -14,29 +14,19 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
  */
 final class EnvConfiguratorTest extends MockeryTestCase
 {
-    /**
-     * @var \Composer\Composer
-     */
+    /** @var \Composer\Composer */
     private $composer;
 
-    /**
-     * @var \Composer\IO\NullIo
-     */
+    /** @var \Composer\IO\NullIo */
     private $nullIo;
 
-    /**
-     * @var \Narrowspark\Automatic\Configurator\EnvConfigurator
-     */
+    /** @var \Narrowspark\Automatic\Configurator\EnvConfigurator */
     private $configurator;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $envDistPath;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $envPath;
 
     /**

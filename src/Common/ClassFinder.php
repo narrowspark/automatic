@@ -46,7 +46,7 @@ final class ClassFinder implements ResettableContract
     /**
      * All given paths for psr4 and prs0.
      *
-     * @var array[]|string[]
+     * @var array<string, array>
      */
     private $paths;
 
@@ -124,7 +124,7 @@ final class ClassFinder implements ResettableContract
      *
      * @param array $excludes
      *
-     * @return \Narrowspark\Automatic\Common\ClassFinder
+     * @return self
      */
     public function setExcludes(array $excludes): self
     {
@@ -140,7 +140,7 @@ final class ClassFinder implements ResettableContract
      *
      * @param \Closure $filter
      *
-     * @return \Narrowspark\Automatic\Common\ClassFinder
+     * @return self
      */
     public function setFilter(Closure $filter): self
     {
@@ -155,7 +155,7 @@ final class ClassFinder implements ResettableContract
      * @param string $packageName
      * @param array  $autoload
      *
-     * @return \Narrowspark\Automatic\Common\ClassFinder
+     * @return self
      */
     public function setComposerAutoload(string $packageName, array $autoload): self
     {
@@ -186,7 +186,7 @@ final class ClassFinder implements ResettableContract
      * @param string $packageName
      * @param array  $paths
      *
-     * @return \Narrowspark\Automatic\Common\ClassFinder
+     * @return self
      */
     public function addPsr0(string $packageName, array $paths): self
     {
@@ -201,7 +201,7 @@ final class ClassFinder implements ResettableContract
      * @param string $packageName
      * @param array  $paths
      *
-     * @return \Narrowspark\Automatic\Common\ClassFinder
+     * @return self
      */
     public function addPsr4(string $packageName, array $paths): self
     {
@@ -216,7 +216,7 @@ final class ClassFinder implements ResettableContract
      * @param string $packageName
      * @param array  $paths
      *
-     * @return \Narrowspark\Automatic\Common\ClassFinder
+     * @return self
      */
     public function addClassmap(string $packageName, array $paths): self
     {
@@ -228,15 +228,15 @@ final class ClassFinder implements ResettableContract
     /**
      * Find all the class, traits and interface names in a given directory.
      *
-     * @return \Narrowspark\Automatic\Common\ClassFinder
+     * @return self
      */
     public function find(): self
     {
         $preparedPaths = \array_unique(
             \array_merge(
-                $this->getPreparedPaths((array) $this->paths['psr0']),
-                $this->getPreparedPaths((array) $this->paths['psr4']),
-                $this->getPreparedPaths((array) $this->paths['classmap'])
+                $this->getPreparedPaths($this->paths['psr0']),
+                $this->getPreparedPaths($this->paths['psr4']),
+                $this->getPreparedPaths($this->paths['classmap'])
             ),
             \SORT_STRING
         );

@@ -44,11 +44,11 @@ script:
 jobs:
   allow_failures:
     - php: nightly
-    - php: 7.4
+    - php: 7.4snapshot
   include:
     - stage: Test
-      php: 7.1
-      env: PHPUNIT=true SETUP=lowest REMOVE_XDEBUG=true COMPOSER_VERSION=1.6.5
+      php: 7.2
+      env: PHPUNIT=true SETUP=lowest REMOVE_XDEBUG=true COMPOSER_VERSION=1.7.0
     - stage: Test
       php: 7.2
       env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.7.0
@@ -56,21 +56,35 @@ jobs:
       php: 7.3
       env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.8.0
     - stage: Test
-      php: 7.4
-      env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.8.0
+      php: 7.3
+      env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.9.0
+    - stage: Test
+      php: 7.4snapshot
+      env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.9.0
     - stage: Test
       php: nightly
-      env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.8.0
+      env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.9.0
 
     - stage: Static Analysis
       php: 7.2
-      env: REMOVE_XDEBUG=false SETUP=high COMPOSER_VERSION=1.8.0
+      env: REMOVE_XDEBUG=false SETUP=high COMPOSER_VERSION=1.9.0
       script:
         - composer phpstan
+#    - stage: Static Analysis
+#      php: 7.2
+#      env: REMOVE_XDEBUG=false SETUP=high COMPOSER_VERSION=1.9.0
+#      script:
+#        - composer psalm
+
+    - stage: Mutation
+      php: 7.2
+      env: REMOVE_XDEBUG=true SETUP=high COMPOSER_VERSION=1.9.0
+      script:
+        - ulimit -n 4096 && phpdbg -qrr ./vendor/bin/infection -vvv --min-msi=40 --min-covered-msi=60
 
     - stage: Coverage
       php: 7.2
-      env: REMOVE_XDEBUG=false SETUP=high COMPOSER_VERSION=1.8.0
+      env: REMOVE_XDEBUG=false SETUP=high COMPOSER_VERSION=1.9.0
       script:
         - bash -xc "$TEST -c ./phpunit.xml.dist --coverage-clover=coverage.xml"
       after_success:

@@ -25,19 +25,13 @@ final class InstallTest extends MockeryTestCase
 {
     use ArrangeOperationsClasses;
 
-    /**
-     * @var \Composer\DependencyResolver\Operation\InstallOperation|\Mockery\MockInterface
-     */
+    /** @var \Composer\DependencyResolver\Operation\InstallOperation|\Mockery\MockInterface */
     private $installOperationMock;
 
-    /**
-     * @var \Composer\DependencyResolver\Operation\UpdateOperation|\Mockery\MockInterface
-     */
+    /** @var \Composer\DependencyResolver\Operation\UpdateOperation|\Mockery\MockInterface */
     private $updateOperationMock;
 
-    /**
-     * @var \Narrowspark\Automatic\Operation\Install
-     */
+    /** @var \Narrowspark\Automatic\Operation\Install */
     private $install;
 
     /**
@@ -262,7 +256,6 @@ final class InstallTest extends MockeryTestCase
 
         $packageName = 'Test/TransformWithScriptsExecutor';
 
-        /** @var \Mockery\MockInterface $package */
         [$package, $name] = $this->arrangeTransformPackage($packageName, $autoload, $packageData);
 
         $package->shouldReceive('getConfig')

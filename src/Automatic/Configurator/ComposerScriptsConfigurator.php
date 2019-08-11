@@ -16,19 +16,13 @@ use Narrowspark\Automatic\QuestionFactory;
 
 final class ComposerScriptsConfigurator extends AbstractConfigurator
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public const COMPOSER_EXTRA_KEY = 'composer-scripts';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const WHITELIST = 'whitelist';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const BLACKLIST = 'blacklist';
 
     /**

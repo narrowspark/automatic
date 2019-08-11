@@ -21,21 +21,15 @@ use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capable
+final class SecurityPlugin implements Capable, EventSubscriberInterface, PluginInterface
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public const VERSION = '0.12.0';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const COMPOSER_EXTRA_KEY = 'audit';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const PACKAGE_NAME = 'narrowspark/automatic-security-audit';
 
     /**
@@ -43,28 +37,28 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
      *
      * @var array<string, array>
      */
-    protected $securityAdvisories = [];
+    private $securityAdvisories = [];
 
     /**
      * Found package vulnerabilities.
      *
      * @var array[]
      */
-    protected $foundVulnerabilities = [];
+    private $foundVulnerabilities = [];
 
     /**
      * The composer instance.
      *
      * @var \Composer\Composer
      */
-    protected $composer;
+    private $composer;
 
     /**
      * The composer io implementation.
      *
      * @var \Composer\IO\IOInterface
      */
-    protected $io;
+    private $io;
 
     /**
      * A Audit instance.
@@ -115,7 +109,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
             /** @var \SplFileInfo $file */
             if (\substr($file->getFilename(), -4) === '.php') {
-                require_once $file;
+                \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file->getFilename(), \strlen(__DIR__), -4)));
             }
         }
 
@@ -231,7 +225,7 @@ class SecurityPlugin implements PluginInterface, EventSubscriberInterface, Capab
     private function getErrorMessage(): ?string
     {
         // @codeCoverageIgnoreStart
-        if (\version_compare(self::getComposerVersion(), '1.6.0', '<')) {
+        if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd

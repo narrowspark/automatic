@@ -4,6 +4,6 @@ namespace Narrowspark\Automatic\Common\Contract\Exception;
 
 use InvalidArgumentException as BaseInvalidArgumentException;
 
-class InvalidArgumentException extends BaseInvalidArgumentException implements Exception
+final class InvalidArgumentException extends BaseInvalidArgumentException implements Exception
 {
 }

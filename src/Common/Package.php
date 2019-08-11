@@ -296,7 +296,7 @@ final class Package implements PackageContract
             'created'         => 'setTime',
         ];
 
-        $package = new static($name, $packageData['version']);
+        $package = new self($name, $packageData['version']);
 
         foreach ($packageData as $key => $data) {
             if ($data !== null && isset($keyToFunctionMappers[$key])) {
@@ -376,19 +376,18 @@ final class Package implements PackageContract
      */
     public function toArray(): array
     {
-        return
-            [
-                'pretty-name'                        => $this->prettyName,
-                'version'                            => $this->prettyVersion,
-                'parent'                             => $this->parentName,
-                'is-dev'                             => $this->isDev,
-                'url'                                => $this->url,
-                'operation'                          => $this->operation,
-                'type'                               => $this->type,
-                'requires'                           => $this->requires,
-                'automatic-extra'                    => $this->configs,
-                'autoload'                           => $this->autoload,
-                'created'                            => $this->created,
-            ];
+        return [
+            'pretty-name'                        => $this->prettyName,
+            'version'                            => $this->prettyVersion,
+            'parent'                             => $this->parentName,
+            'is-dev'                             => $this->isDev,
+            'url'                                => $this->url,
+            'operation'                          => $this->operation,
+            'type'                               => $this->type,
+            'requires'                           => $this->requires,
+            'automatic-extra'                    => $this->configs,
+            'autoload'                           => $this->autoload,
+            'created'                            => $this->created,
+        ];
     }
 }

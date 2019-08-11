@@ -16,7 +16,7 @@ use Narrowspark\Automatic\LegacyTagsManager;
  *
  * (c) Nicolas Grekas <p@tchwork.com>
  */
-class TruncatedComposerRepository extends BaseComposerRepository
+final class TruncatedComposerRepository extends BaseComposerRepository
 {
     /**
      * {@inheritdoc}

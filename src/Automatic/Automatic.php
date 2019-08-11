@@ -54,34 +54,24 @@ use ReflectionClass;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 
-class Automatic implements PluginInterface, EventSubscriberInterface
+class Automatic implements EventSubscriberInterface, PluginInterface
 {
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const VERSION = '0.12.0';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const LOCK_CLASSMAP = 'classmap';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const LOCK_PACKAGES = 'packages';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const PACKAGE_NAME = 'narrowspark/automatic';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const COMPOSER_EXTRA_KEY = 'automatic';
 
     /**
@@ -206,11 +196,11 @@ class Automatic implements PluginInterface, EventSubscriberInterface
         }
 
         // to avoid issues when Automatic is upgraded, we load all PHP classes now
-        // that way, we are sure to use all files from the same version.
+        // that way, we are sure to use all classes from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
             /** @var \SplFileInfo $file */
             if (\substr($file->getFilename(), -4) === '.php') {
-                require_once $file;
+                \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file->getFilename(), \strlen(__DIR__), -4)));
             }
         }
 
@@ -313,15 +303,13 @@ class Automatic implements PluginInterface, EventSubscriberInterface
 
         $autoScript = '@' . ScriptEvents::AUTO_SCRIPTS;
 
-        if (isset($scripts[ComposerScriptEvents::POST_INSTALL_CMD], $scripts[ComposerScriptEvents::POST_UPDATE_CMD]) &&
-            \in_array($autoScript, $scripts[ComposerScriptEvents::POST_INSTALL_CMD], true) &&
-            \in_array($autoScript, $scripts[ComposerScriptEvents::POST_UPDATE_CMD], true)
+        if (isset($scripts[ComposerScriptEvents::POST_INSTALL_CMD], $scripts[ComposerScriptEvents::POST_UPDATE_CMD])
+            && \in_array($autoScript, $scripts[ComposerScriptEvents::POST_INSTALL_CMD], true)
+            && \in_array($autoScript, $scripts[ComposerScriptEvents::POST_UPDATE_CMD], true)
         ) {
             return;
         }
 
-        /** @var \Composer\Json\JsonFile $json */
-        /** @var \Composer\Json\JsonManipulator $manipulator */
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
         if (\count($scripts) === 0) {
@@ -361,8 +349,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             return;
         }
 
-        /** @var \Composer\Json\JsonFile $json */
-        /** @var \Composer\Json\JsonManipulator $manipulator */
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
         // new projects are most of the time proprietary
@@ -474,8 +460,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                 return;
             }
 
-            /** @var \Composer\Json\JsonFile $json */
-            /** @var \Composer\Json\JsonManipulator $manipulator */
             [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
             foreach ((array) $scripts[ComposerScriptEvents::POST_INSTALL_CMD] as $key => $script) {
@@ -708,7 +692,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
                     require_once $path;
                 }
 
-                /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $class */
                 $reflectionClass = new ReflectionClass($class);
 
                 if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getType')) {
@@ -784,7 +767,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             $packages[]                  = [$job['packageName'], $job['constraint']];
         }
 
-        $loadExtraRepos = !(new \ReflectionMethod(Pool::class, 'match'))->isPublic(); // Detect Composer < 1.7.3
+        $loadExtraRepos = ! (new \ReflectionMethod(Pool::class, 'match'))->isPublic(); // Detect Composer < 1.7.3
 
         $this->container->get(ParallelDownloader::class)->download($packages, static function ($packageName, $constraint) use (&$listed, &$packages, $pool, $loadExtraRepos): void {
             /** @var \Composer\Package\PackageInterface $package */
@@ -922,8 +905,6 @@ class Automatic implements PluginInterface, EventSubscriberInterface
      */
     private function manipulateComposerJsonWithAllowAutoInstall(): void
     {
-        /** @var \Composer\Json\JsonFile $json */
-        /** @var \Composer\Json\JsonManipulator $manipulator */
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
         $manipulator->addSubNode('extra', 'automatic.allow-auto-install', true);
@@ -945,7 +926,7 @@ class Automatic implements PluginInterface, EventSubscriberInterface
             return 'You must enable the openssl extension in your "php.ini" file';
         }
 
-        if (\version_compare(self::getComposerVersion(), '1.6.0', '<')) {
+        if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
 

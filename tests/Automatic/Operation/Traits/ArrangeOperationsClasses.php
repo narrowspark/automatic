@@ -11,39 +11,25 @@ use Narrowspark\Automatic\PackageConfigurator;
 
 trait ArrangeOperationsClasses
 {
-    /**
-     * @var \Narrowspark\Automatic\Configurator
-     */
+    /** @var \Narrowspark\Automatic\Configurator */
     protected $configurator;
 
-    /**
-     * @var \Narrowspark\Automatic\PackageConfigurator
-     */
+    /** @var \Narrowspark\Automatic\PackageConfigurator */
     protected $packageConfigurator;
 
-    /**
-     * @var \Composer\IO\IOInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     protected $ioMock;
 
-    /**
-     * @var \Mockery\MockInterface|\Narrowspark\Automatic\Lock
-     */
+    /** @var \Mockery\MockInterface|\Narrowspark\Automatic\Lock */
     protected $lockMock;
 
-    /**
-     * @var \Narrowspark\Automatic\Common\ClassFinder
-     */
+    /** @var \Narrowspark\Automatic\Common\ClassFinder */
     protected $classFinder;
 
-    /**
-     * @var \Composer\Composer|\Mockery\MockInterface
-     */
+    /** @var \Composer\Composer|\Mockery\MockInterface */
     protected $composerMock;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $fixturePath;
 
     protected function arrangeOperationsClasses(): void

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic\Test\Fixture;
 
-class ComposerJsonFactory
+final class ComposerJsonFactory
 {
     /**
      * @param string $name

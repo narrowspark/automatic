@@ -4,9 +4,7 @@ namespace Narrowspark\Automatic\Common\Contract;
 
 interface Configurator
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public const TYPE = 'configurators';
 
     /**

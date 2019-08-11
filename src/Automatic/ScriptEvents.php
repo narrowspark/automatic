@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\Automatic;
 
-class ScriptEvents
+final class ScriptEvents
 {
     /**
      * The AUTO_SCRIPTS event occurs after a package is installed or updated.

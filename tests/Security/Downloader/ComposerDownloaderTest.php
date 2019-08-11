@@ -10,14 +10,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class ComposerDownloaderTest extends TestCase
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private const SECURITY_ADVISORIES_SHA = 'https://raw.githubusercontent.com/narrowspark/security-advisories/master/security-advisories-sha';
 
-    /**
-     * @var \Narrowspark\Automatic\Security\Downloader\ComposerDownloader
-     */
+    /** @var \Narrowspark\Automatic\Security\Downloader\ComposerDownloader */
     private $downloader;
 
     /**

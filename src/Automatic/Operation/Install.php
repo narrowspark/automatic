@@ -30,8 +30,8 @@ final class Install extends AbstractOperation
             $composerPackage = $operation->getPackage();
         }
 
-        return ($operation instanceof UpdateOperation || $operation instanceof InstallOperation) &&
-            (\file_exists($this->getAutomaticFilePath($composerPackage)) || isset($composerPackage->getExtra()['automatic']));
+        return ($operation instanceof UpdateOperation || $operation instanceof InstallOperation)
+            && (\file_exists($this->getAutomaticFilePath($composerPackage)) || isset($composerPackage->getExtra()['automatic']));
     }
 
     /**
@@ -103,8 +103,8 @@ final class Install extends AbstractOperation
             $branchAliases = $extra['branch-alias'];
 
             if (
-                (isset($branchAliases[$version]) && $alias = $branchAliases[$version]) ||
-                (isset($branchAliases['dev-master']) && $alias = $branchAliases['dev-master'])
+                (isset($branchAliases[$version]) && $alias = $branchAliases[$version])
+                || (isset($branchAliases['dev-master']) && $alias = $branchAliases['dev-master'])
             ) {
                 $version = $alias;
             }

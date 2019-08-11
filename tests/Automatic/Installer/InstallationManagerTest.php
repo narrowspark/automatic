@@ -20,14 +20,10 @@ final class InstallationManagerTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
-    /**
-     * @var \Composer\Package\Package|\Mockery\MockInterface
-     */
+    /** @var \Composer\Package\Package|\Mockery\MockInterface */
     private $rootPackageMock;
 
-    /**
-     * @var \Composer\Repository\RepositoryInterface|\Mockery\MockInterface
-     */
+    /** @var \Composer\Repository\RepositoryInterface|\Mockery\MockInterface */
     private $localRepositoryMock;
 
     /**
@@ -126,8 +122,8 @@ final class InstallationManagerTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError')
             ->withArgs(static function ($string) {
-                Assert::assertContains('Using version <info>', $string);
-                Assert::assertContains('for <info>symfony/symfony</info>', $string);
+                Assert::assertStringContainsString('Using version <info>', $string);
+                Assert::assertStringContainsString('for <info>symfony/symfony</info>', $string);
 
                 return true;
             });
@@ -277,6 +273,46 @@ final class InstallationManagerTest extends MockeryTestCase
         $manager = new InstallationManager($this->composerMock, $this->ioMock, $this->inputMock);
 
         $manager->install([$packageMock]);
+
+        $this->delete($dirPath);
+        \rmdir($dirPath);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+    }
+
+    public function testUninstallWithoutRequireAndRequireDev(): void
+    {
+        $path    = __DIR__ . '/Fixture/composer.json';
+        $dirPath = \dirname($path);
+
+        @\mkdir($dirPath);
+        @\file_put_contents($path, \json_encode(['require' => [], 'require-dev' => []]));
+        \putenv('COMPOSER=' . $path);
+
+        $this->ioMock->shouldReceive('writeError')
+            ->atLeast()
+            ->once();
+
+        $this->rootPackageMock->shouldReceive('getRequires')
+            ->once()
+            ->andReturn([]);
+        $this->rootPackageMock->shouldReceive('getDevRequires')
+            ->once()
+            ->andReturn([]);
+        $this->rootPackageMock->shouldReceive('setRequires')
+            ->once()
+            ->with([]);
+        $this->rootPackageMock->shouldReceive('setDevRequires')
+            ->once()
+            ->with([]);
+
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->andReturn([]);
+
+        $manager = new InstallationManager($this->composerMock, $this->ioMock, $this->inputMock);
+
+        $manager->uninstall([]);
 
         $this->delete($dirPath);
         \rmdir($dirPath);

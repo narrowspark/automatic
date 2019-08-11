@@ -2,6 +2,6 @@
 declare(strict_types=1);
 namespace Test;
 
-class NoConfigurator
+final class NoConfigurator
 {
 }

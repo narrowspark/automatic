@@ -5,7 +5,7 @@ namespace Narrowspark\Automatic\Security\Command\Formatter;
 use Narrowspark\Automatic\Security\Contract\Command\Formatter as FormatterContract;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class JsonFormatter implements FormatterContract
+final class JsonFormatter implements FormatterContract
 {
     /**
      * {@inheritdoc}

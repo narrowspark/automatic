@@ -27,7 +27,6 @@ final class Uninstall extends AbstractOperation
      */
     public function resolve(OperationInterface $operation): PackageContract
     {
-        /** @var \Composer\DependencyResolver\Operation\UninstallOperation $operation */
         $name = $operation->getPackage()->getName();
 
         $package = Package::createFromLock($name, (array) $this->lock->get(Automatic::LOCK_PACKAGES, $name));

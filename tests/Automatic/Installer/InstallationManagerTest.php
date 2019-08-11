@@ -281,6 +281,46 @@ final class InstallationManagerTest extends MockeryTestCase
         \putenv('COMPOSER');
     }
 
+    public function testUninstallWithoutRequireAndRequireDev(): void
+    {
+        $path    = __DIR__ . '/Fixture/composer.json';
+        $dirPath = \dirname($path);
+
+        @\mkdir($dirPath);
+        @\file_put_contents($path, \json_encode(['require' => [], 'require-dev' => []]));
+        \putenv('COMPOSER=' . $path);
+
+        $this->ioMock->shouldReceive('writeError')
+            ->atLeast()
+            ->once();
+
+        $this->rootPackageMock->shouldReceive('getRequires')
+            ->once()
+            ->andReturn([]);
+        $this->rootPackageMock->shouldReceive('getDevRequires')
+            ->once()
+            ->andReturn([]);
+        $this->rootPackageMock->shouldReceive('setRequires')
+            ->once()
+            ->with([]);
+        $this->rootPackageMock->shouldReceive('setDevRequires')
+            ->once()
+            ->with([]);
+
+        $this->localRepositoryMock->shouldReceive('getPackages')
+            ->andReturn([]);
+
+        $manager = new InstallationManager($this->composerMock, $this->ioMock, $this->inputMock);
+
+        $manager->uninstall([]);
+
+        $this->delete($dirPath);
+        \rmdir($dirPath);
+
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
+    }
+
     /**
      * {@inheritdoc}
      */

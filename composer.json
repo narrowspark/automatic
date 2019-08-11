@@ -84,10 +84,8 @@
         "infection": "infection",
         "test-common": "phpunit --testsuite=\"Narrowspark Automatic Common Test Suite\"",
         "test-automatic": "phpunit --testsuite=\"Narrowspark Automatic Test Suite\"",
-        "changelog":  "changelog-generator generate --config=\".changelog\" --file --prepend",
-        "auto-scripts": {
-
-        }
+        "changelog": "changelog-generator generate --config=\".changelog\" --file --prepend",
+        "auto-scripts": []
     },
     "support": {
         "issues": "https://github.com/narrowspark/automatic/issues",

@@ -37,7 +37,7 @@
         "nyholm/nsa": "^1.1.0",
         "phpunit/phpunit": "^8.3.3",
         "ocramius/package-versions": "^1.4.0 || ^1.5.0",
-        "narrowspark/coding-standard": "^2.1.1",
+        "narrowspark/coding-standard": "^3.0.0",
         "infection/infection": "^0.13.4"
     },
     "config": {

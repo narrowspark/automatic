@@ -1,15 +1,22 @@
-| Q               | A
-| --------------- | ---
-| Bug fix?        | no/yes
-| New feature?    | no/yes
-| BC breaks?      | no/yes
-| Deprecations?   | no/yes <!-- don't forget to update UPGRADE-*.md files -->
-| Related tickets | fixes #..., partially #..., mentioned in #...   <!-- #-prefixed issue number(s), if any -->
-| License         | MIT
-| Doc PR          | narrowspark/docs#... <!--highly recommended for new features-->
+| Q             | A
+| ------------- | ---
+| Branch?       | master for features
+| Bug fix?      | yes/no
+| New feature?  | yes/no
+| Deprecations? | yes/no <!-- don't forget to update UPGRADE-*.md files -->
+| Tickets       | Fix #...   <!-- prefix each issue number with "Fix #", if any -->
+| License       | MIT
+| Doc PR        | narrowspark/docs#... <!--highly recommended for new features-->
 
 <!--
-- Please fill in this template according to the PR you're about to submit.
-- Replace this comment by a description of what your PR is solving.
-- This will help people understand your PR and can be used as a start of the Doc PR.
+Replace this notice by a short README for your feature/bugfix. This will help people
+understand your PR and can be used as a start for the documentation.
+
+Additionally:
+ - Always add tests and ensure they pass.
+ - Never break backward compatibility
+ - Bug fixes must be submitted against the lowest branch where they apply
+   (lowest branches are regularly merged to upper ones so they get the fixes too).
+ - Features and deprecations must be submitted against the branch "master".
+ - Legacy code removals go to the master branch.
 -->

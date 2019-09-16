@@ -76,8 +76,8 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-        "coverage": "phpunit --coverage-html=\"build/logs\"",
-        "cs": "php-cs-fixer fix",
+        "coverage": "phpunit --prepend=\"./.phpunit.xdebug.filter\" --coverage-html=\"build/logs\"",
+        "cs": "php-cs-fixer fix -v",
         "phpstan": "phpstan analyse -c phpstan.neon src --memory-limit=-1",
         "psalm": "psalm",
         "test": "phpunit",

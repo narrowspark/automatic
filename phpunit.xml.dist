@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
-    cacheResult="true"
     bootstrap="vendor/autoload.php"
+    cacheResult="true"
     colors="true"
     verbose="true"
     failOnRisky="true"
@@ -15,8 +15,8 @@
     convertWarningsToExceptions="true"
     resolveDependencies="true"
     beStrictAboutTestsThatDoNotTestAnything="true"
-    beStrictAboutResourceUsageDuringSmallTests="true"
-    beStrictAboutChangesToGlobalState="true"
+    beStrictAboutResourceUsageDuringSmallTests="false"
+    beStrictAboutChangesToGlobalState="false"
 >
     <php>
         <ini name="error_reporting" value="-1" />
@@ -48,5 +48,4 @@
             </exclude>
         </whitelist>
     </filter>
-
 </phpunit>

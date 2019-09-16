@@ -28,11 +28,9 @@ final class Install extends AbstractOperation
         if ($operation instanceof UpdateOperation) {
             $composerPackage = $operation->getTargetPackage();
         } else {
-            /** @var \Composer\DependencyResolver\Operation\InstallOperation $operation */
             $composerPackage = $operation->getPackage();
         }
 
-        /** @var OperationInterface $operation */
         return ($operation instanceof UpdateOperation || $operation instanceof InstallOperation)
             && (\file_exists($this->getAutomaticFilePath($composerPackage)) || isset($composerPackage->getExtra()['automatic']));
     }

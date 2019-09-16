@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
@@ -16,6 +18,8 @@ use PHPUnit\Framework\Assert;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class SkeletonGeneratorTest extends MockeryTestCase
 {
@@ -38,11 +42,11 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->ioMock                  = $this->mock(IOInterface::class);
+        $this->ioMock = $this->mock(IOInterface::class);
         $this->installationManagerMock = $this->mock(InstallationManager::class);
-        $this->lockMock                = $this->mock(Lock::class);
+        $this->lockMock = $this->mock(Lock::class);
 
-        $this->skeletonGenerator       = new SkeletonGenerator(
+        $this->skeletonGenerator = new SkeletonGenerator(
             $this->ioMock,
             $this->installationManagerMock,
             $this->lockMock,
@@ -103,7 +107,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
         $this->arrangeLock(
             [
-                ConsoleFixtureGenerator::class          => '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
+                ConsoleFixtureGenerator::class => '%vendor_path%/Fixture/ConsoleFixtureGenerator.php',
                 FrameworkDefaultFixtureGenerator::class => '%vendor_path%/Fixture/FrameworkDefaultFixtureGenerator.php',
             ],
             ['test/generator' => [ConsoleFixtureGenerator::class, FrameworkDefaultFixtureGenerator::class]]

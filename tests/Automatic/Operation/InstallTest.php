@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Operation;
 
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -20,6 +22,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class InstallTest extends MockeryTestCase
 {
@@ -42,7 +46,7 @@ final class InstallTest extends MockeryTestCase
         parent::setUp();
 
         $this->installOperationMock = $this->mock(InstallOperation::class);
-        $this->updateOperationMock  = $this->mock(UpdateOperation::class);
+        $this->updateOperationMock = $this->mock(UpdateOperation::class);
 
         $this->arrangeOperationsClasses();
 
@@ -69,7 +73,7 @@ final class InstallTest extends MockeryTestCase
         $this->installOperationMock->shouldReceive('getPackage')
             ->andReturn($packageMock);
 
-        $this->assertTrue($this->install->supports($this->installOperationMock));
+        self::assertTrue($this->install->supports($this->installOperationMock));
     }
 
     public function testSupportsWithAutomaticJsonFile(): void
@@ -84,7 +88,7 @@ final class InstallTest extends MockeryTestCase
         $this->installOperationMock->shouldReceive('getPackage')
             ->andReturn($packageMock);
 
-        $this->assertTrue($this->install->supports($this->installOperationMock));
+        self::assertTrue($this->install->supports($this->installOperationMock));
     }
 
     public function testSupportsWithInstallWithoutAutomatic(): void
@@ -100,7 +104,7 @@ final class InstallTest extends MockeryTestCase
         $this->installOperationMock->shouldReceive('getPackage')
             ->andReturn($packageMock);
 
-        $this->assertFalse($this->install->supports($this->installOperationMock));
+        self::assertFalse($this->install->supports($this->installOperationMock));
     }
 
     public function testSupportsWithUpdateAndExtraAutomaticKey(): void
@@ -116,7 +120,7 @@ final class InstallTest extends MockeryTestCase
         $this->updateOperationMock->shouldReceive('getTargetPackage')
             ->andReturn($packageMock);
 
-        $this->assertTrue($this->install->supports($this->updateOperationMock));
+        self::assertTrue($this->install->supports($this->updateOperationMock));
     }
 
     public function testSupportsWithUpdateAndAutomaticJsonFile(): void
@@ -131,7 +135,7 @@ final class InstallTest extends MockeryTestCase
         $this->updateOperationMock->shouldReceive('getTargetPackage')
             ->andReturn($packageMock);
 
-        $this->assertTrue($this->install->supports($this->updateOperationMock));
+        self::assertTrue($this->install->supports($this->updateOperationMock));
     }
 
     public function testResolveWithInstall(): void
@@ -164,11 +168,11 @@ final class InstallTest extends MockeryTestCase
 
         $package = $this->install->resolve($this->installOperationMock);
 
-        $this->assertSame('install/install', $package->getName());
-        $this->assertSame('1.0-dev', $package->getPrettyVersion());
-        $this->assertSame('library', $package->getType());
-        $this->assertSame('example.local', $package->getUrl());
-        $this->assertSame('install', $package->getOperation());
+        self::assertSame('install/install', $package->getName());
+        self::assertSame('1.0-dev', $package->getPrettyVersion());
+        self::assertSame('library', $package->getType());
+        self::assertSame('example.local', $package->getUrl());
+        self::assertSame('install', $package->getOperation());
     }
 
     public function testResolveWithUpdateAndAutomaticJsonFile(): void
@@ -215,12 +219,12 @@ final class InstallTest extends MockeryTestCase
 
         $package = $this->install->resolve($this->updateOperationMock);
 
-        $this->assertSame('narrowspark/automatic', $package->getName());
-        $this->assertSame('1', $package->getPrettyVersion());
-        $this->assertSame('library', $package->getType());
-        $this->assertSame('example.local', $package->getUrl());
-        $this->assertSame('update', $package->getOperation());
-        $this->assertSame(
+        self::assertSame('narrowspark/automatic', $package->getName());
+        self::assertSame('1', $package->getPrettyVersion());
+        self::assertSame('library', $package->getType());
+        self::assertSame('example.local', $package->getUrl());
+        self::assertSame('update', $package->getOperation());
+        self::assertSame(
             [
                 'providers' => [
                     'Viserio\\Component\\Console\\Provider\\ConsoleServiceProvider' => [
@@ -248,7 +252,7 @@ final class InstallTest extends MockeryTestCase
     public function testTransformWithScriptsExecutor(): void
     {
         $packageData = [];
-        $autoload    = [
+        $autoload = [
             'psr-4' => [
                 'Narrowspark\Automatic\Test\Automatic' => '',
             ],
@@ -299,9 +303,9 @@ final class InstallTest extends MockeryTestCase
      * @return array
      */
     private function arrangeTransformPackage(
-        string $name        = 'test',
+        string $name = 'test',
         array $autoloadData = [],
-        array $packageData  = []
+        array $packageData = []
     ): array {
         $package = $this->mock(PackageContract::class);
 

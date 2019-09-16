@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\Installer;
 
 use Composer\Composer;
@@ -35,7 +37,7 @@ final class Installer
      */
     public static function create(IOInterface $io, Composer $composer, InputInterface $input): BaseInstaller
     {
-        $config    = $composer->getConfig();
+        $config = $composer->getConfig();
         $installer = new BaseInstaller(
             $io,
             $config,
@@ -50,9 +52,9 @@ final class Installer
 
         [$preferSource, $preferDist] = self::getPreferredInstallOptions($config, $input);
 
-        $optimize      = self::getOption($input, 'optimize-autoloader')    || (bool) $config->get('optimize-autoloader');
+        $optimize = self::getOption($input, 'optimize-autoloader') || (bool) $config->get('optimize-autoloader');
         $authoritative = self::getOption($input, 'classmap-authoritative') || (bool) $config->get('classmap-authoritative');
-        $apcu          = self::getOption($input, 'apcu-autoloader')        || (bool) $config->get('apcu-autoloader');
+        $apcu = self::getOption($input, 'apcu-autoloader') || (bool) $config->get('apcu-autoloader');
 
         $installer
             ->disablePlugins()
@@ -84,7 +86,7 @@ final class Installer
     private static function getPreferredInstallOptions(Config $config, InputInterface $input): array
     {
         $preferSource = false;
-        $preferDist   = false;
+        $preferDist = false;
         // @codeCoverageIgnoreStart
         switch ($config->get('preferred-install')) {
             case 'source':
@@ -102,7 +104,7 @@ final class Installer
         }
         // @codeCoverageIgnoreEnd
         $preferSource = self::getOption($input, 'prefer-source', $preferSource);
-        $preferDist   = self::getOption($input, 'prefer-dist', $preferDist);
+        $preferDist = self::getOption($input, 'prefer-dist', $preferDist);
 
         return [$preferSource, $preferDist];
     }

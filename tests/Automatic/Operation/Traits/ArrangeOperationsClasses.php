@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Operation\Traits;
 
 use Composer\Composer;
@@ -36,12 +38,12 @@ trait ArrangeOperationsClasses
     {
         $this->fixturePath = \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture';
 
-        $this->lockMock             = $this->mock(Lock::class);
-        $this->ioMock               = $this->mock(IOInterface::class);
-        $this->composerMock         = $this->mock(Composer::class);
+        $this->lockMock = $this->mock(Lock::class);
+        $this->ioMock = $this->mock(IOInterface::class);
+        $this->composerMock = $this->mock(Composer::class);
 
-        $this->configurator         = new Configurator($this->composerMock, $this->ioMock, []);
-        $this->packageConfigurator  = new PackageConfigurator($this->composerMock, $this->ioMock, []);
-        $this->classFinder          = new ClassFinder($this->fixturePath);
+        $this->configurator = new Configurator($this->composerMock, $this->ioMock, []);
+        $this->packageConfigurator = new PackageConfigurator($this->composerMock, $this->ioMock, []);
+        $this->classFinder = new ClassFinder($this->fixturePath);
     }
 }

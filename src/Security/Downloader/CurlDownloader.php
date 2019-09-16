@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Security\Downloader;
 
 use Composer\CaBundle\CaBundle;
@@ -45,7 +47,7 @@ final class CurlDownloader extends AbstractDownloader
             throw new RuntimeException(\sprintf('An error occurred: %s.', $error));
         }
 
-        $body       = \substr((string) $response, \curl_getinfo($curl, \CURLINFO_HEADER_SIZE));
+        $body = \substr((string) $response, \curl_getinfo($curl, \CURLINFO_HEADER_SIZE));
         $statusCode = (int) \curl_getinfo($curl, \CURLINFO_HTTP_CODE);
 
         \curl_close($curl);

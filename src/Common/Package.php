@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common;
 
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
@@ -100,10 +102,10 @@ final class Package implements PackageContract
      */
     public function __construct(string $name, ?string $prettyVersion)
     {
-        $this->prettyName    = $name;
-        $this->name          = \strtolower($name);
+        $this->prettyName = $name;
+        $this->name = \strtolower($name);
         $this->prettyVersion = $prettyVersion;
-        $this->created       = (new \DateTimeImmutable())->format(\DateTime::RFC3339);
+        $this->created = (new \DateTimeImmutable())->format(\DateTime::RFC3339);
     }
 
     /**
@@ -285,15 +287,15 @@ final class Package implements PackageContract
     public static function createFromLock(string $name, array $packageData): PackageContract
     {
         $keyToFunctionMappers = [
-            'parent'          => 'setParentName',
-            'is-dev'          => 'setIsDev',
-            'url'             => 'setUrl',
-            'operation'       => 'setOperation',
-            'type'            => 'setType',
-            'requires'        => 'setRequires',
+            'parent' => 'setParentName',
+            'is-dev' => 'setIsDev',
+            'url' => 'setUrl',
+            'operation' => 'setOperation',
+            'type' => 'setType',
+            'requires' => 'setRequires',
             'automatic-extra' => 'setConfig',
-            'autoload'        => 'setAutoload',
-            'created'         => 'setTime',
+            'autoload' => 'setAutoload',
+            'created' => 'setTime',
         ];
 
         $package = new self($name, $packageData['version']);
@@ -377,17 +379,17 @@ final class Package implements PackageContract
     public function toArray(): array
     {
         return [
-            'pretty-name'                        => $this->prettyName,
-            'version'                            => $this->prettyVersion,
-            'parent'                             => $this->parentName,
-            'is-dev'                             => $this->isDev,
-            'url'                                => $this->url,
-            'operation'                          => $this->operation,
-            'type'                               => $this->type,
-            'requires'                           => $this->requires,
-            'automatic-extra'                    => $this->configs,
-            'autoload'                           => $this->autoload,
-            'created'                            => $this->created,
+            'pretty-name' => $this->prettyName,
+            'version' => $this->prettyVersion,
+            'parent' => $this->parentName,
+            'is-dev' => $this->isDev,
+            'url' => $this->url,
+            'operation' => $this->operation,
+            'type' => $this->type,
+            'requires' => $this->requires,
+            'automatic-extra' => $this->configs,
+            'autoload' => $this->autoload,
+            'created' => $this->created,
         ];
     }
 }

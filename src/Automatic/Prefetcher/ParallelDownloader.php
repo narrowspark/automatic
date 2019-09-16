@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\Config;
@@ -153,20 +155,20 @@ class ParallelDownloader extends RemoteFilesystem
      */
     public function download(array &$nextArgs, callable $nextCallback, bool $quiet = true, bool $progress = true): void
     {
-        $previousState       = [$this->quiet, $this->progress, $this->downloadCount, $this->nextCallback, $this->sharedState];
-        $this->quiet         = $quiet;
-        $this->progress      = $progress;
+        $previousState = [$this->quiet, $this->progress, $this->downloadCount, $this->nextCallback, $this->sharedState];
+        $this->quiet = $quiet;
+        $this->progress = $progress;
         $this->downloadCount = \count($nextArgs);
-        $this->nextCallback  = $nextCallback;
-        $this->sharedState   = (object) [
-            'bytesMaxCount'     => 0,
-            'bytesMax'          => 0,
-            'bytesTransferred'  => 0,
-            'nextArgs'          => &$nextArgs,
-            'nestingLevel'      => 0,
+        $this->nextCallback = $nextCallback;
+        $this->sharedState = (object) [
+            'bytesMaxCount' => 0,
+            'bytesMax' => 0,
+            'bytesTransferred' => 0,
+            'nextArgs' => &$nextArgs,
+            'nestingLevel' => 0,
             'maxNestingReached' => false,
-            'lastProgress'      => 0,
-            'lastUpdate'        => \microtime(true),
+            'lastProgress' => 0,
+            'lastUpdate' => \microtime(true),
         ];
 
         if (! $this->quiet) {
@@ -214,7 +216,7 @@ class ParallelDownloader extends RemoteFilesystem
      */
     public function getOptions(): array
     {
-        $options           = \array_replace_recursive(parent::getOptions(), $this->nextOptions);
+        $options = \array_replace_recursive(parent::getOptions(), $this->nextOptions);
         $this->nextOptions = [];
 
         return $options;
@@ -238,18 +240,18 @@ class ParallelDownloader extends RemoteFilesystem
         $fileUrl,
         $fileName,
         $progress = true,
-        $options  = []
+        $options = []
     ) {
-        $options           = \array_replace_recursive($this->nextOptions, $options);
+        $options = \array_replace_recursive($this->nextOptions, $options);
         $this->nextOptions = [];
-        $rfs               = clone $this;
-        $rfs->fileName     = $fileName;
-        $rfs->progress     = $this->progress && $progress;
+        $rfs = clone $this;
+        $rfs->fileName = $fileName;
+        $rfs->progress = $this->progress && $progress;
 
         try {
             return $rfs->get($originUrl, $fileUrl, $options, $fileName, $rfs->progress);
         } finally {
-            $rfs->lastHeaders  = null;
+            $rfs->lastHeaders = null;
             $this->lastHeaders = $rfs->getLastHeaders();
         }
     }
@@ -300,7 +302,7 @@ class ParallelDownloader extends RemoteFilesystem
         }
 
         if (0 < $state->bytesMax) {
-            $progress = $state->bytesMaxCount                                 / $this->downloadCount = 0;
+            $progress = $state->bytesMaxCount / $this->downloadCount = 0;
             $progress *= 100 * ($state->bytesTransferred + $bytesTransferred) / $state->bytesMax;
         } else {
             $progress = 0;
@@ -362,7 +364,7 @@ class ParallelDownloader extends RemoteFilesystem
             return $result;
         }
 
-        if ($this->downloader !== null) {
+        if (\preg_match('/^https?:/', $originUrl) !== 1 || $this->downloader !== null) {
             return parent::getRemoteContents($originUrl, $fileUrl, $context, $responseHeaders);
         }
 

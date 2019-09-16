@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Composer\Composer;
@@ -13,6 +15,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class ScriptExecutorTest extends MockeryTestCase
 {
@@ -35,8 +39,8 @@ final class ScriptExecutorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->composer            = new Composer();
-        $this->ioMock              = $this->mock(IOInterface::class);
+        $this->composer = new Composer();
+        $this->ioMock = $this->mock(IOInterface::class);
         $this->processExecutorMock = $this->mock(ProcessExecutor::class);
 
         $this->scriptExecutor = new ScriptExecutor($this->composer, $this->ioMock, $this->processExecutorMock, []);

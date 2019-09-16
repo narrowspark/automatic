@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Operation;
 
 use Composer\DependencyResolver\Operation\UninstallOperation;
@@ -16,6 +18,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class UninstallTest extends MockeryTestCase
 {
@@ -64,7 +68,7 @@ final class UninstallTest extends MockeryTestCase
         $this->uninstallOperationMock->shouldReceive('getPackage')
             ->andReturn($packageMock);
 
-        $this->assertFalse($this->uninstall->supports($this->uninstallOperationMock));
+        self::assertFalse($this->uninstall->supports($this->uninstallOperationMock));
     }
 
     public function testSupportsWithLock(): void
@@ -83,7 +87,7 @@ final class UninstallTest extends MockeryTestCase
         $this->uninstallOperationMock->shouldReceive('getPackage')
             ->andReturn($packageMock);
 
-        $this->assertTrue($this->uninstall->supports($this->uninstallOperationMock));
+        self::assertTrue($this->uninstall->supports($this->uninstallOperationMock));
     }
 
     public function testResolve(): void
@@ -105,17 +109,17 @@ final class UninstallTest extends MockeryTestCase
             ->once()
             ->with(Automatic::LOCK_PACKAGES, $name)
             ->andReturn([
-                'pretty-name'    => $name,
-                'version'        => '1.0-dev',
-                'parent'         => null,
-                'is-dev'         => false,
-                'url'            => null,
-                'operation'      => 'install',
-                'type'           => 'library',
-                'requires'       => [
+                'pretty-name' => $name,
+                'version' => '1.0-dev',
+                'parent' => null,
+                'is-dev' => false,
+                'url' => null,
+                'operation' => 'install',
+                'type' => 'library',
+                'requires' => [
                     'viserio/contract' => 'dev-master',
                 ],
-                'autoload'        => [],
+                'autoload' => [],
                 'automatic-extra' => [
                     'providers' => [
                         'Viserio\\Component\\OptionsResolver\\Provider\\ConsoleCommandsServiceProvider' => [
@@ -128,13 +132,13 @@ final class UninstallTest extends MockeryTestCase
 
         $package = $this->uninstall->resolve($this->uninstallOperationMock);
 
-        $this->assertSame($name, $package->getName());
-        $this->assertSame($name, $package->getPrettyName());
-        $this->assertSame('1.0-dev', $package->getPrettyVersion());
-        $this->assertSame('library', $package->getType());
-        $this->assertNull($package->getUrl());
-        $this->assertSame('uninstall', $package->getOperation());
-        $this->assertSame(['viserio/contract' => 'dev-master'], $package->getRequires());
+        self::assertSame($name, $package->getName());
+        self::assertSame($name, $package->getPrettyName());
+        self::assertSame('1.0-dev', $package->getPrettyVersion());
+        self::assertSame('library', $package->getType());
+        self::assertNull($package->getUrl());
+        self::assertSame('uninstall', $package->getOperation());
+        self::assertSame(['viserio/contract' => 'dev-master'], $package->getRequires());
     }
 
     public function testTransform(): void

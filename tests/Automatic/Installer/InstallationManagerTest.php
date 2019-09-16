@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Installer;
 
 use Composer\IO\IOInterface;
@@ -15,6 +17,8 @@ use PHPUnit\Framework\Assert;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class InstallationManagerTest extends MockeryTestCase
 {
@@ -104,7 +108,7 @@ final class InstallationManagerTest extends MockeryTestCase
 
     public function testInstallWithRequireAndNoPackageVersion(): void
     {
-        $path    = __DIR__ . '/Fixture/composer.json';
+        $path = __DIR__ . '/Fixture/composer.json';
         $dirPath = \dirname($path);
 
         @\mkdir($dirPath);
@@ -196,7 +200,7 @@ final class InstallationManagerTest extends MockeryTestCase
 
     public function testInstallWithRequireAndPackageVersion(): void
     {
-        $path    = __DIR__ . '/Fixture/composer.json';
+        $path = __DIR__ . '/Fixture/composer.json';
         $dirPath = \dirname($path);
 
         @\mkdir($dirPath);
@@ -283,7 +287,7 @@ final class InstallationManagerTest extends MockeryTestCase
 
     public function testUninstallWithoutRequireAndRequireDev(): void
     {
-        $path    = __DIR__ . '/Fixture/composer.json';
+        $path = __DIR__ . '/Fixture/composer.json';
         $dirPath = \dirname($path);
 
         @\mkdir($dirPath);

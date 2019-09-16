@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Operation;
 
 use Composer\DependencyResolver\Operation\OperationInterface;

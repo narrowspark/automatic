@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Configurator;
 
 use Composer\Composer;
@@ -13,6 +15,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 {
@@ -33,14 +37,14 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
         parent::setUp();
 
         $this->composerMock = $this->mock(Composer::class);
-        $this->ioMock       = $this->mock(IOInterface::class);
+        $this->ioMock = $this->mock(IOInterface::class);
 
         $this->configurator = new CopyFromPackageConfigurator($this->composerMock, $this->ioMock, ['self-dir' => 'test']);
     }
 
     public function testGetName(): void
     {
-        $this->assertSame('copy', CopyFromPackageConfigurator::getName());
+        self::assertSame('copy', CopyFromPackageConfigurator::getName());
     }
 
     public function testCopyFileFromPackage(): void
@@ -60,7 +64,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . '' . $toFileName;
 
-        $this->assertFileExists($filePath);
+        self::assertFileExists($filePath);
 
         \unlink($filePath);
     }
@@ -80,11 +84,11 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
 
-        $dirPath  = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'css';
+        $dirPath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'css';
         $filePath = $dirPath . \DIRECTORY_SEPARATOR . 'style.css';
 
-        $this->assertDirectoryExists($dirPath);
-        $this->assertFileExists($filePath);
+        self::assertDirectoryExists($dirPath);
+        self::assertFileExists($filePath);
 
         \unlink($filePath);
         \rmdir($dirPath);
@@ -105,11 +109,11 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
 
-        $dirPath  = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'css';
+        $dirPath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'css';
         $filePath = $dirPath . \DIRECTORY_SEPARATOR . 'style.css';
 
-        $this->assertDirectoryExists($dirPath);
-        $this->assertFileExists($filePath);
+        self::assertDirectoryExists($dirPath);
+        self::assertFileExists($filePath);
 
         \unlink($filePath);
         \rmdir($dirPath);
@@ -132,7 +136,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . '' . $toFileName;
 
-        $this->assertFileNotExists($filePath);
+        self::assertFileNotExists($filePath);
     }
 
     public function testUnconfigureAFileFromPackage(): void
@@ -186,7 +190,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $dirPath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'css';
 
-        $this->assertDirectoryExists($dirPath);
+        self::assertDirectoryExists($dirPath);
 
         \rmdir($dirPath);
     }
@@ -227,7 +231,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         \unlink($dirPath . \DIRECTORY_SEPARATOR . 'style.css');
 
-        $this->assertDirectoryExists($dirPath);
+        self::assertDirectoryExists($dirPath);
 
         \rmdir($dirPath);
     }
@@ -249,7 +253,7 @@ final class CopyFromPackageConfiguratorTest extends MockeryTestCase
 
         $filePath = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'test' . \DIRECTORY_SEPARATOR . $toFileName;
 
-        $this->assertFileExists($filePath);
+        self::assertFileExists($filePath);
 
         \unlink($filePath);
         \rmdir(\sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'test' . \DIRECTORY_SEPARATOR);

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Configurator;
 
 use Composer\Composer;
@@ -11,6 +13,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class EnvConfiguratorTest extends MockeryTestCase
 {
@@ -37,11 +41,11 @@ final class EnvConfiguratorTest extends MockeryTestCase
         parent::setUp();
 
         $this->composer = new Composer();
-        $this->nullIo   = new NullIO();
+        $this->nullIo = new NullIO();
 
         $this->configurator = new EnvConfigurator($this->composer, $this->nullIo, ['root-dir' => __DIR__]);
 
-        $this->envPath     = __DIR__ . '/.env';
+        $this->envPath = __DIR__ . '/.env';
         $this->envDistPath = $this->envPath . '.dist';
 
         \touch($this->envDistPath);
@@ -60,7 +64,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        $this->assertSame('env', EnvConfigurator::getName());
+        self::assertSame('env', EnvConfigurator::getName());
     }
 
     public function testConfigure(): void
@@ -69,17 +73,17 @@ final class EnvConfiguratorTest extends MockeryTestCase
         $package->setConfig([
             ConfiguratorContract::TYPE => [
                 EnvConfigurator::getName() => [
-                    'APP_ENV'           => 'test bar',
-                    'APP_DEBUG'         => '0',
-                    'APP_PARAGRAPH'     => "foo\n\"bar\"\\t",
-                    'DATABASE_URL'      => 'mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7',
-                    'MAILER_URL'        => 'null://localhost',
-                    'MAILER_USER'       => 'narrow',
-                    '#1'                => 'Comment 1',
-                    '#2'                => 'Comment 3',
-                    '#TRUSTED_SECRET'   => 's3cretf0rt3st"<>',
-                    'APP_SECRET'        => 's3cretf0rt3st"<>',
-                    'BOOL'              => false,
+                    'APP_ENV' => 'test bar',
+                    'APP_DEBUG' => '0',
+                    'APP_PARAGRAPH' => "foo\n\"bar\"\\t",
+                    'DATABASE_URL' => 'mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7',
+                    'MAILER_URL' => 'null://localhost',
+                    'MAILER_USER' => 'narrow',
+                    '#1' => 'Comment 1',
+                    '#2' => 'Comment 3',
+                    '#TRUSTED_SECRET' => 's3cretf0rt3st"<>',
+                    'APP_SECRET' => 's3cretf0rt3st"<>',
+                    'BOOL' => false,
                     'VALID_NUMBER_TRUE' => 1,
                 ],
             ],
@@ -105,19 +109,19 @@ final class EnvConfiguratorTest extends MockeryTestCase
         // Skip on second call
         $this->configurator->configure($package);
 
-        $this->assertStringEqualsFile($this->envDistPath, $envContents);
-        $this->assertStringEqualsFile($this->envPath, $envContents);
+        self::assertStringEqualsFile($this->envDistPath, $envContents);
+        self::assertStringEqualsFile($this->envPath, $envContents);
     }
 
     public function testUnconfigure(): void
     {
         $envConfig = [
-            'APP_ENV'         => 'test',
-            'APP_DEBUG'       => '0',
-            '#1'              => 'Comment 1',
-            '#2'              => 'Comment 3',
+            'APP_ENV' => 'test',
+            'APP_DEBUG' => '0',
+            '#1' => 'Comment 1',
+            '#2' => 'Comment 3',
             '#TRUSTED_SECRET' => 's3cretf0rt3st',
-            'APP_SECRET'      => 's3cretf0rt3st',
+            'APP_SECRET' => 's3cretf0rt3st',
         ];
 
         $package = new Package('fixtures/env2', '1.0.0');
@@ -134,18 +138,18 @@ final class EnvConfiguratorTest extends MockeryTestCase
         $envContents .= 'APP_SECRET=s3cretf0rt3st' . \PHP_EOL;
         $envContents .= '###< fixtures/env2 ###' . \PHP_EOL;
 
-        $this->assertStringEqualsFile($this->envDistPath, $envContents);
-        $this->assertStringEqualsFile($this->envPath, $envContents);
+        self::assertStringEqualsFile($this->envDistPath, $envContents);
+        self::assertStringEqualsFile($this->envPath, $envContents);
 
         $this->configurator->unconfigure($package);
 
-        $this->assertStringEqualsFile(
+        self::assertStringEqualsFile(
             $this->envDistPath,
             <<<'EOF'
 
 EOF
         );
-        $this->assertStringEqualsFile(
+        self::assertStringEqualsFile(
             $this->envPath,
             <<<'EOF'
 

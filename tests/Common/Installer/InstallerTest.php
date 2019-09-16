@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\Test\Installer;
 
 use Composer\Autoload\AutoloadGenerator;
@@ -16,6 +18,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class InstallerTest extends MockeryTestCase
 {
@@ -66,7 +70,7 @@ final class InstallerTest extends MockeryTestCase
 
         $installer = Installer::create($this->ioMock, $this->composerMock, $this->inputMock);
 
-        $this->assertInstanceOf(BaseInstaller::class, $installer);
+        self::assertInstanceOf(BaseInstaller::class, $installer);
     }
 
     /**

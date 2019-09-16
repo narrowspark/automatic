@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
@@ -36,7 +38,7 @@ final class ComposerRepository extends BaseComposerRepository
                 $this->loadProviderListings($d);
             }
 
-            $loadingFiles        = $this->providerFiles;
+            $loadingFiles = $this->providerFiles;
             $this->providerFiles = null;
 
             $data = [];

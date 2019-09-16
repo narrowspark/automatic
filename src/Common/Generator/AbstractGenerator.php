@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\Generator;
 
 use Symfony\Component\Filesystem\Filesystem;
@@ -38,7 +40,7 @@ abstract class AbstractGenerator
     public function __construct(Filesystem $filesystem, array $options)
     {
         $this->filesystem = $filesystem;
-        $this->options    = $options;
+        $this->options = $options;
     }
 
     /**

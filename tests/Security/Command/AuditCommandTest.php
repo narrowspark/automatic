@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Security\Test;
 
 use Narrowspark\Automatic\Security\Command\AuditCommand;
@@ -11,6 +13,8 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class AuditCommandTest extends TestCase
 {
@@ -35,7 +39,7 @@ final class AuditCommandTest extends TestCase
         $consoleVersion = \version_compare(Versions::getVersion('symfony/console'), '3.0.0', '<');
 
         $this->greenString = $consoleVersion ? '' : '[+]';
-        $this->redString   = $consoleVersion ? '' : '[!]';
+        $this->redString = $consoleVersion ? '' : '[!]';
     }
 
     public function testAuditCommand(): void
@@ -44,7 +48,7 @@ final class AuditCommandTest extends TestCase
 
         $commandTester = $this->executeCommand(new AuditCommand());
 
-        $this->assertStringContainsString($this->greenString . ' No known vulnerabilities found', \trim($commandTester->getDisplay(true)));
+        self::assertStringContainsString($this->greenString . ' No known vulnerabilities found', \trim($commandTester->getDisplay(true)));
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -59,9 +63,9 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        $this->assertStringContainsString('=== Audit Security Report ===', $output);
-        $this->assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertStringContainsString($this->greenString . ' No known vulnerabilities found', $output);
+        self::assertStringContainsString('=== Audit Security Report ===', $output);
+        self::assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
+        self::assertStringContainsString($this->greenString . ' No known vulnerabilities found', $output);
     }
 
     public function testAuditCommandWithEmptyComposerLockPath(): void
@@ -73,8 +77,8 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        $this->assertStringContainsString(\trim('=== Audit Security Report ==='), $output);
-        $this->assertStringContainsString(\trim('Lock file does not exist.'), $output);
+        self::assertStringContainsString(\trim('=== Audit Security Report ==='), $output);
+        self::assertStringContainsString(\trim('Lock file does not exist.'), $output);
     }
 
     public function testAuditCommandWithError(): void
@@ -86,11 +90,11 @@ final class AuditCommandTest extends TestCase
 
         $output = \trim($commandTester->getDisplay(true));
 
-        $this->assertStringContainsString('=== Audit Security Report ===', $output);
-        $this->assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertStringContainsString('symfony/symfony (v2.5.2)', $output);
-        $this->assertStringContainsString($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
-        $this->assertSame(1, $commandTester->getStatusCode());
+        self::assertStringContainsString('=== Audit Security Report ===', $output);
+        self::assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
+        self::assertStringContainsString('symfony/symfony (v2.5.2)', $output);
+        self::assertStringContainsString($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        self::assertSame(1, $commandTester->getStatusCode());
     }
 
     public function testAuditCommandWithErrorAndZeroExitCode(): void
@@ -99,17 +103,17 @@ final class AuditCommandTest extends TestCase
             new AuditCommand(),
             [
                 '--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
-                '--disable-exit'  => null,
+                '--disable-exit' => null,
             ]
         );
 
         $output = \trim($commandTester->getDisplay(true));
 
-        $this->assertStringContainsString('=== Audit Security Report ===', $output);
-        $this->assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertStringContainsString('symfony/symfony (v2.5.2)', $output);
-        $this->assertStringContainsString($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
-        $this->assertSame(0, $commandTester->getStatusCode());
+        self::assertStringContainsString('=== Audit Security Report ===', $output);
+        self::assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
+        self::assertStringContainsString('symfony/symfony (v2.5.2)', $output);
+        self::assertStringContainsString($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        self::assertSame(0, $commandTester->getStatusCode());
     }
 
     public function testAuditCommandWithErrorZeroExitCodeAndOneVulnerability(): void
@@ -118,17 +122,17 @@ final class AuditCommandTest extends TestCase
             new AuditCommand(),
             [
                 '--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'pygmentize_1.1_composer.lock',
-                '--disable-exit'  => null,
+                '--disable-exit' => null,
             ]
         );
 
         $output = \trim($commandTester->getDisplay(true));
 
-        $this->assertStringContainsString('=== Audit Security Report ===', $output);
-        $this->assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertStringContainsString('3f/pygmentize (1.1)', $output);
-        $this->assertStringContainsString($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
-        $this->assertSame(0, $commandTester->getStatusCode());
+        self::assertStringContainsString('=== Audit Security Report ===', $output);
+        self::assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
+        self::assertStringContainsString('3f/pygmentize (1.1)', $output);
+        self::assertStringContainsString($this->redString . ' 1 vulnerability found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        self::assertSame(0, $commandTester->getStatusCode());
     }
 
     public function testAuditCommandWithErrorAndJsonFormat(): void
@@ -137,17 +141,17 @@ final class AuditCommandTest extends TestCase
             new AuditCommand(),
             [
                 '--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
-                '--format'        => 'json',
-                '--timeout'       => '20',
+                '--format' => 'json',
+                '--timeout' => '20',
             ]
         );
 
         $output = \trim($commandTester->getDisplay(true));
 
-        $this->assertJson(\strstr(\substr($output, 0, \strrpos($output, '}') + 1), '{'));
-        $this->assertStringContainsString('=== Audit Security Report ===', $output);
-        $this->assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertStringContainsString($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        self::assertJson(\strstr(\substr($output, 0, \strrpos($output, '}') + 1), '{'));
+        self::assertStringContainsString('=== Audit Security Report ===', $output);
+        self::assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
+        self::assertStringContainsString($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     public function testAuditCommandWithErrorAndSimpleFormat(): void
@@ -156,18 +160,18 @@ final class AuditCommandTest extends TestCase
             new AuditCommand(),
             [
                 '--composer-lock' => \dirname(__DIR__, 1) . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock',
-                '--format'        => 'simple',
+                '--format' => 'simple',
             ]
         );
 
         $output = \trim($commandTester->getDisplay(true));
 
-        $this->assertStringContainsString('=== Audit Security Report ===', $output);
-        $this->assertStringContainsString(\trim('symfony/symfony (v2.5.2)
+        self::assertStringContainsString('=== Audit Security Report ===', $output);
+        self::assertStringContainsString(\trim('symfony/symfony (v2.5.2)
 ------------------------
 '), $output);
-        $this->assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
-        $this->assertStringContainsString($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
+        self::assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
+        self::assertStringContainsString($this->redString . ' 2 vulnerabilities found - We recommend you to check the related security advisories and upgrade these dependencies.', $output);
     }
 
     /**

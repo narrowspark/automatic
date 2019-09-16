@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Configurator;
 
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
@@ -79,7 +81,7 @@ final class EnvConfigurator extends AbstractConfigurator
                 continue;
             }
             // @codeCoverageIgnoreEnd
-            $count    = 0;
+            $count = 0;
             $contents = \preg_replace(
                 \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), \PHP_EOL),
                 '',

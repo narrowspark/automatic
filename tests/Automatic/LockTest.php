@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Narrowspark\Automatic\Lock;
@@ -7,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class LockTest extends TestCase
 {
@@ -34,14 +38,14 @@ final class LockTest extends TestCase
     {
         $this->lock->add('test', ['version' => '1']);
 
-        $this->assertTrue($this->lock->has('test'));
+        self::assertTrue($this->lock->has('test'));
     }
 
     public function testAddSubWithNotFoundMainKey(): void
     {
         $this->lock->addSub('test', 'providers', ['version' => '1']);
 
-        $this->assertTrue($this->lock->has('test', 'providers'));
+        self::assertTrue($this->lock->has('test', 'providers'));
     }
 
     public function testAddSub(): void
@@ -49,7 +53,7 @@ final class LockTest extends TestCase
         $this->lock->add('test2', ['providers' => ['version' => 1]]);
         $this->lock->addSub('test2', 'providers', ['test' => '1']);
 
-        $this->assertTrue($this->lock->has('test2', 'providers'));
+        self::assertTrue($this->lock->has('test2', 'providers'));
     }
 
     public function testRemove(): void
@@ -58,7 +62,7 @@ final class LockTest extends TestCase
 
         $this->lock->remove('testRemove');
 
-        $this->assertFalse($this->lock->has('testRemove'));
+        self::assertFalse($this->lock->has('testRemove'));
     }
 
     public function testRemoveWithMainKey(): void
@@ -72,24 +76,24 @@ final class LockTest extends TestCase
         $this->lock->add('automatic', ['providers' => $providers]);
         $this->lock->remove('automatic', 'providers');
 
-        $this->assertFalse($this->lock->has('automatic', 'providers'));
+        self::assertFalse($this->lock->has('automatic', 'providers'));
     }
 
     public function testHasWithMainKey(): void
     {
-        $this->assertFalse($this->lock->has('automatic', 'providers'));
+        self::assertFalse($this->lock->has('automatic', 'providers'));
     }
 
     public function testWriteAndRead(): void
     {
         $this->lock->write();
 
-        $this->assertCount(0, $this->lock->read());
+        self::assertCount(0, $this->lock->read());
 
         $this->lock->add('tests', ['version' => '3']);
         $this->lock->write();
 
-        $this->assertCount(1, $this->lock->read());
+        self::assertCount(1, $this->lock->read());
     }
 
     public function testGet(): void
@@ -102,9 +106,9 @@ final class LockTest extends TestCase
 
         $this->lock->add('hash', $execptedHash);
 
-        $this->assertSame($execptedArray, $this->lock->get('test'));
-        $this->assertSame($execptedHash, $this->lock->get('hash'));
-        $this->assertNull($this->lock->get('test2'));
+        self::assertSame($execptedArray, $this->lock->get('test'));
+        self::assertSame($execptedHash, $this->lock->get('hash'));
+        self::assertNull($this->lock->get('test2'));
     }
 
     public function testGetWithMainKey(): void
@@ -117,7 +121,7 @@ final class LockTest extends TestCase
 
         $this->lock->add('automatic', ['providers' => $providers]);
 
-        $this->assertSame($providers, $this->lock->get('automatic', 'providers'));
+        self::assertSame($providers, $this->lock->get('automatic', 'providers'));
     }
 
     public function testReset(): void
@@ -125,6 +129,6 @@ final class LockTest extends TestCase
         $this->lock->add('test', ['version' => '1']);
         $this->lock->reset();
 
-        $this->assertFalse($this->lock->has('test'));
+        self::assertFalse($this->lock->has('test'));
     }
 }

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Installer;
 
 use Composer\Downloader\DownloadManager;
@@ -81,14 +83,14 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 
         $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new ClassFinder($this->configuratorPath));
 
-        $this->repositoryMock    = $this->mock(InstalledRepositoryInterface::class);
-        $this->packageMock       = $this->mock(PackageInterface::class);
+        $this->repositoryMock = $this->mock(InstalledRepositoryInterface::class);
+        $this->packageMock = $this->mock(PackageInterface::class);
         $this->targetPackageMock = $this->mock(PackageInterface::class);
     }
 
     public function testSupports(): void
     {
-        $this->assertTrue($this->configuratorInstaller->supports($this->installerClass::TYPE));
+        self::assertTrue($this->configuratorInstaller->supports($this->installerClass::TYPE));
     }
 
     public function testInstallWithEmptyPsr4(): void

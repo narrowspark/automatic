@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common;
 
 use Composer\Factory;
@@ -26,7 +28,7 @@ final class Util
      */
     public static function getComposerJsonFileAndManipulator(): array
     {
-        $json        = new JsonFile(Factory::getComposerFile());
+        $json = new JsonFile(Factory::getComposerFile());
         $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
 
         return [$json, $manipulator];

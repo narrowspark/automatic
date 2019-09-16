@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common;
 
 use Closure;
@@ -72,8 +74,8 @@ final class ClassFinder implements ResettableContract
     public function __construct(string $vendorDir)
     {
         $this->paths = [
-            'psr0'     => [],
-            'psr4'     => [],
+            'psr0' => [],
+            'psr4' => [],
             'classmap' => [],
         ];
         $this->vendorDir = $vendorDir;
@@ -254,10 +256,10 @@ final class ClassFinder implements ResettableContract
 
         /** @var \SplFileInfo $file */
         foreach ($finder as $file) {
-            $realPath  = (string) $file->getRealPath();
+            $realPath = (string) $file->getRealPath();
 
             $namespace = null;
-            $tokens    = \token_get_all((string) \file_get_contents($realPath));
+            $tokens = \token_get_all((string) \file_get_contents($realPath));
 
             foreach ($tokens as $key => $token) {
                 if (\is_array($token)) {
@@ -329,13 +331,13 @@ final class ClassFinder implements ResettableContract
      */
     public function reset(): void
     {
-        $this->interfaces      = [];
-        $this->traits          = [];
+        $this->interfaces = [];
+        $this->traits = [];
         $this->abstractClasses = [];
-        $this->classes         = [];
-        $this->paths           = [
-            'psr0'     => [],
-            'psr4'     => [],
+        $this->classes = [];
+        $this->paths = [
+            'psr0' => [],
+            'psr4' => [],
             'classmap' => [],
         ];
     }
@@ -350,7 +352,7 @@ final class ClassFinder implements ResettableContract
      */
     private static function getNamespace(int $key, array $tokens): ?string
     {
-        $namespace  = null;
+        $namespace = null;
         $tokenCount = \count($tokens);
 
         for ($i = $key; $i < $tokenCount; $i++) {
@@ -386,7 +388,7 @@ final class ClassFinder implements ResettableContract
      */
     private static function getName($key, array $tokens): ?string
     {
-        $class      = null;
+        $class = null;
         $tokenCount = \count($tokens);
 
         for ($i = $key; $i < $tokenCount; $i++) {

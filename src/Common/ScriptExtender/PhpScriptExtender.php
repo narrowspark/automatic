@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\ScriptExtender;
 
 use Composer\Util\ProcessExecutor;
@@ -31,7 +33,7 @@ final class PhpScriptExtender extends AbstractScriptExtender
 
         if (($env = \getenv('COMPOSER_ORIGINAL_INIS')) !== false) {
             $paths = \explode(\PATH_SEPARATOR, (string) $env);
-            $ini   = \array_shift($paths);
+            $ini = \array_shift($paths);
         } else {
             $ini = \php_ini_loaded_file();
         }

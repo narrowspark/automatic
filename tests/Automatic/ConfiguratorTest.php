@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
@@ -9,6 +11,8 @@ use Narrowspark\Automatic\Configurator;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class ConfiguratorTest extends AbstractConfiguratorTest
 {
@@ -26,7 +30,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
         parent::setUp();
 
         $this->copyFileName = 'copy_of_copy.txt';
-        $this->copyPath     = \sys_get_temp_dir() . '/' . $this->copyFileName;
+        $this->copyPath = \sys_get_temp_dir() . '/' . $this->copyFileName;
     }
 
     public function testConfigureWithCopy(): void
@@ -45,14 +49,14 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         $this->configurator->configure($package);
 
-        $this->assertFileExists($this->copyPath);
+        self::assertFileExists($this->copyPath);
 
         \unlink($this->copyPath);
     }
 
     public function testGetConfigurators(): void
     {
-        $this->assertCount(5, $this->configurator->getConfigurators());
+        self::assertCount(5, $this->configurator->getConfigurators());
     }
 
     public function testUnconfigureWithCopy(): void
@@ -71,7 +75,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         $this->configurator->configure($package);
 
-        $this->assertFileExists($this->copyPath);
+        self::assertFileExists($this->copyPath);
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -83,7 +87,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         $this->configurator->unconfigure($package);
 
-        $this->assertFileNotExists($this->copyPath);
+        self::assertFileNotExists($this->copyPath);
     }
 
     /**

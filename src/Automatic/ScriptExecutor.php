@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic;
 
 use Composer\Composer;
@@ -65,9 +67,9 @@ final class ScriptExecutor
     public function __construct(Composer $composer, IOInterface $io, ProcessExecutor $executor, array $options)
     {
         $this->composer = $composer;
-        $this->io       = $io;
+        $this->io = $io;
         $this->executor = $executor;
-        $this->options  = $options;
+        $this->options = $options;
     }
 
     /**

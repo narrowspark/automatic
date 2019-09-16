@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Security\Command;
 
 use Composer\Command\BaseCommand;
@@ -13,6 +15,7 @@ use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
 use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
 use Narrowspark\Automatic\Security\Util;
+use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -63,7 +66,7 @@ EOF
         }
 
         $config = Factory::createConfig(new NullIO());
-        $audit  = new Audit(\rtrim($config->get('vendor-dir'), '/'), $downloader);
+        $audit = new Audit(\rtrim($config->get('vendor-dir'), '/'), $downloader);
 
         /** @var null|string $composerFile */
         $composerFile = $input->getOption('composer-lock');
@@ -84,8 +87,11 @@ EOF
         try {
             [$vulnerabilities, $messages] = $audit->checkLock($composerFile);
         } catch (RuntimeException $exception) {
+            /** @var HelperSet $helperSet */
+            $helperSet = $this->getHelperSet();
+
             /** @var \Symfony\Component\Console\Helper\FormatterHelper $formatter */
-            $formatter = $this->getHelperSet()->get('formatter');
+            $formatter = $helperSet->get('formatter');
 
             $output->writeln($formatter->formatBlock($exception->getMessage(), 'error', true));
 

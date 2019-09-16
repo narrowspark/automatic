@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic;
 
 use Closure;
@@ -160,20 +162,20 @@ class Automatic implements EventSubscriberInterface, PluginInterface
         }
 
         return [
-            ScriptEvents::AUTO_SCRIPTS                    => 'executeAutoScripts',
-            InstallerEvents::PRE_DEPENDENCIES_SOLVING     => [['onPreDependenciesSolving', \PHP_INT_MAX]],
-            InstallerEvents::POST_DEPENDENCIES_SOLVING    => [['populateFilesCacheDir', \PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_INSTALL            => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_UPDATE             => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_UNINSTALL          => 'onPreUninstall',
-            PackageEvents::POST_PACKAGE_INSTALL           => 'record',
-            PackageEvents::POST_PACKAGE_UPDATE            => 'record',
-            PackageEvents::POST_PACKAGE_UNINSTALL         => 'onPostUninstall',
-            PluginEvents::PRE_FILE_DOWNLOAD               => 'onFileDownload',
-            PluginEvents::INIT                            => 'initAutoScripts',
-            ComposerScriptEvents::POST_AUTOLOAD_DUMP      => 'onPostAutoloadDump',
-            ComposerScriptEvents::POST_INSTALL_CMD        => 'onPostInstall',
-            ComposerScriptEvents::POST_UPDATE_CMD         => [['onPostUpdate', \PHP_INT_MAX], ['onPostUpdatePostMessages', ~\PHP_INT_MAX + 1]],
+            ScriptEvents::AUTO_SCRIPTS => 'executeAutoScripts',
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING => [['onPreDependenciesSolving', \PHP_INT_MAX]],
+            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_INSTALL => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UPDATE => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UNINSTALL => 'onPreUninstall',
+            PackageEvents::POST_PACKAGE_INSTALL => 'record',
+            PackageEvents::POST_PACKAGE_UPDATE => 'record',
+            PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostUninstall',
+            PluginEvents::PRE_FILE_DOWNLOAD => 'onFileDownload',
+            PluginEvents::INIT => 'initAutoScripts',
+            ComposerScriptEvents::POST_AUTOLOAD_DUMP => 'onPostAutoloadDump',
+            ComposerScriptEvents::POST_INSTALL_CMD => 'onPostInstall',
+            ComposerScriptEvents::POST_UPDATE_CMD => [['onPostUpdate', \PHP_INT_MAX], ['onPostUpdatePostMessages', ~\PHP_INT_MAX + 1]],
             ComposerScriptEvents::POST_CREATE_PROJECT_CMD => [
                 ['onPostCreateProject', \PHP_INT_MAX],
                 ['runSkeletonGenerator', \PHP_INT_MAX - 1],
@@ -504,9 +506,9 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             $configurator->reset();
         }
 
-        $lock      = $this->container->get(Lock::class);
+        $lock = $this->container->get(Lock::class);
         $vendorDir = $this->container->get('vendor-dir');
-        $classMap  = (array) $lock->get(self::LOCK_CLASSMAP);
+        $classMap = (array) $lock->get(self::LOCK_CLASSMAP);
 
         foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
             foreach ($classMap[$packageName] as $class => $path) {
@@ -561,7 +563,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
         /** @var \Narrowspark\Automatic\Lock $lock */
         $lock = $this->container->get(Lock::class);
         /** @var \Composer\IO\IOInterface $io */
-        $io   = $this->container->get(IOInterface::class);
+        $io = $this->container->get(IOInterface::class);
         /** @var \Narrowspark\Automatic\Operation\Install $install */
         $install = $this->container->get(Install::class);
         /** @var \Narrowspark\Automatic\Common\Contract\Package[] $packages */
@@ -583,7 +585,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
         if (\count($packages) !== 0) {
             $automaticOptions = $this->container->get('composer-extra')[self::COMPOSER_EXTRA_KEY];
-            $allowInstall     = $automaticOptions['allow-auto-install'] ?? false;
+            $allowInstall = $automaticOptions['allow-auto-install'] ?? false;
 
             foreach ($packages as $package) {
                 $prettyName = $package->getPrettyName();
@@ -668,7 +670,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     public function executeAutoScripts(Event $event): void
     {
         // force reloading scripts as we might have added and removed during this run
-        $json         = new JsonFile(Factory::getComposerFile());
+        $json = new JsonFile(Factory::getComposerFile());
         $jsonContents = $json->read();
 
         if (! isset($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS])) {
@@ -714,10 +716,10 @@ class Automatic implements EventSubscriberInterface, PluginInterface
      */
     public function onPreDependenciesSolving(InstallerEvent $event): void
     {
-        $listed   = [];
+        $listed = [];
         $packages = [];
-        $pool     = $event->getPool();
-        $pool     = \Closure::bind(function () {
+        $pool = $event->getPool();
+        $pool = \Closure::bind(function () {
             foreach ($this->providerRepos as $k => $repo) {
                 $this->providerRepos[$k] = new class($repo) extends BaseComposerRepository {
                     /**
@@ -764,7 +766,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             }
 
             $listed[$job['packageName']] = true;
-            $packages[]                  = [$job['packageName'], $job['constraint']];
+            $packages[] = [$job['packageName'], $job['constraint']];
         }
 
         $loadExtraRepos = ! (new \ReflectionMethod(Pool::class, 'match'))->isPublic(); // Detect Composer < 1.7.3
@@ -781,7 +783,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
                     }
 
                     $listed[$link->getTarget()] = true;
-                    $packages[]                 = [$link->getTarget(), $link->getConstraint()];
+                    $packages[] = [$link->getTarget(), $link->getConstraint()];
                 }
             }
         });
@@ -878,11 +880,11 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     private function updateComposerLock(): void
     {
         $composerLockPath = Util::getComposerLockFile();
-        $composerJson     = \file_get_contents(Factory::getComposerFile());
-        $composer         = $this->container->get(Composer::class);
+        $composerJson = \file_get_contents(Factory::getComposerFile());
+        $composer = $this->container->get(Composer::class);
 
         $lockFile = new JsonFile($composerLockPath, null, $this->container->get(IOInterface::class));
-        $locker   = new Locker(
+        $locker = new Locker(
             $this->container->get(IOInterface::class),
             $lockFile,
             $composer->getRepositoryManager(),
@@ -890,8 +892,8 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             (string) $composerJson
         );
 
-        $lockData                  = $locker->getLockData();
-        $lockData['content-hash']  = Locker::getContentHash((string) $composerJson);
+        $lockData = $locker->getLockData();
+        $lockData['content-hash'] = Locker::getContentHash((string) $composerJson);
 
         $lockFile->write($lockData);
     }
@@ -1027,7 +1029,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
             /** @var \Symfony\Component\Console\Input\InputInterface $input */
             $input = $trace['args'][0];
-            $app   = $trace['object'];
+            $app = $trace['object'];
 
             try {
                 /** @var null|string $command */

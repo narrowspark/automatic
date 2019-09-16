@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Prefetcher;
 
 use Closure;
@@ -82,10 +84,10 @@ class Prefetcher
     /** @var array */
     private static $repoReadingCommands = [
         'create-project' => true,
-        'outdated'       => true,
-        'require'        => true,
-        'update'         => true,
-        'install'        => true,
+        'outdated' => true,
+        'require' => true,
+        'update' => true,
+        'install' => true,
     ];
 
     /**
@@ -98,13 +100,13 @@ class Prefetcher
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input, ParallelDownloader $rfs)
     {
-        $this->composer       = $composer;
-        $this->io             = $io;
-        $this->input          = $input;
-        $this->config         = $composer->getConfig();
+        $this->composer = $composer;
+        $this->io = $io;
+        $this->input = $input;
+        $this->config = $composer->getConfig();
         $this->fileDownloader = $composer->getDownloadManager()->getDownloader('file');
-        $this->rfs            = $rfs;
-        $this->cacheFilesDir  = \rtrim($this->config->get('cache-files-dir'), '\/');
+        $this->rfs = $rfs;
+        $this->cacheFilesDir = \rtrim($this->config->get('cache-files-dir'), '\/');
     }
 
     /**
@@ -115,7 +117,7 @@ class Prefetcher
     public function populateRepoCacheDir(): void
     {
         $this->populateRepoCacheDir = __CLASS__ === self::class;
-        $pluginManager              = $this->composer->getPluginManager();
+        $pluginManager = $this->composer->getPluginManager();
 
         if ($pluginManager instanceof PluginManager) {
             foreach ($pluginManager->getPlugins() as $plugin) {

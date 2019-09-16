@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic;
 
 use Composer\Composer;
@@ -73,7 +75,7 @@ final class Container implements ContainerContract
                     [
                         Automatic::COMPOSER_EXTRA_KEY => [
                             'allow-auto-install' => false,
-                            'dont-discover'      => [],
+                            'dont-discover' => [],
                         ],
                     ],
                     $container->get(Composer::class)->getPackage()->getExtra()

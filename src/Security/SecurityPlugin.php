@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Security;
 
 use Composer\Composer;
@@ -84,10 +86,10 @@ final class SecurityPlugin implements Capable, EventSubscriberInterface, PluginI
         }
 
         return [
-            PackageEvents::POST_PACKAGE_INSTALL     => [['auditPackage', ~\PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_UPDATE      => [['auditPackage', ~\PHP_INT_MAX]],
-            ComposerScriptEvents::POST_INSTALL_CMD  => [['auditComposerLock', \PHP_INT_MAX]],
-            ComposerScriptEvents::POST_UPDATE_CMD   => [['auditComposerLock', \PHP_INT_MAX], ['onPostUpdatePostMessages', ~\PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_INSTALL => [['auditPackage', ~\PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_UPDATE => [['auditPackage', ~\PHP_INT_MAX]],
+            ComposerScriptEvents::POST_INSTALL_CMD => [['auditComposerLock', \PHP_INT_MAX]],
+            ComposerScriptEvents::POST_UPDATE_CMD => [['auditComposerLock', \PHP_INT_MAX], ['onPostUpdatePostMessages', ~\PHP_INT_MAX]],
         ];
     }
 
@@ -114,7 +116,7 @@ final class SecurityPlugin implements Capable, EventSubscriberInterface, PluginI
         }
 
         $this->composer = $composer;
-        $this->io       = $io;
+        $this->io = $io;
 
         if (\extension_loaded('curl')) {
             $downloader = new CurlDownloader();

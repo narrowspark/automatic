@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Security\Test;
 
 use Narrowspark\Automatic\Security\Command\AuditCommand;
@@ -8,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class CommandProviderTest extends TestCase
 {
@@ -17,6 +21,6 @@ final class CommandProviderTest extends TestCase
 
         $commands = $provider->getCommands();
 
-        $this->assertInstanceOf(AuditCommand::class, $commands[0]);
+        self::assertInstanceOf(AuditCommand::class, $commands[0]);
     }
 }

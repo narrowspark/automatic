@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Prefetcher;
 
 use Composer\IO\IOInterface;
@@ -10,6 +12,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class ParallelDownloaderTest extends MockeryTestCase
 {
@@ -43,14 +47,14 @@ final class ParallelDownloaderTest extends MockeryTestCase
         $options = $this->parallelDownloader->getOptions();
 
         // reset to default after call
-        $this->assertCount(1, $this->parallelDownloader->getOptions());
+        self::assertCount(1, $this->parallelDownloader->getOptions());
 
-        $this->assertArrayHasKey('ssl', $options);
-        $this->assertCount(2, $options);
+        self::assertArrayHasKey('ssl', $options);
+        self::assertCount(2, $options);
     }
 
     public function testGetLastHeaders(): void
     {
-        $this->assertNull($this->parallelDownloader->getLastHeaders());
+        self::assertNull($this->parallelDownloader->getLastHeaders());
     }
 }

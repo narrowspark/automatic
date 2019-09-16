@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\Config;
@@ -26,7 +28,7 @@ final class TruncatedComposerRepository extends BaseComposerRepository
         IOInterface $io,
         Config $config,
         EventDispatcher $eventDispatcher = null,
-        RemoteFilesystem $rfs            = null
+        RemoteFilesystem $rfs = null
     ) {
         parent::__construct($repoConfig, $io, $config, $eventDispatcher, $rfs);
 

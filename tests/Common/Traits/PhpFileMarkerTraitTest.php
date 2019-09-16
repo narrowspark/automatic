@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\Test\Traits;
 
 use Narrowspark\Automatic\Common\Traits\PhpFileMarkerTrait;
@@ -7,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class PhpFileMarkerTraitTest extends TestCase
 {
@@ -33,14 +37,14 @@ final class PhpFileMarkerTraitTest extends TestCase
     {
         \file_put_contents($this->path, '<?php' . \PHP_EOL . \PHP_EOL . '$array = [' . \PHP_EOL . '/** > marked **/ \'test\' /** < marked **/' . \PHP_EOL . '];' . \PHP_EOL);
 
-        $this->assertFalse($this->isFileMarked('test', $this->path));
-        $this->assertTrue($this->isFileMarked('marked', $this->path));
+        self::assertFalse($this->isFileMarked('test', $this->path));
+        self::assertTrue($this->isFileMarked('marked', $this->path));
     }
 
     public function testMarkData(): void
     {
         \file_put_contents($this->path, $this->markData('test', '$arr = [];', 4));
 
-        $this->assertTrue($this->isFileMarked('test', $this->path));
+        self::assertTrue($this->isFileMarked('test', $this->path));
     }
 }

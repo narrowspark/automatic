@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\Installer;
 
 use Composer\Composer;
@@ -109,14 +111,14 @@ abstract class AbstractInstallationManager
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input)
     {
-        $this->composer       = $composer;
-        $this->io             = $io;
-        $this->input          = $input;
-        $this->jsonFile       = new JsonFile(Factory::getComposerFile());
+        $this->composer = $composer;
+        $this->io = $io;
+        $this->input = $input;
+        $this->jsonFile = new JsonFile(Factory::getComposerFile());
         $this->composerBackup = (string) \file_get_contents($this->jsonFile->getPath());
 
         $this->rootPackage = $this->composer->getPackage();
-        $this->stability   = $this->rootPackage->getMinimumStability() ?: 'stable';
+        $this->stability = $this->rootPackage->getMinimumStability() ?: 'stable';
 
         $pool = new Pool($this->stability);
         $pool->addRepository(
@@ -201,7 +203,7 @@ abstract class AbstractInstallationManager
 
         if ($type === self::ADD) {
             $jsonManipulator = new JsonManipulator(\file_get_contents($this->jsonFile->getPath()));
-            $sortPackages    = $this->composer->getConfig()->get('sort-packages') ?? false;
+            $sortPackages = $this->composer->getConfig()->get('sort-packages') ?? false;
 
             foreach ($requires as $name => $version) {
                 $jsonManipulator->addLink('require', $name, $version, $sortPackages);

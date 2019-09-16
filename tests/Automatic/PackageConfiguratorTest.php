@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
@@ -10,6 +12,8 @@ use Narrowspark\Automatic\Test\Fixture\MockConfigurator;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class PackageConfiguratorTest extends AbstractConfiguratorTest
 {

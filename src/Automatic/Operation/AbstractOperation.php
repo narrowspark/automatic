@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Operation;
 
 use Composer\IO\IOInterface;
@@ -73,12 +75,12 @@ abstract class AbstractOperation implements OperationContract
         PackageConfiguratorContract $packageConfigurator,
         ClassFinder $classFinder
     ) {
-        $this->vendorDir           = $vendorDir;
-        $this->lock                = $lock;
-        $this->io                  = $io;
-        $this->configurator        = $configurator;
+        $this->vendorDir = $vendorDir;
+        $this->lock = $lock;
+        $this->io = $io;
+        $this->configurator = $configurator;
         $this->packageConfigurator = $packageConfigurator;
-        $this->classFinder         = $classFinder;
+        $this->classFinder = $classFinder;
     }
 
     /**
@@ -150,7 +152,7 @@ abstract class AbstractOperation implements OperationContract
     protected function findClassesInAutomaticFolder(PackageContract $package, string $name): array
     {
         $composerAutoload = $package->getAutoload();
-        $classes          = [];
+        $classes = [];
 
         if (\count($composerAutoload) !== 0) {
             $classes = $this->classFinder->setComposerAutoload($name, $composerAutoload)

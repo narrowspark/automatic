@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Configurator;
 
 use Composer\Composer;
@@ -15,6 +17,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 {
@@ -42,11 +46,11 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->jsonMock            = $this->mock(JsonFile::class);
+        $this->jsonMock = $this->mock(JsonFile::class);
         $this->jsonManipulatorMock = $this->mock(JsonManipulator::class);
 
         $this->composer = new Composer();
-        $this->ioMock   = $this->mock(IOInterface::class);
+        $this->ioMock = $this->mock(IOInterface::class);
 
         $this->configurator = new ComposerAutoScriptsConfigurator($this->composer, $this->ioMock, ['self-dir' => 'test']);
 
@@ -61,13 +65,13 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        $this->assertSame('composer-auto-scripts', ComposerAutoScriptsConfigurator::getName());
+        self::assertSame('composer-auto-scripts', ComposerAutoScriptsConfigurator::getName());
     }
 
     public function testConfigure(): void
     {
         $composerRootJsonString = ComposerJsonFactory::createComposerScriptJson('configure', ['auto-scripts' => []]);
-        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+        $composerRootJsonData = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
         $script = ['php -v' => 'script'];
 
@@ -103,7 +107,7 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
     public function testUnconfigure(): void
     {
         $composerRootJsonString = ComposerJsonFactory::createComposerScriptJson('unconfigure', ['auto-scripts' => ['php -v' => 'script', 'list' => 'cerebro-cmd']]);
-        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+        $composerRootJsonData = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
         $packageMock = $this->mock(PackageContract::class);
         $packageMock->shouldReceive('getConfig')

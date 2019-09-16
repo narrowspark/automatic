@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic;
 
 use Composer\IO\IOInterface;
@@ -62,11 +64,11 @@ final class SkeletonGenerator
         string $vendorPath,
         array $options
     ) {
-        $this->io                   = $io;
-        $this->installationManager  = $installationManager;
-        $this->lock                 = $lock;
-        $this->options              = $options;
-        $this->vendorPath           = $vendorPath;
+        $this->io = $io;
+        $this->installationManager = $installationManager;
+        $this->lock = $lock;
+        $this->options = $options;
+        $this->vendorPath = $vendorPath;
     }
 
     /**
@@ -80,7 +82,7 @@ final class SkeletonGenerator
     {
         $generators = $this->prepareGenerators();
 
-        $generatorTypes       = [];
+        $generatorTypes = [];
         $defaultGeneratorType = null;
 
         /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $generator */

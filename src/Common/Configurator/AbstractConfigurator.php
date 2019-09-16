@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\Configurator;
 
 use Composer\Composer;
@@ -57,10 +59,10 @@ abstract class AbstractConfigurator implements ConfiguratorContract
      */
     public function __construct(Composer $composer, IOInterface $io, array $options = [])
     {
-        $this->composer   = $composer;
-        $this->io         = $io;
-        $this->options    = $options;
-        $this->path       = new Path($options['root-dir'] ?? getcwd());
+        $this->composer = $composer;
+        $this->io = $io;
+        $this->options = $options;
+        $this->path = new Path($options['root-dir'] ?? getcwd());
         $this->filesystem = new Filesystem();
     }
 

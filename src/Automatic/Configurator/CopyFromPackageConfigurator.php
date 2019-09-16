@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Configurator;
 
 use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
@@ -26,7 +28,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
 
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $from => $to) {
             $target = self::expandTargetDir($this->options, $to);
-            $from   = $this->path->concatenate([
+            $from = $this->path->concatenate([
                 $this->composer->getConfig()->get('vendor-dir') . \DIRECTORY_SEPARATOR,
                 \str_replace('/', \DIRECTORY_SEPARATOR, $package->getPrettyName()) . \DIRECTORY_SEPARATOR,
                 $from,

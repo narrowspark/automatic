@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Configurator;
 
 use Composer\Composer;
@@ -17,6 +19,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 {
@@ -44,11 +48,11 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->jsonMock            = $this->mock(JsonFile::class);
+        $this->jsonMock = $this->mock(JsonFile::class);
         $this->jsonManipulatorMock = $this->mock(JsonManipulator::class);
 
         $this->composer = new Composer();
-        $this->ioMock   = $this->mock(IOInterface::class);
+        $this->ioMock = $this->mock(IOInterface::class);
 
         $this->configurator = new ComposerScriptsConfigurator($this->composer, $this->ioMock, ['self-dir' => 'test']);
 
@@ -63,13 +67,13 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
     public function testGetName(): void
     {
-        $this->assertSame('composer-scripts', ComposerScriptsConfigurator::getName());
+        self::assertSame('composer-scripts', ComposerScriptsConfigurator::getName());
     }
 
     public function testConfigure(): void
     {
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub');
-        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+        $composerRootJsonData = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
         $package = new Package('Stub/stub', '1.0.0');
         $package->setConfig([
@@ -120,7 +124,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
         $oldWhitelist = [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::WHITELIST => ['stub/stub']]];
 
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $oldWhitelist);
-        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+        $composerRootJsonData = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
         $package = new Package('Stub/stub', '1.0.0');
         $package->setConfig([
@@ -170,7 +174,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
         $blackList = [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::BLACKLIST => ['stub/stub']]];
 
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $blackList);
-        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+        $composerRootJsonData = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
         $package = new Package('Stub/stub', '1.0.0');
         $package->setConfig([
@@ -193,14 +197,14 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
     public function testConfigureNotAllowedScripts(): void
     {
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub');
-        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+        $composerRootJsonData = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
         $package = new Package('Stub/stub', '1.0.0');
         $package->setConfig([
             ConfiguratorContract::TYPE => [
                 ComposerScriptsConfigurator::getName() => [
                     'post-autoload-dump' => ['Foo\\Bar'],
-                    'notallowed'         => 'foo',
+                    'notallowed' => 'foo',
                 ],
             ],
         ]);
@@ -265,7 +269,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ConfiguratorContract::TYPE => [
                 ComposerScriptsConfigurator::getName() => [
                     'post-autoload-dump' => ['Foo\\Bar'],
-                    'notallowed'         => 'foo',
+                    'notallowed' => 'foo',
                 ],
             ],
         ]);
@@ -273,7 +277,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
         $whitelist = [ComposerScriptsConfigurator::COMPOSER_EXTRA_KEY => [ComposerScriptsConfigurator::WHITELIST => [$package->getName()]]];
 
         $composerRootJsonString = ComposerJsonFactory::createAutomaticComposerJson('stub/stub', [], [], $whitelist);
-        $composerRootJsonData   = ComposerJsonFactory::jsonToArray($composerRootJsonString);
+        $composerRootJsonData = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
         $this->jsonMock->shouldReceive('read')
             ->andReturn($composerRootJsonData);

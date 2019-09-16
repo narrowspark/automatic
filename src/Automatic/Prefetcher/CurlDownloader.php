@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\Downloader\TransportException;
@@ -48,12 +50,12 @@ final class CurlDownloader
      */
     private static $options = [
         'http' => [
-            'method'  => \CURLOPT_CUSTOMREQUEST,
+            'method' => \CURLOPT_CUSTOMREQUEST,
             'content' => \CURLOPT_POSTFIELDS,
         ],
         'ssl' => [
-            'cafile'  => \CURLOPT_CAINFO,
-            'capath'  => \CURLOPT_CAPATH,
+            'cafile' => \CURLOPT_CAINFO,
+            'capath' => \CURLOPT_CAPATH,
         ],
     ];
 
@@ -63,12 +65,12 @@ final class CurlDownloader
      * @var array
      */
     private static $timeInfo = [
-        'total_time'         => true,
-        'namelookup_time'    => true,
-        'connect_time'       => true,
-        'pretransfer_time'   => true,
+        'total_time' => true,
+        'namelookup_time' => true,
+        'connect_time' => true,
+        'pretransfer_time' => true,
         'starttransfer_time' => true,
-        'redirect_time'      => true,
+        'redirect_time' => true,
     ];
 
     /**
@@ -94,17 +96,17 @@ final class CurlDownloader
     /**
      * Download the package content.
      *
-     * @param string      $url
-     * @param resource    $context
-     * @param null|string $file
+     * @param string          $url
+     * @param resource|string $context
+     * @param null|string     $file
      *
      * @return array
      */
     public function get(string $url, $context, ?string $file): array
     {
         $params = \stream_context_get_params($context);
-        $ch     = \curl_init();
-        $hd     = \fopen('php://temp/maxmemory:32768', 'w+b');
+        $ch = \curl_init();
+        $hd = \fopen('php://temp/maxmemory:32768', 'w+b');
 
         if ($file && ! $fd = @\fopen($file . '~', 'w+b')) {
             $file = null;
@@ -146,10 +148,10 @@ final class CurlDownloader
 
         $this->jobs[(int) $ch] = [
             'progress' => $progress,
-            'ch'       => $ch,
+            'ch' => $ch,
             'callback' => $params['notification'],
-            'file'     => $file,
-            'fd'       => $fd,
+            'file' => $file,
+            'fd' => $fd,
         ];
 
         \curl_multi_add_handle($this->multiHandle, $ch);
@@ -169,7 +171,7 @@ final class CurlDownloader
                     }
 
                     $progress = \array_diff_key(\curl_getinfo($h), self::$timeInfo);
-                    $job      = $this->jobs[$i];
+                    $job = $this->jobs[$i];
 
                     unset($this->jobs[$i]);
 
@@ -196,11 +198,11 @@ final class CurlDownloader
                         continue;
                     }
 
-                    $h        = $this->jobs[$i]['ch'];
+                    $h = $this->jobs[$i]['ch'];
                     $progress = \array_diff_key(\curl_getinfo($h), self::$timeInfo);
 
                     if ($this->jobs[$i]['progress'] !== $progress) {
-                        $previousProgress           = $this->jobs[$i]['progress'];
+                        $previousProgress = $this->jobs[$i]['progress'];
                         $this->jobs[$i]['progress'] = $progress;
 
                         try {

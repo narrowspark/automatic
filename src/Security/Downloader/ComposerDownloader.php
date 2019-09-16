@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Security\Downloader;
 
 use Composer\CaBundle\CaBundle;
@@ -15,12 +17,12 @@ final class ComposerDownloader extends AbstractDownloader
     {
         $opts = [
             'http' => [
-                'method'          => 'GET',
-                'ignore_errors'   => true,
+                'method' => 'GET',
+                'ignore_errors' => true,
                 'follow_location' => true,
-                'max_redirects'   => 3,
-                'timeout'         => $this->timeout,
-                'user_agent'      => $this->getUserAgent(),
+                'max_redirects' => 3,
+                'timeout' => $this->timeout,
+                'user_agent' => $this->getUserAgent(),
             ],
             'ssl' => [
                 'verify_peer' => 1,
@@ -37,8 +39,8 @@ final class ComposerDownloader extends AbstractDownloader
         }
 
         $context = StreamContextFactory::getContext($url, $opts);
-        $level   = \error_reporting(0);
-        $body    = \file_get_contents($url, false, $context);
+        $level = \error_reporting(0);
+        $body = \file_get_contents($url, false, $context);
 
         \error_reporting($level);
 

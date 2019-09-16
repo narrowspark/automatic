@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Composer\Composer;
@@ -44,6 +46,8 @@ use Symfony\Component\Console\Input\ArrayInput;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class AutomaticTest extends MockeryTestCase
 {
@@ -98,11 +102,11 @@ final class AutomaticTest extends MockeryTestCase
     {
         NSA::setProperty($this->automatic, 'activated', true);
 
-        $this->assertCount(15, Automatic::getSubscribedEvents());
+        self::assertCount(15, Automatic::getSubscribedEvents());
 
         NSA::setProperty($this->automatic, 'activated', false);
 
-        $this->assertCount(0, Automatic::getSubscribedEvents());
+        self::assertCount(0, Automatic::getSubscribedEvents());
     }
 
     public function testActivate(): void
@@ -185,7 +189,7 @@ final class AutomaticTest extends MockeryTestCase
 
         $this->automatic->activate($this->composerMock, $this->ioMock);
 
-        $this->assertSame(
+        self::assertSame(
             [
                 'This file locks the automatic information of your project to a known state',
                 'This file is @generated automatically',
@@ -193,7 +197,7 @@ final class AutomaticTest extends MockeryTestCase
             $this->automatic->getContainer()->get(Lock::class)->get('@readme')
         );
 
-        $this->assertInstanceOf(
+        self::assertInstanceOf(
             NarrowsparkInstallationManager::class,
             $this->automatic->getContainer()->get(NarrowsparkInstallationManager::class)
         );
@@ -570,7 +574,7 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testGetAutomaticLockFile(): void
     {
-        $this->assertSame('./automatic.lock', Automatic::getAutomaticLockFile());
+        self::assertSame('./automatic.lock', Automatic::getAutomaticLockFile());
     }
 
     public function testOnPostUninstall(): void
@@ -583,10 +587,10 @@ final class AutomaticTest extends MockeryTestCase
             ->once()
             ->andReturn(true);
 
-        $filePath     = __DIR__ . \DIRECTORY_SEPARATOR . 'composer_uninstall.json';
+        $filePath = __DIR__ . \DIRECTORY_SEPARATOR . 'composer_uninstall.json';
         $lockfilePath = \mb_substr($filePath, 0, -4) . 'lock';
 
-        $scripts  = [
+        $scripts = [
             ComposerScriptEvents::POST_INSTALL_CMD => [
                 '@' . ScriptEvents::AUTO_SCRIPTS,
             ],
@@ -638,9 +642,9 @@ final class AutomaticTest extends MockeryTestCase
 
         $jsonData = \json_decode(\file_get_contents($filePath), true);
 
-        $this->assertArrayHasKey('test', $jsonData['scripts']);
-        $this->assertCount(0, $jsonData['scripts'][ComposerScriptEvents::POST_INSTALL_CMD]);
-        $this->assertCount(0, $jsonData['scripts'][ComposerScriptEvents::POST_INSTALL_CMD]);
+        self::assertArrayHasKey('test', $jsonData['scripts']);
+        self::assertCount(0, $jsonData['scripts'][ComposerScriptEvents::POST_INSTALL_CMD]);
+        self::assertCount(0, $jsonData['scripts'][ComposerScriptEvents::POST_INSTALL_CMD]);
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -707,15 +711,15 @@ final class AutomaticTest extends MockeryTestCase
 
         $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
 
-        $this->assertTrue(isset($jsonContent['scripts']));
-        $this->assertTrue(isset($jsonContent['scripts']['post-install-cmd']));
-        $this->assertTrue(isset($jsonContent['scripts']['post-update-cmd']));
-        $this->assertSame('@' . ScriptEvents::AUTO_SCRIPTS, $jsonContent['scripts']['post-install-cmd'][0]);
-        $this->assertSame('@' . ScriptEvents::AUTO_SCRIPTS, $jsonContent['scripts']['post-update-cmd'][0]);
+        self::assertTrue(isset($jsonContent['scripts']));
+        self::assertTrue(isset($jsonContent['scripts']['post-install-cmd']));
+        self::assertTrue(isset($jsonContent['scripts']['post-update-cmd']));
+        self::assertSame('@' . ScriptEvents::AUTO_SCRIPTS, $jsonContent['scripts']['post-install-cmd'][0]);
+        self::assertSame('@' . ScriptEvents::AUTO_SCRIPTS, $jsonContent['scripts']['post-update-cmd'][0]);
 
         $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
 
-        $this->assertIsString($lockContent['content-hash']);
+        self::assertIsString($lockContent['content-hash']);
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -757,10 +761,10 @@ final class AutomaticTest extends MockeryTestCase
         $composerLockPath = \mb_substr($composerJsonPath, 0, -4) . 'lock';
 
         \file_put_contents($composerJsonPath, \json_encode([
-            'name'        => 'narrowspark/narrowspark',
-            'type'        => 'project',
+            'name' => 'narrowspark/narrowspark',
+            'type' => 'project',
             'description' => 'A skeleton to start a new Narrowspark project.',
-            'license'     => 'MIT',
+            'license' => 'MIT',
         ]));
         \file_put_contents($composerLockPath, \json_encode(['packages' => []]));
 
@@ -778,17 +782,17 @@ final class AutomaticTest extends MockeryTestCase
 
         $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
 
-        $this->assertFalse(isset($jsonContent['name']));
-        $this->assertFalse(isset($jsonContent['description']));
-        $this->assertFalse(isset($jsonContent['description']));
-        $this->assertSame('proprietary', $jsonContent['license']);
-        $this->assertTrue(isset($jsonContent['extra']));
-        $this->assertTrue(isset($jsonContent['extra']['test']));
-        $this->assertSame('foo', $jsonContent['extra']['test']);
+        self::assertFalse(isset($jsonContent['name']));
+        self::assertFalse(isset($jsonContent['description']));
+        self::assertFalse(isset($jsonContent['description']));
+        self::assertSame('proprietary', $jsonContent['license']);
+        self::assertTrue(isset($jsonContent['extra']));
+        self::assertTrue(isset($jsonContent['extra']['test']));
+        self::assertSame('foo', $jsonContent['extra']['test']);
 
         $lockContent = \json_decode(\file_get_contents($composerLockPath), true);
 
-        $this->assertIsString($lockContent['content-hash']);
+        self::assertIsString($lockContent['content-hash']);
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -820,7 +824,7 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testOnPostAutoloadDump(): void
     {
-        $containerMock    = $this->mock(ContainerContract::class);
+        $containerMock = $this->mock(ContainerContract::class);
         $configuratorMock = $this->mock(ConfiguratorContract::class);
 
         NSA::setProperty($this->automatic, 'configuratorsLoaded', false);
@@ -869,7 +873,7 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testOnPostAutoloadDumpWithReset(): void
     {
-        $containerMock    = $this->mock(ContainerContract::class);
+        $containerMock = $this->mock(ContainerContract::class);
         $configuratorMock = $this->mock(ConfiguratorContract::class);
         $configuratorMock->shouldReceive('reset')
             ->once();

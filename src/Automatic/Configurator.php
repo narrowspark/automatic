@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic;
 
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
@@ -18,10 +20,10 @@ final class Configurator extends AbstractConfigurator
      */
     protected $configurators = [
         'composer-auto-scripts' => ComposerAutoScriptsConfigurator::class,
-        'composer-scripts'      => ComposerScriptsConfigurator::class,
-        'copy'                  => CopyFromPackageConfigurator::class,
-        'env'                   => EnvConfigurator::class,
-        'gitignore'             => GitIgnoreConfigurator::class,
+        'composer-scripts' => ComposerScriptsConfigurator::class,
+        'copy' => CopyFromPackageConfigurator::class,
+        'env' => EnvConfigurator::class,
+        'gitignore' => GitIgnoreConfigurator::class,
     ];
 
     /**
@@ -38,12 +40,12 @@ final class Configurator extends AbstractConfigurator
     {
         $this->configurators = [
             'composer-auto-scripts' => ComposerAutoScriptsConfigurator::class,
-            'composer-scripts'      => ComposerScriptsConfigurator::class,
-            'copy'                  => CopyFromPackageConfigurator::class,
-            'env'                   => EnvConfigurator::class,
-            'gitignore'             => GitIgnoreConfigurator::class,
+            'composer-scripts' => ComposerScriptsConfigurator::class,
+            'copy' => CopyFromPackageConfigurator::class,
+            'env' => EnvConfigurator::class,
+            'gitignore' => GitIgnoreConfigurator::class,
         ];
-        $this->cache         = [];
+        $this->cache = [];
     }
 
     /**

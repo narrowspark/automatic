@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Security\Downloader;
 
 use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;

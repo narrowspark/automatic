@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\Test;
 
 use Composer\Composer;
@@ -9,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class PhpScriptExtenderTest extends TestCase
 {
@@ -27,16 +31,16 @@ final class PhpScriptExtenderTest extends TestCase
 
     public function testGetType(): void
     {
-        $this->assertSame('php-script', PhpScriptExtender::getType());
+        self::assertSame('php-script', PhpScriptExtender::getType());
     }
 
     public function testExpand(): void
     {
         $output = $this->extender->expand('echo "hallo";');
 
-        $this->assertStringContainsString('php', $output);
-        $this->assertStringContainsString('php.ini', $output);
-        $this->assertStringContainsString('echo "hallo";', $output);
+        self::assertStringContainsString('php', $output);
+        self::assertStringContainsString('php.ini', $output);
+        self::assertStringContainsString('echo "hallo";', $output);
     }
 
     public function testExpandWithIniLoad(): void
@@ -47,8 +51,8 @@ final class PhpScriptExtenderTest extends TestCase
 
         $output = $this->extender->expand('echo "hallo";');
 
-        $this->assertStringContainsString('php', $output);
-        $this->assertStringContainsString('php.ini', $output);
-        $this->assertStringContainsString('echo "hallo";', $output);
+        self::assertStringContainsString('php', $output);
+        self::assertStringContainsString('php.ini', $output);
+        self::assertStringContainsString('echo "hallo";', $output);
     }
 }

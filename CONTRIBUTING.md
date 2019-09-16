@@ -55,7 +55,7 @@ Please do not take offense if your ticket is closed. We're only trying to keep t
 
 ### Filling bugs
 
-If you found an error, typo, or any other flaw in the project, please report it using [GitHub Issues](https://github.com/narrowspark/framework/issues). Try searching the issues to see if there is an existing report of your bug, and if you'd find it, you could bump it by adding your test case there.
+If you found an error, typo, or any other flaw in the project, please report it using [GitHub Issues](https://github.com/narrowspark/automatic/issues). Try searching the issues to see if there is an existing report of your bug, and if you'd find it, you could bump it by adding your test case there.
 
 When it comes to bugs, the more details you provide, the easier it is to reproduce the issue and the faster it could be fixed.
 

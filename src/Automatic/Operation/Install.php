@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Operation;
 
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -23,13 +25,14 @@ final class Install extends AbstractOperation
      */
     public function supports(OperationInterface $operation): bool
     {
-        /** @var \Composer\DependencyResolver\Operation\InstallOperation|\Composer\DependencyResolver\Operation\UpdateOperation $operation */
         if ($operation instanceof UpdateOperation) {
             $composerPackage = $operation->getTargetPackage();
         } else {
+            /** @var \Composer\DependencyResolver\Operation\InstallOperation $operation */
             $composerPackage = $operation->getPackage();
         }
 
+        /** @var OperationInterface $operation */
         return ($operation instanceof UpdateOperation || $operation instanceof InstallOperation)
             && (\file_exists($this->getAutomaticFilePath($composerPackage)) || isset($composerPackage->getExtra()['automatic']));
     }
@@ -42,7 +45,7 @@ final class Install extends AbstractOperation
         /** @var \Composer\DependencyResolver\Operation\InstallOperation|\Composer\DependencyResolver\Operation\UpdateOperation $operation */
         if ($operation instanceof UpdateOperation) {
             $composerPackage = $operation->getTargetPackage();
-            $package         = $this->createAutomaticPackage($composerPackage, $this->getAutomaticFilePath($composerPackage));
+            $package = $this->createAutomaticPackage($composerPackage, $this->getAutomaticFilePath($composerPackage));
             $package->setOperation(PackageContract::UPDATE_OPERATION);
 
             return $package;
@@ -97,7 +100,7 @@ final class Install extends AbstractOperation
     private function getPackageVersion(PackageInterface $package): string
     {
         $version = $package->getPrettyVersion();
-        $extra   = $package->getExtra();
+        $extra = $package->getExtra();
 
         if (isset($extra['branch-alias']) && \strpos($version, 'dev-') === 0) {
             $branchAliases = $extra['branch-alias'];
@@ -125,7 +128,7 @@ final class Install extends AbstractOperation
      */
     private function createAutomaticPackage(PackageInterface $composerPackage, string $automaticFile): PackageContract
     {
-        $package  = new Package($composerPackage->getName(), $this->getPackageVersion($composerPackage));
+        $package = new Package($composerPackage->getName(), $this->getPackageVersion($composerPackage));
         $requires = [];
 
         foreach ($composerPackage->getRequires() as $link) {
@@ -191,7 +194,7 @@ final class Install extends AbstractOperation
     private function addScriptExtenders(PackageContract $package, $classes, $name): void
     {
         if ($package->hasConfig(ScriptExecutor::TYPE) && \count($classes) !== 0) {
-            $extenders         = [];
+            $extenders = [];
             $notFoundExtenders = [];
 
             foreach ((array) $package->getConfig(ScriptExecutor::TYPE) as $extender) {

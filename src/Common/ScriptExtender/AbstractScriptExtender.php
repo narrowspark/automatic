@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\ScriptExtender;
 
 use Composer\Composer;
@@ -39,7 +41,7 @@ abstract class AbstractScriptExtender implements ScriptExtenderContract
     public function __construct(Composer $composer, IOInterface $io, array $options = [])
     {
         $this->composer = $composer;
-        $this->io       = $io;
-        $this->options  = $options;
+        $this->io = $io;
+        $this->options = $options;
     }
 }

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Fixture;
 
 final class ComposerJsonFactory
@@ -15,22 +17,22 @@ final class ComposerJsonFactory
      */
     public static function createComposerJson(
         string $name,
-        array $require    = [],
+        array $require = [],
         array $devRequire = [],
-        array $autoload   = [],
-        array $extra      = []
+        array $autoload = [],
+        array $extra = []
     ): string {
         $composerJsonContent = [
-            'name'    => $name,
+            'name' => $name,
             'authors' => [
                 [
-                    'name'  => 'Daniel Bannert',
+                    'name' => 'Daniel Bannert',
                     'email' => 'd.bannert@anolilab.de',
                 ],
             ],
-            'autoload'    => $autoload,
-            'require'     => $require,
-            'extra'       => $extra,
+            'autoload' => $autoload,
+            'require' => $require,
+            'extra' => $extra,
         ];
 
         if (\count($devRequire) !== 0) {
@@ -50,8 +52,8 @@ final class ComposerJsonFactory
      */
     public static function createAutomaticComposerJson(
         string $name,
-        array $require        = [],
-        array $devRequire     = [],
+        array $require = [],
+        array $devRequire = [],
         array $automaticExtra = []
     ): string {
         $extendedExtra = [
@@ -71,18 +73,18 @@ final class ComposerJsonFactory
     public static function createComposerPluginJson(string $name, array $require = [], array $autoload = []): string
     {
         $composerJsonContent = [
-            'name'        => $name,
+            'name' => $name,
             'pretty-name' => $name . '/' . $name,
-            'type'        => 'automatic-configurator',
+            'type' => 'automatic-configurator',
             'description' => 'plugin',
-            'authors'     => [
+            'authors' => [
                 [
-                    'name'  => 'Daniel Bannert',
+                    'name' => 'Daniel Bannert',
                     'email' => 'd.bannert@anolilab.de',
                 ],
             ],
-            'autoload'    => $autoload,
-            'require'     => $require,
+            'autoload' => $autoload,
+            'require' => $require,
         ];
 
         return self::arrayToJson($composerJsonContent);
@@ -97,13 +99,13 @@ final class ComposerJsonFactory
     public static function createComposerScriptJson(string $name, array $script = []): string
     {
         $composerJsonContent = [
-            'name'        => $name,
+            'name' => $name,
             'pretty-name' => $name . '/' . $name,
-            'type'        => 'automatic-configurator',
+            'type' => 'automatic-configurator',
             'description' => 'plugin',
-            'authors'     => [
+            'authors' => [
                 [
-                    'name'  => 'Daniel Bannert',
+                    'name' => 'Daniel Bannert',
                     'email' => 'd.bannert@anolilab.de',
                 ],
             ],
@@ -141,6 +143,6 @@ final class ComposerJsonFactory
      */
     public static function arrayToJson(array $jsonData): string
     {
-        return \json_encode($jsonData, \JSON_UNESCAPED_SLASHES|\JSON_PRETTY_PRINT|\JSON_UNESCAPED_UNICODE);
+        return \json_encode($jsonData, \JSON_UNESCAPED_SLASHES | \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE);
     }
 }

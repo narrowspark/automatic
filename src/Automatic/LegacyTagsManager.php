@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic;
 
 use Composer\IO\IOInterface;
@@ -40,7 +42,7 @@ final class LegacyTagsManager implements Resettable
      */
     public function __construct(IOInterface $io)
     {
-        $this->io            = $io;
+        $this->io = $io;
         $this->versionParser = new VersionParser();
     }
 
@@ -55,7 +57,7 @@ final class LegacyTagsManager implements Resettable
     public function addConstraint(string $name, string $require): void
     {
         $this->legacyTags[$name] = [
-            'version'   => $require,
+            'version' => $require,
             'constrain' => $this->versionParser->parseConstraints($require),
         ];
     }
@@ -94,7 +96,7 @@ final class LegacyTagsManager implements Resettable
         }
 
         $packagesReplace = [];
-        $packages        = [];
+        $packages = [];
 
         foreach ($this->legacyTags as $name => $legacy) {
             if (! isset($data['packages'][$name])) {
@@ -148,7 +150,7 @@ final class LegacyTagsManager implements Resettable
             }
 
             $parentName = $packagesReplace[$name];
-            $devMaster  = null;
+            $devMaster = null;
 
             if (isset($versions['dev-master'])) {
                 $devMaster = $versions['dev-master'];

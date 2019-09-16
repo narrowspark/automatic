@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic;
 
 use Composer\Composer;
@@ -49,8 +51,8 @@ abstract class AbstractConfigurator implements MainConfiguratorContract
     public function __construct(Composer $composer, IOInterface $io, array $options)
     {
         $this->composer = $composer;
-        $this->io       = $io;
-        $this->options  = $options;
+        $this->io = $io;
+        $this->options = $options;
     }
 
     /**

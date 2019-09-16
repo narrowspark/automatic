@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\Test;
 
 use Narrowspark\Automatic\Common\Path;
@@ -7,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class PathTest extends TestCase
 {
@@ -25,12 +29,12 @@ final class PathTest extends TestCase
 
     public function testGetWorkingDir(): void
     {
-        $this->assertSame(__DIR__, $this->path->getWorkingDir());
+        self::assertSame(__DIR__, $this->path->getWorkingDir());
     }
 
     public function testRelativize(): void
     {
-        $this->assertSame(
+        self::assertSame(
             '.' . \DIRECTORY_SEPARATOR,
             $this->path->relativize(__DIR__)
         );
@@ -38,7 +42,7 @@ final class PathTest extends TestCase
 
     public function testConcatenateOnWindows(): void
     {
-        $this->assertEquals(
+        self::assertEquals(
             'c:' . \DIRECTORY_SEPARATOR . 'my-project' . \DIRECTORY_SEPARATOR . 'src' . \DIRECTORY_SEPARATOR . 'kernel.php',
             $this->path->concatenate(['c:' . \DIRECTORY_SEPARATOR . 'my-project', 'src' . \DIRECTORY_SEPARATOR, 'kernel.php'])
         );
@@ -55,7 +59,7 @@ final class PathTest extends TestCase
     {
         $actualPath = $this->path->concatenate([$part1, $part2]);
 
-        $this->assertSame($expectedPath, $actualPath);
+        self::assertSame($expectedPath, $actualPath);
     }
 
     /**

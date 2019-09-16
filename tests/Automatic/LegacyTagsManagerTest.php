@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
@@ -8,6 +10,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class LegacyTagsManagerTest extends MockeryTestCase
 {
@@ -30,14 +34,14 @@ final class LegacyTagsManagerTest extends MockeryTestCase
         $pPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'Packagist';
 
         $this->downloadFileList = [
-            'cakephp$cakephp'              => $pPath . \DIRECTORY_SEPARATOR . 'provider-cakephp$cakephp.json',
-            'codeigniter$framework'        => $pPath . \DIRECTORY_SEPARATOR . 'provider-codeigniter$framework.json',
-            'symfony$security-guard'       => $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$security-guard.json',
-            'symfony$symfony'              => $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$symfony.json',
+            'cakephp$cakephp' => $pPath . \DIRECTORY_SEPARATOR . 'provider-cakephp$cakephp.json',
+            'codeigniter$framework' => $pPath . \DIRECTORY_SEPARATOR . 'provider-codeigniter$framework.json',
+            'symfony$security-guard' => $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$security-guard.json',
+            'symfony$symfony' => $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$symfony.json',
             'zendframework$zend-diactoros' => $pPath . \DIRECTORY_SEPARATOR . 'provider-zendframework$zend-diactoros.json',
         ];
 
-        $this->ioMock     = $this->mock(IOInterface::class);
+        $this->ioMock = $this->mock(IOInterface::class);
         $this->tagsManger = new LegacyTagsManager($this->ioMock);
     }
 
@@ -53,7 +57,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
             }
         }
 
-        $this->assertSame(2, $count);
+        self::assertSame(2, $count);
     }
 
     public function testReset(): void
@@ -69,12 +73,12 @@ final class LegacyTagsManagerTest extends MockeryTestCase
             }
         }
 
-        $this->assertSame(0, $count);
+        self::assertSame(0, $count);
     }
 
     public function testRemoveLegacyTagsWithoutDataPackages(): void
     {
-        $this->assertSame([], $this->tagsManger->removeLegacyTags([]));
+        self::assertSame([], $this->tagsManger->removeLegacyTags([]));
     }
 
     public function testRemoveLegacyTagsWithSymfony(): void
@@ -88,14 +92,14 @@ final class LegacyTagsManagerTest extends MockeryTestCase
 
         $data = $this->tagsManger->removeLegacyTags($originalData);
 
-        $this->assertNotSame($originalData['packages'], $data['packages']);
+        self::assertNotSame($originalData['packages'], $data['packages']);
     }
 
     public function testRemoveLegacyTagsSkipIfNoProviderFound(): void
     {
         $originalData = \json_decode(\file_get_contents($this->downloadFileList['codeigniter$framework']), true);
 
-        $this->assertSame($originalData, $this->tagsManger->removeLegacyTags($originalData));
+        self::assertSame($originalData, $this->tagsManger->removeLegacyTags($originalData));
     }
 
     public function testRemoveLegacyTagsWithCakePHP(): void
@@ -109,7 +113,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
 
         $data = $this->tagsManger->removeLegacyTags($originalData);
 
-        $this->assertNotSame($originalData['packages'], $data['packages']);
+        self::assertNotSame($originalData['packages'], $data['packages']);
     }
 
     /**
@@ -127,7 +131,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('writeError');
 
-        $this->assertSame(['packages' => $expected], $this->tagsManger->removeLegacyTags(['packages' => $packages]));
+        self::assertSame(['packages' => $expected], $this->tagsManger->removeLegacyTags(['packages' => $packages]));
     }
 
     /**
@@ -154,19 +158,19 @@ final class LegacyTagsManagerTest extends MockeryTestCase
             'symfony/symfony' => [
                 '3.3.0' => [
                     'version_normalized' => '3.3.0.0',
-                    'replace'            => ['symfony/foo' => 'self.version'],
+                    'replace' => ['symfony/foo' => 'self.version'],
                 ],
                 '3.4.0' => [
                     'version_normalized' => '3.4.0.0',
-                    'replace'            => ['symfony/foo' => 'self.version'],
+                    'replace' => ['symfony/foo' => 'self.version'],
                 ],
                 'dev-master' => $branchAlias('3.5') + [
                     'replace' => ['symfony/foo' => 'self.version'],
                 ],
             ],
             'symfony/foo' => [
-                '3.3.0'      => ['version_normalized' => '3.3.0.0'],
-                '3.4.0'      => ['version_normalized' => '3.4.0.0'],
+                '3.3.0' => ['version_normalized' => '3.3.0.0'],
+                '3.4.0' => ['version_normalized' => '3.4.0.0'],
                 'dev-master' => $branchAlias('3.5'),
             ],
         ];
@@ -189,14 +193,14 @@ final class LegacyTagsManagerTest extends MockeryTestCase
             'symfony/symfony' => [
                 '2.8.0' => [
                     'version_normalized' => '2.8.0.0',
-                    'replace'            => [
+                    'replace' => [
                         'symfony/legacy' => 'self.version',
-                        'symfony/foo'    => 'self.version',
+                        'symfony/foo' => 'self.version',
                     ],
                 ],
             ],
             'symfony/legacy' => [
-                '2.8.0'      => ['version_normalized' => '2.8.0.0'],
+                '2.8.0' => ['version_normalized' => '2.8.0.0'],
                 'dev-master' => $branchAlias('2.8'),
             ],
         ];
@@ -207,7 +211,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
             'symfony/symfony' => [
                 '2.8.0' => [
                     'version_normalized' => '2.8.0.0',
-                    'replace'            => [
+                    'replace' => [
                         'symfony/foo' => 'self.version',
                         'symfony/new' => 'self.version',
                     ],
@@ -220,7 +224,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
                 ],
             ],
             'symfony/foo' => [
-                '2.8.0'      => ['version_normalized' => '2.8.0.0'],
+                '2.8.0' => ['version_normalized' => '2.8.0.0'],
                 'dev-master' => $branchAlias('3.0'),
             ],
             'symfony/new' => [

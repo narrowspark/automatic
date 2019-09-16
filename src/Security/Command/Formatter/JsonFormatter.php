@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Security\Command\Formatter;
 
 use Narrowspark\Automatic\Security\Contract\Command\Formatter as FormatterContract;

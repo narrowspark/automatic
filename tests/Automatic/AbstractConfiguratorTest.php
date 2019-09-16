@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Composer\Composer;
@@ -30,19 +32,19 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
         parent::setUp();
 
         $this->composerMock = $this->mock(Composer::class);
-        $this->ioMock       = $this->mock(IOInterface::class);
+        $this->ioMock = $this->mock(IOInterface::class);
 
-        $configurator       = $this->getConfiguratorClass();
+        $configurator = $this->getConfiguratorClass();
         $this->configurator = new $configurator($this->composerMock, $this->ioMock, []);
     }
 
     public function testAdd(): void
     {
-        $this->assertFalse($this->configurator->has(MockConfigurator::getName()));
+        self::assertFalse($this->configurator->has(MockConfigurator::getName()));
 
         $this->configurator->add(MockConfigurator::getName(), MockConfigurator::class);
 
-        $this->assertTrue($this->configurator->has(MockConfigurator::getName()));
+        self::assertTrue($this->configurator->has(MockConfigurator::getName()));
     }
 
     public function testAddWithExistingConfiguratorName(): void
@@ -66,11 +68,11 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
     {
         $this->configurator->add(MockConfigurator::getName(), MockConfigurator::class);
 
-        $this->assertTrue($this->configurator->has(MockConfigurator::getName()));
+        self::assertTrue($this->configurator->has(MockConfigurator::getName()));
 
         $this->configurator->reset();
 
-        $this->assertFalse($this->configurator->has(MockConfigurator::getName()));
+        self::assertFalse($this->configurator->has(MockConfigurator::getName()));
     }
 
     /**

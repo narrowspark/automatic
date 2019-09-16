@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Security;
 
 use Composer\IO\IOInterface;
@@ -59,9 +61,9 @@ final class Audit
     public function __construct(string $composerVendorPath, DownloaderContract $downloader)
     {
         $this->composerVendorPath = $composerVendorPath;
-        $this->downloader         = $downloader;
-        $this->versionParser      = new VersionParser();
-        $this->filesystem         = new Filesystem();
+        $this->downloader = $downloader;
+        $this->versionParser = new VersionParser();
+        $this->filesystem = new Filesystem();
     }
 
     /**
@@ -117,8 +119,8 @@ final class Audit
         }
 
         $securityAdvisories = $this->getSecurityAdvisories();
-        $vulnerabilities    = [];
-        $messages           = [];
+        $vulnerabilities = [];
+        $messages = [];
 
         foreach ($packages as $package) {
             if (! isset($securityAdvisories[$package->getName()])) {
@@ -151,7 +153,7 @@ final class Audit
         }
 
         $securityAdvisoriesShaPath = $narrowsparkAutomaticPath . self::SECURITY_ADVISORIES_SHA;
-        $securityAdvisoriesPath    = $narrowsparkAutomaticPath . self::SECURITY_ADVISORIES;
+        $securityAdvisoriesPath = $narrowsparkAutomaticPath . self::SECURITY_ADVISORIES;
 
         if ($this->filesystem->exists($securityAdvisoriesShaPath)) {
             $oldSha = \file_get_contents($securityAdvisoriesShaPath);
@@ -190,7 +192,7 @@ final class Audit
 
             foreach ($contents[$key] as $package) {
                 $data = [
-                    'name'    => $package['name'],
+                    'name' => $package['name'],
                     'version' => $package['version'],
                 ];
 
@@ -218,7 +220,7 @@ final class Audit
     private function checkPackageAgainstSecurityAdvisories(
         array $securityAdvisories,
         Package $package,
-        array $messages        = [],
+        array $messages = [],
         array $vulnerabilities = []
     ): array {
         $name = $package->getName();
@@ -259,20 +261,20 @@ final class Audit
                     }
 
                     $affectedConstraint = new MultiConstraint($constraints);
-                    $affectedPackage    = $affectedConstraint->matches(new Constraint('==', $package->getVersion()));
+                    $affectedPackage = $affectedConstraint->matches(new Constraint('==', $package->getVersion()));
 
                     if ($affectedPackage) {
                         $composerPackage = \substr($advisoryData['reference'], 11);
 
                         $vulnerabilities[$composerPackage] = $vulnerabilities[$composerPackage] ?? [
-                            'version'    => $package->getPrettyVersion(),
+                            'version' => $package->getPrettyVersion(),
                             'advisories' => [],
                         ];
 
                         $vulnerabilities[$composerPackage]['advisories'][$key] = [
                             'title' => $advisoryData['title'] ?? '',
-                            'link'  => $advisoryData['link'] ?? '',
-                            'cve'   => $advisoryData['cve'] ?? '',
+                            'link' => $advisoryData['link'] ?? '',
+                            'cve' => $advisoryData['cve'] ?? '',
                         ];
                     }
                 }

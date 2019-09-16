@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Composer\Composer;
@@ -31,6 +33,8 @@ use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class ContainerTest extends MockeryTestCase
 {
@@ -44,7 +48,7 @@ final class ContainerTest extends MockeryTestCase
     {
         parent::setUpBeforeClass();
 
-        $composer   = new Composer();
+        $composer = new Composer();
         $configMock = \Mockery::mock(Config::class);
         $configMock->shouldReceive('get')
             ->with('vendor-dir')
@@ -92,9 +96,9 @@ final class ContainerTest extends MockeryTestCase
         $value = self::$staticContainer->get($key);
 
         if (\is_string($value) || \is_array($value)) {
-            $this->assertSame($expected, $value);
+            self::assertSame($expected, $value);
         } else {
-            $this->assertInstanceOf($expected, $value);
+            self::assertInstanceOf($expected, $value);
         }
     }
 
@@ -113,7 +117,7 @@ final class ContainerTest extends MockeryTestCase
                 [
                     Automatic::COMPOSER_EXTRA_KEY => [
                         'allow-auto-install' => false,
-                        'dont-discover'      => [],
+                        'dont-discover' => [],
                     ],
                 ],
             ],
@@ -144,17 +148,17 @@ final class ContainerTest extends MockeryTestCase
 
     public function testGetCache(): void
     {
-        $this->assertSame('/vendor', static::$staticContainer->get('vendor-dir'));
+        self::assertSame('/vendor', static::$staticContainer->get('vendor-dir'));
 
         static::$staticContainer->set('vendor-dir', static function () {
             return 'test';
         });
 
-        $this->assertNotSame('test', static::$staticContainer->get('vendor-dir'));
+        self::assertNotSame('test', static::$staticContainer->get('vendor-dir'));
     }
 
     public function testGetAll(): void
     {
-        $this->assertCount(19, static::$staticContainer->getAll());
+        self::assertCount(19, static::$staticContainer->getAll());
     }
 }

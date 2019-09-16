@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Traits;
 
 use Composer\Composer;
@@ -31,10 +33,10 @@ trait ArrangeComposerClasses
     protected function arrangeComposerClasses(): void
     {
         $this->composerMock = $this->mock(Composer::class);
-        $this->configMock   = $this->mock(Config::class);
-        $this->ioMock       = $this->mock(IOInterface::class);
-        $this->inputMock    = $this->mock(InputInterface::class);
-        $this->lockMock     = $this->mock(Lock::class);
+        $this->configMock = $this->mock(Config::class);
+        $this->ioMock = $this->mock(IOInterface::class);
+        $this->inputMock = $this->mock(InputInterface::class);
+        $this->lockMock = $this->mock(Lock::class);
     }
 
     protected function arrangePackagist(): void

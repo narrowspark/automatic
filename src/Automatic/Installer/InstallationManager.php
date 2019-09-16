@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Installer;
 
 use Composer\Factory;
@@ -33,7 +35,7 @@ class InstallationManager extends AbstractInstallationManager
             $rootPackages[\strtolower($link->getTarget())] = (string) $link->getConstraint();
         }
 
-        $requiresToInstall    = $this->preparePackagesToInstall($requires, $rootPackages);
+        $requiresToInstall = $this->preparePackagesToInstall($requires, $rootPackages);
         $devRequiresToInstall = $this->preparePackagesToInstall($devRequires, $rootPackages);
 
         if ((\count($requiresToInstall) + \count($devRequiresToInstall)) !== 0) {
@@ -59,7 +61,7 @@ class InstallationManager extends AbstractInstallationManager
      */
     public function uninstall(array $requires, array $devRequires = []): void
     {
-        $requires    = $this->preparePackagesToUninstall($requires);
+        $requires = $this->preparePackagesToUninstall($requires);
         $devRequires = $this->preparePackagesToUninstall($devRequires);
 
         $this->updateComposerJson($requires, $devRequires, self::REMOVE);
@@ -113,7 +115,7 @@ class InstallationManager extends AbstractInstallationManager
 
         foreach ($requires as $package) {
             $packageName = $package->getPrettyName();
-            $version     = $package->getPrettyVersion();
+            $version = $package->getPrettyVersion();
 
             // Package has been already prepared to be installed, skipping.
             // Package from this group has been found in root composer, skipping.
@@ -123,7 +125,7 @@ class InstallationManager extends AbstractInstallationManager
 
             // Check if package is currently installed, if so, use installed constraint.
             if (isset($toInstall[$packageName])) {
-                $version    = $toInstall[$packageName];
+                $version = $toInstall[$packageName];
                 $constraint = \strpos($version, 'dev') === false ? '^' . $version : $version;
 
                 $toInstall[$packageName] = $constraint;

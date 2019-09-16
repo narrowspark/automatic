@@ -1,11 +1,15 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test\Installer;
 
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class SkeletonInstallerTest extends AbstractInstallerTest
 {

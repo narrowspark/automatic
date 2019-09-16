@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Test;
 
 use Composer\Composer;
@@ -9,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class ScriptExtenderTest extends TestCase
 {
@@ -27,11 +31,11 @@ final class ScriptExtenderTest extends TestCase
 
     public function testGetType(): void
     {
-        $this->assertSame('script', ScriptExtender::getType());
+        self::assertSame('script', ScriptExtender::getType());
     }
 
     public function testExpand(): void
     {
-        $this->assertSame('php -v', $this->extender->expand('php -v'));
+        self::assertSame('php -v', $this->extender->expand('php -v'));
     }
 }

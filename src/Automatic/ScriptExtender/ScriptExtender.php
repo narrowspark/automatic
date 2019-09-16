@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\ScriptExtender;
 
 use Narrowspark\Automatic\Common\ScriptExtender\AbstractScriptExtender;

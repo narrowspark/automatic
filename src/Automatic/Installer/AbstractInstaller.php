@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Installer;
 
 use Composer\Composer;
@@ -46,7 +48,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     {
         parent::__construct($io, $composer, static::TYPE);
 
-        $this->lock   = $lock;
+        $this->lock = $lock;
         $this->loader = $loader;
     }
 

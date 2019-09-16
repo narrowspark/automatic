@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Narrowspark\Automatic\Common\Test;
 
 use Composer\Json\JsonFile;
@@ -9,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class UtilTest extends TestCase
 {
@@ -16,12 +20,12 @@ final class UtilTest extends TestCase
     {
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
-        $this->assertInstanceOf(JsonFile::class, $json);
-        $this->assertInstanceOf(JsonManipulator::class, $manipulator);
+        self::assertInstanceOf(JsonFile::class, $json);
+        self::assertInstanceOf(JsonManipulator::class, $manipulator);
     }
 
     public function testGetComposerLockFile(): void
     {
-        $this->assertSame('./composer.lock', Util::getComposerLockFile());
+        self::assertSame('./composer.lock', Util::getComposerLockFile());
     }
 }

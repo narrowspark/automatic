@@ -67,7 +67,7 @@ jobs:
 
     - stage: Coding standard
       php: 7.2
-      env: SETUP=high REMOVE_XDEBUG=true
+      env: SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.9.0
       script:
         - composer cs-check
 

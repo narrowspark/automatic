@@ -65,6 +65,12 @@ jobs:
       php: nightly
       env: PHPUNIT=true SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.9.0
 
+    - stage: Coding standard
+      php: 7.2
+      env: SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.9.0
+      script:
+        - composer cs-check
+
     - stage: Static Analysis
       php: 7.2
       env: REMOVE_XDEBUG=false SETUP=high COMPOSER_VERSION=1.9.0

@@ -78,6 +78,7 @@
     "scripts": {
         "coverage": "phpunit --prepend=\"./.phpunit.xdebug.filter\" --coverage-html=\"build/logs\"",
         "cs": "php-cs-fixer fix -v",
+        "cs-check": "php-cs-fixer fix -v --dry-run --stop-on-violation",
         "phpstan": "phpstan analyse -c phpstan.neon src --memory-limit=-1",
         "psalm": "psalm",
         "test": "phpunit",

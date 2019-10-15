@@ -7,6 +7,7 @@ git subsplit init git@github.com:narrowspark/automatic.git
 
 component_array=(
     'src/Common:git@github.com:narrowspark/automatic-common.git'
+    'src/Prefetcher:git@github.com:narrowspark/automatic-composer-prefetcher.git'
     'src/Security:git@github.com:narrowspark/automatic-security-audit.git'
 )
 

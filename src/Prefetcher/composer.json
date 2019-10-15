@@ -1,7 +1,7 @@
 {
-    "name": "narrowspark/automatic-security-audit",
+    "name": "narrowspark/automatic-composer-prefetcher",
     "type": "composer-plugin",
-    "description": "A composer plugin that checks if your application has known security vulnerabilities.",
+    "description": "A composer plugin that prefetch composer packages for a faster download.",
     "keywords": [
         "narrowspark",
         "viserio",
@@ -11,8 +11,8 @@
         "skeleton",
         "library",
         "composer",
-        "audit",
-        "security"
+        "prefetcher",
+        "prefetch"
     ],
     "homepage": "http://github.com/narrowspark/automatic",
     "license": "MIT",
@@ -28,16 +28,22 @@
         "php": "^7.1",
         "composer-plugin-api": "^1.0"
     },
+    "require-dev": {
+        "ext-curl": "*"
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "1.0-dev"
         },
-        "class": "Narrowspark\\Automatic\\Security\\Plugin"
+        "class": "Narrowspark\\Automatic\\Prefetcher\\Plugin"
     },
     "autoload": {
         "psr-4": {
-            "Narrowspark\\Automatic\\Security\\": "/"
-        }
+            "Narrowspark\\Automatic\\Prefetcher\\": "/"
+        },
+        "files": [
+            "alias.php"
+        ]
     },
     "support": {
         "issues": "https://github.com/narrowspark/automatic/issues",

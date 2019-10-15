@@ -117,7 +117,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     }
 
     /**
-     * @dataProvider provideRemoveLegacyTags
+     * @dataProvider provideRemoveLegacyTagsCases
      *
      * @param array  $expected
      * @param array  $packages
@@ -137,7 +137,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     /**
      * @return \Generator
      */
-    public function provideRemoveLegacyTags(): \Generator
+    public function provideRemoveLegacyTagsCases(): iterable
     {
         yield 'no-symfony/symfony' => [[123], [123], '~1'];
 

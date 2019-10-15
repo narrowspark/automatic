@@ -156,12 +156,7 @@ abstract class AbstractInstallationManager
         $package = $this->versionSelector->findBestCandidate($name, null, null, 'stable');
 
         if ($package === false) {
-            throw new InvalidArgumentException(\sprintf(
-                'Could not find package [%s] at any version for your minimum-stability [%s].'
-                . ' Check the package spelling or your minimum-stability.',
-                $name,
-                $this->stability
-            ));
+            throw new InvalidArgumentException(\sprintf('Could not find package [%s] at any version for your minimum-stability [%s]. Check the package spelling or your minimum-stability.', $name, $this->stability));
         }
 
         return $this->versionSelector->findRecommendedRequireVersion($package);

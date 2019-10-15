@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic;
+namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\IO\IOInterface;
 use Composer\Semver\Constraint\Constraint;
@@ -72,7 +72,7 @@ final class LegacyTagsManager implements Resettable
     public function hasProvider(string $file): bool
     {
         foreach ($this->legacyTags as $name => $constraint) {
-            [$namespace, $packageName] = \explode('/', $name, 2);
+            [$namespace,] = \explode('/', $name, 2);
 
             if (\strpos($file, \sprintf('provider-%s$', $namespace)) !== false) {
                 return true;

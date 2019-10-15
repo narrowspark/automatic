@@ -15,7 +15,7 @@ use Composer\Script\Event;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\CommandProvider;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
-use Narrowspark\Automatic\Security\SecurityPlugin;
+use Narrowspark\Automatic\Security\Plugin;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
@@ -30,7 +30,7 @@ final class SecurityPluginTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
-    /** @var \Narrowspark\Automatic\Security\SecurityPlugin */
+    /** @var \Narrowspark\Automatic\Security\Plugin */
     private $securityPlugin;
 
     /** @var string */
@@ -43,7 +43,7 @@ final class SecurityPluginTest extends MockeryTestCase
     {
         $this->arrangeComposerClasses();
 
-        $this->securityPlugin = new SecurityPlugin();
+        $this->securityPlugin = new Plugin();
         $this->tmpFolder = __DIR__ . \DIRECTORY_SEPARATOR . 'tmp';
     }
 
@@ -61,7 +61,7 @@ final class SecurityPluginTest extends MockeryTestCase
     {
         $this->composerMock->shouldReceive('getPackage->getExtra')
             ->once()
-            ->andReturn([SecurityPlugin::COMPOSER_EXTRA_KEY => ['timeout' => 20]]);
+            ->andReturn([Plugin::COMPOSER_EXTRA_KEY => ['timeout' => 20]]);
 
         $this->configMock->shouldReceive('get')
             ->once()
@@ -80,11 +80,11 @@ final class SecurityPluginTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        self::assertCount(4, SecurityPlugin::getSubscribedEvents());
+        self::assertCount(4, Plugin::getSubscribedEvents());
 
         NSA::setProperty($this->securityPlugin, 'activated', false);
 
-        self::assertCount(0, SecurityPlugin::getSubscribedEvents());
+        self::assertCount(0, Plugin::getSubscribedEvents());
     }
 
     public function testGetCapabilities(): void

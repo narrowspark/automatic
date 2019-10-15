@@ -33,7 +33,7 @@
     "require-dev": {
         "composer/composer": "^1.7.0 || ^1.8.0 || ^1.9.0",
         "mockery/mockery": "^1.2.2",
-        "narrowspark/testing-helper": "^8.0.0",
+        "narrowspark/testing-helper": "^8.0.1",
         "nyholm/nsa": "^1.1.0",
         "phpunit/phpunit": "^8.3.3",
         "ocramius/package-versions": "^1.4.0 || ^1.5.0",
@@ -46,10 +46,11 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0.x-dev"
+            "dev-master": "1.0.x-dev"
         },
         "class": [
-            "Narrowspark\\Automatic\\Security\\SecurityPlugin",
+            "Narrowspark\\Automatic\\Prefetcher\\Plugin",
+            "Narrowspark\\Automatic\\Security\\Plugin",
             "Narrowspark\\Automatic\\Automatic"
         ]
     },
@@ -57,6 +58,7 @@
         "psr-4": {
             "Narrowspark\\Automatic\\": "src/Automatic/",
             "Narrowspark\\Automatic\\Common\\": "src/Common/",
+            "Narrowspark\\Automatic\\Prefetcher\\": "src/Prefetcher/",
             "Narrowspark\\Automatic\\Security\\": "src/Security/"
         },
         "exclude-from-classmap": [
@@ -67,6 +69,7 @@
         "psr-4": {
             "Narrowspark\\Automatic\\Test\\": "tests/Automatic/",
             "Narrowspark\\Automatic\\Common\\Test\\": "tests/Common/",
+            "Narrowspark\\Automatic\\Prefetcher\\Test\\": "tests/Prefetcher/",
             "Narrowspark\\Automatic\\Security\\Test\\": "tests/Security/"
         },
         "files": [

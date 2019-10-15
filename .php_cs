@@ -16,6 +16,7 @@ $config->getFinder()
     ->in(__DIR__)
     ->exclude('build')
     ->exclude('vendor')
+    ->exclude('src/Prefetcher/Common')
     ->name('*.php')
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);

@@ -1,0 +1,1 @@
+{"scripts":{"post-install-cmd":["@auto-scripts"],"post-update-cmd":["@auto-scripts"],"test":"this should stay"}}

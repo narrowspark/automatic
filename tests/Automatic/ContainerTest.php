@@ -13,10 +13,10 @@ use Composer\Package\RootPackageInterface;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
+use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Container;
 use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
-use Narrowspark\Automatic\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
@@ -84,7 +84,7 @@ final class ContainerTest extends MockeryTestCase
     }
 
     /**
-     * @dataProvider instancesProvider
+     * @dataProvider provideContainerInstancesCases
      *
      * @param string $key
      * @param mixed  $expected
@@ -105,7 +105,7 @@ final class ContainerTest extends MockeryTestCase
     /**
      * @return array
      */
-    public function instancesProvider(): array
+    public function provideContainerInstancesCases(): iterable
     {
         return [
             [Composer::class, Composer::class],

@@ -156,6 +156,7 @@ class ParallelDownloader extends RemoteFilesystem
     public function download(array &$nextArgs, callable $nextCallback, bool $quiet = true, bool $progress = true): void
     {
         $previousState = [$this->quiet, $this->progress, $this->downloadCount, $this->nextCallback, $this->sharedState];
+
         $this->quiet = $quiet;
         $this->progress = $progress;
         $this->downloadCount = \count($nextArgs);

@@ -49,7 +49,7 @@ final class PathTest extends TestCase
     }
 
     /**
-     * @dataProvider providePathsForConcatenation
+     * @dataProvider provideConcatenateCases
      *
      * @param string $part1
      * @param string $part2
@@ -65,7 +65,7 @@ final class PathTest extends TestCase
     /**
      * @return array
      */
-    public function providePathsForConcatenation(): array
+    public function provideConcatenateCases(): iterable
     {
         return [
             [__DIR__, 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt', __DIR__ . \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt'],

@@ -23,7 +23,7 @@ use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-final class SecurityPlugin implements Capable, EventSubscriberInterface, PluginInterface
+final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 {
     /** @var string */
     public const VERSION = '0.12.0';

@@ -9,7 +9,6 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
 use Composer\Util\RemoteFilesystem;
-use Narrowspark\Automatic\LegacyTagsManager;
 
 /**
  * Ported from symfony flex, see original.
@@ -42,7 +41,7 @@ final class TruncatedComposerRepository extends BaseComposerRepository
     /**
      * Set a tags manager instance.
      *
-     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
+     * @param \Narrowspark\Automatic\Prefetcher\LegacyTagsManager $tagsManager
      *
      * @return void
      */

@@ -8,8 +8,8 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
+use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\ClassFinder;
-use Narrowspark\Automatic\Common\Container as BaseContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
@@ -25,7 +25,7 @@ use Symfony\Component\Console\Input\InputInterface;
 /**
  * @internal
  */
-final class Container extends BaseContainer
+final class Container extends AbstractContainer
 {
     use GetGenericPropertyReaderTrait;
 

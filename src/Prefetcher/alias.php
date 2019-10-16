@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-\class_alias('Narrowspark\Automatic\Prefetcher\Common\Container', 'Narrowspark\Automatic\Common\Container');
+\class_alias('Narrowspark\Automatic\Prefetcher\Common\AbstractContainer', 'Narrowspark\Automatic\Common\AbstractContainer');
 \class_alias('Narrowspark\Automatic\Prefetcher\Common\Contract\Container', 'Narrowspark\Automatic\Common\Contract\Container');
 \class_alias('Narrowspark\Automatic\Prefetcher\Common\Contract\Exception\Exception', 'Narrowspark\Automatic\Common\Contract\Exception\Exception');
 \class_alias('Narrowspark\Automatic\Prefetcher\Common\Contract\Exception\RuntimeException', 'Narrowspark\Automatic\Common\Contract\Exception\RuntimeException');

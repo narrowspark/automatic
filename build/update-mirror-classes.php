@@ -19,7 +19,7 @@ $mirrorList = [
     'src/Common/Contract/Exception/Exception.php' => $defaultCommonSettings,
     'src/Common/Contract/Exception/InvalidArgumentException.php' => $defaultCommonSettings,
     'src/Common/Contract/Container.php' => $defaultCommonSettings,
-    'src/Common/Container.php' => $defaultCommonSettings,
+    'src/Common/AbstractContainer.php' => $defaultCommonSettings,
     'src/Common/Contract/Resettable.php' => $defaultCommonSettings,
     'src/Common/Traits/GetGenericPropertyReaderTrait.php' => $defaultCommonSettings,
     'src/Common/Traits/GetComposerVersionTrait.php' => $defaultCommonSettings,
@@ -41,6 +41,9 @@ $comment = <<<STRING
  */
 STRING;
 
+foreach ($outputConfigs as $path => $namspace) {
+    $fs->remove($rootDir . DIRECTORY_SEPARATOR . $path);
+}
 
 foreach ($mirrorList as $path => $settings) {
     foreach ($outputConfigs as $outputPath => $namespace) {

@@ -9,7 +9,7 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
-use Narrowspark\Automatic\Common\Container as BaseContainer;
+use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 /**
  * @internal
  */
-final class Container extends BaseContainer
+final class Container extends AbstractContainer
 {
     use GetGenericPropertyReaderTrait;
 

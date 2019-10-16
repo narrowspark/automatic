@@ -26,7 +26,7 @@ use Symfony\Component\Filesystem\Filesystem;
  *
  * @small
  */
-final class SecurityPluginTest extends MockeryTestCase
+final class PluginTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 

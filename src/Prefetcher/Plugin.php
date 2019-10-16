@@ -32,7 +32,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Console\Input\ArgvInput;
 
-final class Plugin implements EventSubscriberInterface, PluginInterface
+class Plugin implements EventSubscriberInterface, PluginInterface
 {
     use GetComposerVersionTrait;
 
@@ -50,7 +50,7 @@ final class Plugin implements EventSubscriberInterface, PluginInterface
      *
      * @var \Narrowspark\Automatic\Common\Contract\Container
      */
-    private $container;
+    protected $container;
 
     /**
      * Check if the the plugin is activated.

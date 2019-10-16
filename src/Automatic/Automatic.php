@@ -206,8 +206,6 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             'This file is @generated automatically',
         ]);
 
-        $this->container->get(Prefetcher::class)->populateRepoCacheDir();
-
         $this->extendComposer(\debug_backtrace());
 
         $this->container->set(InstallationManager::class, static function (ContainerContract $container) {

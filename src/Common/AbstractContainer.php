@@ -14,14 +14,14 @@ abstract class AbstractContainer implements ContainerContract
      *
      * @var array<string, callable>
      */
-    protected $data;
+    protected $data = [];
 
     /**
      * The array of entries once they have been instantiated.
      *
      * @var array<string, mixed>
      */
-    protected $objects;
+    protected $objects = [];
 
     /**
      * Instantiate the container.

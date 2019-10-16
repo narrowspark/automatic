@@ -12,7 +12,6 @@ use Composer\Downloader\DownloaderInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
-use Composer\Installer\InstallerEvent;
 use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
@@ -20,7 +19,6 @@ use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackage;
 use Composer\Plugin\PluginManager;
-use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\Event;
@@ -29,13 +27,11 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
-use Narrowspark\Automatic\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager as NarrowsparkInstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Lock;
-use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
-use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\ScriptEvents;
 use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
@@ -102,7 +98,7 @@ final class AutomaticTest extends MockeryTestCase
     {
         NSA::setProperty($this->automatic, 'activated', true);
 
-        self::assertCount(15, Automatic::getSubscribedEvents());
+        self::assertCount(10, Automatic::getSubscribedEvents());
 
         NSA::setProperty($this->automatic, 'activated', false);
 
@@ -152,7 +148,7 @@ final class AutomaticTest extends MockeryTestCase
             ->andReturn($this->mock(DownloaderInterface::class));
 
         $this->composerMock->shouldReceive('getDownloadManager')
-            ->times(3)
+            ->times(2)
             ->andReturn($downloadManagerMock);
 
         $this->composerMock->shouldReceive('getEventDispatcher')
@@ -263,16 +259,10 @@ final class AutomaticTest extends MockeryTestCase
 
         $repositoryMock = $this->arrangeLocalRepository();
 
-        $rootPackageMock = $this->mock(RootPackage::class);
-        $rootPackageMock->shouldReceive('getExtra')
-            ->once()
-            ->andReturn([]);
-
         $composer = new Composer();
         $composer->setInstallationManager(new InstallationManager());
         $composer->setConfig(new Config());
         $composer->setRepositoryManager($repositoryMock);
-        $composer->setPackage($rootPackageMock);
 
         $downloadManagerMock = $this->mock(DownloadManager::class);
         $downloadManagerMock->shouldReceive('getDownloader')
@@ -392,16 +382,10 @@ final class AutomaticTest extends MockeryTestCase
 
         $repositoryMock = $this->arrangeLocalRepository();
 
-        $rootPackageMock = $this->mock(RootPackage::class);
-        $rootPackageMock->shouldReceive('getExtra')
-            ->once()
-            ->andReturn([]);
-
         $composer = new Composer();
         $composer->setInstallationManager(new InstallationManager());
         $composer->setConfig(new Config());
         $composer->setRepositoryManager($repositoryMock);
-        $composer->setPackage($rootPackageMock);
 
         $downloadManagerMock = $this->mock(DownloadManager::class);
         $downloadManagerMock->shouldReceive('getDownloader')
@@ -520,56 +504,6 @@ final class AutomaticTest extends MockeryTestCase
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
-    }
-
-    public function testPopulateFilesCacheDir(): void
-    {
-        $event = $this->mock(InstallerEvent::class);
-
-        $prefetcher = $this->mock(Prefetcher::class);
-        $prefetcher->shouldReceive('fetchAllFromOperations')
-            ->once()
-            ->with($event);
-
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
-            ->once()
-            ->with(Prefetcher::class)
-            ->andReturn($prefetcher);
-
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->populateFilesCacheDir($event);
-    }
-
-    public function testOnFileDownload(): void
-    {
-        $remoteFilesystem = $this->mock(RemoteFilesystem::class);
-        $remoteFilesystem->shouldReceive('getOptions')
-            ->once()
-            ->andReturn([]);
-
-        $event = $this->mock(PreFileDownloadEvent::class);
-        $event->shouldReceive('getRemoteFilesystem')
-            ->twice()
-            ->andReturn($remoteFilesystem);
-
-        $downloader = $this->mock(ParallelDownloader::class);
-        $downloader->shouldReceive('setNextOptions')
-            ->once()
-            ->with([]);
-
-        $event->shouldReceive('setRemoteFilesystem')
-            ->once()
-            ->with(\Mockery::type(ParallelDownloader::class));
-
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
-            ->once()
-            ->with(ParallelDownloader::class)
-            ->andReturn($downloader);
-
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->onFileDownload($event);
     }
 
     public function testGetAutomaticLockFile(): void

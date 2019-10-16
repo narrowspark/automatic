@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Test;
+namespace Narrowspark\Automatic\Prefetcher\Test;
 
 use Composer\IO\IOInterface;
-use Narrowspark\Automatic\LegacyTagsManager;
+use Narrowspark\Automatic\Prefetcher\LegacyTagsManager;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
@@ -21,7 +21,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     private $ioMock;
 
-    /** @var \Narrowspark\Automatic\LegacyTagsManager */
+    /** @var \Narrowspark\Automatic\Prefetcher\LegacyTagsManager */
     private $tagsManger;
 
     /**
@@ -31,7 +31,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $pPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'Packagist';
+        $pPath = __DIR__ . \DIRECTORY_SEPARATOR;
 
         $this->downloadFileList = [
             'cakephp$cakephp' => $pPath . \DIRECTORY_SEPARATOR . 'provider-cakephp$cakephp.json',

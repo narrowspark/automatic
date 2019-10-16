@@ -34,6 +34,10 @@
             <directory>./tests/Common/</directory>
         </testsuite>
 
+        <testsuite name="Narrowspark Automatic Prefetcher Test Suite">
+            <directory>./tests/Prefetcher/</directory>
+        </testsuite>
+
         <testsuite name="Narrowspark Automatic Security Test Suite">
             <directory>./tests/Security/</directory>
         </testsuite>

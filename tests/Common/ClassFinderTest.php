@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Common\Test;
+namespace Narrowspark\Automatic\Test\Common;
 
 use Narrowspark\Automatic\Common\ClassFinder;
-use Narrowspark\Automatic\Common\Test\Fixture\Finder\AbstractClass;
-use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyClass;
-use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyClassTwo;
-use Narrowspark\Automatic\Common\Test\Fixture\Finder\DummyInterface;
-use Narrowspark\Automatic\Common\Test\Fixture\Finder\FooTrait;
-use Narrowspark\Automatic\Common\Test\Fixture\Finder\Nested\DummyClassNested;
-use Narrowspark\Automatic\Common\Test\Fixture\Finder\StaticFunctionAndClasses;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
+use Narrowspark\Automatic\Test\Common\Fixture\Finder\AbstractClass;
+use Narrowspark\Automatic\Test\Common\Fixture\Finder\DummyClass;
+use Narrowspark\Automatic\Test\Common\Fixture\Finder\DummyClassTwo;
+use Narrowspark\Automatic\Test\Common\Fixture\Finder\DummyInterface;
+use Narrowspark\Automatic\Test\Common\Fixture\Finder\FooTrait;
+use Narrowspark\Automatic\Test\Common\Fixture\Finder\Nested\DummyClassNested;
+use Narrowspark\Automatic\Test\Common\Fixture\Finder\StaticFunctionAndClasses;
 use PHPUnit\Framework\TestCase;
 
 /**

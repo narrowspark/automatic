@@ -32,7 +32,7 @@ final class Install extends AbstractOperation
         }
 
         return ($operation instanceof UpdateOperation || $operation instanceof InstallOperation)
-            && (\file_exists($this->getAutomaticFilePath($composerPackage)) || isset($composerPackage->getExtra()['automatic']));
+            && ($this->filesystem->exists($this->getAutomaticFilePath($composerPackage)) || isset($composerPackage->getExtra()['automatic']));
     }
 
     /**
@@ -159,7 +159,7 @@ final class Install extends AbstractOperation
 
         $package->setAutoload($composerPackage->getAutoload());
 
-        if (\file_exists($automaticFile)) {
+        if ($this->filesystem->exists($automaticFile)) {
             $package->setConfig(JsonFile::parseJson((string) \file_get_contents($automaticFile)));
         } else {
             $package->setConfig($composerPackage->getExtra()['automatic']);

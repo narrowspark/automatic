@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Common\Test;
+namespace Narrowspark\Automatic\Test\Common;
 
 use Composer\Composer;
 use Narrowspark\Automatic\Common\AbstractContainer;
@@ -25,16 +25,14 @@ final class ContainerTest extends MockeryTestCase
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
-
-        self::$staticContainer = new class([
-            Composer::class => static function(AbstractContainer $container) {
+        self::$staticContainer = new DummyContainer([
+            Composer::class => static function (AbstractContainer $container) {
                 return \Mockery::mock(Composer::class);
             },
-            'vendor-dir' => static function() {
+            'vendor-dir' => static function () {
                 return '/vendor';
-            }
-        ]) extends AbstractContainer {
-        };
+            },
+        ]);
     }
 
     /**
@@ -89,4 +87,8 @@ final class ContainerTest extends MockeryTestCase
     {
         self::assertCount(2, static::$staticContainer->getAll());
     }
+}
+
+class DummyContainer extends AbstractContainer
+{
 }

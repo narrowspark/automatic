@@ -12,6 +12,7 @@ use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
+use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use Symfony\Component\Console\Input\InputInterface;
 
 /**

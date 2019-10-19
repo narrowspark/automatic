@@ -56,8 +56,8 @@ final class EnvConfigurator extends AbstractConfigurator
             $data .= $key . '=' . $value . \PHP_EOL;
         }
 
-        if (! \file_exists($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env')) {
-            \copy($distenv, $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env');
+        if (! $this->filesystem->exists($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env')) {
+            $this->filesystem->copy($distenv, $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env');
         }
 
         $data = $this->markData($package->getPrettyName(), $data);
@@ -77,7 +77,7 @@ final class EnvConfigurator extends AbstractConfigurator
             $env = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . $file;
 
             // @codeCoverageIgnoreStart
-            if (! \file_exists($env)) {
+            if (! $this->filesystem->exists($env)) {
                 continue;
             }
             // @codeCoverageIgnoreEnd

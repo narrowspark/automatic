@@ -6,6 +6,7 @@ namespace Narrowspark\Automatic\Security\Downloader;
 
 use Composer\CaBundle\CaBundle;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
+use Symfony\Component\Filesystem\Filesystem;
 
 final class CurlDownloader extends AbstractDownloader
 {
@@ -30,8 +31,9 @@ final class CurlDownloader extends AbstractDownloader
         \curl_setopt($curl, \CURLOPT_USERAGENT, $this->getUserAgent());
 
         $caPathOrFile = CaBundle::getSystemCaRootBundlePath();
+        $filesystem = new Filesystem();
 
-        if (\is_dir($caPathOrFile) || (\is_link($caPathOrFile) && \is_dir(\readlink($caPathOrFile)))) {
+        if (\is_dir($caPathOrFile) || (\is_link($caPathOrFile) && \is_dir((string) $filesystem->readlink($caPathOrFile)))) {
             \curl_setopt($curl, \CURLOPT_CAPATH, $caPathOrFile);
         } else {
             \curl_setopt($curl, \CURLOPT_CAINFO, $caPathOrFile);

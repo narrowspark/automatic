@@ -95,7 +95,7 @@ class InstallationManager extends AbstractInstallationManager
         if ($status !== 0) {
             $this->io->writeError(\PHP_EOL . '<error>Removal failed, reverting ' . Factory::getComposerFile() . ' to its original content.</error>');
 
-            \file_put_contents($this->jsonFile->getPath(), $this->composerBackup);
+            $this->filesystem->dumpFile($this->jsonFile->getPath(), $this->composerBackup);
         }
 
         return $status;
@@ -147,7 +147,7 @@ class InstallationManager extends AbstractInstallationManager
                         'Enter the version of <info>%s</info> to require (or leave blank to use the latest version): ',
                         $packageName
                     ),
-                    static function ($input) {
+                    static function (string $input) {
                         return \trim($input) ?? false;
                     }
                 );

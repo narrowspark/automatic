@@ -21,6 +21,7 @@ use Narrowspark\Automatic\Operation\Install;
 use Narrowspark\Automatic\Operation\Uninstall;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -134,6 +135,9 @@ final class Container extends AbstractContainer
                 $scriptExecutor->add(PhpScriptExtender::getType(), PhpScriptExtender::class);
 
                 return $scriptExecutor;
+            },
+            Filesystem::class => static function () {
+                return new Filesystem();
             },
         ]);
     }

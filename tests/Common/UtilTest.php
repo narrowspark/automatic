@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Common\Test;
+namespace Narrowspark\Automatic\Test\Common;
 
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;

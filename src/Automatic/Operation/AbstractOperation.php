@@ -12,6 +12,7 @@ use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Contract\Operation as OperationContract;
 use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Lock;
+use Symfony\Component\Filesystem\Filesystem;
 
 abstract class AbstractOperation implements OperationContract
 {
@@ -58,6 +59,13 @@ abstract class AbstractOperation implements OperationContract
     protected $classFinder;
 
     /**
+     * A Filesystem instance.
+     *
+     * @var \Symfony\Component\Filesystem\Filesystem
+     */
+    protected $filesystem;
+
+    /**
      * Base functions for Install and Uninstall Operation.
      *
      * @param string                                              $vendorDir
@@ -81,6 +89,7 @@ abstract class AbstractOperation implements OperationContract
         $this->configurator = $configurator;
         $this->packageConfigurator = $packageConfigurator;
         $this->classFinder = $classFinder;
+        $this->filesystem = new Filesystem();
     }
 
     /**

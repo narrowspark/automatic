@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Configurator\Traits;
 
 use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * @property Filesystem $filesystem
+ */
 trait AppendToFileTrait
 {
     /**

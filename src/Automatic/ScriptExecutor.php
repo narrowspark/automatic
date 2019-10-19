@@ -117,7 +117,7 @@ final class ScriptExecutor
         );
 
         // @codeCoverageIgnoreStart
-        $outputHandler = static function ($type, $buffer) use ($cmdOutput): void {
+        $outputHandler = static function (?string $type, string $buffer) use ($cmdOutput): void {
             $cmdOutput->write($buffer, false, OutputInterface::OUTPUT_RAW);
         };
         // @codeCoverageIgnoreEnd

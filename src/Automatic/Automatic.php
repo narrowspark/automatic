@@ -36,12 +36,12 @@ use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Operation\Install;
 use Narrowspark\Automatic\Operation\Uninstall;
-use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 class Automatic implements EventSubscriberInterface, PluginInterface
 {
@@ -307,7 +307,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             $manipulator->addSubNode('scripts', ScriptEvents::AUTO_SCRIPTS, new \stdClass());
         }
 
-        \file_put_contents($json->getPath(), $manipulator->getContents());
+        $this->container->get(Filesystem::class)->dumpFile($json->getPath(), $manipulator->getContents());
 
         $this->updateComposerLock();
     }
@@ -340,7 +340,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             }
         }
 
-        \file_put_contents($json->getPath(), $manipulator->getContents());
+        $this->container->get(Filesystem::class)->dumpFile($json->getPath(), $manipulator->getContents());
 
         $this->updateComposerLock();
     }
@@ -454,7 +454,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
             $manipulator->addSubNode('scripts', ComposerScriptEvents::POST_UPDATE_CMD, $scripts[ComposerScriptEvents::POST_UPDATE_CMD]);
 
-            \file_put_contents($json->getPath(), $manipulator->getContents());
+            $this->container->get(Filesystem::class)->dumpFile($json->getPath(), $manipulator->getContents());
 
             $this->updateComposerLock();
         }
@@ -744,7 +744,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
         $manipulator->addSubNode('extra', 'automatic.allow-auto-install', true);
 
-        \file_put_contents($json->getPath(), $manipulator->getContents());
+        $this->container->get(Filesystem::class)->dumpFile($json->getPath(), $manipulator->getContents());
     }
 
     /**

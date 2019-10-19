@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Prefetcher\Test;
+namespace Narrowspark\Automatic\Test\Prefetcher;
 
 use Composer\Installer\InstallerEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Util\RemoteFilesystem;
-use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
+use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Plugin;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
-use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 
 /**
  * @internal
@@ -34,8 +34,7 @@ final class PluginTest extends MockeryTestCase
     {
         $this->arrangeComposerClasses();
 
-        $this->plugin = new class() extends Plugin
-        {
+        $this->plugin = new class() extends Plugin {
             public function setContainer($container): void
             {
                 $this->container = $container;
@@ -103,5 +102,4 @@ final class PluginTest extends MockeryTestCase
         $this->plugin->setContainer($containerMock);
         $this->plugin->onFileDownload($event);
     }
-
 }

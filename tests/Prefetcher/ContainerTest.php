@@ -2,15 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Prefetcher\Test;
+namespace Narrowspark\Automatic\Test\Prefetcher;
 
 use Composer\Composer;
 use Composer\Config;
 use Composer\Downloader\DownloadManager;
 use Composer\IO\BufferIO;
+use Composer\IO\IOInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Prefetcher\Container;
+use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
+use Narrowspark\Automatic\Prefetcher\LegacyTagsManager;
+use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * @internal
@@ -62,5 +68,47 @@ final class ContainerTest extends MockeryTestCase
         $composer->setDownloadManager($downloadManager);
 
         self::$staticContainer = new Container($composer, new BufferIO());
+    }
+
+    /**
+     * @dataProvider provideContainerInstancesCases
+     *
+     * @param string $key
+     * @param mixed  $expected
+     *
+     * @return void
+     */
+    public function testContainerInstances(string $key, $expected): void
+    {
+        $value = self::$staticContainer->get($key);
+
+        if (\is_string($value) || \is_array($value)) {
+            self::assertSame($expected, $value);
+        } else {
+            self::assertInstanceOf($expected, $value);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function provideContainerInstancesCases(): iterable
+    {
+        return [
+            [Composer::class, Composer::class],
+            [Config::class, Config::class],
+            [IOInterface::class, BufferIO::class],
+            [InputInterface::class, InputInterface::class],
+            [RemoteFilesystem::class, RemoteFilesystem::class],
+            [ParallelDownloader::class, ParallelDownloader::class],
+            [Prefetcher::class, Prefetcher::class],
+            [LegacyTagsManager::class, LegacyTagsManager::class],
+            ['composer-extra', []],
+        ];
+    }
+
+    public function testGetAll(): void
+    {
+        self::assertCount(9, static::$staticContainer->getAll());
     }
 }

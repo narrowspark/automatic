@@ -28,6 +28,7 @@ use Composer\Repository\RepositoryManager;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Traits\GetComposerVersionTrait;
+use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -192,7 +193,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
         $loadExtraRepos = ! (new \ReflectionMethod(Pool::class, 'match'))->isPublic(); // Detect Composer < 1.7.3
 
-        $this->container->get(ParallelDownloader::class)->download($packages, static function ($packageName, $constraint) use (&$listed, &$packages, $pool, $loadExtraRepos): void {
+        $this->container->get(ParallelDownloader::class)->download($packages, static function (string $packageName, string $constraint) use (&$listed, &$packages, $pool, $loadExtraRepos): void {
             /** @var \Composer\Package\PackageInterface $package */
             foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
                 $links = $loadExtraRepos ? \array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) : $package->getRequires();
@@ -233,7 +234,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
      */
     public function onFileDownload(PreFileDownloadEvent $event): void
     {
-        /** @var \Narrowspark\Automatic\Prefetcher\ParallelDownloader $rfs */
+        /** @var \Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader $rfs */
         $rfs = $this->container->get(ParallelDownloader::class);
 
         if ($event->getRemoteFilesystem() !== $rfs) {

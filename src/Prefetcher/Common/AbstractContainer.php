@@ -20,21 +20,14 @@ abstract class AbstractContainer implements ContainerContract
      *
      * @var array<string, callable>
      */
-    protected $data;
+    protected $data = [];
 
     /**
      * The array of entries once they have been instantiated.
      *
      * @var array<string, mixed>
      */
-    protected $objects;
-
-    /**
-     * Array full of container implementing the \Narrowspark\Automatic\Prefetcher\Common\Contract\Container.
-     *
-     * @var ContainerContract[]
-     */
-    protected $delegates = [];
+    protected $objects = [];
 
     /**
      * Instantiate the container.
@@ -59,17 +52,7 @@ abstract class AbstractContainer implements ContainerContract
      */
     public function has(string $id): bool
     {
-        return $this->data[$id] || $this->hasInDelegate($id);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function delegate(ContainerContract $container): self
-    {
-        $this->delegates[] = $container;
-
-        return $this;
+        return \array_key_exists($id, $this->data);
     }
 
     /**
@@ -77,19 +60,15 @@ abstract class AbstractContainer implements ContainerContract
      */
     public function get(string $id)
     {
-        if (array_key_exists($id, $this->objects)) {
+        if (\array_key_exists($id, $this->objects)) {
             return $this->objects[$id];
         }
 
-        if (($resolved = $this->getFromDelegate($id)) !== null) {
-            return $resolved;
-        }
-
-        if (! array_key_exists($id, $this->data) && ! $this->hasInDelegate($id)) {
+        if (! \array_key_exists($id, $this->data)) {
             throw new InvalidArgumentException(\sprintf('Identifier [%s] is not defined.', $id));
         }
 
-        return $this->objects[$id] = ($this->data[$id] || $this->getFromDelegate($id))($this);
+        return $this->objects[$id] = $this->data[$id]($this);
     }
 
     /**
@@ -98,41 +77,5 @@ abstract class AbstractContainer implements ContainerContract
     public function getAll(): array
     {
         return $this->data;
-    }
-
-    /**
-     * Returns true if service is registered in one of the delegated backup containers.
-     *
-     * @param string $abstract
-     *
-     * @return bool
-     */
-    protected function hasInDelegate(string $abstract): bool
-    {
-        foreach ($this->delegates as $container) {
-            if ($container->has($abstract)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Attempt to get a service from the stack of delegated backup containers.
-     *
-     * @param string $abstract
-     *
-     * @return mixed
-     */
-    protected function getFromDelegate(string $abstract)
-    {
-        foreach ($this->delegates as $container) {
-            if ($container->has($abstract)) {
-                return $container->get($abstract);
-            }
-        }
-
-        return null;
     }
 }

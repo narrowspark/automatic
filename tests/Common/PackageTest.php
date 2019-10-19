@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Common\Test;
+namespace Narrowspark\Automatic\Test\Common;
 
 use Narrowspark\Automatic\Common\Contract\Package as ContractPackage;
 use Narrowspark\Automatic\Common\Package;

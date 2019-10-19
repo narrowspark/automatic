@@ -26,6 +26,10 @@
     </php>
 
     <testsuites>
+        <testsuite name="Narrowspark Automatic Internal Test Suite">
+            <directory>./tests/Internal/</directory>
+        </testsuite>
+
         <testsuite name="Narrowspark Automatic Test Suite">
             <directory>./tests/Automatic/</directory>
         </testsuite>

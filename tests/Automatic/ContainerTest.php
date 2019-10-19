@@ -25,6 +25,7 @@ use Narrowspark\Automatic\PackageConfigurator;
 use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -126,11 +127,12 @@ final class ContainerTest extends MockeryTestCase
             [Uninstall::class, Uninstall::class],
             [ScriptExecutor::class, ScriptExecutor::class],
             [PackageConfiguratorContract::class, PackageConfigurator::class],
+            [Filesystem::class, Filesystem::class],
         ];
     }
 
     public function testGetAll(): void
     {
-        self::assertCount(15, static::$staticContainer->getAll());
+        self::assertCount(16, static::$staticContainer->getAll());
     }
 }

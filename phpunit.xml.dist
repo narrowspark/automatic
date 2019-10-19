@@ -53,6 +53,7 @@
             <exclude>
                 <directory>./vendor</directory>
                 <directory>./tests</directory>
+                <file>./src/Prefetcher/alias.php</file>
             </exclude>
         </whitelist>
     </filter>

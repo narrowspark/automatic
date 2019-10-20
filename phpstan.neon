@@ -51,3 +51,5 @@ parameters:
 
         # GetGenericPropertyReaderTrait
         - '#Variable property access on object#'
+
+        - '#Parameter \#2 \$constraint of anonymous function has no typehint#'

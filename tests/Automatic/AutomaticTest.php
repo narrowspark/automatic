@@ -25,6 +25,7 @@ use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
+use Narrowspark\Automatic\FunctionMock;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager as NarrowsparkInstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
@@ -48,7 +49,7 @@ final class AutomaticTest extends MockeryTestCase
     use ArrangeComposerClasses;
 
     /** @var \Narrowspark\Automatic\Automatic */
-    private $automatic;
+    private $plugin;
 
     /**
      * {@inheritdoc}
@@ -64,7 +65,7 @@ final class AutomaticTest extends MockeryTestCase
 
         $this->arrangeComposerClasses();
 
-        $this->automatic = new class() extends Automatic {
+        $this->plugin = new class() extends Automatic {
             public function setContainer($container): void
             {
                 $this->container = $container;
@@ -94,11 +95,11 @@ final class AutomaticTest extends MockeryTestCase
 
     public function testGetSubscribedEvents(): void
     {
-        NSA::setProperty($this->automatic, 'activated', true);
+        NSA::setProperty($this->plugin, 'activated', true);
 
         self::assertCount(10, Automatic::getSubscribedEvents());
 
-        NSA::setProperty($this->automatic, 'activated', false);
+        NSA::setProperty($this->plugin, 'activated', false);
 
         self::assertCount(0, Automatic::getSubscribedEvents());
     }
@@ -161,19 +162,19 @@ final class AutomaticTest extends MockeryTestCase
             ->once();
         $this->ioMock->shouldReceive('loadConfiguration');
 
-        $this->automatic->activate($this->composerMock, $this->ioMock);
+        $this->plugin->activate($this->composerMock, $this->ioMock);
 
         self::assertSame(
             [
                 'This file locks the automatic information of your project to a known state',
                 'This file is @generated automatically',
             ],
-            $this->automatic->getContainer()->get(Lock::class)->get('@readme')
+            $this->plugin->getContainer()->get(Lock::class)->get('@readme')
         );
 
         self::assertInstanceOf(
             NarrowsparkInstallationManager::class,
-            $this->automatic->getContainer()->get(NarrowsparkInstallationManager::class)
+            $this->plugin->getContainer()->get(NarrowsparkInstallationManager::class)
         );
     }
 
@@ -185,7 +186,18 @@ final class AutomaticTest extends MockeryTestCase
             ->once()
             ->with('<warning>Narrowspark Automatic has been disabled. Composer running in a no interaction mode</warning>');
 
-        $this->automatic->activate($this->composerMock, $this->ioMock);
+        $this->plugin->activate($this->composerMock, $this->ioMock);
+    }
+
+    public function testActivateWithNoOpenssl(): void
+    {
+        FunctionMock::$isOpensslActive = false;
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('<warning>Narrowspark Automatic has been disabled. You must enable the openssl extension in your [php.ini] file</warning>');
+
+        $this->plugin->activate($this->composerMock, $this->ioMock);
     }
 
     public function testRecordWithUpdateRecord(): void
@@ -208,7 +220,7 @@ final class AutomaticTest extends MockeryTestCase
         $packageEventMock->shouldReceive('isDevMode')
             ->andReturn(false);
 
-        $this->automatic->record($packageEventMock);
+        $this->plugin->record($packageEventMock);
     }
 
     public function testRecordWithInstallRecord(): void
@@ -308,8 +320,8 @@ final class AutomaticTest extends MockeryTestCase
             ->with(Lock::class)
             ->andReturn($this->lockMock);
 
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->record($packageEventMock);
+        $this->plugin->setContainer($containerMock);
+        $this->plugin->record($packageEventMock);
 
         \putenv('COMPOSER_VENDOR_DIR=');
         \putenv('COMPOSER_VENDOR_DIR');
@@ -429,8 +441,8 @@ final class AutomaticTest extends MockeryTestCase
             ->with(Lock::class)
             ->andReturn($lockMock);
 
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->executeAutoScripts($eventMock);
+        $this->plugin->setContainer($containerMock);
+        $this->plugin->executeAutoScripts($eventMock);
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -452,8 +464,8 @@ final class AutomaticTest extends MockeryTestCase
             ->never()
             ->with(Lock::class);
 
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->executeAutoScripts($eventMock);
+        $this->plugin->setContainer($containerMock);
+        $this->plugin->executeAutoScripts($eventMock);
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -477,8 +489,8 @@ final class AutomaticTest extends MockeryTestCase
             ->with(IOInterface::class)
             ->andReturn($this->ioMock);
 
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->executeAutoScripts($eventMock);
+        $this->plugin->setContainer($containerMock);
+        $this->plugin->executeAutoScripts($eventMock);
 
         \putenv('COMPOSER=');
         \putenv('COMPOSER');
@@ -552,8 +564,8 @@ final class AutomaticTest extends MockeryTestCase
             ->with(IOInterface::class)
             ->andReturn($this->ioMock);
 
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->onPostUninstall($event);
+        $this->plugin->setContainer($containerMock);
+        $this->plugin->onPostUninstall($event);
 
         $jsonData = \json_decode(\file_get_contents($filePath), true);
 
@@ -581,7 +593,7 @@ final class AutomaticTest extends MockeryTestCase
         $event->shouldReceive('getOperation->getPackage->getName')
             ->never();
 
-        $this->automatic->onPostUninstall($event);
+        $this->plugin->onPostUninstall($event);
     }
 
     public function testOnPostUpdatePostMessages(): void
@@ -595,9 +607,9 @@ final class AutomaticTest extends MockeryTestCase
             ->with(IOInterface::class)
             ->andReturn($this->ioMock);
 
-        $this->automatic->setContainer($container);
+        $this->plugin->setContainer($container);
 
-        $this->automatic->onPostUpdatePostMessages($this->mock(Event::class));
+        $this->plugin->onPostUpdatePostMessages($this->mock(Event::class));
     }
 
     public function testInitAutoScripts(): void
@@ -625,9 +637,9 @@ final class AutomaticTest extends MockeryTestCase
             ->with(Filesystem::class)
             ->andReturn(new Filesystem());
 
-        $this->automatic->setContainer($containerMock);
+        $this->plugin->setContainer($containerMock);
 
-        $this->automatic->initAutoScripts();
+        $this->plugin->initAutoScripts();
 
         $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
 
@@ -671,8 +683,8 @@ final class AutomaticTest extends MockeryTestCase
             ->with(Composer::class)
             ->andReturn($this->composerMock);
 
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->initAutoScripts();
+        $this->plugin->setContainer($containerMock);
+        $this->plugin->initAutoScripts();
     }
 
     public function testOnPostCreateProject(): void
@@ -700,9 +712,9 @@ final class AutomaticTest extends MockeryTestCase
             ->with(Filesystem::class)
             ->andReturn(new Filesystem());
 
-        $this->automatic->setContainer($containerMock);
+        $this->plugin->setContainer($containerMock);
 
-        $this->automatic->onPostCreateProject($this->mock(Event::class));
+        $this->plugin->onPostCreateProject($this->mock(Event::class));
 
         $jsonContent = \json_decode(\file_get_contents($composerJsonPath), true);
 
@@ -741,9 +753,9 @@ final class AutomaticTest extends MockeryTestCase
             ->once()
             ->with(Lock::class)
             ->andReturn($this->lockMock);
-        $this->automatic->setContainer($containerMock);
+        $this->plugin->setContainer($containerMock);
 
-        $this->automatic->runSkeletonGenerator($this->mock(Event::class));
+        $this->plugin->runSkeletonGenerator($this->mock(Event::class));
     }
 
     public function testOnPostAutoloadDump(): void
@@ -751,7 +763,7 @@ final class AutomaticTest extends MockeryTestCase
         $containerMock = $this->mock(ContainerContract::class);
         $configuratorMock = $this->mock(ConfiguratorContract::class);
 
-        NSA::setProperty($this->automatic, 'configuratorsLoaded', false);
+        NSA::setProperty($this->plugin, 'configuratorsLoaded', false);
 
         $configuratorMock->shouldReceive('reset')
             ->never();
@@ -789,10 +801,10 @@ final class AutomaticTest extends MockeryTestCase
             ->with('vendor-dir')
             ->andReturn(__DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'Configurator');
 
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->onPostAutoloadDump($this->mock(Event::class));
+        $this->plugin->setContainer($containerMock);
+        $this->plugin->onPostAutoloadDump($this->mock(Event::class));
 
-        NSA::setProperty($this->automatic, 'configuratorsLoaded', false);
+        NSA::setProperty($this->plugin, 'configuratorsLoaded', false);
     }
 
     public function testOnPostAutoloadDumpWithReset(): void
@@ -838,9 +850,9 @@ final class AutomaticTest extends MockeryTestCase
 
         $event = $this->mock(Event::class);
 
-        $this->automatic->setContainer($containerMock);
-        $this->automatic->onPostAutoloadDump($event);
-        $this->automatic->onPostAutoloadDump($event);
+        $this->plugin->setContainer($containerMock);
+        $this->plugin->onPostAutoloadDump($event);
+        $this->plugin->onPostAutoloadDump($event);
     }
 
     /**

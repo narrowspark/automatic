@@ -76,7 +76,8 @@
             "Narrowspark\\Automatic\\Test\\Security\\": "tests/Security/"
         },
         "files": [
-            "tests/Automatic/TmpDirMock.php"
+            "tests/Automatic/FunctionMock.php",
+            "tests/Prefetcher/FunctionMock.php"
         ]
     },
     "minimum-stability": "dev",
@@ -91,7 +92,10 @@
         "infection": "infection",
         "test-common": "phpunit --testsuite=\"Narrowspark Automatic Common Test Suite\"",
         "test-automatic": "phpunit --testsuite=\"Narrowspark Automatic Test Suite\"",
-        "changelog": "changelog-generator generate --config=\".changelog\" --file --prepend"
+        "changelog": "changelog-generator generate --config=\".changelog\" --file --prepend",
+        "auto-scripts": {
+
+        }
     },
     "support": {
         "issues": "https://github.com/narrowspark/automatic/issues",

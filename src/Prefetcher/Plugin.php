@@ -28,6 +28,7 @@ use Composer\Repository\RepositoryManager;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Traits\GetComposerVersionTrait;
+use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
 use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -94,8 +95,8 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
         $this->container = new Container($composer, $io);
 
-        /** @var \Narrowspark\Automatic\Prefetcher\LegacyTagsManager $tagsManager */
-        $tagsManager = $this->container->get(LegacyTagsManager::class);
+        /** @var \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager */
+        $tagsManager = $this->container->get(LegacyTagsManagerContract::class);
 
         $this->configureLegacyTagsManager($io, $tagsManager, $this->container->get('composer-extra'));
 
@@ -245,14 +246,17 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     /**
      * Configure the LegacyTagsManager with legacy package requires.
      *
-     * @param \Composer\IO\IOInterface                            $io
-     * @param \Narrowspark\Automatic\Prefetcher\LegacyTagsManager $tagsManager
-     * @param array                                               $extra
+     * @param \Composer\IO\IOInterface                                     $io
+     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
+     * @param array                                                        $extra
      *
      * @return void
      */
-    private function configureLegacyTagsManager(IOInterface $io, LegacyTagsManager $tagsManager, array $extra): void
-    {
+    private function configureLegacyTagsManager(
+        IOInterface $io,
+        LegacyTagsManagerContract $tagsManager,
+        array $extra
+    ): void {
         $envRequire = \getenv('AUTOMATIC_REQUIRE');
 
         if ($envRequire !== false) {
@@ -273,13 +277,13 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     /**
      * Add found legacy tags to the tags manager.
      *
-     * @param \Composer\IO\IOInterface                            $io
-     * @param array                                               $requires
-     * @param \Narrowspark\Automatic\Prefetcher\LegacyTagsManager $tagsManager
+     * @param \Composer\IO\IOInterface                                     $io
+     * @param array                                                        $requires
+     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
      *
      * @return void
      */
-    private function addLegacyTags(IOInterface $io, array $requires, LegacyTagsManager $tagsManager): void
+    private function addLegacyTags(IOInterface $io, array $requires, LegacyTagsManagerContract $tagsManager): void
     {
         foreach ($requires as $name => $version) {
             if (\is_int($name)) {
@@ -301,16 +305,16 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     /**
      * Extend the repository manager with a truncated composer repository and parallel downloader.
      *
-     * @param \Composer\Composer                                  $composer
-     * @param \Composer\IO\IOInterface                            $io
-     * @param \Narrowspark\Automatic\Prefetcher\LegacyTagsManager $tagsManager
+     * @param \Composer\Composer                                           $composer
+     * @param \Composer\IO\IOInterface                                     $io
+     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
      *
      * @return \Composer\Repository\RepositoryManager
      */
     private function extendRepositoryManager(
         Composer $composer,
         IOInterface $io,
-        LegacyTagsManager $tagsManager
+        LegacyTagsManagerContract $tagsManager
     ): RepositoryManager {
         $manager = RepositoryFactory::manager(
             $io,
@@ -350,8 +354,8 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     private function getErrorMessage(): ?string
     {
         // @codeCoverageIgnoreStart
-        if (! \extension_loaded('openssl')) {
-            return 'You must enable the openssl extension in your "php.ini" file';
+        if (! extension_loaded('openssl')) {
+            return 'You must enable the openssl extension in your [php.ini] file';
         }
 
         if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
@@ -365,12 +369,12 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     /**
      * Extend the composer object with some automatic settings.
      *
-     * @param array                                               $backtrace
-     * @param \Narrowspark\Automatic\Prefetcher\LegacyTagsManager $tagsManager
+     * @param array                                                        $backtrace
+     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
      *
      * @return void
      */
-    private function extendComposer($backtrace, LegacyTagsManager $tagsManager): void
+    private function extendComposer($backtrace, LegacyTagsManagerContract $tagsManager): void
     {
         foreach ($backtrace as $trace) {
             if (isset($trace['object']) && $trace['object'] instanceof Installer) {

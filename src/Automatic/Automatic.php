@@ -757,8 +757,8 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     private function getErrorMessage(IOInterface $io): ?string
     {
         // @codeCoverageIgnoreStart
-        if (! \extension_loaded('openssl')) {
-            return 'You must enable the openssl extension in your "php.ini" file';
+        if (! extension_loaded('openssl')) {
+            return 'You must enable the openssl extension in your [php.ini] file';
         }
 
         if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {

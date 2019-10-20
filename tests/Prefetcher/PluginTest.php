@@ -9,6 +9,7 @@ use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
+use Narrowspark\Automatic\Prefetcher\FunctionMock;
 use Narrowspark\Automatic\Prefetcher\Plugin;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
@@ -101,5 +102,24 @@ final class PluginTest extends MockeryTestCase
 
         $this->plugin->setContainer($containerMock);
         $this->plugin->onFileDownload($event);
+    }
+
+    public function testActivateWithNoOpenssl(): void
+    {
+        FunctionMock::$isOpensslActive = false;
+
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('<warning>Narrowspark Automatic Prefetcher has been disabled. You must enable the openssl extension in your [php.ini] file</warning>');
+
+        $this->plugin->activate($this->composerMock, $this->ioMock);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowMockingNonExistentMethods(bool $allow = false): void
+    {
+        parent::allowMockingNonExistentMethods(true);
     }
 }

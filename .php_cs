@@ -5,6 +5,7 @@ $config = new Config(null, [
     'native_function_invocation' => [
         'exclude' => [
             'getcwd',
+            'extension_loaded',
         ],
     ],
     'comment_to_phpdoc' => false,

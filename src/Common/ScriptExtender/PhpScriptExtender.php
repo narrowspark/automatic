@@ -8,7 +8,7 @@ use Composer\Util\ProcessExecutor;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Symfony\Component\Process\PhpExecutableFinder;
 
-final class PhpScriptExtender extends AbstractScriptExtender
+class PhpScriptExtender extends AbstractScriptExtender
 {
     /**
      * {@inheritdoc}

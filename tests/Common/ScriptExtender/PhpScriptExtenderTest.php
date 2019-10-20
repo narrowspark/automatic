@@ -29,6 +29,13 @@ final class PhpScriptExtenderTest extends TestCase
         $this->extender = new PhpScriptExtender(new Composer(), new NullIO(), []);
     }
 
+    public function testClassIsNotFinal(): void
+    {
+        $reflection = new \ReflectionClass(PhpScriptExtender::class);
+
+        self::assertFalse($reflection->isFinal());
+    }
+
     public function testGetType(): void
     {
         self::assertSame('php-script', PhpScriptExtender::getType());

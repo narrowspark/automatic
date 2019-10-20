@@ -80,6 +80,8 @@ final class AutomaticTest extends MockeryTestCase
     {
         parent::tearDown();
 
+        FunctionMock::$isOpensslActive = true;
+
         \putenv('COMPOSER_CACHE_DIR=');
         \putenv('COMPOSER_CACHE_DIR');
 
@@ -198,8 +200,6 @@ final class AutomaticTest extends MockeryTestCase
             ->with('<warning>Narrowspark Automatic has been disabled. You must enable the openssl extension in your [php.ini] file</warning>');
 
         $this->plugin->activate($this->composerMock, $this->ioMock);
-
-        FunctionMock::$isOpensslActive = true;
     }
 
     public function testRecordWithUpdateRecord(): void

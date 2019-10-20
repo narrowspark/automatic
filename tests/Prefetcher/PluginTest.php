@@ -43,6 +43,16 @@ final class PluginTest extends MockeryTestCase
         };
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        FunctionMock::$isOpensslActive = true;
+    }
+
     public function testGetSubscribedEvents(): void
     {
         NSA::setProperty($this->plugin, 'activated', true);
@@ -113,8 +123,6 @@ final class PluginTest extends MockeryTestCase
             ->with('<warning>Narrowspark Automatic Prefetcher has been disabled. You must enable the openssl extension in your [php.ini] file</warning>');
 
         $this->plugin->activate($this->composerMock, $this->ioMock);
-
-        FunctionMock::$isOpensslActive = true;
     }
 
     /**

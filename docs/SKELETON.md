@@ -38,7 +38,7 @@ The following example shows how your `composer.json` can look:
 
 To create a skeleton generator you need to extend the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` class.
 
-The example below shows you, how your generator class should look after the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` was extend:
+The example below shows you, how your generator class must look after the `Narrowspark\Automatic\Common\Generator\AbstractGenerator` was extend:
 
 ```php
 <?php
@@ -101,4 +101,4 @@ class Generator extends AbstractGenerator
 }
 ```
 
-> NOTE: You can always register only one skeleton type of a generator.
+> **Note** You can always register only one skeleton type of a generator.

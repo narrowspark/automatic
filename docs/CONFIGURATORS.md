@@ -13,7 +13,7 @@ Narrowspark Automatic comes with several types of tasks, which are called **conf
 
 ### Copy Configurator `copy`
 
-Copies files or directories from the Composer package contents to your app. It’s defined as an associative array where the key is the original file/directory and the value is the target file/directory.
+Copies files or directories from the Composer package contents to your app. It’s defined as an associative array where the key is the original file or directory and the value is the target file or directory.
 
 This example copies the ``bin/check.php`` script of the package into the binary
 directory of the app:
@@ -136,9 +136,7 @@ final class ScriptExtender extends AbstractScriptExtender
 
 ### Gitignore Configurator `gitignore`
 
-Adds patterns to the ``.gitignore`` file in your project. Define those
-patterns as a simple array of strings (a `PHP_EOL` character is added after
-each line):
+Adds patterns to the ``.gitignore`` file in your project. Define those patterns as a simple array of strings (a `PHP_EOL` character is added after each line):
 
 ```json
 {
@@ -244,11 +242,11 @@ This example shows you, how to add a new Package Configurator in your `composer.
 
 After you choose a way, you can create your Configurator(s).
 
-> NOTE: You can’t overwrite registered configurators.
+> **Note** You can’t overwrite registered configurators.
 
 To create a configurator you need to extend the `Narrowspark\Automatic\Common\Configurator\AbstractConfigurator` class.
 
-The example below shows you, how your configurator class should look after the `Narrowspark\Automatic\Common\Configurator\AbstractConfigurator` was extend:
+The example below shows you, how your configurator class must look after the `Narrowspark\Automatic\Common\Configurator\AbstractConfigurator` was extend:
 
 ```php
 <?php

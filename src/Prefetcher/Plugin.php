@@ -257,7 +257,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         LegacyTagsManagerContract $tagsManager,
         array $extra
     ): void {
-        $envRequire = \getenv('AUTOMATIC_REQUIRE');
+        $envRequire = \getenv('AUTOMATIC_PREFETCHER_REQUIRE');
 
         if ($envRequire !== false) {
             $requires = [];

@@ -88,7 +88,7 @@ If packages are found with this type, all skeletons will be saved in the `automa
 
 This means you can execute the following command: `composer create-project your/project` to create a Automatic-enabled application, Automatic will ask which skeleton should be generated for your application.
 
-Read the [skeleton documentation](doc/SKELETON.md) to learn everything about how to create skeletons for your own application.
+Read the [skeleton documentation](docs/SKELETON.md) to learn everything about how to create skeletons for your own application.
 
 Narrowspark Automatic tasks are defined in a `automatic.json` file or in the composer extra key `automatic` and can contain any number of other files and directories. For example, this is the `automatic.json` for `viserio/console`:
 
@@ -117,7 +117,7 @@ Now you can run `viserio console` commands in the `auto-scripts` section of your
 The instructions defined in this `automatic.json` file are also used by Narrowspark Automatic when uninstalling dependencies (e.g. `composer remove viserio/console`) to undo all changes.
 This means that Automatic can remove the Console Provider and Proxy from the application and remove the script executor from Narrowspark Automatic.
 
-Read the [configuration documentation](doc/CONFIGURATORS.md) to learn everything about how to create configuration for your own packages.
+Read the [configuration documentation](docs/CONFIGURATORS.md) to learn everything about how to create configuration for your own packages.
 
 Automatic extends Composer
 ------------

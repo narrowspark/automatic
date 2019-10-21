@@ -66,7 +66,7 @@ Credits
 -------------
 
 - [Daniel Bannert](https://github.com/prisis)
-- [All Contributors](../../contributors)
+- [All Contributors](https://github.com/narrowspark/automatic/graphs/contributors)
 - Narrowspark Automatic Prefetcher has been inspired by [symfony/flex](https://github.com/symfony/flex)
 
 License

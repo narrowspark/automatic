@@ -9,14 +9,14 @@ Configurators define the different tasks executed when installing a dependency, 
 
 The package only contain the tasks needed to install and configure the dependency, because Narrowspark Automatic Configurators are smart enough to reverse those tasks when uninstalling and unconfiguring the dependencies.
 
-Narrowspark Automatic comes with several types of tasks, which are called **configurators**: `copy`, `env`, `composer-scripts`, `composer-auto-scripts`, `gitignore` and a special configurator `post-messages`.
+Narrowspark Automatic comes with several types of tasks, which are called **configurators:** `copy`, `env`, `composer-scripts`, `composer-auto-scripts`, `gitignore` and a special configurator `post-messages`.
 
 ### Copy Configurator `copy`
 
-Copies files or directories from the Composer package contents to your application. It's defined as an associative array where the key is the original file/directory and the value is the target file/directory.
+Copies files or directories from the Composer package contents to your app. It’s defined as an associative array where the key is the original file/directory and the value is the target file/directory.
 
 This example copies the ``bin/check.php`` script of the package into the binary
-directory of the application:
+directory of the app:
 
 ```json
 {
@@ -28,7 +28,7 @@ directory of the application:
 }
 ```
 
-The `%BIN_DIR%` string is a special value that it's turned into the absolute
+The `%BIN_DIR%` string is a special value that it’s turned into the absolute
 path of the binaries directory. You can access any variable defined in
 the `extra` section of your root `composer.json` file:
 
@@ -47,7 +47,7 @@ Now you can use `%MY_SPECIAL_DIR%` in your configurator.
 ### Env Configurator `env`
 
 Adds the given list of environment variables to the `.env` and `.env.dist`
-files stored in the root of your application project:
+files stored in the root of your app project:
 
 ```json
 {
@@ -70,7 +70,7 @@ APP_ENV=dev
 
 The `###> your-package-name-here ###` section separators are needed by Narrowspark Automatic
 to detect the contents added by this dependency in case you uninstall it later.
-> !!! Don't remove or modify these separators.
+> !!! Don’t remove or modify these separators.
 
 ### Composer Auto Scripts Configurator `composer-auto-scripts`
 
@@ -106,7 +106,7 @@ Only the composer `command`, `installer` and `package` events are supported, you
 ```
 
 You can create your own script executor, create a new executor class in your `Automatic` folder, inside your Package. The class needs to extend `Narrowspark\Automatic\Common\ScriptExtender\AbstractScriptExtender`.
-You have a example below:
+You have an example below:
 
 ```php
 <?php
@@ -244,7 +244,7 @@ This example shows you, how to add a new Package Configurator in your `composer.
 
 After you choose a way, you can create your Configurator(s).
 
-> NOTE: You can't overwrite registered configurators.
+> NOTE: You can’t overwrite registered configurators.
 
 To create a configurator you need to extend the `Narrowspark\Automatic\Common\Configurator\AbstractConfigurator` class.
 

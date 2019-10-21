@@ -42,7 +42,7 @@ Credits
 -------------
 
 - [Daniel Bannert](https://github.com/prisis)
-- [All Contributors](../../contributors)
+- [All Contributors](https://github.com/narrowspark/automatic/graphs/contributors)
 
 License
 -------------

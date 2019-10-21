@@ -1,6 +1,8 @@
 {
   "filters": {},
   "rules": {
+    "en-capitalization": true,
+    "footnote-order": true,
     "no-todo": true,
     "no-dead-link": {
         "ignore": [
@@ -26,6 +28,24 @@
             "remain",
             "execute"
         ]
-    }
+    },
+    "@textlint-rule/google-tone": true,
+    "@textlint-rule/google-dashes": true,
+    "@textlint-rule/google-slashes": true,
+    "@textlint-rule/google-commas": true,
+    "@textlint-rule/google-ellipses": true,
+    "@textlint-rule/google-possessives": true,
+    "@textlint-rule/google-abbreviations": true,
+    "@textlint-rule/google-word-list": true,
+    "@textlint-rule/google-articles": true,
+    "@textlint-rule/google-clause-order": true,
+    "@textlint-rule/google-contractions": true,
+    "@textlint-rule/google-plurals-parentheses": true,
+    "@textlint-rule/google-hyphens": true,
+    "@textlint-rule/google-sentence-spacing": true,
+    "@textlint-rule/google-quotation-marks": true,
+    "@textlint-rule/google-exclamation-points": true,
+    "@textlint-rule/google-capitalization": true,
+    "@textlint-rule/google-colons": true
   }
 }

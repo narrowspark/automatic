@@ -40,10 +40,7 @@
     "autoload": {
         "psr-4": {
             "Narrowspark\\Automatic\\Prefetcher\\": "/"
-        },
-        "files": [
-            "alias.php"
-        ]
+        }
     },
     "support": {
         "issues": "https://github.com/narrowspark/automatic/issues",

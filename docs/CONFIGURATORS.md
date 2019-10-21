@@ -136,7 +136,8 @@ final class ScriptExtender extends AbstractScriptExtender
 
 ### Gitignore Configurator `gitignore`
 
-Adds patterns to the `.gitignore` file in your project. Define those patterns as a simple array of strings (a `PHP_EOL` character is added after each line):
+Adds patterns to the `.gitignore` file in your project.
+Define those patterns as an array of strings (a `\n` character is added after each line):
 
 ```json
 {
@@ -161,7 +162,7 @@ Displays contents in the command console after the package has been installed.
 Avoid outputting meaningless information and use it only when you need to show
 help messages or the next step actions.
 
-* The contents must be defined in the `automatic` section of your package composer.json or the `automatic.json` file (a `PHP_EOL` character is added after each line). [Symfony Console styles and colors](https://symfony.com/doc/current/console/coloring.html) are supported too:
+* The contents must be defined in the `automatic` section of your package composer.json or the `automatic.json` file (a `\n` character is added after each line). [Symfony Console styles and colors](https://symfony.com/doc/current/console/coloring.html) are supported too:
 
 ```json
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Prefetcher;
+namespace Narrowspark\Automatic\Prefetcher\Downloader;
 
 use Composer\Config;
 use Composer\Downloader\TransportException;
@@ -42,7 +42,7 @@ class ParallelDownloader extends RemoteFilesystem
     /**
      * A ParallelDownloader instance.
      *
-     * @var \Narrowspark\Automatic\Prefetcher\CurlDownloader
+     * @var \Narrowspark\Automatic\Prefetcher\Downloader\CurlDownloader
      */
     private $downloader;
 
@@ -156,6 +156,7 @@ class ParallelDownloader extends RemoteFilesystem
     public function download(array &$nextArgs, callable $nextCallback, bool $quiet = true, bool $progress = true): void
     {
         $previousState = [$this->quiet, $this->progress, $this->downloadCount, $this->nextCallback, $this->sharedState];
+
         $this->quiet = $quiet;
         $this->progress = $progress;
         $this->downloadCount = \count($nextArgs);

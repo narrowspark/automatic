@@ -6,7 +6,7 @@ namespace Narrowspark\Automatic\Security\Downloader;
 
 use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
-use Narrowspark\Automatic\Security\SecurityPlugin;
+use Narrowspark\Automatic\Security\Plugin;
 
 abstract class AbstractDownloader implements DownloaderContract
 {
@@ -32,7 +32,7 @@ abstract class AbstractDownloader implements DownloaderContract
     {
         return \sprintf(
             'Narrowspark-Security-Audit/%s (%s; %s; %s%s)',
-            SecurityPlugin::VERSION,
+            Plugin::VERSION,
             \function_exists('php_uname') ? \php_uname('s') : 'Unknown',
             \function_exists('php_uname') ? \php_uname('r') : 'Unknown',
             'PHP ' . \PHP_MAJOR_VERSION . '.' . \PHP_MINOR_VERSION . '.' . \PHP_RELEASE_VERSION,

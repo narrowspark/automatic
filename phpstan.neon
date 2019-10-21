@@ -1,12 +1,13 @@
 includes:
 #    - vendor/pepakriz/phpstan-exception-rules/extension.neon
-    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
-    - vendor/phpstan/phpstan-mockery/extension.neon
-    - vendor/phpstan/phpstan-phpunit/extension.neon
-    - vendor/phpstan/phpstan-phpunit/rules.neon
-    - vendor/phpstan/phpstan-strict-rules/rules.neon
-#    - vendor/thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
-    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    - %rootDir%/../phpstan-deprecation-rules/rules.neon
+    - %rootDir%/../phpstan-mockery/extension.neon
+    - %rootDir%/../phpstan-phpunit/extension.neon
+    - %rootDir%/../phpstan-phpunit/rules.neon
+    - %rootDir%/../phpstan-strict-rules/rules.neon
+#    - %rootDir%/../../thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
+    - %rootDir%/../phpstan/conf/bleedingEdge.neon
+    - %rootDir%/../../slam/phpstan-extensions/conf/slam-rules.neon
 
 parameters:
     level: max
@@ -16,20 +17,21 @@ parameters:
         - %currentWorkingDirectory%/src
 
     excludes_analyse:
-        - %currentWorkingDirectory%/src/Automatic/Prefetcher/CurlDownloader.php
-        - %currentWorkingDirectory%/src/Automatic/Prefetcher/ComposerRepository.php
-        - %currentWorkingDirectory%/src/Automatic/Prefetcher/ParallelDownloader.php
-        - %currentWorkingDirectory%/src/Automatic/Prefetcher/Prefetcher.php
-        - %currentWorkingDirectory%/src/Automatic/Prefetcher/TruncatedComposerRepository.php
+        - %currentWorkingDirectory%/src/Prefetcher/Downloader/CurlDownloader.php
+        - %currentWorkingDirectory%/src/Prefetcher/Downloader/ParallelDownloader.php
+        - %currentWorkingDirectory%/src/Prefetcher/ComposerRepository.php
+        - %currentWorkingDirectory%/src/Prefetcher/Prefetcher.php
+        - %currentWorkingDirectory%/src/Prefetcher/TruncatedComposerRepository.php
+        - %currentWorkingDirectory%/src/Automatic/Configurator/Traits/AppendToFileTrait.php
 
     ignoreErrors:
+        - '#should end with "Interface" suffix#'
         # QuestionInstallationManager
         - '#\$package of method Composer\\Package\\Version\\VersionSelector\:\:findRecommendedRequireVersion\(\) expects Composer\\Package\\PackageInterface, Composer\\Package\\PackageInterface\|true given#'
         # ScriptExtender
         - '#Parameter \#1 \$stream of class Symfony\\Component\\Console\\Output\\StreamOutput constructor expects resource, resource\|false given#'
 
         - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
-        - '#Call to function method_exists\(\) with Symfony\\Component\\Filesystem\\Filesystem and #'
 
         # Automatic
         - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'
@@ -48,4 +50,6 @@ parameters:
         - "#Casting to string something that's already string#"
 
         # GetGenericPropertyReaderTrait
-        - '#Variable property access on mixed#'
+        - '#Variable property access on object#'
+
+        - '#Parameter \#2 \$constraint of anonymous function has no typehint#'

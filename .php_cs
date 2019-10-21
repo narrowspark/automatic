@@ -5,6 +5,7 @@ $config = new Config(null, [
     'native_function_invocation' => [
         'exclude' => [
             'getcwd',
+            'extension_loaded',
         ],
     ],
     'comment_to_phpdoc' => false,
@@ -16,6 +17,7 @@ $config->getFinder()
     ->in(__DIR__)
     ->exclude('build')
     ->exclude('vendor')
+    ->exclude('src/Prefetcher/Common')
     ->name('*.php')
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);

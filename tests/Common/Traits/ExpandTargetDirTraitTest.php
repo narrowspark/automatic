@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Common\Test\Traits;
+namespace Narrowspark\Automatic\Test\Common\Traits;
 
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use PHPUnit\Framework\TestCase;

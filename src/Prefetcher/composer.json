@@ -1,0 +1,52 @@
+{
+    "name": "narrowspark/automatic-composer-prefetcher",
+    "type": "composer-plugin",
+    "description": "A composer plugin that prefetch composer packages for a faster download.",
+    "keywords": [
+        "narrowspark",
+        "viserio",
+        "discovery",
+        "automatic",
+        "configurators",
+        "skeleton",
+        "library",
+        "composer",
+        "prefetcher",
+        "prefetch"
+    ],
+    "homepage": "http://github.com/narrowspark/automatic",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel Bannert",
+            "email": "d.bannert@anolilab.de",
+            "homepage": "http://www.anolilab.de",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.1",
+        "composer-plugin-api": "^1.0"
+    },
+    "require-dev": {
+        "ext-curl": "*"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        },
+        "class": "Narrowspark\\Automatic\\Prefetcher\\Plugin"
+    },
+    "autoload": {
+        "psr-4": {
+            "Narrowspark\\Automatic\\Prefetcher\\": "/"
+        },
+        "files": [
+            "alias.php"
+        ]
+    },
+    "support": {
+        "issues": "https://github.com/narrowspark/automatic/issues",
+        "source": "https://github.com/narrowspark/automatic"
+    }
+}

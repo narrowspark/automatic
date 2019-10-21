@@ -21,6 +21,7 @@ use Composer\Repository\RepositoryFactory;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 abstract class AbstractInstallationManager
 {
@@ -103,6 +104,13 @@ abstract class AbstractInstallationManager
     protected $composerBackup;
 
     /**
+     * A Filesystem instance.
+     *
+     * @var \Symfony\Component\Filesystem\Filesystem
+     */
+    protected $filesystem;
+
+    /**
      * Use this class to create a new Installation manager.
      *
      * @param \Composer\Composer                              $composer
@@ -116,6 +124,7 @@ abstract class AbstractInstallationManager
         $this->input = $input;
         $this->jsonFile = new JsonFile(Factory::getComposerFile());
         $this->composerBackup = (string) \file_get_contents($this->jsonFile->getPath());
+        $this->filesystem = new Filesystem();
 
         $this->rootPackage = $this->composer->getPackage();
         $this->stability = $this->rootPackage->getMinimumStability() ?: 'stable';
@@ -156,12 +165,7 @@ abstract class AbstractInstallationManager
         $package = $this->versionSelector->findBestCandidate($name, null, null, 'stable');
 
         if ($package === false) {
-            throw new InvalidArgumentException(\sprintf(
-                'Could not find package [%s] at any version for your minimum-stability [%s].'
-                . ' Check the package spelling or your minimum-stability.',
-                $name,
-                $this->stability
-            ));
+            throw new InvalidArgumentException(\sprintf('Could not find package [%s] at any version for your minimum-stability [%s]. Check the package spelling or your minimum-stability.', $name, $this->stability));
         }
 
         return $this->versionSelector->findRecommendedRequireVersion($package);
@@ -213,7 +217,7 @@ abstract class AbstractInstallationManager
                 $jsonManipulator->addLink('require-dev', $name, $version, $sortPackages);
             }
 
-            \file_put_contents($this->jsonFile->getPath(), $jsonManipulator->getContents());
+            $this->filesystem->dumpFile($this->jsonFile->getPath(), $jsonManipulator->getContents());
         } elseif ($type === self::REMOVE) {
             $jsonFileContent = $this->jsonFile->read();
 

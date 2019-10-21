@@ -6,46 +6,29 @@ namespace Narrowspark\Automatic;
 
 use Composer\Composer;
 use Composer\Config;
-use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\ClassFinder;
+use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
-use Narrowspark\Automatic\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Operation\Install;
 use Narrowspark\Automatic\Operation\Uninstall;
-use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
-use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
  */
-final class Container implements ContainerContract
+final class Container extends AbstractContainer
 {
     use GetGenericPropertyReaderTrait;
-
-    /**
-     * The array of closures defining each entry of the container.
-     *
-     * @var array<string, callable>
-     */
-    private $data;
-
-    /**
-     * The array of entries once they have been instantiated.
-     *
-     * @var array<string, mixed>
-     */
-    private $objects;
 
     /**
      * Instantiate the container.
@@ -57,7 +40,7 @@ final class Container implements ContainerContract
     {
         $genericPropertyReader = $this->getGenericPropertyReader();
 
-        $this->data = [
+        parent::__construct([
             Composer::class => static function () use ($composer) {
                 return $composer;
             },
@@ -140,30 +123,6 @@ final class Container implements ContainerContract
                     $container->get(ClassFinder::class)
                 );
             },
-            RemoteFilesystem::class => static function (ContainerContract $container) {
-                return Factory::createRemoteFilesystem(
-                    $container->get(IOInterface::class),
-                    $container->get(Config::class)
-                );
-            },
-            ParallelDownloader::class => static function (ContainerContract $container) {
-                $rfs = $container->get(RemoteFilesystem::class);
-
-                return new ParallelDownloader(
-                    $container->get(IOInterface::class),
-                    $container->get(Config::class),
-                    $rfs->getOptions(),
-                    $rfs->isTlsDisabled()
-                );
-            },
-            Prefetcher::class => static function (ContainerContract $container) {
-                return new Prefetcher(
-                    $container->get(Composer::class),
-                    $container->get(IOInterface::class),
-                    $container->get(InputInterface::class),
-                    $container->get(ParallelDownloader::class)
-                );
-            },
             ScriptExecutor::class => static function (ContainerContract $container) {
                 $scriptExecutor = new ScriptExecutor(
                     $container->get(Composer::class),
@@ -177,41 +136,9 @@ final class Container implements ContainerContract
 
                 return $scriptExecutor;
             },
-            LegacyTagsManager::class => static function (ContainerContract $container) {
-                return new LegacyTagsManager($container->get(IOInterface::class));
+            Filesystem::class => static function () {
+                return new Filesystem();
             },
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function set(string $id, callable $callback): void
-    {
-        $this->data[$id] = $callback;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function get(string $id)
-    {
-        if (isset($this->objects[$id])) {
-            return $this->objects[$id];
-        }
-
-        if (! isset($this->data[$id])) {
-            throw new InvalidArgumentException(\sprintf('Identifier [%s] is not defined.', $id));
-        }
-
-        return $this->objects[$id] = $this->data[$id]($this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAll(): array
-    {
-        return $this->data;
+        ]);
     }
 }

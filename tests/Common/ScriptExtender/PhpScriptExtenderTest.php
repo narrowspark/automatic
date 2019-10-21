@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Common\Test;
+namespace Narrowspark\Automatic\Test\Common;
 
 use Composer\Composer;
 use Composer\IO\NullIO;
@@ -27,6 +27,13 @@ final class PhpScriptExtenderTest extends TestCase
         parent::setUp();
 
         $this->extender = new PhpScriptExtender(new Composer(), new NullIO(), []);
+    }
+
+    public function testClassIsNotFinal(): void
+    {
+        $reflection = new \ReflectionClass(PhpScriptExtender::class);
+
+        self::assertFalse($reflection->isFinal());
     }
 
     public function testGetType(): void

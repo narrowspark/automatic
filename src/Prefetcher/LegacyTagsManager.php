@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic;
+namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\IO\IOInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\VersionParser;
-use Narrowspark\Automatic\Common\Contract\Resettable;
+use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
 
-final class LegacyTagsManager implements Resettable
+final class LegacyTagsManager implements LegacyTagsManagerContract
 {
     /**
      * The composer io implementation.
@@ -47,12 +47,7 @@ final class LegacyTagsManager implements Resettable
     }
 
     /**
-     * Add a legacy package constraint.
-     *
-     * @param string $name
-     * @param string $require
-     *
-     * @return void
+     * {@inheritdoc}
      */
     public function addConstraint(string $name, string $require): void
     {
@@ -63,16 +58,12 @@ final class LegacyTagsManager implements Resettable
     }
 
     /**
-     * Check if the provider is supported.
-     *
-     * @param string $file the composer provider file name
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function hasProvider(string $file): bool
     {
         foreach ($this->legacyTags as $name => $constraint) {
-            [$namespace, $packageName] = \explode('/', $name, 2);
+            [$namespace,] = \explode('/', $name, 2);
 
             if (\strpos($file, \sprintf('provider-%s$', $namespace)) !== false) {
                 return true;
@@ -83,11 +74,7 @@ final class LegacyTagsManager implements Resettable
     }
 
     /**
-     * Remove legacy tags from packages.
-     *
-     * @param array $data
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function removeLegacyTags(array $data): array
     {

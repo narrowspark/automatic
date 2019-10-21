@@ -68,11 +68,7 @@ abstract class AbstractInstaller extends LibraryInstaller
         $autoload = $package->getAutoload();
 
         if (\count($autoload['psr-4']) === 0) {
-            throw new UnexpectedValueException(\sprintf(
-                'Error while installing [%s], %s packages should have a namespace defined in their psr4 key to be usable.',
-                $package->getPrettyName(),
-                static::TYPE
-            ));
+            throw new UnexpectedValueException(\sprintf('Error while installing [%s], %s packages should have a namespace defined in their psr4 key to be usable.', $package->getPrettyName(), static::TYPE));
         }
 
         parent::install($repo, $package);

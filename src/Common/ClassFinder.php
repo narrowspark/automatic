@@ -130,7 +130,7 @@ final class ClassFinder implements ResettableContract
      */
     public function setExcludes(array $excludes): self
     {
-        $this->excludes = \array_map(static function ($value) {
+        $this->excludes = \array_map(static function (string $value) {
             return \trim($value, '/');
         }, $excludes);
 

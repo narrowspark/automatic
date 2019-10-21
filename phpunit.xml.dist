@@ -26,12 +26,20 @@
     </php>
 
     <testsuites>
+        <testsuite name="Narrowspark Automatic Internal Test Suite">
+            <directory>./tests/Internal/</directory>
+        </testsuite>
+
         <testsuite name="Narrowspark Automatic Test Suite">
             <directory>./tests/Automatic/</directory>
         </testsuite>
 
         <testsuite name="Narrowspark Automatic Common Test Suite">
             <directory>./tests/Common/</directory>
+        </testsuite>
+
+        <testsuite name="Narrowspark Automatic Prefetcher Test Suite">
+            <directory>./tests/Prefetcher/</directory>
         </testsuite>
 
         <testsuite name="Narrowspark Automatic Security Test Suite">
@@ -45,6 +53,9 @@
             <exclude>
                 <directory>./vendor</directory>
                 <directory>./tests</directory>
+                <directory>./src/Prefetcher/Common/</directory>
+                <file>./src/Prefetcher/alias.php</file>
+                <file>./build/update-mirror-classes.php</file>
             </exclude>
         </whitelist>
     </filter>

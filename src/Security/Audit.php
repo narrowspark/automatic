@@ -101,7 +101,7 @@ final class Audit
      */
     public function checkLock(string $lock): array
     {
-        if (! \file_exists($lock)) {
+        if (! $this->filesystem->exists($lock)) {
             throw new RuntimeException('Lock file does not exist.');
         }
 

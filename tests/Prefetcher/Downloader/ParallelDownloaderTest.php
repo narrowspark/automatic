@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Test\Prefetcher;
+namespace Narrowspark\Automatic\Test\Prefetcher\Downloader;
 
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
-use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
+use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
@@ -19,7 +19,7 @@ final class ParallelDownloaderTest extends MockeryTestCase
 {
     use ArrangeComposerClasses;
 
-    /** @var \Narrowspark\Automatic\Prefetcher\ParallelDownloader */
+    /** @var \Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader */
     private $parallelDownloader;
 
     /**

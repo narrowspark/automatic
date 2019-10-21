@@ -10,26 +10,22 @@ use Composer\Downloader\DownloadManager;
 use Composer\IO\BufferIO;
 use Composer\IO\IOInterface;
 use Composer\Package\RootPackageInterface;
-use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Container;
 use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
-use Narrowspark\Automatic\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
-use Narrowspark\Automatic\LegacyTagsManager;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\Operation\Install;
 use Narrowspark\Automatic\Operation\Uninstall;
 use Narrowspark\Automatic\PackageConfigurator;
-use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
-use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -84,7 +80,7 @@ final class ContainerTest extends MockeryTestCase
     }
 
     /**
-     * @dataProvider instancesProvider
+     * @dataProvider provideContainerInstancesCases
      *
      * @param string $key
      * @param mixed  $expected
@@ -105,7 +101,7 @@ final class ContainerTest extends MockeryTestCase
     /**
      * @return array
      */
-    public function instancesProvider(): array
+    public function provideContainerInstancesCases(): iterable
     {
         return [
             [Composer::class, Composer::class],
@@ -129,36 +125,14 @@ final class ContainerTest extends MockeryTestCase
             [ConfiguratorContract::class, Configurator::class],
             [Install::class, Install::class],
             [Uninstall::class, Uninstall::class],
-            [RemoteFilesystem::class, RemoteFilesystem::class],
-            [ParallelDownloader::class, ParallelDownloader::class],
-            [Prefetcher::class, Prefetcher::class],
             [ScriptExecutor::class, ScriptExecutor::class],
             [PackageConfiguratorContract::class, PackageConfigurator::class],
-            [LegacyTagsManager::class, LegacyTagsManager::class],
+            [Filesystem::class, Filesystem::class],
         ];
-    }
-
-    public function testGetThrowException(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Identifier [test] is not defined.');
-
-        static::$staticContainer->get('test');
-    }
-
-    public function testGetCache(): void
-    {
-        self::assertSame('/vendor', static::$staticContainer->get('vendor-dir'));
-
-        static::$staticContainer->set('vendor-dir', static function () {
-            return 'test';
-        });
-
-        self::assertNotSame('test', static::$staticContainer->get('vendor-dir'));
     }
 
     public function testGetAll(): void
     {
-        self::assertCount(19, static::$staticContainer->getAll());
+        self::assertCount(16, static::$staticContainer->getAll());
     }
 }

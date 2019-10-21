@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Prefetcher;
+namespace Narrowspark\Automatic\Prefetcher\Downloader;
 
 use Composer\Downloader\TransportException;
+use Narrowspark\Automatic\Prefetcher\Common\Contract\Exception\RuntimeException;
 
 /**
  * Ported from symfony flex, see original.
@@ -78,9 +79,15 @@ final class CurlDownloader
      */
     public function __construct()
     {
-        $this->multiHandle = $mh = \curl_multi_init();
+        $multiCurl = \curl_multi_init();
 
-        \curl_multi_setopt($mh, \CURLMOPT_PIPELINING, /*CURLPIPE_MULTIPLEX*/ 2);
+        if ($multiCurl === false) {
+            throw new RuntimeException('Initializing a new cURL multi handler failed.');
+        }
+
+        $this->multiHandle = $mh = $multiCurl;
+
+        \curl_multi_setopt($mh, \CURLMOPT_PIPELINING, /* CURLPIPE_MULTIPLEX */ 2);
 
         if (\defined('CURLMOPT_MAX_HOST_CONNECTIONS')) {
             \curl_multi_setopt($mh, \CURLMOPT_MAX_HOST_CONNECTIONS, 10);
@@ -88,9 +95,9 @@ final class CurlDownloader
 
         $this->shareHandle = $sh = \curl_share_init();
 
-        \curl_share_setopt($sh, \CURLSHOPT_SHARE, \CURL_LOCK_DATA_COOKIE);
-        \curl_share_setopt($sh, \CURLSHOPT_SHARE, \CURL_LOCK_DATA_DNS);
-        \curl_share_setopt($sh, \CURLSHOPT_SHARE, \CURL_LOCK_DATA_SSL_SESSION);
+        \curl_share_setopt($sh, \CURLSHOPT_SHARE, (string) \CURL_LOCK_DATA_COOKIE);
+        \curl_share_setopt($sh, \CURLSHOPT_SHARE, (string) \CURL_LOCK_DATA_DNS);
+        \curl_share_setopt($sh, \CURLSHOPT_SHARE, (string) \CURL_LOCK_DATA_SSL_SESSION);
     }
 
     /**
@@ -108,11 +115,11 @@ final class CurlDownloader
         $ch = \curl_init();
         $hd = \fopen('php://temp/maxmemory:32768', 'w+b');
 
-        if ($file && ! $fd = @\fopen($file . '~', 'w+b')) {
+        if ($file !== null && ! $fd = @\fopen($file . '~', 'w+b')) {
             $file = null;
         }
 
-        if (! $file) {
+        if ($file === null) {
             $fd = @\fopen('php://temp/maxmemory:524288', 'w+b');
         }
 

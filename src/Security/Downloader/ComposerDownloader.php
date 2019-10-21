@@ -7,6 +7,7 @@ namespace Narrowspark\Automatic\Security\Downloader;
 use Composer\CaBundle\CaBundle;
 use Composer\Util\StreamContextFactory;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
+use Symfony\Component\Filesystem\Filesystem;
 
 final class ComposerDownloader extends AbstractDownloader
 {
@@ -31,8 +32,9 @@ final class ComposerDownloader extends AbstractDownloader
         ];
 
         $caPathOrFile = CaBundle::getSystemCaRootBundlePath();
+        $filesystem = new Filesystem();
 
-        if (\is_dir($caPathOrFile) || (\is_link($caPathOrFile) && \is_dir(\readlink($caPathOrFile)))) {
+        if (\is_dir($caPathOrFile) || (\is_link($caPathOrFile) && \is_dir((string) $filesystem->readlink($caPathOrFile)))) {
             $opts['ssl']['capath'] = $caPathOrFile;
         } else {
             $opts['ssl']['cafile'] = $caPathOrFile;

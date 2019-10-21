@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Test;
+namespace Narrowspark\Automatic\Test\Prefetcher;
 
 use Composer\IO\IOInterface;
-use Narrowspark\Automatic\LegacyTagsManager;
+use Narrowspark\Automatic\Prefetcher\LegacyTagsManager;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
@@ -21,7 +21,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     /** @var \Composer\IO\IOInterface|\Mockery\MockInterface */
     private $ioMock;
 
-    /** @var \Narrowspark\Automatic\LegacyTagsManager */
+    /** @var \Narrowspark\Automatic\Prefetcher\LegacyTagsManager */
     private $tagsManger;
 
     /**
@@ -31,14 +31,14 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $pPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'Packagist';
+        $pPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'Packagist' . \DIRECTORY_SEPARATOR;
 
         $this->downloadFileList = [
-            'cakephp$cakephp' => $pPath . \DIRECTORY_SEPARATOR . 'provider-cakephp$cakephp.json',
-            'codeigniter$framework' => $pPath . \DIRECTORY_SEPARATOR . 'provider-codeigniter$framework.json',
-            'symfony$security-guard' => $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$security-guard.json',
-            'symfony$symfony' => $pPath . \DIRECTORY_SEPARATOR . 'provider-symfony$symfony.json',
-            'zendframework$zend-diactoros' => $pPath . \DIRECTORY_SEPARATOR . 'provider-zendframework$zend-diactoros.json',
+            'cakephp$cakephp' => $pPath . 'provider-cakephp$cakephp.json',
+            'codeigniter$framework' => $pPath . 'provider-codeigniter$framework.json',
+            'symfony$security-guard' => $pPath . 'provider-symfony$security-guard.json',
+            'symfony$symfony' => $pPath . 'provider-symfony$symfony.json',
+            'zendframework$zend-diactoros' => $pPath . 'provider-zendframework$zend-diactoros.json',
         ];
 
         $this->ioMock = $this->mock(IOInterface::class);
@@ -117,7 +117,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     }
 
     /**
-     * @dataProvider provideRemoveLegacyTags
+     * @dataProvider provideRemoveLegacyTagsCases
      *
      * @param array  $expected
      * @param array  $packages
@@ -137,7 +137,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     /**
      * @return \Generator
      */
-    public function provideRemoveLegacyTags(): \Generator
+    public function provideRemoveLegacyTagsCases(): iterable
     {
         yield 'no-symfony/symfony' => [[123], [123], '~1'];
 

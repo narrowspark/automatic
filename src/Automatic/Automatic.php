@@ -4,62 +4,50 @@ declare(strict_types=1);
 
 namespace Narrowspark\Automatic;
 
-use Closure;
 use Composer\Command\GlobalCommand;
 use Composer\Composer;
-use Composer\Config;
 use Composer\Console\Application;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
-use Composer\DependencyResolver\Pool;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Factory;
 use Composer\Installer;
-use Composer\Installer\InstallerEvent;
-use Composer\Installer\InstallerEvents;
 use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
-use Composer\Package\BasePackage;
 use Composer\Package\Locker;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
-use Composer\Plugin\PreFileDownloadEvent;
-use Composer\Repository\ComposerRepository as BaseComposerRepository;
-use Composer\Repository\RepositoryFactory;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\RepositoryManager;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
-use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
+use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
+use Narrowspark\Automatic\Common\Traits\GetComposerVersionTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
-use Narrowspark\Automatic\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Operation\Install;
 use Narrowspark\Automatic\Operation\Uninstall;
-use Narrowspark\Automatic\Prefetcher\ParallelDownloader;
-use Narrowspark\Automatic\Prefetcher\Prefetcher;
-use Narrowspark\Automatic\Prefetcher\TruncatedComposerRepository;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 class Automatic implements EventSubscriberInterface, PluginInterface
 {
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
+    use GetComposerVersionTrait;
 
     /** @var string */
     public const VERSION = '0.12.0';
@@ -79,7 +67,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     /**
      * A Container instance.
      *
-     * @var \Narrowspark\Automatic\Contract\Container
+     * @var \Narrowspark\Automatic\Common\Contract\Container
      */
     protected $container;
 
@@ -135,7 +123,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     /**
      * Get the Container instance.
      *
-     * @return \Narrowspark\Automatic\Contract\Container
+     * @return \Narrowspark\Automatic\Common\Contract\Container
      */
     public function getContainer(): ContainerContract
     {
@@ -163,15 +151,10 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
         return [
             ScriptEvents::AUTO_SCRIPTS => 'executeAutoScripts',
-            InstallerEvents::PRE_DEPENDENCIES_SOLVING => [['onPreDependenciesSolving', \PHP_INT_MAX]],
-            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_INSTALL => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_UPDATE => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
             PackageEvents::PRE_PACKAGE_UNINSTALL => 'onPreUninstall',
             PackageEvents::POST_PACKAGE_INSTALL => 'record',
             PackageEvents::POST_PACKAGE_UPDATE => 'record',
             PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostUninstall',
-            PluginEvents::PRE_FILE_DOWNLOAD => 'onFileDownload',
             PluginEvents::INIT => 'initAutoScripts',
             ComposerScriptEvents::POST_AUTOLOAD_DUMP => 'onPostAutoloadDump',
             ComposerScriptEvents::POST_INSTALL_CMD => 'onPostInstall',
@@ -208,13 +191,6 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
         $this->container = new Container($composer, $io);
 
-        /** @var \Narrowspark\Automatic\LegacyTagsManager $tagsManager */
-        $tagsManager = $this->container->get(LegacyTagsManager::class);
-
-        $this->configureLegacyTagsManager($io, $tagsManager, $this->container->get('composer-extra'));
-
-        $composer->setRepositoryManager($this->extendRepositoryManager($composer, $io, $tagsManager));
-
         // overwrite composer instance
         $this->container->set(Composer::class, static function () use ($composer) {
             return $composer;
@@ -230,11 +206,9 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             'This file is @generated automatically',
         ]);
 
-        $this->container->get(Prefetcher::class)->populateRepoCacheDir();
+        $this->extendComposer(\debug_backtrace());
 
-        $this->extendComposer(\debug_backtrace(), $tagsManager);
-
-        $this->container->set(InstallationManager::class, static function (Container $container) {
+        $this->container->set(InstallationManager::class, static function (ContainerContract $container) {
             return new InstallationManager(
                 $container->get(Composer::class),
                 $container->get(IOInterface::class),
@@ -333,7 +307,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             $manipulator->addSubNode('scripts', ScriptEvents::AUTO_SCRIPTS, new \stdClass());
         }
 
-        \file_put_contents($json->getPath(), $manipulator->getContents());
+        $this->container->get(Filesystem::class)->dumpFile($json->getPath(), $manipulator->getContents());
 
         $this->updateComposerLock();
     }
@@ -366,7 +340,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             }
         }
 
-        \file_put_contents($json->getPath(), $manipulator->getContents());
+        $this->container->get(Filesystem::class)->dumpFile($json->getPath(), $manipulator->getContents());
 
         $this->updateComposerLock();
     }
@@ -480,7 +454,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
             $manipulator->addSubNode('scripts', ComposerScriptEvents::POST_UPDATE_CMD, $scripts[ComposerScriptEvents::POST_UPDATE_CMD]);
 
-            \file_put_contents($json->getPath(), $manipulator->getContents());
+            $this->container->get(Filesystem::class)->dumpFile($json->getPath(), $manipulator->getContents());
 
             $this->updateComposerLock();
         }
@@ -708,119 +682,6 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     }
 
     /**
-     * Populate the provider cache.
-     *
-     * @param \Composer\Installer\InstallerEvent $event
-     *
-     * @return void
-     */
-    public function onPreDependenciesSolving(InstallerEvent $event): void
-    {
-        $listed = [];
-        $packages = [];
-        $pool = $event->getPool();
-        $pool = \Closure::bind(function () {
-            foreach ($this->providerRepos as $k => $repo) {
-                $this->providerRepos[$k] = new class($repo) extends BaseComposerRepository {
-                    /**
-                     * A repository implementation.
-                     *
-                     * @var \Composer\Repository\RepositoryInterface
-                     */
-                    private $repo;
-
-                    /**
-                     * @param \Composer\Repository\RepositoryInterface $repo
-                     */
-                    public function __construct(RepositoryInterface $repo)
-                    {
-                        $this->repo = $repo;
-                    }
-
-                    /**
-                     * {@inheritdoc}
-                     */
-                    public function whatProvides(Pool $pool, $name, $bypassFilters = false)
-                    {
-                        $packages = [];
-
-                        if (! \method_exists($this->repo, 'whatProvides')) {
-                            return $packages;
-                        }
-
-                        foreach ($this->repo->whatProvides($pool, $name, $bypassFilters) as $k => $p) {
-                            $packages[$k] = clone $p;
-                        }
-
-                        return $packages;
-                    }
-                };
-            }
-
-            return $this;
-        }, clone $pool, $pool)();
-
-        foreach ($event->getRequest()->getJobs() as $job) {
-            if ($job['cmd'] !== 'install' || \strpos($job['packageName'], '/') === false) {
-                continue;
-            }
-
-            $listed[$job['packageName']] = true;
-            $packages[] = [$job['packageName'], $job['constraint']];
-        }
-
-        $loadExtraRepos = ! (new \ReflectionMethod(Pool::class, 'match'))->isPublic(); // Detect Composer < 1.7.3
-
-        $this->container->get(ParallelDownloader::class)->download($packages, static function ($packageName, $constraint) use (&$listed, &$packages, $pool, $loadExtraRepos): void {
-            /** @var \Composer\Package\PackageInterface $package */
-            foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
-                $links = $loadExtraRepos ? \array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) : $package->getRequires();
-
-                /** @var \Composer\Package\Link $link */
-                foreach ($links as $link) {
-                    if (isset($listed[$link->getTarget()]) || \strpos($link->getTarget(), '/') === false) {
-                        continue;
-                    }
-
-                    $listed[$link->getTarget()] = true;
-                    $packages[] = [$link->getTarget(), $link->getConstraint()];
-                }
-            }
-        });
-    }
-
-    /**
-     * Wrapper for the fetchAllFromOperations function.
-     *
-     * @see \Narrowspark\Automatic\Prefetcher\Prefetcher::fetchAllFromOperations()
-     *
-     * @param \Composer\Installer\InstallerEvent|\Composer\Installer\PackageEvent $event
-     *
-     * @return void
-     */
-    public function populateFilesCacheDir($event): void
-    {
-        $this->container->get(Prefetcher::class)->fetchAllFromOperations($event);
-    }
-
-    /**
-     * Adds the parallel downloader to composer.
-     *
-     * @param \Composer\Plugin\PreFileDownloadEvent $event
-     *
-     * @return void
-     */
-    public function onFileDownload(PreFileDownloadEvent $event): void
-    {
-        /** @var \Narrowspark\Automatic\Prefetcher\ParallelDownloader $rfs */
-        $rfs = $this->container->get(ParallelDownloader::class);
-
-        if ($event->getRemoteFilesystem() !== $rfs) {
-            $event->setRemoteFilesystem($rfs->setNextOptions($event->getRemoteFilesystem()->getOptions()));
-        }
-    }
-
-    /**
      * Check if package is in require-dev.
      * When Composer runs with --no-dev, ignore uninstall operations on packages from require-dev.
      *
@@ -840,34 +701,6 @@ class Automatic implements EventSubscriberInterface, PluginInterface
         }
 
         return false;
-    }
-
-    /**
-     * Add found legacy tags to the tags manager.
-     *
-     * @param \Composer\IO\IOInterface                 $io
-     * @param array                                    $requires
-     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
-     *
-     * @return void
-     */
-    private function addLegacyTags(IOInterface $io, array $requires, LegacyTagsManager $tagsManager): void
-    {
-        foreach ($requires as $name => $version) {
-            if (\is_int($name)) {
-                $io->writeError(\sprintf('Constrain [%s] skipped, because package name is a number [%s]', $version, $name));
-
-                continue;
-            }
-
-            if (\strpos($name, '/') === false) {
-                $io->writeError(\sprintf('Constrain [%s] skipped, package name [%s] without a slash is not supported', $version, $name));
-
-                continue;
-            }
-
-            $tagsManager->addConstraint($name, $version);
-        }
     }
 
     /**
@@ -911,7 +744,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
         $manipulator->addSubNode('extra', 'automatic.allow-auto-install', true);
 
-        \file_put_contents($json->getPath(), $manipulator->getContents());
+        $this->container->get(Filesystem::class)->dumpFile($json->getPath(), $manipulator->getContents());
     }
 
     /**
@@ -924,8 +757,8 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     private function getErrorMessage(IOInterface $io): ?string
     {
         // @codeCoverageIgnoreStart
-        if (! \extension_loaded('openssl')) {
-            return 'You must enable the openssl extension in your "php.ini" file';
+        if (! extension_loaded('openssl')) {
+            return 'You must enable the openssl extension in your [php.ini] file';
         }
 
         if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
@@ -943,66 +776,13 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     }
 
     /**
-     * Get the composer version.
-     *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
-     *
-     * @return string
-     */
-    private static function getComposerVersion(): string
-    {
-        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        throw new RuntimeException('No composer version found.');
-    }
-
-    /**
-     * Configure the LegacyTagsManager with legacy package requires.
-     *
-     * @param \Composer\IO\IOInterface                 $io
-     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
-     * @param array                                    $extra
-     *
-     * @return void
-     */
-    private function configureLegacyTagsManager(IOInterface $io, LegacyTagsManager $tagsManager, array $extra): void
-    {
-        $envRequire = \getenv('AUTOMATIC_REQUIRE');
-
-        if ($envRequire !== false) {
-            $requires = [];
-
-            foreach (\explode(',', $envRequire) as $packageString) {
-                [$packageName, $version] = \explode('=', $packageString, 2);
-
-                $requires[$packageName] = $version;
-            }
-
-            $this->addLegacyTags($io, $requires, $tagsManager);
-        } elseif (isset($extra[self::COMPOSER_EXTRA_KEY]['require'])) {
-            $this->addLegacyTags($io, $extra[self::COMPOSER_EXTRA_KEY]['require'], $tagsManager);
-        }
-    }
-
-    /**
      * Extend the composer object with some automatic settings.
      *
-     * @param array                                    $backtrace
-     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
+     * @param array $backtrace
      *
      * @return void
      */
-    private function extendComposer($backtrace, LegacyTagsManager $tagsManager): void
+    private function extendComposer($backtrace): void
     {
         foreach ($backtrace as $trace) {
             if (isset($trace['object']) && $trace['object'] instanceof Installer) {
@@ -1047,68 +827,13 @@ class Automatic implements EventSubscriberInterface, PluginInterface
                 }
             } elseif ($command === 'suggests') {
                 $input->setOption('by-package', true);
-            } elseif ('outdated' === $command) {
-                $tagsManager->reset();
             }
 
             if ($input->hasOption('no-suggest')) {
                 $input->setOption('no-suggest', true);
             }
 
-            // When prefer-lowest is set and no stable version has been released,
-            // we consider "dev" more stable than "alpha", "beta" or "RC". This
-            // allows testing lowest versions with potential fixes applied.
-            if ($input->hasParameterOption('--prefer-lowest', true)) {
-                BasePackage::$stabilities['dev'] = 1 + BasePackage::STABILITY_STABLE;
-            }
-
-            $this->container->get(Prefetcher::class)->prefetchComposerRepositories();
-
             break;
         }
-    }
-
-    /**
-     * Extend the repository manager with a truncated composer repository and parallel downloader.
-     *
-     * @param \Composer\Composer                       $composer
-     * @param \Composer\IO\IOInterface                 $io
-     * @param \Narrowspark\Automatic\LegacyTagsManager $tagsManager
-     *
-     * @return \Composer\Repository\RepositoryManager
-     */
-    private function extendRepositoryManager(
-        Composer $composer,
-        IOInterface $io,
-        LegacyTagsManager $tagsManager
-    ): RepositoryManager {
-        $manager = RepositoryFactory::manager(
-            $io,
-            $this->container->get(Config::class),
-            $this->container->get(Composer::class)->getEventDispatcher(),
-            $this->container->get(ParallelDownloader::class)
-        );
-
-        $setRepositories = Closure::bind(function (RepositoryManager $manager) use ($tagsManager): void {
-            $manager->repositoryClasses = $this->repositoryClasses;
-            $manager->setRepositoryClass('composer', TruncatedComposerRepository::class);
-            $manager->repositories = $this->repositories;
-
-            $i = 0;
-
-            foreach (RepositoryFactory::defaultRepos(null, $this->config, $manager) as $repo) {
-                $manager->repositories[$i++] = $repo;
-
-                if ($repo instanceof TruncatedComposerRepository) {
-                    $repo->setTagsManager($tagsManager);
-                }
-            }
-
-            $manager->setLocalRepository($this->getLocalRepository());
-        }, $composer->getRepositoryManager(), RepositoryManager::class);
-
-        $setRepositories($manager);
-
-        return $manager;
     }
 }

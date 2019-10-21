@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Narrowspark\Automatic\Common\Test\Installer;
+namespace Narrowspark\Automatic\Test\Common\Installer;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Downloader\DownloadManager;

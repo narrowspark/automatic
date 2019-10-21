@@ -14,6 +14,7 @@ use Composer\Plugin\PluginManager;
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
 use Hirak\Prestissimo\Plugin as PrestissimoPlugin;
 use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use Symfony\Component\Console\Input\InputInterface;
 
 class Prefetcher
@@ -42,7 +43,7 @@ class Prefetcher
     /**
      * A ParallelDownloader instance.
      *
-     * @var \Narrowspark\Automatic\Prefetcher\ParallelDownloader
+     * @var \Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader
      */
     private $rfs;
 
@@ -93,10 +94,10 @@ class Prefetcher
     /**
      * Create a new PreFetcher instance.
      *
-     * @param \Composer\Composer                                   $composer
-     * @param \Composer\IO\IOInterface                             $io
-     * @param \Symfony\Component\Console\Input\InputInterface      $input
-     * @param \Narrowspark\Automatic\Prefetcher\ParallelDownloader $rfs
+     * @param \Composer\Composer                                              $composer
+     * @param \Composer\IO\IOInterface                                        $io
+     * @param \Symfony\Component\Console\Input\InputInterface                 $input
+     * @param \Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader $rfs
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input, ParallelDownloader $rfs)
     {

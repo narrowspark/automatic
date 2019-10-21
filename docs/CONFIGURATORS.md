@@ -15,7 +15,7 @@ Narrowspark Automatic comes with several types of tasks, which are called **conf
 
 Copies files or directories from the Composer package contents to your app. It’s defined as an associative array where the key is the original file or directory and the value is the target file or directory.
 
-This example copies the ``bin/check.php`` script of the package into the binary
+This example copies the `bin/check.php` script of the package into the binary
 directory of the app:
 
 ```json
@@ -136,7 +136,7 @@ final class ScriptExtender extends AbstractScriptExtender
 
 ### Gitignore Configurator `gitignore`
 
-Adds patterns to the ``.gitignore`` file in your project. Define those patterns as a simple array of strings (a `PHP_EOL` character is added after each line):
+Adds patterns to the `.gitignore` file in your project. Define those patterns as a simple array of strings (a `PHP_EOL` character is added after each line):
 
 ```json
 {
@@ -152,7 +152,7 @@ Adds patterns to the ``.gitignore`` file in your project. Define those patterns 
 ```
 
 Similar to other configurators, the contents are copied into the `.gitignore`
-file and wrapped with section separators (``###> your-package-name-here ###``)
+file and wrapped with section separators (`###> your-package-name-here ###`)
 that must not be removed or modified.
 
 ### The package messages `post-messages`

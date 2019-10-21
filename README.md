@@ -96,8 +96,8 @@ Narrowspark Automatic tasks are defined in a `automatic.json` file or in the com
 
 ```json
 {
-    "configurators": {enable
-        "providers": {               
+    "configurators": {
+        "providers": {
             "Viserio\\Component\\Console\\Provider\\ConsoleServiceProvider": ["global"],
             "Viserio\\Component\\Console\\Provider\\LazilyCommandsServiceProvider": ["global"]
         },

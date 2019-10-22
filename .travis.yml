@@ -75,6 +75,7 @@ jobs:
     - stage: Coding standard
       php: 7.2
       before_install:
+        - nvm install
         - nvm use
       install:
         - npm install

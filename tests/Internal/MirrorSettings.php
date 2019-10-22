@@ -31,10 +31,6 @@ final class MirrorSettings
             'path' => 'Common',
             'namespace' => 'Automatic\\Common',
         ],
-        'src/Common/Traits/GetComposerVersionTrait.php' => [
-            'path' => 'Common',
-            'namespace' => 'Automatic\\Common',
-        ],
         'src/Common/Contract/Exception/RuntimeException.php' => [
             'path' => 'Common',
             'namespace' => 'Automatic\\Common',

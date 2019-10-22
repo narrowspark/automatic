@@ -12,32 +12,34 @@ Branch Status
 [![Travis branch](https://img.shields.io/travis/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://travis-ci.org/narrowspark/automatic)
 [![Appveyor branch](https://img.shields.io/appveyor/ci/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://ci.appveyor.com/project/narrowspark/automatic/branch/master)
 
-Narrowspark Automatic automates the most common tasks of applications, like installing and removing bundles/providers, copying files, boosting dependencies downloads, creating skeletons and other Composer dependencies based configurations.
+Narrowspark Automatic automates the most common tasks of applications, like installing and removing bundles or providers, copying files, boosting dependencies downloads, creating skeletons and other Composer dependencies based configurations.
 
 How Does Narrowspark Automatic Work
 ------------
 
-Narrowspark Automatic is a Composer plugin that modifies the behavior of the `require`, `update`, `create project`, and `remove` commands. When installing or removing dependencies in a Automatic-enabled application, your Application can perform tasks before and after the execution of Composer tasks.
+Narrowspark Automatic is a Composer plugin that modifies the behavior of the `require`, `update`, `create project`, and `remove` commands.
+When installing or removing dependencies in an Automatic extended app, your Application can perform tasks before and after the execution of Composer tasks.
 
 Consider the following example:
+
 ```bash
 cd your-project
 composer require viserio/console
 ```
 
-If you execute this command in your Application that doesn't support Narrowspark Automatic, this command will execute in the normal composer require behavior.
+If you execute this command in your Application that doesn’t support Narrowspark Automatic, this command will execute in the normal composer require behavior.
 
-> NOTE: The `automatic.json` and composer.json extra key `automatic` are used to configure Narrowspark Automatic with configurators, script executors, custom-configurators and more.
+> **Note** The `automatic.json` and composer.json extra key `automatic` are used to configure Narrowspark Automatic with configurators, script executors, custom-configurators, and more.
 
 When Narrowspark Automatic is installed in your Application, it will check if a `automatic.json` file or a composer.json extra key with `automatic` exists.
 In the above example, Automatic decided which automated tasks need to be run after the installation.
 
-> NOTE: Narrowspark Automatic keeps tracks of the configuration, in a `automatic.lock` file, which must be committed to your code repository.
+> **Note** Narrowspark Automatic keeps tracks of the configuration, in a `automatic.lock` file, which must be committed to your code repository.
 
 Using Narrowspark Automatic in New Applications
 ------------
 
-Include Narrowspark Automatic as a required dependency to your application with this command:
+Include Narrowspark Automatic as a required dependency to your app with this command:
 `composer require narrospark/automatic`.
 
 Using Narrowspark Automatic for Skeleton Application
@@ -86,16 +88,16 @@ Narrowspark Automatic supports skeleton generation. For example this is your `co
 Automatic search all packages for the package type: `automatic-skeleton`.
 If packages are found with this type, all skeletons will be saved in the `automatic.lock` for the runtime. 
 
-This means you can execute the following command: `composer create-project your/project` to create a Automatic-enabled application, Automatic will ask which skeleton should be generated for your application.
+This means you can execute the following command: `composer create-project your/project` to create an Automatic extended app, Automatic will ask which skeleton can be generated for your app.
 
-Read the [skeleton documentation](doc/SKELETON.md) to learn everything about how to create skeletons for your own application.
+Read the [skeleton documentation](docs/SKELETON.md) to learn everything about how to create skeletons for your own app.
 
 Narrowspark Automatic tasks are defined in a `automatic.json` file or in the composer extra key `automatic` and can contain any number of other files and directories. For example, this is the `automatic.json` for `viserio/console`:
 
 ```json
 {
     "configurators": {
-        "providers": {               
+        "providers": {
             "Viserio\\Component\\Console\\Provider\\ConsoleServiceProvider": ["global"],
             "Viserio\\Component\\Console\\Provider\\LazilyCommandsServiceProvider": ["global"]
         },
@@ -109,15 +111,15 @@ Narrowspark Automatic tasks are defined in a `automatic.json` file or in the com
 }
 ```
 
-The `providers` and `proxies` option tells Narrowspark Automatic in which environments this `provider`, `proxy` should be enabled automatically (all in this case).
+The `providers` and `proxies` option tells Narrowspark Automatic in which environments this `provider`, `proxy` can be turn on automatically (all in this case).
 
 Finally the `script-extenders` option adds a new script executor to the Narrowspark Automatic `auto-scripts`.
-Now you can run `viserio console` commands in the `auto-scripts` section of your `composer.json` application file.
+Now you can run `viserio console` commands in the `auto-scripts` section of your `composer.json` app file.
 
-The instructions defined in this `automatic.json` file are also used by Narrowspark Automatic when uninstalling dependencies (e.g. `composer remove viserio/console`) to undo all changes.
-This means that Automatic can remove the Console Provider and Proxy from the application and remove the script executor from Narrowspark Automatic.
+The instructions defined in this `automatic.json` file are also used by Narrowspark Automatic when uninstalling dependencies (for example `composer remove viserio/console`) to undo all changes.
+This means that Automatic can remove the Console Provider and Proxy from the app and remove the script executor from Narrowspark Automatic.
 
-Read the [configuration documentation](doc/CONFIGURATORS.md) to learn everything about how to create configuration for your own packages.
+Read the [configuration documentation](docs/CONFIGURATORS.md) to learn everything about how to create configuration for your own packages.
 
 Automatic extends Composer
 ------------
@@ -179,15 +181,15 @@ $ php vendor/bin/phpunit
 Contributing
 ------------
 
-If you would like to help take a look at the [list of issues](http://github.com/narrowspark/testing-helper/issues) and check our [Contributing](CONTRIBUTING.md) guild.
+If you would like to help take a look at the [list of issues](https://github.com/narrowspark/testing-helper/issues) and check our [Contributing](CONTRIBUTING.md) guild.
 
-> **Note:** Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+> **Note** Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
 
 Credits
 -------------
 
 - [Daniel Bannert](https://github.com/prisis)
-- [All Contributors](../../contributors)
+- [All Contributors](https://github.com/narrowspark/automatic/graphs/contributors)
 - Narrowspark Automatic has been inspired by [symfony/flex](https://github.com/symfony/flex)
 
 License

@@ -138,7 +138,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
         if (\count($packageEvents) !== 0) {
             $this->io->write(\sprintf(
-                '<warning>    Found not allowed composer events [%s] in [%s]</>' . \PHP_EOL,
+                '<warning>    Found not allowed composer events [%s] in [%s]</>' . "\n",
                 \implode(', ', \array_keys($packageEvents)),
                 $package->getName()
             ));

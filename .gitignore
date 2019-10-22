@@ -12,3 +12,4 @@ infectionlog.txt
 
 /build/logs
 /vendor
+/node_modules/

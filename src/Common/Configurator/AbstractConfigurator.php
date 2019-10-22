@@ -108,7 +108,7 @@ abstract class AbstractConfigurator implements ConfiguratorContract
      */
     protected function markData(string $packageName, string $data, int $spaceMultiplier = 0): string
     {
-        return \sprintf('###> %s ###' . \PHP_EOL . '%s' . \PHP_EOL . '###< %s ###' . \PHP_EOL, $packageName, \rtrim($data, "\r\n"), $packageName);
+        return \sprintf('###> %s ###' . "\n" . '%s' . "\n" . '###< %s ###' . "\n", $packageName, \rtrim($data, "\r\n"), $packageName);
     }
 
     /**

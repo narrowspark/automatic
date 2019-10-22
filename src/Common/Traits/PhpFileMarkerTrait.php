@@ -32,6 +32,6 @@ trait PhpFileMarkerTrait
     {
         $spaces = \str_repeat(' ', $spaceMultiplier);
 
-        return \sprintf('%s/** > %s **/' . \PHP_EOL . '%s%s/** %s < **/' . \PHP_EOL, $spaces, $packageName, $data, $spaces, $packageName);
+        return \sprintf('%s/** > %s **/' . "\n" . '%s%s/** %s < **/' . "\n", $spaces, $packageName, $data, $spaces, $packageName);
     }
 }

@@ -18,18 +18,18 @@ final class QuestionFactory
      */
     public static function getPackageQuestion(string $name, ?string $url): string
     {
-        $message = '    Do you want to execute this package [%s]?' . \PHP_EOL;
-        $message .= '     [<comment>y</comment>] Yes' . \PHP_EOL;
-        $message .= '    [<comment>n</comment>] No' . \PHP_EOL;
-        $message .= '    [<comment>a</comment>] Yes for all packages, only for the current installation session' . \PHP_EOL;
-        $message .= '    [<comment>p</comment>] Yes permanently, never ask again for this project' . \PHP_EOL;
-        $message .= '    (defaults to <comment>n</comment>): ' . \PHP_EOL;
+        $message = '    Do you want to execute this package [%s]?' . "\n";
+        $message .= '     [<comment>y</comment>] Yes' . "\n";
+        $message .= '    [<comment>n</comment>] No' . "\n";
+        $message .= '    [<comment>a</comment>] Yes for all packages, only for the current installation session' . "\n";
+        $message .= '    [<comment>p</comment>] Yes permanently, never ask again for this project' . "\n";
+        $message .= '    (defaults to <comment>n</comment>): ' . "\n";
 
         if ($url === null) {
             return \sprintf($message, $name);
         }
 
-        return \sprintf('    Review the package from %s.' . \PHP_EOL . $message, \str_replace('.git', '', $url), $name);
+        return \sprintf('    Review the package from %s.' . "\n" . $message, \str_replace('.git', '', $url), $name);
     }
 
     /**
@@ -41,8 +41,8 @@ final class QuestionFactory
      */
     public static function getPackageScriptsQuestion(string $name): string
     {
-        $message = '    Do you want to add this package [%s] composer scripts?' . \PHP_EOL;
-        $message .= '    (defaults to <comment>no</comment>): ' . \PHP_EOL;
+        $message = '    Do you want to add this package [%s] composer scripts?' . "\n";
+        $message .= '    (defaults to <comment>no</comment>): ' . "\n";
 
         return \sprintf($message, $name);
     }

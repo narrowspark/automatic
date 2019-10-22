@@ -26,6 +26,7 @@ use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
 use FilesystemIterator;
+use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Traits\GetComposerVersionTrait;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
@@ -84,7 +85,11 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             return;
         }
 
-        // to avoid issues when Automatic is upgraded, we load all PHP classes now
+        if (! \class_exists(AbstractContainer::class)) {
+            require __DIR__ . \DIRECTORY_SEPARATOR . 'alias.php';
+        }
+
+        // to avoid issues when Automatic Prefetcher is upgraded, we load all PHP classes now
         // that way, we are sure to use all classes from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
             /** @var \SplFileInfo $file */
@@ -257,7 +262,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         LegacyTagsManagerContract $tagsManager,
         array $extra
     ): void {
-        $envRequire = \getenv('AUTOMATIC_REQUIRE');
+        $envRequire = \getenv('AUTOMATIC_PREFETCHER_REQUIRE');
 
         if ($envRequire !== false) {
             $requires = [];

@@ -142,7 +142,7 @@ final class ScriptExecutor
 
             \fseek($cmdOutput->getStream(), 0);
 
-            foreach (\explode(\PHP_EOL, (string) \stream_get_contents($cmdOutput->getStream())) as $line) {
+            foreach (\explode("\n", (string) \stream_get_contents($cmdOutput->getStream())) as $line) {
                 $this->io->writeError('!!  ' . $line);
             }
 

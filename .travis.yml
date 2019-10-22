@@ -12,6 +12,7 @@ cache:
   directories:
     - $HOME/.composer/cache/files
     - $HOME/.php-cs-fixer
+    - $HOME/node_modules
 
 before_install:
   - stty cols 120
@@ -70,6 +71,17 @@ jobs:
       env: SETUP=high REMOVE_XDEBUG=true COMPOSER_VERSION=1.9.0
       script:
         - composer cs-check
+
+    - stage: Coding standard
+      php: 7.2
+      before_install:
+        - echo "skip"
+      install:
+        - npm install
+      before_script:
+        - echo "skip"
+      script:
+        - npm run lint
 
     - stage: Static Analysis
       php: 7.2

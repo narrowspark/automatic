@@ -242,7 +242,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
         $this->ioMock->shouldReceive('write')
             ->once()
             ->with(\sprintf(
-                '<warning>    Found not allowed composer events [notallowed] in [%s]</>' . \PHP_EOL,
+                '<warning>    Found not allowed composer events [notallowed] in [%s]</>' . "\n",
                 $package->getName()
             ))
             ->andReturn(true);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Prefetcher\Downloader;
 
 use Composer\Downloader\TransportException;
-use Narrowspark\Automatic\Prefetcher\Common\Contract\Exception\RuntimeException;
+use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 
 /**
  * Ported from symfony flex, see original.

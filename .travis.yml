@@ -75,7 +75,7 @@ jobs:
     - stage: Coding standard
       php: 7.2
       before_install:
-        - echo "skip"
+        - nvm use
       install:
         - npm install
       before_script:

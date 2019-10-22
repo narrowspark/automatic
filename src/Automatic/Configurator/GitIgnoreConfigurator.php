@@ -38,10 +38,10 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
 
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $value) {
             $value = self::expandTargetDir($this->options, $value);
-            $data .= $value . \PHP_EOL;
+            $data .= $value . "\n";
         }
 
-        $this->appendToFile($gitignore, \PHP_EOL . \ltrim($this->markData($package->getPrettyName(), $data), "\r\n"));
+        $this->appendToFile($gitignore, "\n" . \ltrim($this->markData($package->getPrettyName(), $data), "\r\n"));
     }
 
     /**
@@ -58,8 +58,8 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
         // @codeCoverageIgnoreEnd
         $count = 0;
         $contents = \preg_replace(
-            \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), \PHP_EOL),
-            \PHP_EOL,
+            \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), "\n"),
+            "\n",
             (string) \file_get_contents($file),
             -1,
             $count

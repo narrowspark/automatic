@@ -619,7 +619,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
                 '',
                 '<info>Some files may have been created or updated to configure your new packages.</info>',
                 'Please <comment>review</comment>, <comment>edit</comment> and <comment>commit</comment> them: these files are <comment>yours</comment>',
-                \PHP_EOL . 'To show the package suggests run <comment>composer suggests</comment>'
+                "\n" . 'To show the package suggests run <comment>composer suggests</comment>'
             );
         }
 

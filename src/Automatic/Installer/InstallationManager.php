@@ -93,7 +93,7 @@ class InstallationManager extends AbstractInstallationManager
         $status = $this->runInstaller($this->rootPackage, $this->whiteList);
 
         if ($status !== 0) {
-            $this->io->writeError(\PHP_EOL . '<error>Removal failed, reverting ' . Factory::getComposerFile() . ' to its original content.</error>');
+            $this->io->writeError("\n" . '<error>Removal failed, reverting ' . Factory::getComposerFile() . ' to its original content.</error>');
 
             $this->filesystem->dumpFile($this->jsonFile->getPath(), $this->composerBackup);
         }

@@ -17,7 +17,7 @@ final class SimpleFormatter implements FormatterContract
         if (\count($vulnerabilities) !== 0) {
             foreach ($vulnerabilities as $dependency => $issues) {
                 $dependencyFullName = $dependency . ' (' . $issues['version'] . ')';
-                $output->writeln('<info>' . $dependencyFullName . \PHP_EOL . \str_repeat('-', \strlen($dependencyFullName)) . '</>' . \PHP_EOL);
+                $output->writeln('<info>' . $dependencyFullName . "\n" . \str_repeat('-', \strlen($dependencyFullName)) . '</>' . "\n");
 
                 foreach ($issues['advisories'] as $issue => $details) {
                     $output->write(' * ');

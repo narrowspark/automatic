@@ -69,9 +69,9 @@ final class GitignoreConfiguratorTest extends TestCase
             '/%PUBLIC_DIR%/css/',
         ]);
 
-        $gitignoreContents = '###> Foo/Bundle ###' . \PHP_EOL;
-        $gitignoreContents .= '.env' . \PHP_EOL;
-        $gitignoreContents .= '/public/css/' . \PHP_EOL;
+        $gitignoreContents = '###> Foo/Bundle ###' . "\n";
+        $gitignoreContents .= '.env' . "\n";
+        $gitignoreContents .= '/public/css/' . "\n";
         $gitignoreContents .= '###< Foo/Bundle ###';
 
         $package2 = $this->arrangePackageWithConfig('Bar/Bundle', [
@@ -79,27 +79,27 @@ final class GitignoreConfiguratorTest extends TestCase
             '/vendor/',
         ]);
 
-        $gitignoreContents2 = '###> Bar/Bundle ###' . \PHP_EOL;
-        $gitignoreContents2 .= '/var/' . \PHP_EOL;
-        $gitignoreContents2 .= '/vendor/' . \PHP_EOL;
+        $gitignoreContents2 = '###> Bar/Bundle ###' . "\n";
+        $gitignoreContents2 .= '/var/' . "\n";
+        $gitignoreContents2 .= '/vendor/' . "\n";
         $gitignoreContents2 .= '###< Bar/Bundle ###';
 
         $this->configurator->configure($package);
 
-        self::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL);
+        self::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents . "\n");
 
         $this->configurator->configure($package2);
 
-        self::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
+        self::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents . "\n\n" . $gitignoreContents2 . "\n");
 
         $this->configurator->configure($package);
         $this->configurator->configure($package2);
 
-        self::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL . \PHP_EOL . $gitignoreContents2 . \PHP_EOL);
+        self::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents . "\n\n" . $gitignoreContents2 . "\n");
 
         $this->configurator->unconfigure($package);
 
-        self::assertStringEqualsFile($this->gitignorePath, $gitignoreContents2 . \PHP_EOL);
+        self::assertStringEqualsFile($this->gitignorePath, $gitignoreContents2 . "\n");
 
         $this->configurator->unconfigure($package2);
 
@@ -122,12 +122,12 @@ final class GitignoreConfiguratorTest extends TestCase
 
         $this->configurator->unconfigure($package);
 
-        $gitignoreContents = '###> Foo/Bundle ###' . \PHP_EOL;
-        $gitignoreContents .= '.env' . \PHP_EOL;
-        $gitignoreContents .= '/public/css/' . \PHP_EOL;
+        $gitignoreContents = '###> Foo/Bundle ###' . "\n";
+        $gitignoreContents .= '.env' . "\n";
+        $gitignoreContents .= '/public/css/' . "\n";
         $gitignoreContents .= '###< Foo/Bundle ###';
 
-        self::assertStringEqualsFile($this->gitignorePath, \PHP_EOL . $gitignoreContents . \PHP_EOL);
+        self::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents . "\n");
     }
 
     /**

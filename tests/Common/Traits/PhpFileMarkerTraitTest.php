@@ -35,7 +35,7 @@ final class PhpFileMarkerTraitTest extends TestCase
 
     public function testIsFileMarked(): void
     {
-        \file_put_contents($this->path, '<?php' . \PHP_EOL . \PHP_EOL . '$array = [' . \PHP_EOL . '/** > marked **/ \'test\' /** < marked **/' . \PHP_EOL . '];' . \PHP_EOL);
+        \file_put_contents($this->path, '<?php' . "\n\n" . '$array = [' . "\n" . '/** > marked **/ \'test\' /** < marked **/' . "\n" . '];' . "\n");
 
         self::assertFalse($this->isFileMarked('test', $this->path));
         self::assertTrue($this->isFileMarked('marked', $this->path));

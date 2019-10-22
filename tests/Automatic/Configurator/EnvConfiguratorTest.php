@@ -91,20 +91,20 @@ final class EnvConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
 
-        $envContents = '###> fixtures/test ###' . \PHP_EOL;
-        $envContents .= 'APP_ENV="test bar"' . \PHP_EOL;
-        $envContents .= 'APP_DEBUG=0' . \PHP_EOL;
-        $envContents .= 'APP_PARAGRAPH="foo\n\"bar\"\\\t"' . \PHP_EOL;
-        $envContents .= 'DATABASE_URL="mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7"' . \PHP_EOL;
-        $envContents .= 'MAILER_URL=null://localhost' . \PHP_EOL;
-        $envContents .= 'MAILER_USER=narrow' . \PHP_EOL;
-        $envContents .= '# Comment 1' . \PHP_EOL;
-        $envContents .= '# Comment 3' . \PHP_EOL;
-        $envContents .= '#TRUSTED_SECRET="s3cretf0rt3st\"<>"' . \PHP_EOL;
-        $envContents .= 'APP_SECRET="s3cretf0rt3st\"<>"' . \PHP_EOL;
-        $envContents .= 'BOOL=false' . \PHP_EOL;
-        $envContents .= 'VALID_NUMBER_TRUE=1' . \PHP_EOL;
-        $envContents .= '###< fixtures/test ###' . \PHP_EOL;
+        $envContents = '###> fixtures/test ###' . "\n";
+        $envContents .= 'APP_ENV="test bar"' . "\n";
+        $envContents .= 'APP_DEBUG=0' . "\n";
+        $envContents .= 'APP_PARAGRAPH="foo\n\"bar\"\\\t"' . "\n";
+        $envContents .= 'DATABASE_URL="mysql://root@127.0.0.1:3306/narrowspark?charset=utf8mb4&serverVersion=5.7"' . "\n";
+        $envContents .= 'MAILER_URL=null://localhost' . "\n";
+        $envContents .= 'MAILER_USER=narrow' . "\n";
+        $envContents .= '# Comment 1' . "\n";
+        $envContents .= '# Comment 3' . "\n";
+        $envContents .= '#TRUSTED_SECRET="s3cretf0rt3st\"<>"' . "\n";
+        $envContents .= 'APP_SECRET="s3cretf0rt3st\"<>"' . "\n";
+        $envContents .= 'BOOL=false' . "\n";
+        $envContents .= 'VALID_NUMBER_TRUE=1' . "\n";
+        $envContents .= '###< fixtures/test ###' . "\n";
 
         // Skip on second call
         $this->configurator->configure($package);
@@ -129,14 +129,14 @@ final class EnvConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
 
-        $envContents = '###> fixtures/env2 ###' . \PHP_EOL;
-        $envContents .= 'APP_ENV=test' . \PHP_EOL;
-        $envContents .= 'APP_DEBUG=0' . \PHP_EOL;
-        $envContents .= '# Comment 1' . \PHP_EOL;
-        $envContents .= '# Comment 3' . \PHP_EOL;
-        $envContents .= '#TRUSTED_SECRET=s3cretf0rt3st' . \PHP_EOL;
-        $envContents .= 'APP_SECRET=s3cretf0rt3st' . \PHP_EOL;
-        $envContents .= '###< fixtures/env2 ###' . \PHP_EOL;
+        $envContents = '###> fixtures/env2 ###' . "\n";
+        $envContents .= 'APP_ENV=test' . "\n";
+        $envContents .= 'APP_DEBUG=0' . "\n";
+        $envContents .= '# Comment 1' . "\n";
+        $envContents .= '# Comment 3' . "\n";
+        $envContents .= '#TRUSTED_SECRET=s3cretf0rt3st' . "\n";
+        $envContents .= 'APP_SECRET=s3cretf0rt3st' . "\n";
+        $envContents .= '###< fixtures/env2 ###' . "\n";
 
         self::assertStringEqualsFile($this->envDistPath, $envContents);
         self::assertStringEqualsFile($this->envPath, $envContents);

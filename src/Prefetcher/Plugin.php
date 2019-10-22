@@ -28,7 +28,7 @@ use Composer\Repository\RepositoryManager;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Common\Traits\GetComposerVersionTrait;
+use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
 use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use RecursiveDirectoryIterator;
@@ -37,8 +37,6 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 class Plugin implements EventSubscriberInterface, PluginInterface
 {
-    use GetComposerVersionTrait;
-
     /** @var string */
     public const VERSION = '0.12.0';
 
@@ -427,5 +425,29 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
             break;
         }
+    }
+
+    /**
+     * Get the composer version.
+     *
+     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
+     *
+     * @return string
+     */
+    private static function getComposerVersion(): string
+    {
+        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        throw new RuntimeException('No composer version found.');
     }
 }

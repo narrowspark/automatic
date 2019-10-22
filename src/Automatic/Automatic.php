@@ -25,9 +25,9 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
-use Narrowspark\Automatic\Common\Traits\GetComposerVersionTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
@@ -47,7 +47,6 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 {
     use ExpandTargetDirTrait;
     use GetGenericPropertyReaderTrait;
-    use GetComposerVersionTrait;
 
     /** @var string */
     public const VERSION = '0.12.0';
@@ -835,5 +834,29 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
             break;
         }
+    }
+
+    /**
+     * Get the composer version.
+     *
+     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
+     *
+     * @return string
+     */
+    private static function getComposerVersion(): string
+    {
+        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        throw new RuntimeException('No composer version found.');
     }
 }

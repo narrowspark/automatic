@@ -173,7 +173,7 @@ class ParallelDownloader extends RemoteFilesystem
         ];
 
         if (! $this->quiet) {
-            if ($this->downloader !== null && \method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
+            if ($this->downloader === null && \method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
                 $this->io->writeError('<warning>Enable the "cURL" PHP extension for faster downloads</warning>');
             }
 
@@ -181,7 +181,7 @@ class ParallelDownloader extends RemoteFilesystem
 
             if ($this->io->isDecorated()) {
                 $note = \DIRECTORY_SEPARATOR === '\\' ? '' : (false !== \stripos(\PHP_OS, 'darwin') ? '🎵' : '🎶');
-                $note .= $this->downloader ? (\DIRECTORY_SEPARATOR !== '\\' ? ' 💨' : '') : '';
+                $note .= $this->downloader !== null ? (\DIRECTORY_SEPARATOR !== '\\' ? ' 💨' : '') : '';
             }
 
             $this->io->writeError('');
@@ -365,7 +365,7 @@ class ParallelDownloader extends RemoteFilesystem
             return $result;
         }
 
-        if (\preg_match('/^https?:/', $originUrl) !== 1 || $this->downloader !== null) {
+        if (\preg_match('/^https?:/', $originUrl) !== 1 || $this->downloader === null) {
             return parent::getRemoteContents($originUrl, $fileUrl, $context, $responseHeaders);
         }
 

@@ -266,7 +266,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             $requires = [];
 
             foreach (\explode(',', $envRequire) as $packageString) {
-                [$packageName, $version] = \explode('=', $packageString, 2);
+                [$packageName, $version] = \explode(':', $packageString, 2);
 
                 $requires[$packageName] = $version;
             }

@@ -103,13 +103,16 @@ final class CurlDownloader
     /**
      * Download the package content.
      *
-     * @param string          $url
-     * @param resource|string $context
-     * @param null|string     $file
+     * This must stay in sync with the RemoteFilesystem::getRemoteContents interface.
+     *
+     * @param string               $originUrl
+     * @param string               $url
+     * @param null|resource|string $context
+     * @param null|string          $file
      *
      * @return array
      */
-    public function get(string $url, $context, ?string $file): array
+    public function get(string $originUrl, string $url, $context, ?string $file): array
     {
         $params = \stream_context_get_params($context);
         $ch = \curl_init();

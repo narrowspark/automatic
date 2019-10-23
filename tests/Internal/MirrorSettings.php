@@ -35,6 +35,10 @@ final class MirrorSettings
             'path' => 'Common',
             'namespace' => 'Automatic\\Common',
         ],
+        'src/Common/Util.php' => [
+            'path' => 'Common',
+            'namespace' => 'Automatic\\Common',
+        ],
     ];
 
     public const COMMENT_STRING = <<<'STRING'

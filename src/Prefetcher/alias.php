@@ -9,3 +9,4 @@ declare(strict_types=1);
 \class_alias(Narrowspark\Automatic\Prefetcher\Common\Contract\Resettable::class, Narrowspark\Automatic\Common\Contract\Resettable::class);
 \class_alias(Narrowspark\Automatic\Prefetcher\Common\Traits\GetGenericPropertyReaderTrait::class, Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait::class);
 \class_alias(Narrowspark\Automatic\Prefetcher\Common\Contract\Exception\RuntimeException::class, Narrowspark\Automatic\Common\Contract\Exception\RuntimeException::class);
+\class_alias(Narrowspark\Automatic\Prefetcher\Common\Util::class, Narrowspark\Automatic\Common\Util::class);

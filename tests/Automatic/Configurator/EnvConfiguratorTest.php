@@ -155,14 +155,14 @@ final class EnvConfiguratorTest extends MockeryTestCase
         self::assertStringEqualsFile(
             $this->envDistPath,
             <<<'EOF'
-                
-                EOF
+
+EOF
         );
         self::assertStringEqualsFile(
             $this->envPath,
             <<<'EOF'
-                
-                EOF
+
+EOF
         );
     }
 }

@@ -51,8 +51,8 @@ final class AuditCommand extends BaseCommand
             ->setDescription('Checks security issues in your project dependencies')
             ->setHelp(
                 <<<'EOF'
-                    The <info>%command.name%</info> command looks for security issues in the project dependencies.
-                    EOF
+The <info>%command.name%</info> command looks for security issues in the project dependencies.
+EOF
             );
     }
 

@@ -1,4 +1,4 @@
-name: 'Coding Standard'
+name: 'Static analyzing with phpstan'
 
 on: [push, pull_request]
 

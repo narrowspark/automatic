@@ -12,6 +12,8 @@ if [[ "$PHPUNIT" = true ]]; then
                 TESTSUITE="Narrowspark Automatic Test Suite";
             elif [[ "$TYPE" = "Common" ]]; then
                 TESTSUITE="Narrowspark Automatic Common Test Suite";
+            elif [[ "$TYPE" = "Prefetcher" ]]; then
+                TESTSUITE="Narrowspark Automatic Prefetcher Test Suite";
             elif [[ "$TYPE" = "Security" ]]; then
                 TESTSUITE="Narrowspark Automatic Security Test Suite";
             fi
@@ -23,4 +25,6 @@ if [[ "$PHPUNIT" = true ]]; then
             }
         fi
     done
+
+    tfold "$TESTSUITE" "$TEST -c ./phpunit.xml.dist --testsuite=\"Narrowspark Automatic Internal Test Suite\"";
 fi

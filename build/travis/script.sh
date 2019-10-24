@@ -26,5 +26,5 @@ if [[ "$PHPUNIT" = true ]]; then
         fi
     done
 
-    tfold "$TESTSUITE" "$TEST -c ./phpunit.xml.dist --testsuite=\"Narrowspark Automatic Internal Test Suite\"";
+    tfold "Narrowspark Automatic Internal Test Suite" "$TEST -c ./phpunit.xml.dist --testsuite=\"Narrowspark Automatic Internal Test Suite\"";
 fi

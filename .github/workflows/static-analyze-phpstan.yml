@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   php-cs-fixer:
-    name: 'PHP-CS-Fixer'
+    name: 'PHPStan'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -13,6 +13,6 @@ jobs:
         with:
           php-version: 7.2
       - run: |
-          composer global require narrowspark/coding-standard:3.1.0
+          composer global require narrowspark/coding-standard:3.1.0 slam/phpstan-extensions:3.6.1
           cd $GITHUB_WORKSPACE
-          /home/runner/.composer/vendor/bin/php-cs-fixer fix -v
+          /home/runner/.composer/vendor/bin/phpstan analyse -c phpstan.neon src --memory-limit=-1

@@ -13,6 +13,5 @@ jobs:
         with:
           php-version: 7.2
       - run: |
-          composer global require narrowspark/coding-standard:3.1.0 slam/phpstan-extensions:3.6.1
-          cd $GITHUB_WORKSPACE
-          /home/runner/.composer/vendor/bin/phpstan analyse -c phpstan.neon src --memory-limit=-1
+          composer install
+          composer phpstan

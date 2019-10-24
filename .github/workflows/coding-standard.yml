@@ -15,4 +15,4 @@ jobs:
       - run: |
           composer global require narrowspark/coding-standard:3.1.0
           cd $GITHUB_WORKSPACE
-          /home/runner/.composer/vendor/bin/php-cs-fixer fix -v
+          /home/runner/.composer/vendor/bin/php-cs-fixer fix -v --dry-run --stop-on-violation

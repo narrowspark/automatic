@@ -14,5 +14,5 @@ jobs:
           php-version: 7.2
       - name: 'analyze php code'
         run: |
-          composer install --no-interaction --prefer-dist --no-progress --profile --no-sugges
+          composer install --no-interaction --prefer-dist --no-progress --profile --no-suggest
           composer phpstan

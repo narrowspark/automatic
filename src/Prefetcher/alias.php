@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of Narrowspark Framework.
+ *
+ * (c) Daniel Bannert <d.bannert@anolilab.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 \class_alias(Narrowspark\Automatic\Prefetcher\Common\Contract\Exception\Exception::class, Narrowspark\Automatic\Common\Contract\Exception\Exception::class);
 \class_alias(Narrowspark\Automatic\Prefetcher\Common\Contract\Exception\InvalidArgumentException::class, Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException::class);
 \class_alias(Narrowspark\Automatic\Prefetcher\Common\Contract\Container::class, Narrowspark\Automatic\Common\Contract\Container::class);

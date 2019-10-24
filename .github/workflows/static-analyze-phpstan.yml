@@ -1,0 +1,18 @@
+name: 'Static analyzing with phpstan'
+
+on: [push, pull_request]
+
+jobs:
+  php-cs-fixer:
+    name: 'PHPStan'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup PHP
+        uses: shivammathur/setup-php@master
+        with:
+          php-version: 7.2
+      - name: 'analyze php code'
+        run: |
+          composer install
+          composer phpstan

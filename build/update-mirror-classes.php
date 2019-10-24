@@ -59,10 +59,21 @@ foreach (MirrorSettings::MIRROR_LIST as $path => $settings) {
 
 echo "\n";
 
+$header = <<<'EOF'
+/**
+ * This file is part of Narrowspark Framework.
+ *
+ * (c) Daniel Bannert <d.bannert@anolilab.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+EOF;
+
 foreach ($aliasList as $output => $aliases) {
     $preparedOutputPath = 'src/'.rtrim($output, '/').'/alias.php';
 
-    $fs->dumpFile($rootDir . DIRECTORY_SEPARATOR . $preparedOutputPath, "<?php\n\ndeclare(strict_types=1);\n\n" . implode('', $aliases));
+    $fs->dumpFile($rootDir . DIRECTORY_SEPARATOR . $preparedOutputPath, "<?php\n\ndeclare(strict_types=1);\n\n" . $header . "\n\n" . implode('', $aliases));
 
     echo "Dumped {$preparedOutputPath}.\n";
 }

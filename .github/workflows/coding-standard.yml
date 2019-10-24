@@ -1,0 +1,15 @@
+name: Coding Standard
+
+on: [push, pull_request]
+
+jobs:
+  php-cs-fixer:
+    name: 'PHP-CS-Fixer'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup PHP
+        uses: shivammathur/setup-php@master
+        with:
+          php-version: 7.2
+      - run: composer global require narrowspark/coding-standard && composer cs-check

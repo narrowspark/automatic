@@ -61,10 +61,20 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $downloader = new ComposerDownloader();
+
+        try {
+            $output->write('Narrowspark Automatic Security Audit is checking for internet connection...', true, OutputInterface::VERBOSITY_VERBOSE);
+
+            $sha = $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA);
+        } catch (RuntimeException $exception) {
+            $output->write('Connecting to github.com failed.');
+
+            return 1;
+        }
+
         if (\extension_loaded('curl')) {
             $downloader = new CurlDownloader();
-        } else {
-            $downloader = new ComposerDownloader();
         }
 
         /** @var null|string $timeout */
@@ -75,7 +85,7 @@ EOF
         }
 
         $config = Factory::createConfig(new NullIO());
-        $audit = new Audit(\rtrim($config->get('vendor-dir'), '/'), $downloader);
+        $audit = new Audit(\rtrim($config->get('vendor-dir'), '/'), $downloader, $sha);
 
         /** @var null|string $composerFile */
         $composerFile = $input->getOption('composer-lock');

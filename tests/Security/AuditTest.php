@@ -40,7 +40,9 @@ final class AuditTest extends TestCase
 
         $this->path = __DIR__ . 'audit';
 
-        $this->audit = new Audit($this->path, new ComposerDownloader());
+        $downloader = new ComposerDownloader();
+
+        $this->audit = new Audit($this->path, $downloader, $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA));
     }
 
     /**

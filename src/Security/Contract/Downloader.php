@@ -29,6 +29,8 @@ interface Downloader
      *
      * @param string $url
      *
+     * @throws \Narrowspark\Automatic\Security\Contract\Exception\RuntimeException
+     *
      * @return string
      */
     public function download(string $url): string;

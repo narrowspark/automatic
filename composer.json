@@ -92,6 +92,8 @@
         "infection": "infection",
         "test-common": "phpunit --testsuite=\"Narrowspark Automatic Common Test Suite\"",
         "test-automatic": "phpunit --testsuite=\"Narrowspark Automatic Test Suite\"",
+        "test-prefetcher": "phpunit --testsuite=\"Narrowspark Automatic Prefetcher Test Suite\"",
+        "test-security": "phpunit --testsuite=\"Narrowspark Automatic Security Test Suite\"",
         "changelog": "changelog-generator generate --config=\".changelog\" --file --prepend",
         "auto-scripts": {
 

@@ -107,7 +107,7 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
-        if (($errorMessage = $this->getErrorMessage()) !== null) {
+        if (($errorMessage = $this->getErrorMessage($io)) !== null) {
             self::$activated = false;
 
             $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
@@ -231,15 +231,27 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     /**
      * Check if automatic can be activated.
      *
+     * @param \Composer\IO\IOInterface $io
+     *
      * @return null|string
      */
-    private function getErrorMessage(): ?string
+    private function getErrorMessage(IOInterface $io): ?string
     {
         // @codeCoverageIgnoreStart
         if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd
+
+        $io->writeError('Narrowspark Automatic Security Audit is checking for internet connection...', true, IOInterface::VERBOSE);
+
+        $connected = @\fsockopen(\str_replace('https://', '', Audit::SECURITY_ADVISORIES_BASE_URL), 433);
+
+        if (! $connected) {
+            return 'Connecting to github.com failed.';
+        }
+
+        \fclose($connected);
 
         return null;
     }

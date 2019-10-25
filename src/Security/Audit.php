@@ -25,7 +25,7 @@ use Symfony\Component\Filesystem\Filesystem;
 final class Audit
 {
     /** @var string */
-    private const SECURITY_ADVISORIES_BASE_URL = 'https://raw.githubusercontent.com/narrowspark/security-advisories/master/';
+    public const SECURITY_ADVISORIES_BASE_URL = 'https://raw.githubusercontent.com/narrowspark/security-advisories/master/';
 
     /** @var string */
     private const SECURITY_ADVISORIES_SHA = 'security-advisories-sha';

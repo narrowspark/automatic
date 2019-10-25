@@ -19,13 +19,10 @@ use Composer\Config;
 use Composer\Console\Application;
 use Composer\DependencyResolver\Pool;
 use Composer\EventDispatcher\EventSubscriberInterface;
-use Composer\Installer;
 use Composer\Installer\InstallerEvent;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\PackageEvents;
-use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
-use Composer\IO\NullIO;
 use Composer\Package\BasePackage;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
@@ -379,7 +376,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     }
 
     /**
-     * Extend the composer object with some automatic settings.
+     * Extend the composer object with some automatic prefetcher settings.
      *
      * @param array                                                        $backtrace
      * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
@@ -388,16 +385,6 @@ class Plugin implements EventSubscriberInterface, PluginInterface
      */
     private function extendComposer($backtrace, LegacyTagsManagerContract $tagsManager): void
     {
-        foreach ($backtrace as $trace) {
-            if (isset($trace['object']) && $trace['object'] instanceof Installer) {
-                /** @var \Composer\Installer $installer */
-                $installer = $trace['object'];
-                $installer->setSuggestedPackagesReporter(new SuggestedPackagesReporter(new NullIO()));
-
-                break;
-            }
-        }
-
         foreach ($backtrace as $trace) {
             if (! isset($trace['object']) || ! isset($trace['args'][0])) {
                 continue;

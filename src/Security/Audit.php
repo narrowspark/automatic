@@ -25,13 +25,13 @@ use Symfony\Component\Filesystem\Filesystem;
 final class Audit
 {
     /** @var string */
-    private const SECURITY_ADVISORIES_BASE_URL = 'https://raw.githubusercontent.com/narrowspark/security-advisories/master/';
+    public const SECURITY_ADVISORIES_BASE_URL = 'https://raw.githubusercontent.com/narrowspark/security-advisories/master/';
 
     /** @var string */
-    private const SECURITY_ADVISORIES_SHA = 'security-advisories-sha';
+    public const SECURITY_ADVISORIES_SHA = 'security-advisories-sha';
 
     /** @var string */
-    private const SECURITY_ADVISORIES = 'security-advisories.json';
+    public const SECURITY_ADVISORIES = 'security-advisories.json';
 
     /**
      * A Filesystem instance.
@@ -62,17 +62,26 @@ final class Audit
     private $downloader;
 
     /**
+     * Sha of the security security-advisories.json.
+     *
+     * @var string
+     */
+    private $sha;
+
+    /**
      * Create a new Audit instance.
      *
      * @param string                                              $composerVendorPath
      * @param \Narrowspark\Automatic\Security\Contract\Downloader $downloader
+     * @param string                                              $sha
      */
-    public function __construct(string $composerVendorPath, DownloaderContract $downloader)
+    public function __construct(string $composerVendorPath, DownloaderContract $downloader, string $sha)
     {
         $this->composerVendorPath = $composerVendorPath;
         $this->downloader = $downloader;
         $this->versionParser = new VersionParser();
         $this->filesystem = new Filesystem();
+        $this->sha = $sha;
     }
 
     /**
@@ -153,8 +162,6 @@ final class Audit
      */
     public function getSecurityAdvisories(?IOInterface $io = null): array
     {
-        $sha = $this->downloader->download(self::SECURITY_ADVISORIES_BASE_URL . self::SECURITY_ADVISORIES_SHA);
-
         $narrowsparkAutomaticPath = $this->composerVendorPath . \DIRECTORY_SEPARATOR . 'narrowspark' . \DIRECTORY_SEPARATOR . 'automatic' . \DIRECTORY_SEPARATOR;
 
         if (! $this->filesystem->exists($narrowsparkAutomaticPath)) {
@@ -167,7 +174,7 @@ final class Audit
         if ($this->filesystem->exists($securityAdvisoriesShaPath)) {
             $oldSha = \file_get_contents($securityAdvisoriesShaPath);
 
-            if ($oldSha === $sha) {
+            if ($oldSha === $this->sha) {
                 return \json_decode((string) \file_get_contents($securityAdvisoriesPath), true);
             }
         }
@@ -178,10 +185,10 @@ final class Audit
 
         $securityAdvisories = $this->downloader->download(self::SECURITY_ADVISORIES_BASE_URL . self::SECURITY_ADVISORIES);
 
-        $this->filesystem->dumpFile($securityAdvisoriesShaPath, $sha);
+        $this->filesystem->dumpFile($securityAdvisoriesShaPath, $this->sha);
         $this->filesystem->dumpFile($securityAdvisoriesPath, $securityAdvisories);
 
-        return \json_decode((string) \file_get_contents($securityAdvisoriesPath), true);
+        return \json_decode($securityAdvisories, true);
     }
 
     /**

@@ -12,7 +12,6 @@ jobs:
         uses: shivammathur/setup-php@master
         with:
           php-version: 7.2
+      - run: composer install
       - name: 'analyze php code'
-        run: |
-          composer install --no-interaction --prefer-dist --no-progress --profile --no-suggest
-          composer phpstan
+        run: composer phpstan

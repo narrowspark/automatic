@@ -74,8 +74,20 @@ EOF
             $downloader->setTimeout((int) $timeout);
         }
 
+        try {
+            $output->write('Narrowspark Automatic Security Audit is checking for internet connection...', true, OutputInterface::VERBOSITY_VERBOSE);
+
+            $sha = $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA);
+        } catch (RuntimeException $exception) {
+            $output->write('Connecting to github.com failed.');
+
+            $downloader = $timeout = null;
+
+            return 1;
+        }
+
         $config = Factory::createConfig(new NullIO());
-        $audit = new Audit(\rtrim($config->get('vendor-dir'), '/'), $downloader);
+        $audit = new Audit(\rtrim($config->get('vendor-dir'), '/'), $downloader, $sha);
 
         /** @var null|string $composerFile */
         $composerFile = $input->getOption('composer-lock');

@@ -84,6 +84,10 @@ final class PluginTest extends MockeryTestCase
             ->once()
             ->with('Downloading the Security Advisories database...', true, IOInterface::VERBOSE);
 
+        $this->ioMock->shouldReceive('writeError')
+            ->once()
+            ->with('Narrowspark Automatic Security Audit is checking for internet connection...', true, IOInterface::VERBOSE);
+
         $this->securityPlugin->activate($this->composerMock, $this->ioMock);
     }
 
@@ -149,7 +153,9 @@ final class PluginTest extends MockeryTestCase
             ->once()
             ->andReturn($operationMock);
 
-        $audit = new Audit($this->tmpFolder, new ComposerDownloader());
+        $downloader = new ComposerDownloader();
+
+        $audit = new Audit($this->tmpFolder, $downloader, $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA));
 
         NSA::setProperty($this->securityPlugin, 'audit', $audit);
         NSA::setProperty($this->securityPlugin, 'securityAdvisories', $audit->getSecurityAdvisories());
@@ -193,7 +199,9 @@ final class PluginTest extends MockeryTestCase
             ->once()
             ->andReturn($operationMock);
 
-        $audit = new Audit($this->tmpFolder, new ComposerDownloader());
+        $downloader = new ComposerDownloader();
+
+        $audit = new Audit($this->tmpFolder, $downloader, $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA));
 
         NSA::setProperty($this->securityPlugin, 'audit', $audit);
         NSA::setProperty($this->securityPlugin, 'securityAdvisories', $audit->getSecurityAdvisories());
@@ -207,7 +215,9 @@ final class PluginTest extends MockeryTestCase
     {
         \putenv('COMPOSER=' . __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.json');
 
-        $audit = new Audit($this->tmpFolder, new ComposerDownloader());
+        $downloader = new ComposerDownloader();
+
+        $audit = new Audit($this->tmpFolder, $downloader, $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA));
 
         NSA::setProperty($this->securityPlugin, 'audit', $audit);
 

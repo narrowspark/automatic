@@ -115,12 +115,24 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
-        $downloader = new ComposerDownloader();
+        if (\extension_loaded('curl')) {
+            $downloader = new CurlDownloader();
+        } else {
+            $downloader = new ComposerDownloader();
+        }
+
+        $extra = $composer->getPackage()->getExtra();
+
+        if (isset($extra[self::COMPOSER_EXTRA_KEY]['timeout'])) {
+            $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['timeout']);
+        }
 
         if (($errorMessage = $this->getErrorMessage($io, $downloader)) !== null) {
             self::$activated = false;
 
             $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
+
+            $downloader = $extra = null;
 
             return;
         }
@@ -136,16 +148,6 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 
         $this->composer = $composer;
         $this->io = $io;
-
-        if (\extension_loaded('curl')) {
-            $downloader = new CurlDownloader();
-        }
-
-        $extra = $composer->getPackage()->getExtra();
-
-        if (isset($extra[self::COMPOSER_EXTRA_KEY]['timeout'])) {
-            $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['timeout']);
-        }
 
         $this->audit = new Audit(\rtrim($composer->getConfig()->get('vendor-dir'), '/'), $downloader, $this->securitySha);
 

@@ -61,7 +61,18 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $downloader = new ComposerDownloader();
+        if (\extension_loaded('curl')) {
+            $downloader = new CurlDownloader();
+        } else {
+            $downloader = new ComposerDownloader();
+        }
+
+        /** @var null|string $timeout */
+        $timeout = $input->getOption('timeout');
+
+        if ($timeout !== null) {
+            $downloader->setTimeout((int) $timeout);
+        }
 
         try {
             $output->write('Narrowspark Automatic Security Audit is checking for internet connection...', true, OutputInterface::VERBOSITY_VERBOSE);
@@ -70,18 +81,9 @@ EOF
         } catch (RuntimeException $exception) {
             $output->write('Connecting to github.com failed.');
 
+            $downloader = $timeout = null;
+
             return 1;
-        }
-
-        if (\extension_loaded('curl')) {
-            $downloader = new CurlDownloader();
-        }
-
-        /** @var null|string $timeout */
-        $timeout = $input->getOption('timeout');
-
-        if ($timeout !== null) {
-            $downloader->setTimeout((int) $timeout);
         }
 
         $config = Factory::createConfig(new NullIO());

@@ -204,6 +204,9 @@ final class PluginTest extends MockeryTestCase
     public function testAuditPackageWithUninstall(): void
     {
         $operationMock = $this->mock(UninstallOperation::class);
+        $operationMock->shouldReceive('getPackage->getPrettyName')
+            ->once()
+            ->andReturn(Plugin::PACKAGE_NAME);
 
         $eventMock = $this->mock(PackageEvent::class);
         $eventMock->shouldReceive('getOperation')

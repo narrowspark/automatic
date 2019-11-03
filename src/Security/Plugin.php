@@ -76,6 +76,13 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     protected $container;
 
     /**
+     * Check if the package should run in uninstall mode.
+     *
+     * @var bool
+     */
+    private $uninstallMode = false;
+
+    /**
      * Get the Container instance.
      *
      * @return \Narrowspark\Automatic\Common\Contract\Container
@@ -173,6 +180,10 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function onPostUpdatePostMessages(Event $event): void
     {
+        if ($this->uninstallMode) {
+            return;
+        }
+
         $count = \count(\array_filter($this->foundVulnerabilities));
         $io = $this->container->get(IOInterface::class);
 
@@ -195,6 +206,10 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
         $operation = $event->getOperation();
 
         if ($operation instanceof UninstallOperation) {
+            if ($operation->getPackage()->getPrettyName() === self::PACKAGE_NAME) {
+                $this->uninstallMode = true;
+            }
+
             return;
         }
 
@@ -226,7 +241,7 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function auditComposerLock(Event $event): void
     {
-        if (\count($this->foundVulnerabilities) !== 0) {
+        if ($this->uninstallMode || \count($this->foundVulnerabilities) !== 0) {
             return;
         }
 

@@ -86,6 +86,18 @@ final class AuditTest extends TestCase
         self::assertCount(0, $messages);
     }
 
+    public function testCheckLockWithSymfony252OnDevPackageWithNoDevMode(): void
+    {
+        $this->audit->setDevMode(false);
+
+        [$vulnerabilities, $messages] = $this->audit->checkLock(
+            __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_dev_packages_composer.lock'
+        );
+
+        self::assertCount(0, $vulnerabilities);
+        self::assertCount(0, $messages);
+    }
+
     public function testCheckLockWithComposer171(): void
     {
         [$vulnerabilities, $messages] = $this->audit->checkLock(

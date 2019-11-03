@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Security;
 
 use Composer\Composer;
+use Composer\Config;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\EventDispatcher\EventSubscriberInterface;
@@ -26,14 +27,16 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
-use Narrowspark\Automatic\Security\Contract\Downloader;
+use Narrowspark\Automatic\Common\AbstractContainer;
+use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
-use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
-use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Symfony\Component\Console\Input\InputInterface;
 
-final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
+class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 {
     /** @var string */
     public const VERSION = '0.12.0';
@@ -45,39 +48,11 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     public const PACKAGE_NAME = 'narrowspark/automatic-security-audit';
 
     /**
-     * The SecurityAdvisories database.
-     *
-     * @var array<string, array>
-     */
-    private $securityAdvisories = [];
-
-    /**
      * Found package vulnerabilities.
      *
      * @var array[]
      */
     private $foundVulnerabilities = [];
-
-    /**
-     * The composer instance.
-     *
-     * @var \Composer\Composer
-     */
-    private $composer;
-
-    /**
-     * The composer io implementation.
-     *
-     * @var \Composer\IO\IOInterface
-     */
-    private $io;
-
-    /**
-     * A Audit instance.
-     *
-     * @var \Narrowspark\Automatic\Security\Audit
-     */
-    private $audit;
 
     /**
      * Check if the the plugin is activated.
@@ -92,6 +67,23 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      * @var string
      */
     private $securitySha;
+
+    /**
+     * A Container instance.
+     *
+     * @var \Narrowspark\Automatic\Common\Contract\Container
+     */
+    protected $container;
+
+    /**
+     * Get the Container instance.
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Container
+     */
+    public function getContainer(): ContainerContract
+    {
+        return $this->container;
+    }
 
     /**
      * {@inheritdoc}
@@ -115,28 +107,6 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
-        if (\extension_loaded('curl')) {
-            $downloader = new CurlDownloader();
-        } else {
-            $downloader = new ComposerDownloader();
-        }
-
-        $extra = $composer->getPackage()->getExtra();
-
-        if (isset($extra[self::COMPOSER_EXTRA_KEY]['timeout'])) {
-            $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['timeout']);
-        }
-
-        if (($errorMessage = $this->getErrorMessage($io, $downloader)) !== null) {
-            self::$activated = false;
-
-            $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
-
-            $downloader = $extra = null;
-
-            return;
-        }
-
         // to avoid issues when Automatic is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
@@ -146,12 +116,42 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
             }
         }
 
-        $this->composer = $composer;
-        $this->io = $io;
+        if (! \class_exists(AbstractContainer::class)) {
+            require __DIR__ . \DIRECTORY_SEPARATOR . 'alias.php';
+        }
 
-        $this->audit = new Audit(\rtrim($composer->getConfig()->get('vendor-dir'), '/'), $downloader, $this->securitySha);
+        $this->container = new Container($composer, $io);
 
-        $this->securityAdvisories = $this->audit->getSecurityAdvisories($io);
+        $extra = $this->container->get('composer-extra');
+        $downloader = $this->container->get(DownloaderContract::class);
+
+        if (\array_key_exists(self::COMPOSER_EXTRA_KEY, $extra) && \array_key_exists('timeout', $extra[self::COMPOSER_EXTRA_KEY])) {
+            $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['timeout']);
+        }
+
+        if (($errorMessage = $this->getErrorMessage($io, $downloader)) !== null) {
+            self::$activated = false;
+
+            $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
+
+            $extra = null;
+
+            return;
+        }
+
+        $this->container->set(Audit::class, function (ContainerContract $container) {
+            $audit = new Audit(\rtrim($container->get(Config::class)->get('vendor-dir'), '/'), $container->get(DownloaderContract::class), $this->securitySha);
+
+            $name = 'no-dev';
+            $input = $container->get(InputInterface::class);
+
+            $audit->setDevMode($input->hasOption($name) ? ! (bool) $input->getOption($name) : true);
+
+            return $audit;
+        });
+
+        // Downloading needed security advisories database.
+        $this->container->get('security_advisories');
     }
 
     /**
@@ -174,11 +174,12 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     public function onPostUpdatePostMessages(Event $event): void
     {
         $count = \count(\array_filter($this->foundVulnerabilities));
+        $io = $this->container->get(IOInterface::class);
 
         if ($count !== 0) {
-            $this->io->write('<error>[!]</> Audit Security Report: ' . \sprintf('%s vulnerabilit%s found - run "composer audit" for more information', $count, $count === 1 ? 'y' : 'ies'));
+            $io->write('<error>[!]</> Audit Security Report: ' . \sprintf('%s vulnerabilit%s found - run "composer audit" for more information', $count, $count === 1 ? 'y' : 'ies'));
         } else {
-            $this->io->write('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
+            $io->write('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
         }
     }
 
@@ -203,10 +204,10 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
             $composerPackage = $operation->getPackage();
         }
 
-        $data = $this->audit->checkPackage(
+        $data = $this->container->get(Audit::class)->checkPackage(
             $composerPackage->getName(),
             $composerPackage->getVersion(),
-            $this->securityAdvisories
+            $this->container->get('security_advisories')
         );
 
         if (\count($data) === 0) {
@@ -229,7 +230,7 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
             return;
         }
 
-        $data = $this->audit->checkLock(Util::getComposerLockFile());
+        $data = $this->container->get(Audit::class)->checkLock(Util::getComposerLockFile());
 
         if (\count($data) === 0) {
             return;
@@ -241,12 +242,12 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     /**
      * Check if automatic can be activated.
      *
-     * @param \Composer\IO\IOInterface $io
-     * @param Downloader               $downloader
+     * @param \Composer\IO\IOInterface                            $io
+     * @param \Narrowspark\Automatic\Security\Contract\Downloader $downloader
      *
      * @return null|string
      */
-    private function getErrorMessage(IOInterface $io, Downloader $downloader): ?string
+    private function getErrorMessage(IOInterface $io, DownloaderContract $downloader): ?string
     {
         // @codeCoverageIgnoreStart
         if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {

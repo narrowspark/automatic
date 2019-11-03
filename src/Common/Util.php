@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Narrowspark\Automatic\Common;
 
+use Composer\Composer;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 
 final class Util
 {
@@ -51,5 +53,29 @@ final class Util
     public static function getComposerLockFile(): string
     {
         return \substr(Factory::getComposerFile(), 0, -4) . 'lock';
+    }
+
+    /**
+     * Get the composer version.
+     *
+     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
+     *
+     * @return string
+     */
+    public static function getComposerVersion(): string
+    {
+        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
+
+        if ($matches !== null) {
+            return $matches[0];
+        }
+
+        throw new RuntimeException('No composer version found.');
     }
 }

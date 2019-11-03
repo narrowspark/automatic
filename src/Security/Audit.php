@@ -69,6 +69,13 @@ final class Audit
     private $sha;
 
     /**
+     * Check if composer is in dev mode.
+     *
+     * @var bool
+     */
+    private $devMode = true;
+
+    /**
      * Create a new Audit instance.
      *
      * @param string                                              $composerVendorPath
@@ -82,6 +89,16 @@ final class Audit
         $this->versionParser = new VersionParser();
         $this->filesystem = new Filesystem();
         $this->sha = $sha;
+    }
+
+    /**
+     * Set the composer dev mode.
+     *
+     * @param bool $bool
+     */
+    public function setDevMode($bool): void
+    {
+        $this->devMode = $bool;
     }
 
     /**
@@ -127,8 +144,13 @@ final class Audit
 
         /** @var \Composer\Package\Package[] $packages */
         $packages = [];
+        $keys = ['packages'];
 
-        foreach (['packages', 'packages-dev'] as $key) {
+        if ($this->devMode) {
+            $keys[] = 'packages-dev';
+        }
+
+        foreach ($keys as $key) {
             $data = $lockContents[$key];
 
             foreach ($data as $pkgData) {

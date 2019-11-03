@@ -11,9 +11,11 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
-namespace Narrowspark\Automatic\Security;
+namespace Narrowspark\Automatic\Security\Common;
 
 use Composer\Factory;
+use Composer\Json\JsonFile;
+use Composer\Json\JsonManipulator;
 
 final class Util
 {
@@ -24,6 +26,21 @@ final class Util
      */
     private function __construct()
     {
+    }
+
+    /**
+     * Return the composer json file and json manipulator.
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return array
+     */
+    public static function getComposerJsonFileAndManipulator(): array
+    {
+        $json = new JsonFile(Factory::getComposerFile());
+        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+
+        return [$json, $manipulator];
     }
 
     /**

@@ -34,7 +34,6 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
@@ -769,7 +768,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             return 'You must enable the openssl extension in your [php.ini] file';
         }
 
-        if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
+        if (\version_compare(Util::getComposerVersion(), '1.7.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
 
@@ -828,7 +827,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             }
 
             if ($command === 'create-project') {
-                if (\version_compare(self::getComposerVersion(), '1.7.0', '>=')) {
+                if (\version_compare(Util::getComposerVersion(), '1.7.0', '>=')) {
                     $input->setOption('remove-vcs', true);
                 } else {
                     $input->setInteractive(false);
@@ -843,29 +842,5 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
             break;
         }
-    }
-
-    /**
-     * Get the composer version.
-     *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
-     *
-     * @return string
-     */
-    private static function getComposerVersion(): string
-    {
-        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        throw new RuntimeException('No composer version found.');
     }
 }

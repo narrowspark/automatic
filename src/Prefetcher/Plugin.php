@@ -34,7 +34,7 @@ use Composer\Repository\RepositoryManager;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
+use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
 use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use RecursiveDirectoryIterator;
@@ -232,7 +232,10 @@ class Plugin implements EventSubscriberInterface, PluginInterface
      */
     public function populateFilesCacheDir($event): void
     {
-        $this->container->get(Prefetcher::class)->fetchAllFromOperations($event);
+        /** @var \Narrowspark\Automatic\Prefetcher\Prefetcher $prefetcher */
+        $prefetcher = $this->container->get(Prefetcher::class);
+
+        $prefetcher->fetchAllFromOperations($event);
     }
 
     /**
@@ -367,7 +370,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             return 'You must enable the openssl extension in your [php.ini] file';
         }
 
-        if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
+        if (\version_compare(Util::getComposerVersion(), '1.7.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd
@@ -421,29 +424,5 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
             break;
         }
-    }
-
-    /**
-     * Get the composer version.
-     *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
-     *
-     * @return string
-     */
-    private static function getComposerVersion(): string
-    {
-        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        throw new RuntimeException('No composer version found.');
     }
 }

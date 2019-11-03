@@ -300,12 +300,10 @@ class Prefetcher
      */
     private function getDryRun(): bool
     {
-        $dryRun = false;
-
         if ($this->input->hasParameterOption('--dry-run')) {
-            $dryRun = true;
+            return true;
         }
 
-        return $dryRun;
+        return false;
     }
 }

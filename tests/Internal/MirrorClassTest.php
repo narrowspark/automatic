@@ -25,16 +25,17 @@ final class MirrorClassTest extends TestCase
     public function testMirrorFiles(): void
     {
         $rootPath = \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR;
+        $comment = MirrorSettings::COMMENT_STRING;
 
-        foreach (MirrorSettings::MIRROR_LIST as $path => $settings) {
-            foreach (MirrorSettings::OUTPUT_LIST as $outputPath => $namespace) {
-                $comment = MirrorSettings::COMMENT_STRING;
+        foreach (MirrorSettings::MIRROR_LIST as $list) {
+            $outputSettings = $list['output'];
 
+            foreach ($list['mirror_list'] as $path => $settings) {
                 $content = \file_get_contents($rootPath . $path);
                 $content = \str_replace(["\nclass", "\nabstract class", "\ninterface"], ["\n{$comment}\nclass", "\n{$comment}\nabstract class", "\n{$comment}\ninterface"], $content);
-                $content = \str_replace($settings['namespace'], $namespace, $content);
+                $content = \str_replace($settings['namespace'], $outputSettings['namespace'], $content);
 
-                $outputPath = $outputPath . $settings['path'];
+                $outputPath = $outputSettings['path'] . $settings['path'];
 
                 $mirrorPath = \str_replace("/{$settings['path']}/", "/{$outputPath}/", $rootPath . $path);
 

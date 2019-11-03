@@ -27,10 +27,14 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
+use Exception;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use function array_merge;
+use function file_get_contents;
+use function sprintf;
 
 abstract class AbstractInstallationManager
 {
@@ -132,7 +136,7 @@ abstract class AbstractInstallationManager
         $this->io = $io;
         $this->input = $input;
         $this->jsonFile = new JsonFile(Factory::getComposerFile());
-        $this->composerBackup = (string) \file_get_contents($this->jsonFile->getPath());
+        $this->composerBackup = (string) file_get_contents($this->jsonFile->getPath());
         $this->filesystem = new Filesystem();
 
         $this->rootPackage = $this->composer->getPackage();
@@ -140,7 +144,7 @@ abstract class AbstractInstallationManager
 
         $pool = new Pool($this->stability);
         $pool->addRepository(
-            new CompositeRepository(\array_merge([new PlatformRepository()], RepositoryFactory::defaultRepos($io)))
+            new CompositeRepository(array_merge([new PlatformRepository()], RepositoryFactory::defaultRepos($io)))
         );
 
         $this->versionSelector = new VersionSelector($pool);
@@ -174,7 +178,7 @@ abstract class AbstractInstallationManager
         $package = $this->versionSelector->findBestCandidate($name, null, null, 'stable');
 
         if ($package === false) {
-            throw new InvalidArgumentException(\sprintf('Could not find package [%s] at any version for your minimum-stability [%s]. Check the package spelling or your minimum-stability.', $name, $this->stability));
+            throw new InvalidArgumentException(sprintf('Could not find package [%s] at any version for your minimum-stability [%s]. Check the package spelling or your minimum-stability.', $name, $this->stability));
         }
 
         return $this->versionSelector->findRecommendedRequireVersion($package);
@@ -206,7 +210,7 @@ abstract class AbstractInstallationManager
      * @param array $devRequires
      * @param int   $type
      *
-     * @throws \Exception happens in the JsonFile class
+     * @throws Exception happens in the JsonFile class
      *
      * @return void
      */
@@ -215,7 +219,7 @@ abstract class AbstractInstallationManager
         $this->io->writeError('Updating composer.json');
 
         if ($type === self::ADD) {
-            $jsonManipulator = new JsonManipulator(\file_get_contents($this->jsonFile->getPath()));
+            $jsonManipulator = new JsonManipulator(file_get_contents($this->jsonFile->getPath()));
             $sortPackages = $this->composer->getConfig()->get('sort-packages') ?? false;
 
             foreach ($requires as $name => $version) {
@@ -248,7 +252,7 @@ abstract class AbstractInstallationManager
      * @param \Composer\Package\RootPackageInterface $rootPackage
      * @param array                                  $whitelistPackages
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return int
      */
@@ -271,7 +275,7 @@ abstract class AbstractInstallationManager
      */
     protected function getRootRequires(): array
     {
-        return \array_merge($this->rootPackage->getRequires(), $this->rootPackage->getDevRequires());
+        return array_merge($this->rootPackage->getRequires(), $this->rootPackage->getDevRequires());
     }
 
     /**

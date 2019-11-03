@@ -23,6 +23,7 @@ use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Configurator\ComposerAutoScriptsConfigurator;
 use Narrowspark\Automatic\Test\Fixture\ComposerJsonFactory;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use function unlink;
 
 /**
  * @internal
@@ -110,7 +111,7 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($packageMock);
 
-        \unlink($composerJsonPath);
+        unlink($composerJsonPath);
     }
 
     public function testUnconfigure(): void
@@ -142,7 +143,7 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 
         $this->configurator->unconfigure($packageMock);
 
-        \unlink($composerJsonPath);
+        unlink($composerJsonPath);
     }
 
     /**

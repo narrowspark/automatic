@@ -17,7 +17,11 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use InvalidArgumentException;
 use Narrowspark\Automatic\Security\Common\Contract\Exception\RuntimeException;
+use function file_get_contents;
+use function preg_match;
+use function substr;
 
 final class Util
 {
@@ -33,14 +37,14 @@ final class Util
     /**
      * Return the composer json file and json manipulator.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      *
      * @return array
      */
     public static function getComposerJsonFileAndManipulator(): array
     {
         $json = new JsonFile(Factory::getComposerFile());
-        $manipulator = new JsonManipulator(\file_get_contents($json->getPath()));
+        $manipulator = new JsonManipulator(file_get_contents($json->getPath()));
 
         return [$json, $manipulator];
     }
@@ -52,7 +56,7 @@ final class Util
      */
     public static function getComposerLockFile(): string
     {
-        return \substr(Factory::getComposerFile(), 0, -4) . 'lock';
+        return substr(Factory::getComposerFile(), 0, -4) . 'lock';
     }
 
     /**
@@ -64,13 +68,13 @@ final class Util
      */
     public static function getComposerVersion(): string
     {
-        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
+        preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
 
         if ($matches !== null) {
             return $matches[0];
         }
 
-        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
+        preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
 
         if ($matches !== null) {
             return $matches[0];

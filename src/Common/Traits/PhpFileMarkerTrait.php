@@ -13,6 +13,12 @@ declare(strict_types=1);
 
 namespace Narrowspark\Automatic\Common\Traits;
 
+use function file_get_contents;
+use function is_file;
+use function sprintf;
+use function str_repeat;
+use function strpos;
+
 trait PhpFileMarkerTrait
 {
     /**
@@ -25,7 +31,7 @@ trait PhpFileMarkerTrait
      */
     protected function isFileMarked(string $packageName, string $file): bool
     {
-        return \is_file($file) && \strpos(\file_get_contents($file), \sprintf('/** > %s **/', $packageName)) !== false;
+        return is_file($file) && strpos(file_get_contents($file), sprintf('/** > %s **/', $packageName)) !== false;
     }
 
     /**
@@ -39,8 +45,8 @@ trait PhpFileMarkerTrait
      */
     protected function markData(string $packageName, string $data, int $spaceMultiplier = 4): string
     {
-        $spaces = \str_repeat(' ', $spaceMultiplier);
+        $spaces = str_repeat(' ', $spaceMultiplier);
 
-        return \sprintf('%s/** > %s **/' . "\n" . '%s%s/** %s < **/' . "\n", $spaces, $packageName, $data, $spaces, $packageName);
+        return sprintf('%s/** > %s **/' . "\n" . '%s%s/** %s < **/' . "\n", $spaces, $packageName, $data, $spaces, $packageName);
     }
 }

@@ -17,6 +17,11 @@ use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Configurator\Traits\AppendToFileTrait;
+use const DIRECTORY_SEPARATOR;
+use function file_get_contents;
+use function ltrim;
+use function preg_replace;
+use function sprintf;
 
 final class GitIgnoreConfigurator extends AbstractConfigurator
 {
@@ -37,7 +42,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
     {
         $this->write('Added entries to .gitignore');
 
-        $gitignore = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.gitignore';
+        $gitignore = $this->path->getWorkingDir() . DIRECTORY_SEPARATOR . '.gitignore';
 
         if ($this->isFileMarked($package->getPrettyName(), $gitignore)) {
             return;
@@ -50,7 +55,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
             $data .= $value . "\n";
         }
 
-        $this->appendToFile($gitignore, "\n" . \ltrim($this->markData($package->getPrettyName(), $data), "\r\n"));
+        $this->appendToFile($gitignore, "\n" . ltrim($this->markData($package->getPrettyName(), $data), "\r\n"));
     }
 
     /**
@@ -58,7 +63,7 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
      */
     public function unconfigure(PackageContract $package): void
     {
-        $file = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.gitignore';
+        $file = $this->path->getWorkingDir() . DIRECTORY_SEPARATOR . '.gitignore';
 
         // @codeCoverageIgnoreStart
         if (! $this->filesystem->exists($file)) {
@@ -66,10 +71,10 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
         }
         // @codeCoverageIgnoreEnd
         $count = 0;
-        $contents = \preg_replace(
-            \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), "\n"),
+        $contents = preg_replace(
+            sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), "\n"),
             "\n",
-            (string) \file_get_contents($file),
+            (string) file_get_contents($file),
             -1,
             $count
         );
@@ -80,6 +85,6 @@ final class GitIgnoreConfigurator extends AbstractConfigurator
 
         $this->write('Removed entries in .gitignore');
 
-        $this->filesystem->dumpFile($file, \ltrim((string) $contents, "\r\n"));
+        $this->filesystem->dumpFile($file, ltrim((string) $contents, "\r\n"));
     }
 }

@@ -16,12 +16,14 @@ namespace Narrowspark\Automatic\Test\Installer;
 use Composer\Downloader\DownloadManager;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
+use Mockery;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use function trim;
 
 /**
  * @internal
@@ -129,7 +131,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->andReturn($name);
         $this->packageMock->shouldReceive('getName')
             ->times(3)
-            ->andReturn(\trim($name, '/'));
+            ->andReturn(trim($name, '/'));
 
         $this->packageMock->shouldReceive('getTargetDir')
             ->andReturn(null);
@@ -144,9 +146,9 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->downloadManagerMock->shouldReceive('download');
 
         $this->lockMock->shouldReceive('addSub')
-            ->with($this->installerClass::LOCK_KEY, $name, \Mockery::type('array'));
+            ->with($this->installerClass::LOCK_KEY, $name, Mockery::type('array'));
         $this->lockMock->shouldReceive('addSub')
-            ->with(Automatic::LOCK_CLASSMAP, $name, \Mockery::type('array'));
+            ->with(Automatic::LOCK_CLASSMAP, $name, Mockery::type('array'));
 
         $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
     }
@@ -165,12 +167,12 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->packageMock->shouldReceive('getPrettyName')
             ->andReturn($name);
         $this->packageMock->shouldReceive('getName')
-            ->andReturn(\trim($name, '/'));
+            ->andReturn(trim($name, '/'));
 
         $this->targetPackageMock->shouldReceive('getPrettyName')
             ->andReturn($name);
         $this->targetPackageMock->shouldReceive('getName')
-            ->andReturn(\trim($name, '/'));
+            ->andReturn(trim($name, '/'));
         $this->targetPackageMock->shouldReceive('getTargetDir')
             ->andReturn('');
         $this->targetPackageMock->shouldReceive('getBinaries')
@@ -184,9 +186,9 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->andReturn(['psr-4' => ['Test\\' => '']]);
 
         $this->lockMock->shouldReceive('addSub')
-            ->with($this->installerClass::LOCK_KEY, $name, \Mockery::type('array'));
+            ->with($this->installerClass::LOCK_KEY, $name, Mockery::type('array'));
         $this->lockMock->shouldReceive('addSub')
-            ->with(Automatic::LOCK_CLASSMAP, $name, \Mockery::type('array'));
+            ->with(Automatic::LOCK_CLASSMAP, $name, Mockery::type('array'));
 
         $this->configuratorInstaller->update($this->repositoryMock, $this->packageMock, $this->targetPackageMock);
     }
@@ -206,7 +208,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->packageMock->shouldReceive('getBinaries')
             ->andReturn([]);
         $this->packageMock->shouldReceive('getName')
-            ->andReturn(\trim($name, '/'));
+            ->andReturn(trim($name, '/'));
 
         $this->repositoryMock->shouldReceive('hasPackage')
             ->twice()

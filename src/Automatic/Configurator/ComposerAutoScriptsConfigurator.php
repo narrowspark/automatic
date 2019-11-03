@@ -19,6 +19,8 @@ use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Util;
+use function array_keys;
+use function array_merge;
 
 final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
 {
@@ -61,7 +63,7 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     {
         $autoScripts = $this->getComposerAutoScripts();
 
-        $autoScripts = \array_merge($autoScripts, (array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()));
+        $autoScripts = array_merge($autoScripts, (array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()));
 
         $this->manipulateAndWrite($autoScripts);
     }
@@ -73,7 +75,7 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     {
         $autoScripts = $this->getComposerAutoScripts();
 
-        foreach (\array_keys((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName())) as $cmd) {
+        foreach (array_keys((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName())) as $cmd) {
             unset($autoScripts[$cmd]);
         }
 

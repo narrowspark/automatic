@@ -13,6 +13,14 @@ declare(strict_types=1);
 
 namespace Narrowspark\Automatic\Test\Fixture;
 
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
+use function count;
+use function file_get_contents;
+use function json_decode;
+use function json_encode;
+
 final class ComposerJsonFactory
 {
     /**
@@ -44,7 +52,7 @@ final class ComposerJsonFactory
             'extra' => $extra,
         ];
 
-        if (\count($devRequire) !== 0) {
+        if (count($devRequire) !== 0) {
             $composerJsonContent['require-dev'] = $devRequire;
         }
 
@@ -132,7 +140,7 @@ final class ComposerJsonFactory
      */
     public static function jsonFileToArray(string $jsonFilePath): array
     {
-        return \json_decode(\file_get_contents($jsonFilePath), true);
+        return json_decode(file_get_contents($jsonFilePath), true);
     }
 
     /**
@@ -142,7 +150,7 @@ final class ComposerJsonFactory
      */
     public static function jsonToArray(string $jsonContent): array
     {
-        return \json_decode($jsonContent, true);
+        return json_decode($jsonContent, true);
     }
 
     /**
@@ -152,6 +160,6 @@ final class ComposerJsonFactory
      */
     public static function arrayToJson(array $jsonData): string
     {
-        return \json_encode($jsonData, \JSON_UNESCAPED_SLASHES | \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE);
+        return json_encode($jsonData, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
 }

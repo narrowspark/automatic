@@ -19,6 +19,13 @@ use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Path;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Symfony\Component\Filesystem\Filesystem;
+use function file_get_contents;
+use function is_array;
+use function is_file;
+use function rtrim;
+use function sprintf;
+use function strpos;
+use function substr;
 
 abstract class AbstractConfigurator implements ConfiguratorContract
 {
@@ -82,7 +89,7 @@ abstract class AbstractConfigurator implements ConfiguratorContract
      */
     protected function write($messages): void
     {
-        if (! \is_array($messages)) {
+        if (! is_array($messages)) {
             $messages = [$messages];
         }
 
@@ -103,7 +110,7 @@ abstract class AbstractConfigurator implements ConfiguratorContract
      */
     protected function isFileMarked(string $packageName, string $file): bool
     {
-        return \is_file($file) && \strpos((string) \file_get_contents($file), \sprintf('###> %s ###', $packageName)) !== false;
+        return is_file($file) && strpos((string) file_get_contents($file), sprintf('###> %s ###', $packageName)) !== false;
     }
 
     /**
@@ -117,7 +124,7 @@ abstract class AbstractConfigurator implements ConfiguratorContract
      */
     protected function markData(string $packageName, string $data, int $spaceMultiplier = 0): string
     {
-        return \sprintf('###> %s ###' . "\n" . '%s' . "\n" . '###< %s ###' . "\n", $packageName, \rtrim($data, "\r\n"), $packageName);
+        return sprintf('###> %s ###' . "\n" . '%s' . "\n" . '###< %s ###' . "\n", $packageName, rtrim($data, "\r\n"), $packageName);
     }
 
     /**
@@ -133,6 +140,6 @@ abstract class AbstractConfigurator implements ConfiguratorContract
      */
     protected function doInsertStringBeforePosition(string $string, string $insertStr, int $position): string
     {
-        return \substr($string, 0, $position) . $insertStr . \substr($string, $position);
+        return substr($string, 0, $position) . $insertStr . substr($string, $position);
     }
 }

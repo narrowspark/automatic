@@ -17,6 +17,8 @@ use Composer\IO\IOInterface;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator;
+use function sys_get_temp_dir;
+use function unlink;
 
 /**
  * @internal
@@ -39,7 +41,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
         parent::setUp();
 
         $this->copyFileName = 'copy_of_copy.txt';
-        $this->copyPath = \sys_get_temp_dir() . '/' . $this->copyFileName;
+        $this->copyPath = sys_get_temp_dir() . '/' . $this->copyFileName;
     }
 
     public function testConfigureWithCopy(): void
@@ -60,7 +62,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         self::assertFileExists($this->copyPath);
 
-        \unlink($this->copyPath);
+        unlink($this->copyPath);
     }
 
     public function testGetConfigurators(): void

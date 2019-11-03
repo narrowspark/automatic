@@ -28,6 +28,8 @@ use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\Automatic\Test\Fixture\Test\TransformWithScriptsExecutor\Automatic\TestExecutor;
 use Narrowspark\Automatic\Test\Operation\Traits\ArrangeOperationsClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use const DIRECTORY_SEPARATOR;
+use function str_replace;
 
 /**
  * @internal
@@ -286,7 +288,7 @@ final class InstallTest extends MockeryTestCase
                 ScriptExecutor::TYPE,
                 $name,
                 [
-                    TestExecutor::class => $this->fixturePath . \DIRECTORY_SEPARATOR . \str_replace('/', \DIRECTORY_SEPARATOR, $packageName) . \DIRECTORY_SEPARATOR . 'Automatic' . \DIRECTORY_SEPARATOR . 'TestExecutor.php',
+                    TestExecutor::class => $this->fixturePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $packageName) . DIRECTORY_SEPARATOR . 'Automatic' . DIRECTORY_SEPARATOR . 'TestExecutor.php',
                 ]
             );
         $this->lockMock->shouldReceive('addSub')

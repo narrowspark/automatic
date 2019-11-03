@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Narrowspark\Automatic\Test\Common;
 
+use DateTime;
+use DateTimeImmutable;
 use Narrowspark\Automatic\Common\Contract\Package as ContractPackage;
 use Narrowspark\Automatic\Common\Package;
 use PHPUnit\Framework\TestCase;
@@ -143,7 +145,7 @@ final class PackageTest extends TestCase
 
     public function testSetAndGetTime(): void
     {
-        $time = (new \DateTimeImmutable())->format(\DateTime::RFC3339);
+        $time = (new DateTimeImmutable())->format(DateTime::RFC3339);
 
         $this->package->setTime($time);
 

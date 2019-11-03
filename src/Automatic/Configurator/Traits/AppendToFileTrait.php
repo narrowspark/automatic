@@ -15,6 +15,13 @@ namespace Narrowspark\Automatic\Configurator\Traits;
 
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use const FILE_APPEND;
+use function dirname;
+use function file_put_contents;
+use function is_dir;
+use function is_writable;
+use function method_exists;
+use function sprintf;
 
 /**
  * @property Filesystem $filesystem
@@ -35,24 +42,24 @@ trait AppendToFileTrait
      */
     public function appendToFile(string $filename, string $content): void
     {
-        if (\method_exists($this->filesystem, 'appendToFile')) {
+        if (method_exists($this->filesystem, 'appendToFile')) {
             $this->filesystem->appendToFile($filename, $content);
 
             return;
         }
         // @codeCoverageIgnoreStart
-        $dir = \dirname($filename);
+        $dir = dirname($filename);
 
-        if (! \is_dir($dir)) {
+        if (! is_dir($dir)) {
             $this->filesystem->mkdir($dir);
         }
 
-        if (! \is_writable($dir)) {
-            throw new IOException(\sprintf('Unable to write to the "%s" directory.', $dir), 0, null, $dir);
+        if (! is_writable($dir)) {
+            throw new IOException(sprintf('Unable to write to the "%s" directory.', $dir), 0, null, $dir);
         }
 
-        if (false === @\file_put_contents($filename, $content, \FILE_APPEND)) {
-            throw new IOException(\sprintf('Failed to write file "%s".', $filename), 0, null, $filename);
+        if (false === @file_put_contents($filename, $content, FILE_APPEND)) {
+            throw new IOException(sprintf('Failed to write file "%s".', $filename), 0, null, $filename);
         }
         // @codeCoverageIgnoreEnd
     }

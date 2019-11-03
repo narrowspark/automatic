@@ -17,6 +17,8 @@ use Composer\Composer;
 use Composer\IO\NullIO;
 use Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use function putenv;
 
 /**
  * @internal
@@ -40,7 +42,7 @@ final class PhpScriptExtenderTest extends TestCase
 
     public function testClassIsNotFinal(): void
     {
-        $reflection = new \ReflectionClass(PhpScriptExtender::class);
+        $reflection = new ReflectionClass(PhpScriptExtender::class);
 
         self::assertFalse($reflection->isFinal());
     }
@@ -62,8 +64,8 @@ final class PhpScriptExtenderTest extends TestCase
     public function testExpandWithIniLoad(): void
     {
         // clear the composer env
-        \putenv('COMPOSER_ORIGINAL_INIS=');
-        \putenv('COMPOSER_ORIGINAL_INIS');
+        putenv('COMPOSER_ORIGINAL_INIS=');
+        putenv('COMPOSER_ORIGINAL_INIS');
 
         $output = $this->extender->expand('echo "hallo";');
 

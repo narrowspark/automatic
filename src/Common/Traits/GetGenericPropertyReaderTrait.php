@@ -20,7 +20,7 @@ trait GetGenericPropertyReaderTrait
     /**
      * Returns a callback that can read private variables from object.
      *
-     * @return \Closure
+     * @return Closure
      */
     protected function getGenericPropertyReader(): Closure
     {

@@ -14,11 +14,16 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic;
 
 use Composer\IO\IOInterface;
+use Exception;
 use Narrowspark\Automatic\Common\Contract\Generator\DefaultGenerator as DefaultGeneratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Symfony\Component\Filesystem\Filesystem;
+use function array_walk;
+use function class_exists;
+use function sprintf;
+use function str_replace;
 
 final class SkeletonGenerator
 {
@@ -83,7 +88,7 @@ final class SkeletonGenerator
     /**
      * Generate the selected skeleton.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -115,7 +120,7 @@ final class SkeletonGenerator
         /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $generator */
         $generator = $generators[$answer];
 
-        $this->io->write(\sprintf('%sGenerating [%s] skeleton.%s', "\n", $generatorTypes[$answer], "\n"));
+        $this->io->write(sprintf('%sGenerating [%s] skeleton.%s', "\n", $generatorTypes[$answer], "\n"));
 
         $generator->generate();
 
@@ -136,7 +141,7 @@ final class SkeletonGenerator
     /**
      * Removes all information about the skeleton package.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -169,8 +174,8 @@ final class SkeletonGenerator
 
         foreach ((array) $this->lock->get(SkeletonInstaller::LOCK_KEY) as $name => $generators) {
             foreach ((array) $this->lock->get(Automatic::LOCK_CLASSMAP, $name) as $class => $path) {
-                if (! \class_exists($class)) {
-                    require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
+                if (! class_exists($class)) {
+                    require_once str_replace('%vendor_path%', $this->vendorPath, $path);
                 }
             }
 
@@ -179,7 +184,7 @@ final class SkeletonGenerator
 
         $options = $this->options;
 
-        \array_walk($foundGenerators, static function (string &$class) use ($options): void {
+        array_walk($foundGenerators, static function (string &$class) use ($options): void {
             /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $class */
             $class = new $class(new Filesystem(), $options);
         });

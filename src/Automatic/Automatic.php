@@ -32,7 +32,9 @@ use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents as ComposerScriptEvents;
+use Exception;
 use FilesystemIterator;
+use InvalidArgumentException;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
@@ -47,9 +49,29 @@ use Narrowspark\Automatic\Operation\Uninstall;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
+use ReflectionException;
+use SplFileInfo;
+use stdClass;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use const PHP_INT_MAX;
+use function array_key_exists;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function array_unshift;
+use function class_exists;
+use function count;
+use function debug_backtrace;
+use function dirname;
+use function file_get_contents;
+use function in_array;
+use function sprintf;
+use function str_replace;
+use function strlen;
+use function substr;
+use function version_compare;
 
 class Automatic implements EventSubscriberInterface, PluginInterface
 {
@@ -144,7 +166,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
      */
     public static function getAutomaticLockFile(): string
     {
-        return \str_replace('composer', self::COMPOSER_EXTRA_KEY, Util::getComposerLockFile());
+        return str_replace('composer', self::COMPOSER_EXTRA_KEY, Util::getComposerLockFile());
     }
 
     /**
@@ -165,11 +187,11 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             PluginEvents::INIT => 'initAutoScripts',
             ComposerScriptEvents::POST_AUTOLOAD_DUMP => 'onPostAutoloadDump',
             ComposerScriptEvents::POST_INSTALL_CMD => 'onPostInstall',
-            ComposerScriptEvents::POST_UPDATE_CMD => [['onPostUpdate', \PHP_INT_MAX], ['onPostUpdatePostMessages', ~\PHP_INT_MAX + 1]],
+            ComposerScriptEvents::POST_UPDATE_CMD => [['onPostUpdate', PHP_INT_MAX], ['onPostUpdatePostMessages', ~PHP_INT_MAX + 1]],
             ComposerScriptEvents::POST_CREATE_PROJECT_CMD => [
-                ['onPostCreateProject', \PHP_INT_MAX],
-                ['runSkeletonGenerator', \PHP_INT_MAX - 1],
-                ['initAutoScripts', \PHP_INT_MAX - 2],
+                ['onPostCreateProject', PHP_INT_MAX],
+                ['runSkeletonGenerator', PHP_INT_MAX - 1],
+                ['initAutoScripts', PHP_INT_MAX - 2],
             ],
         ];
     }
@@ -189,10 +211,10 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
         // to avoid issues when Automatic is upgraded, we load all PHP classes now
         // that way, we are sure to use all classes from the same version.
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
-            /** @var \SplFileInfo $file */
-            if (\substr($file->getFilename(), -4) === '.php') {
-                \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file->getFilename(), \strlen(__DIR__), -4)));
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
+            /** @var SplFileInfo $file */
+            if (substr($file->getFilename(), -4) === '.php') {
+                class_exists(__NAMESPACE__ . str_replace('/', '\\', substr($file->getFilename(), strlen(__DIR__), -4)));
             }
         }
 
@@ -213,7 +235,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             'This file is @generated automatically',
         ]);
 
-        $this->extendComposer(\debug_backtrace());
+        $this->extendComposer(debug_backtrace());
 
         $this->container->set(InstallationManager::class, static function (ContainerContract $container) {
             return new InstallationManager(
@@ -260,7 +282,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             }
 
             if ($package->getName() === self::PACKAGE_NAME) {
-                \array_unshift($this->operations, $operation);
+                array_unshift($this->operations, $operation);
 
                 return;
             }
@@ -272,7 +294,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     /**
      * Add auto-scripts to root composer.json.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -287,31 +309,31 @@ class Automatic implements EventSubscriberInterface, PluginInterface
         $autoScript = '@' . ScriptEvents::AUTO_SCRIPTS;
 
         if (isset($scripts[ComposerScriptEvents::POST_INSTALL_CMD], $scripts[ComposerScriptEvents::POST_UPDATE_CMD])
-            && \in_array($autoScript, $scripts[ComposerScriptEvents::POST_INSTALL_CMD], true)
-            && \in_array($autoScript, $scripts[ComposerScriptEvents::POST_UPDATE_CMD], true)
+            && in_array($autoScript, $scripts[ComposerScriptEvents::POST_INSTALL_CMD], true)
+            && in_array($autoScript, $scripts[ComposerScriptEvents::POST_UPDATE_CMD], true)
         ) {
             return;
         }
 
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
-        if (\count($scripts) === 0) {
+        if (count($scripts) === 0) {
             $manipulator->addMainKey('scripts', []);
         }
 
         $manipulator->addSubNode(
             'scripts',
             ComposerScriptEvents::POST_INSTALL_CMD,
-            \array_merge($scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], [$autoScript])
+            array_merge($scripts[ComposerScriptEvents::POST_INSTALL_CMD] ?? [], [$autoScript])
         );
         $manipulator->addSubNode(
             'scripts',
             ComposerScriptEvents::POST_UPDATE_CMD,
-            \array_merge($scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], [$autoScript])
+            array_merge($scripts[ComposerScriptEvents::POST_UPDATE_CMD] ?? [], [$autoScript])
         );
 
         if (! isset($scripts[ScriptEvents::AUTO_SCRIPTS])) {
-            $manipulator->addSubNode('scripts', ScriptEvents::AUTO_SCRIPTS, new \stdClass());
+            $manipulator->addSubNode('scripts', ScriptEvents::AUTO_SCRIPTS, new stdClass());
         }
 
         $this->container->get(Filesystem::class)->dumpFile($json->getPath(), $manipulator->getContents());
@@ -324,7 +346,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
      *
      * @param \Composer\Script\Event $event
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function onPostCreateProject(Event $event): void
     {
@@ -357,7 +379,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
      *
      * @param \Composer\Script\Event $event
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -423,7 +445,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
      *
      * @param \Composer\Installer\PackageEvent $event
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -439,7 +461,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
         if ($operation->getPackage()->getName() === self::PACKAGE_NAME) {
             $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
 
-            if (\count($scripts) === 0) {
+            if (count($scripts) === 0) {
                 return;
             }
 
@@ -474,7 +496,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
      *
      * @param \Composer\Script\Event $event
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      *
      * @return void
      */
@@ -493,14 +515,14 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
         foreach ((array) $lock->get(ConfiguratorInstaller::LOCK_KEY) as $packageName => $classList) {
             foreach ($classMap[$packageName] as $class => $path) {
-                if (! \class_exists($class)) {
-                    require_once \str_replace('%vendor_path%', $vendorDir, $path);
+                if (! class_exists($class)) {
+                    require_once str_replace('%vendor_path%', $vendorDir, $path);
                 }
             }
 
             /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */
             foreach ($classList as $class) {
-                $reflectionClass = new \ReflectionClass($class);
+                $reflectionClass = new ReflectionClass($class);
 
                 if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
                     $configurator->add($class::getName(), $reflectionClass->getName());
@@ -516,7 +538,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
      *
      * @param \Composer\Script\Event $event
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -531,13 +553,13 @@ class Automatic implements EventSubscriberInterface, PluginInterface
      * @param \Composer\Script\Event $event
      * @param array                  $operations
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
     public function onPostUpdate(Event $event, array $operations = []): void
     {
-        if (\count($operations) !== 0) {
+        if (count($operations) !== 0) {
             $this->operations = $operations;
         }
 
@@ -556,23 +578,23 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             }
         }
 
-        $count = \count($packages) + \count($this->uninstallOperations);
+        $count = count($packages) + count($this->uninstallOperations);
 
-        $io->writeError(\sprintf(
+        $io->writeError(sprintf(
             '<info>Automatic operations: %s package%s</info>',
             $count,
             $count > 1 ? 's' : ''
         ));
 
-        if (\count($packages) !== 0) {
+        if (count($packages) !== 0) {
             $automaticOptions = $this->container->get('composer-extra')[self::COMPOSER_EXTRA_KEY];
             $allowInstall = $automaticOptions['allow-auto-install'] ?? false;
 
             foreach ($packages as $package) {
                 $prettyName = $package->getPrettyName();
 
-                if (isset($automaticOptions['dont-discover']) && \array_key_exists($package->getName(), $automaticOptions['dont-discover'])) {
-                    $io->write(\sprintf('<info>Package "%s" was ignored.</info>', $prettyName));
+                if (isset($automaticOptions['dont-discover']) && array_key_exists($package->getName(), $automaticOptions['dont-discover'])) {
+                    $io->write(sprintf('<info>Package "%s" was ignored.</info>', $prettyName));
 
                     return;
                 }
@@ -600,7 +622,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
                     }
                 }
 
-                $io->writeError(\sprintf('  - Configuring %s', $package->getName()));
+                $io->writeError(sprintf('  - Configuring %s', $package->getName()));
 
                 $install->transform($package);
 
@@ -614,14 +636,14 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             }
         }
 
-        if (\count($this->uninstallOperations) !== 0) {
+        if (count($this->uninstallOperations) !== 0) {
             foreach ($this->uninstallOperations as $name) {
-                $io->writeError(\sprintf('  - Unconfiguring %s', $name));
+                $io->writeError(sprintf('  - Unconfiguring %s', $name));
             }
         }
 
         if ($count !== 0) {
-            \array_unshift(
+            array_unshift(
                 $this->postMessages,
                 '',
                 '<info>Some files may have been created or updated to configure your new packages.</info>',
@@ -644,7 +666,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
      *
      * @param \Composer\Script\Event $event
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      *
      * @return void
      */
@@ -660,7 +682,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             return;
         }
 
-        if (\in_array(true, \array_map('\is_numeric', \array_keys($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS])), true)) {
+        if (in_array(true, array_map('\is_numeric', array_keys($jsonContents['scripts'][ScriptEvents::AUTO_SCRIPTS])), true)) {
             return;
         }
 
@@ -671,7 +693,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
         foreach ((array) $this->container->get(Lock::class)->get(ScriptExecutor::TYPE) as $extenders) {
             foreach ($extenders as $class => $path) {
-                if (! \class_exists($class)) {
+                if (! class_exists($class)) {
                     require_once $path;
                 }
 
@@ -713,14 +735,14 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     /**
      * Update composer.lock file with the composer.json change.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
     private function updateComposerLock(): void
     {
         $composerLockPath = Util::getComposerLockFile();
-        $composerJson = \file_get_contents(Factory::getComposerFile());
+        $composerJson = file_get_contents(Factory::getComposerFile());
         $composer = $this->container->get(Composer::class);
 
         $lockFile = new JsonFile($composerLockPath, null, $this->container->get(IOInterface::class));
@@ -741,7 +763,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     /**
      * Add extra option "allow-auto-install" to composer.json.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      *
      * @return void
      */
@@ -768,8 +790,8 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             return 'You must enable the openssl extension in your [php.ini] file';
         }
 
-        if (\version_compare(Util::getComposerVersion(), '1.7.0', '<')) {
-            return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
+        if (version_compare(Util::getComposerVersion(), '1.7.0', '<')) {
+            return sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
 
         // @codeCoverageIgnoreEnd
@@ -822,12 +844,12 @@ class Automatic implements EventSubscriberInterface, PluginInterface
                 /** @var null|string $command */
                 $command = $input->getFirstArgument();
                 $command = $command !== null ? $app->find($command)->getName() : null;
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 $command = null;
             }
 
             if ($command === 'create-project') {
-                if (\version_compare(Util::getComposerVersion(), '1.7.0', '>=')) {
+                if (version_compare(Util::getComposerVersion(), '1.7.0', '>=')) {
                     $input->setOption('remove-vcs', true);
                 } else {
                     $input->setInteractive(false);

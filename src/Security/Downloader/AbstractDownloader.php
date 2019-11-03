@@ -16,6 +16,13 @@ namespace Narrowspark\Automatic\Security\Downloader;
 use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Plugin;
+use const PHP_MAJOR_VERSION;
+use const PHP_MINOR_VERSION;
+use const PHP_RELEASE_VERSION;
+use function function_exists;
+use function getenv;
+use function php_uname;
+use function sprintf;
 
 abstract class AbstractDownloader implements DownloaderContract
 {
@@ -39,13 +46,13 @@ abstract class AbstractDownloader implements DownloaderContract
      */
     protected function getUserAgent(): string
     {
-        return \sprintf(
+        return sprintf(
             'Narrowspark-Security-Audit/%s (%s; %s; %s%s)',
             Plugin::VERSION,
-            \function_exists('php_uname') ? \php_uname('s') : 'Unknown',
-            \function_exists('php_uname') ? \php_uname('r') : 'Unknown',
-            'PHP ' . \PHP_MAJOR_VERSION . '.' . \PHP_MINOR_VERSION . '.' . \PHP_RELEASE_VERSION,
-            \getenv('CI') !== false ? '; CI' : ''
+            function_exists('php_uname') ? php_uname('s') : 'Unknown',
+            function_exists('php_uname') ? php_uname('r') : 'Unknown',
+            'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION,
+            getenv('CI') !== false ? '; CI' : ''
         );
     }
 
@@ -66,7 +73,7 @@ abstract class AbstractDownloader implements DownloaderContract
         }
 
         if ($statusCode !== 200) {
-            throw new RuntimeException(\sprintf('The web service failed for an unknown reason (HTTP %s).', $statusCode), $statusCode);
+            throw new RuntimeException(sprintf('The web service failed for an unknown reason (HTTP %s).', $statusCode), $statusCode);
         }
     }
 }

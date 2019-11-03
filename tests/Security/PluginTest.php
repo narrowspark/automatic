@@ -31,6 +31,8 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use const DIRECTORY_SEPARATOR;
+use function putenv;
 
 /**
  * @internal
@@ -60,7 +62,7 @@ final class PluginTest extends MockeryTestCase
                 $this->container = $container;
             }
         };
-        $this->tmpFolder = __DIR__ . \DIRECTORY_SEPARATOR . 'tmp';
+        $this->tmpFolder = __DIR__ . DIRECTORY_SEPARATOR . 'tmp';
     }
 
     /**
@@ -70,7 +72,7 @@ final class PluginTest extends MockeryTestCase
     {
         parent::tearDown();
 
-        (new Filesystem())->remove([$this->tmpFolder, __DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark']);
+        (new Filesystem())->remove([$this->tmpFolder, __DIR__ . DIRECTORY_SEPARATOR . 'narrowspark']);
     }
 
     public function testActivate(): void
@@ -259,7 +261,7 @@ final class PluginTest extends MockeryTestCase
 
     public function testAuditComposerLock(): void
     {
-        \putenv('COMPOSER=' . __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.json');
+        putenv('COMPOSER=' . __DIR__ . DIRECTORY_SEPARATOR . 'Fixture' . DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.json');
 
         $downloader = new ComposerDownloader();
 
@@ -274,8 +276,8 @@ final class PluginTest extends MockeryTestCase
 
         self::assertCount(2, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
 
-        \putenv('COMPOSER=');
-        \putenv('COMPOSER');
+        putenv('COMPOSER=');
+        putenv('COMPOSER');
     }
 
     /**

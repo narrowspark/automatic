@@ -16,6 +16,7 @@ namespace Narrowspark\Automatic\Test\Prefetcher;
 use Composer\Installer\InstallerEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Util\RemoteFilesystem;
+use Mockery;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\FunctionMock;
@@ -111,7 +112,7 @@ final class PluginTest extends MockeryTestCase
 
         $event->shouldReceive('setRemoteFilesystem')
             ->once()
-            ->with(\Mockery::type(ParallelDownloader::class));
+            ->with(Mockery::type(ParallelDownloader::class));
 
         $containerMock = $this->mock(ContainerContract::class);
         $containerMock->shouldReceive('get')

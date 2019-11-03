@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Narrowspark\Automatic\Test\Internal;
 
+use const DIRECTORY_SEPARATOR;
+
 final class MirrorSettings
 {
     public const COMMON_OPTIONS = [
@@ -23,7 +25,7 @@ final class MirrorSettings
     public const MIRROR_LIST = [
         [
             'output' => [
-                'path' => 'Prefetcher' . \DIRECTORY_SEPARATOR,
+                'path' => 'Prefetcher' . DIRECTORY_SEPARATOR,
                 'namespace' => 'Automatic\\Prefetcher\\Common',
             ],
             'mirror_list' => [
@@ -39,7 +41,7 @@ final class MirrorSettings
         ],
         [
             'output' => [
-                'path' => 'Security' . \DIRECTORY_SEPARATOR,
+                'path' => 'Security' . DIRECTORY_SEPARATOR,
                 'namespace' => 'Automatic\\Security\\Common',
             ],
             'mirror_list' => [

@@ -18,6 +18,7 @@ use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use function method_exists;
 
 /**
  * @internal
@@ -40,7 +41,7 @@ final class ParallelDownloaderTest extends MockeryTestCase
 
         $this->arrangeComposerClasses();
 
-        if (! \method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
+        if (! method_exists(RemoteFilesystem::class, 'getRemoteContents')) {
             $this->ioMock->shouldReceive('writeError')
                 ->once()
                 ->with('Composer >=1.7 not found, downloads will happen in sequence', true, IOInterface::DEBUG);

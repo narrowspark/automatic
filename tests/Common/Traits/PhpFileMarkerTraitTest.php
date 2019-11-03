@@ -15,6 +15,10 @@ namespace Narrowspark\Automatic\Test\Common\Traits;
 
 use Narrowspark\Automatic\Common\Traits\PhpFileMarkerTrait;
 use PHPUnit\Framework\TestCase;
+use function file_put_contents;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
 
 /**
  * @internal
@@ -32,19 +36,19 @@ final class PhpFileMarkerTraitTest extends TestCase
     {
         parent::setUp();
 
-        $this->path = \tempnam(\sys_get_temp_dir(), 'diac');
+        $this->path = tempnam(sys_get_temp_dir(), 'diac');
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
 
-        @\unlink($this->path);
+        @unlink($this->path);
     }
 
     public function testIsFileMarked(): void
     {
-        \file_put_contents($this->path, '<?php' . "\n\n" . '$array = [' . "\n" . '/** > marked **/ \'test\' /** < marked **/' . "\n" . '];' . "\n");
+        file_put_contents($this->path, '<?php' . "\n\n" . '$array = [' . "\n" . '/** > marked **/ \'test\' /** < marked **/' . "\n" . '];' . "\n");
 
         self::assertFalse($this->isFileMarked('test', $this->path));
         self::assertTrue($this->isFileMarked('marked', $this->path));
@@ -52,7 +56,7 @@ final class PhpFileMarkerTraitTest extends TestCase
 
     public function testMarkData(): void
     {
-        \file_put_contents($this->path, $this->markData('test', '$arr = [];', 4));
+        file_put_contents($this->path, $this->markData('test', '$arr = [];', 4));
 
         self::assertTrue($this->isFileMarked('test', $this->path));
     }

@@ -15,6 +15,8 @@ namespace Narrowspark\Automatic\Security\Command\Formatter;
 
 use Narrowspark\Automatic\Security\Contract\Command\Formatter as FormatterContract;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use const JSON_PRETTY_PRINT;
+use function json_encode;
 
 final class JsonFormatter implements FormatterContract
 {
@@ -23,6 +25,6 @@ final class JsonFormatter implements FormatterContract
      */
     public function displayResults(SymfonyStyle $output, array $vulnerabilities): void
     {
-        $output->writeln((string) \json_encode($vulnerabilities, \JSON_PRETTY_PRINT));
+        $output->writeln((string) json_encode($vulnerabilities, JSON_PRETTY_PRINT));
     }
 }

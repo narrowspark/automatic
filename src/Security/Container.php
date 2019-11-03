@@ -25,6 +25,7 @@ use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
 use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
 use Symfony\Component\Console\Input\InputInterface;
+use function extension_loaded;
 
 /**
  * @internal
@@ -66,7 +67,7 @@ final class Container extends AbstractContainer
                 return $container->get(Composer::class)->getPackage()->getExtra();
             },
             DownloaderContract::class => static function () {
-                if (\extension_loaded('curl')) {
+                if (extension_loaded('curl')) {
                     return new CurlDownloader();
                 }
 

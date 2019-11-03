@@ -15,6 +15,10 @@ namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\Cache as BaseComposerCache;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function json_encode;
 
 /**
  * Ported from symfony flex, see original.
@@ -53,8 +57,8 @@ final class Cache extends BaseComposerCache
     {
         $content = parent::read($file);
 
-        if ($this->tagsManager !== null && \is_string($content) && $this->tagsManager->hasProvider($file) && \is_array($data = \json_decode($content, true))) {
-            $content = \json_encode($this->removeLegacyTags($data));
+        if ($this->tagsManager !== null && is_string($content) && $this->tagsManager->hasProvider($file) && is_array($data = json_decode($content, true))) {
+            $content = json_encode($this->removeLegacyTags($data));
         }
 
         return $content;

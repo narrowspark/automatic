@@ -19,6 +19,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\IO\BufferIO;
 use Composer\IO\IOInterface;
 use Composer\Package\RootPackageInterface;
+use Mockery;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Configurator;
@@ -35,6 +36,8 @@ use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use function is_array;
+use function is_string;
 
 /**
  * @internal
@@ -54,7 +57,7 @@ final class ContainerTest extends MockeryTestCase
         parent::setUpBeforeClass();
 
         $composer = new Composer();
-        $configMock = \Mockery::mock(Config::class);
+        $configMock = Mockery::mock(Config::class);
         $configMock->shouldReceive('get')
             ->with('vendor-dir')
             ->andReturn('/vendor');
@@ -73,13 +76,13 @@ final class ContainerTest extends MockeryTestCase
 
         $composer->setConfig($configMock);
 
-        $package = \Mockery::mock(RootPackageInterface::class);
+        $package = Mockery::mock(RootPackageInterface::class);
         $package->shouldReceive('getExtra')
             ->andReturn([]);
 
         $composer->setPackage($package);
 
-        $downloadManager = \Mockery::mock(DownloadManager::class);
+        $downloadManager = Mockery::mock(DownloadManager::class);
         $downloadManager->shouldReceive('getDownloader')
             ->with('file');
 
@@ -100,7 +103,7 @@ final class ContainerTest extends MockeryTestCase
     {
         $value = self::$staticContainer->get($key);
 
-        if (\is_string($value) || \is_array($value)) {
+        if (is_string($value) || is_array($value)) {
             self::assertSame($expected, $value);
         } else {
             self::assertInstanceOf($expected, $value);
@@ -142,6 +145,6 @@ final class ContainerTest extends MockeryTestCase
 
     public function testGetAll(): void
     {
-        self::assertCount(16, static::$staticContainer->getAll());
+        self::assertCount(16, self::$staticContainer->getAll());
     }
 }

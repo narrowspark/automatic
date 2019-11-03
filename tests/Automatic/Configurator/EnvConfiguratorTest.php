@@ -19,6 +19,8 @@ use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator\EnvConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use function touch;
+use function unlink;
 
 /**
  * @internal
@@ -57,7 +59,7 @@ final class EnvConfiguratorTest extends MockeryTestCase
         $this->envPath = __DIR__ . '/.env';
         $this->envDistPath = $this->envPath . '.dist';
 
-        \touch($this->envDistPath);
+        touch($this->envDistPath);
     }
 
     /**
@@ -67,8 +69,8 @@ final class EnvConfiguratorTest extends MockeryTestCase
     {
         parent::tearDown();
 
-        @\unlink($this->envDistPath);
-        @\unlink($this->envPath);
+        @unlink($this->envDistPath);
+        @unlink($this->envPath);
     }
 
     public function testGetName(): void

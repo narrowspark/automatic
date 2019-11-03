@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
+use Exception;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\PackageConfigurator;
@@ -90,7 +91,7 @@ final class PackageConfiguratorTest extends AbstractConfiguratorTest
      * @param string $name
      * @param array  $config
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return Package
      */

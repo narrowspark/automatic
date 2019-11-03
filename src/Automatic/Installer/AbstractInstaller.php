@@ -22,6 +22,10 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
+use function array_map;
+use function count;
+use function sprintf;
+use function str_replace;
 
 abstract class AbstractInstaller extends LibraryInstaller
 {
@@ -76,8 +80,8 @@ abstract class AbstractInstaller extends LibraryInstaller
     {
         $autoload = $package->getAutoload();
 
-        if (\count($autoload['psr-4']) === 0) {
-            throw new UnexpectedValueException(\sprintf('Error while installing [%s], %s packages should have a namespace defined in their psr4 key to be usable.', $package->getPrettyName(), static::TYPE));
+        if (count($autoload['psr-4']) === 0) {
+            throw new UnexpectedValueException(sprintf('Error while installing [%s], %s packages should have a namespace defined in their psr4 key to be usable.', $package->getPrettyName(), static::TYPE));
         }
 
         parent::install($repo, $package);
@@ -138,7 +142,7 @@ abstract class AbstractInstaller extends LibraryInstaller
             $classes[] = $class;
         }
 
-        if (\count($classes) === 0) {
+        if (count($classes) === 0) {
             return null;
         }
 
@@ -186,8 +190,8 @@ abstract class AbstractInstaller extends LibraryInstaller
      */
     protected function addToClassMap(PackageInterface $package): void
     {
-        $classMap = \array_map(function (string $value) {
-            return \str_replace($this->vendorDir, '%vendor_path%', $value);
+        $classMap = array_map(function (string $value) {
+            return str_replace($this->vendorDir, '%vendor_path%', $value);
         }, $this->loader->getAll());
 
         $this->lock->addSub(Automatic::LOCK_CLASSMAP, $package->getName(), $classMap);

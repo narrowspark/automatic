@@ -19,6 +19,8 @@ use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
+use function is_array;
+use function preg_replace;
 
 /**
  * Ported from symfony flex, see original.
@@ -36,14 +38,14 @@ final class TruncatedComposerRepository extends BaseComposerRepository
         array $repoConfig,
         IOInterface $io,
         Config $config,
-        EventDispatcher $eventDispatcher = null,
-        RemoteFilesystem $rfs = null
+        ?EventDispatcher $eventDispatcher = null,
+        ?RemoteFilesystem $rfs = null
     ) {
         parent::__construct($repoConfig, $io, $config, $eventDispatcher, $rfs);
 
         $this->cache = new Cache(
             $io,
-            $config->get('cache-repo-dir') . '/' . \preg_replace('{[^a-z0-9.]}i', '-', $this->url),
+            $config->get('cache-repo-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url),
             'a-z0-9.$'
         );
     }
@@ -67,6 +69,6 @@ final class TruncatedComposerRepository extends BaseComposerRepository
     {
         $data = parent::fetchFile($filename, $cacheKey, $sha256, $storeLastModifiedTime);
 
-        return \is_array($data) ? $this->cache->removeLegacyTags($data) : $data;
+        return is_array($data) ? $this->cache->removeLegacyTags($data) : $data;
     }
 }

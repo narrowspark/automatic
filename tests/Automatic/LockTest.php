@@ -15,6 +15,7 @@ namespace Narrowspark\Automatic\Test;
 
 use Narrowspark\Automatic\Lock;
 use PHPUnit\Framework\TestCase;
+use function unlink;
 
 /**
  * @internal
@@ -30,7 +31,7 @@ final class LockTest extends TestCase
     {
         parent::tearDownAfterClass();
 
-        @\unlink(__DIR__ . '/test.lock');
+        @unlink(__DIR__ . '/test.lock');
     }
 
     /**

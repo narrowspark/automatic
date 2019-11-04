@@ -47,7 +47,7 @@ foreach (MirrorSettings::MIRROR_LIST as $list) {
             $aliasList[$outputSettings['path']] = [];
         }
 
-        $aliasList[$outputSettings['path']][] = 'class_alias(' . $mirrorMatches[1][0] . '\\' . $classMatches[2][0] . '::class, ' . $matches[1][0] . '\\' . $classMatches[2][0] . '::class);' . "\n";
+        $aliasList[$outputSettings['path']][] = '\class_alias(' . $mirrorMatches[1][0] . '\\' . $classMatches[2][0] . '::class, ' . $matches[1][0] . '\\' . $classMatches[2][0] . '::class);' . "\n";
 
         $fs->dumpFile($preparedOutputPath, $mirrorContent);
 
@@ -73,7 +73,7 @@ EOF;
 foreach ($aliasList as $output => $aliases) {
     $preparedOutputPath = 'src/'.rtrim($output, '/').'/alias.php';
 
-    $fs->dumpFile($rootDir . DIRECTORY_SEPARATOR . $preparedOutputPath, "<?php\n\ndeclare(strict_types=1);\n\n" . $header . "\n\nuse function class_alias;" . "\n\n" . implode('', $aliases));
+    $fs->dumpFile($rootDir . DIRECTORY_SEPARATOR . $preparedOutputPath, "<?php\n\ndeclare(strict_types=1);\n\n" . $header . "\n\n" . implode('', $aliases));
 
     echo "Dumped {$preparedOutputPath}.\n";
 }

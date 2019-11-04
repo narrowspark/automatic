@@ -85,6 +85,26 @@ final class AuditCommandTest extends TestCase
         self::assertStringContainsString($this->greenString . ' No known vulnerabilities found', $output);
     }
 
+    public function testAuditCommandWithNoDevMode(): void
+    {
+        putenv('COMPOSER=' . dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'Fixture' . DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock');
+
+        $commandTester = $this->executeCommand(
+            new AuditCommand(),
+            ['--no-dev' => true]
+        );
+
+        $output = trim($commandTester->getDisplay(true));
+
+        self::assertStringContainsString('=== Audit Security Report ===', $output);
+        self::assertStringContainsString('Check is running in no-dev mode. Skipping dev requirements check.', $output);
+        self::assertStringContainsString('This checker can only detect vulnerabilities that are referenced', $output);
+        self::assertStringContainsString($this->greenString . ' No known vulnerabilities found', $output);
+
+        putenv('COMPOSER=');
+        putenv('COMPOSER');
+    }
+
     public function testAuditCommandWithEmptyComposerLockPath(): void
     {
         $commandTester = $this->executeCommand(

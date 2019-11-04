@@ -100,7 +100,7 @@ EOF
         if ($input->hasOption('no-dev')) {
             $isNotDevMode = false;
 
-            $audit->setDevMode(! $input->getOption('no-dev'));
+            $audit->setDevMode(! (bool) $input->getOption('no-dev'));
         }
 
         /** @var null|string $composerFile */

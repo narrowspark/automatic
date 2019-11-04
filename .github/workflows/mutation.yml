@@ -1,4 +1,4 @@
-name: 'Static analyzing'
+name: 'Mutation testing'
 
 on:
   push:

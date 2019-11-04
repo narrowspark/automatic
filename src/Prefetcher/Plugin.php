@@ -35,7 +35,7 @@ use FilesystemIterator;
 use InvalidArgumentException;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Prefetcher\Common\Util;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
 use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use RecursiveDirectoryIterator;

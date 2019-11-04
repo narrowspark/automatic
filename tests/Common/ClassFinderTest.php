@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Narrowspark\Automatic\Test\Common;
 
+use Closure;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Test\Common\Fixture\Finder\AbstractClass;
@@ -23,6 +24,10 @@ use Narrowspark\Automatic\Test\Common\Fixture\Finder\FooTrait;
 use Narrowspark\Automatic\Test\Common\Fixture\Finder\Nested\DummyClassNested;
 use Narrowspark\Automatic\Test\Common\Fixture\Finder\StaticFunctionAndClasses;
 use PHPUnit\Framework\TestCase;
+use function mkdir;
+use function rmdir;
+use function touch;
+use function unlink;
 
 /**
  * @internal
@@ -75,8 +80,8 @@ final class ClassFinderTest extends TestCase
         $dir = __DIR__ . '/Fixture/empty';
         $filePath = $dir . '/empty.php';
 
-        @\mkdir($dir);
-        @\touch($filePath);
+        @mkdir($dir);
+        @touch($filePath);
 
         $this->loader
             ->addPsr0('/Fixture/empty', [''])
@@ -87,8 +92,8 @@ final class ClassFinderTest extends TestCase
         self::assertSame([], $this->loader->getAbstractClasses());
         self::assertSame([], $this->loader->getInterfaces());
 
-        @\unlink($filePath);
-        @\rmdir($dir);
+        @unlink($filePath);
+        @rmdir($dir);
     }
 
     public function testSetComposerAutoload(): void
@@ -130,7 +135,7 @@ final class ClassFinderTest extends TestCase
             return false;
         });
 
-        self::assertInstanceOf(\Closure::class, $genericPropertyReader($this->loader, 'filter'));
+        self::assertInstanceOf(Closure::class, $genericPropertyReader($this->loader, 'filter'));
 
         $this->loader
             ->addPsr4('Fixture/Finder', [''])

@@ -15,6 +15,9 @@ namespace Narrowspark\Automatic\Security\Command\Formatter;
 
 use Narrowspark\Automatic\Security\Contract\Command\Formatter as FormatterContract;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use function count;
+use function str_repeat;
+use function strlen;
 
 final class SimpleFormatter implements FormatterContract
 {
@@ -23,10 +26,10 @@ final class SimpleFormatter implements FormatterContract
      */
     public function displayResults(SymfonyStyle $output, array $vulnerabilities): void
     {
-        if (\count($vulnerabilities) !== 0) {
+        if (count($vulnerabilities) !== 0) {
             foreach ($vulnerabilities as $dependency => $issues) {
                 $dependencyFullName = $dependency . ' (' . $issues['version'] . ')';
-                $output->writeln('<info>' . $dependencyFullName . "\n" . \str_repeat('-', \strlen($dependencyFullName)) . '</>' . "\n");
+                $output->writeln('<info>' . $dependencyFullName . "\n" . str_repeat('-', strlen($dependencyFullName)) . '</>' . "\n");
 
                 foreach ($issues['advisories'] as $issue => $details) {
                     $output->write(' * ');

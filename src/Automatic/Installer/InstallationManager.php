@@ -14,7 +14,16 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Installer;
 
 use Composer\Factory;
+use Exception;
 use Narrowspark\Automatic\Common\Installer\AbstractInstallationManager;
+use function array_keys;
+use function array_merge;
+use function count;
+use function in_array;
+use function sprintf;
+use function strpos;
+use function strtolower;
+use function trim;
 
 class InstallationManager extends AbstractInstallationManager
 {
@@ -41,18 +50,18 @@ class InstallationManager extends AbstractInstallationManager
         $rootPackages = [];
 
         foreach ($this->getRootRequires() as $link) {
-            $rootPackages[\strtolower($link->getTarget())] = (string) $link->getConstraint();
+            $rootPackages[strtolower($link->getTarget())] = (string) $link->getConstraint();
         }
 
         $requiresToInstall = $this->preparePackagesToInstall($requires, $rootPackages);
         $devRequiresToInstall = $this->preparePackagesToInstall($devRequires, $rootPackages);
 
-        if ((\count($requiresToInstall) + \count($devRequiresToInstall)) !== 0) {
+        if ((count($requiresToInstall) + count($devRequiresToInstall)) !== 0) {
             $this->updateComposerJson($requiresToInstall, $devRequiresToInstall, self::ADD);
 
             $this->updateRootComposerJson($requiresToInstall, $devRequiresToInstall, self::ADD);
 
-            $this->whiteList = \array_keys(\array_merge($requiresToInstall, $devRequiresToInstall));
+            $this->whiteList = array_keys(array_merge($requiresToInstall, $devRequiresToInstall));
         }
     }
 
@@ -64,7 +73,7 @@ class InstallationManager extends AbstractInstallationManager
      *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
-     * @throws \Exception
+     * @throws Exception
      *
      * @return void
      */
@@ -75,10 +84,10 @@ class InstallationManager extends AbstractInstallationManager
 
         $this->updateComposerJson($requires, $devRequires, self::REMOVE);
 
-        $whiteList = \array_merge($requires, $devRequires);
+        $whiteList = array_merge($requires, $devRequires);
 
         foreach ($this->localRepository->getPackages() as $localPackage) {
-            $mixedRequires = \array_merge($localPackage->getRequires(), $localPackage->getDevRequires());
+            $mixedRequires = array_merge($localPackage->getRequires(), $localPackage->getDevRequires());
 
             foreach ($whiteList as $whitelistPackageName => $version) {
                 if (isset($mixedRequires[$whitelistPackageName])) {
@@ -93,7 +102,7 @@ class InstallationManager extends AbstractInstallationManager
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      *
      * @return int
      */
@@ -135,11 +144,11 @@ class InstallationManager extends AbstractInstallationManager
             // Check if package is currently installed, if so, use installed constraint.
             if (isset($toInstall[$packageName])) {
                 $version = $toInstall[$packageName];
-                $constraint = \strpos($version, 'dev') === false ? '^' . $version : $version;
+                $constraint = strpos($version, 'dev') === false ? '^' . $version : $version;
 
                 $toInstall[$packageName] = $constraint;
 
-                $this->io->write(\sprintf(
+                $this->io->write(sprintf(
                     'Added package <info>%s</info> to composer.json with constraint <info>%s</info>;'
                     . ' to upgrade, run <info>composer require %s:VERSION</info>',
                     $packageName,
@@ -150,14 +159,14 @@ class InstallationManager extends AbstractInstallationManager
                 continue;
             }
 
-            if (\in_array($version, ['*', null, ''], true)) {
+            if (in_array($version, ['*', null, ''], true)) {
                 $constraint = $this->io->askAndValidate(
-                    \sprintf(
+                    sprintf(
                         'Enter the version of <info>%s</info> to require (or leave blank to use the latest version): ',
                         $packageName
                     ),
                     static function (string $input) {
-                        return \trim($input) ?? false;
+                        return trim($input) ?? false;
                     }
                 );
 
@@ -168,7 +177,7 @@ class InstallationManager extends AbstractInstallationManager
                 $constraint = $version;
             }
 
-            $this->io->writeError(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $packageName));
+            $this->io->writeError(sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $packageName));
 
             $toInstall[$packageName] = $constraint;
         }

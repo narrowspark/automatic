@@ -17,6 +17,12 @@ use Composer\IO\IOInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\VersionParser;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
+use function array_filter;
+use function array_intersect_key;
+use function count;
+use function explode;
+use function sprintf;
+use function strpos;
 
 final class LegacyTagsManager implements LegacyTagsManagerContract
 {
@@ -72,9 +78,9 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
     public function hasProvider(string $file): bool
     {
         foreach ($this->legacyTags as $name => $constraint) {
-            [$namespace,] = \explode('/', $name, 2);
+            [$namespace,] = explode('/', $name, 2);
 
-            if (\strpos($file, \sprintf('provider-%s$', $namespace)) !== false) {
+            if (strpos($file, sprintf('provider-%s$', $namespace)) !== false) {
                 return true;
             }
         }
@@ -122,7 +128,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
                 } else {
                     if (! isset(self::$packageCache[$name])) {
                         $this->io->writeError(
-                            \sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', $name, (string) $legacy['version'])
+                            sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', $name, (string) $legacy['version'])
                         );
                         self::$packageCache[$name] = true;
                     }
@@ -132,7 +138,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
             }
         }
 
-        if (\count(\array_filter($packages)) === 0) {
+        if (count(array_filter($packages)) === 0) {
             return $data;
         }
 
@@ -152,7 +158,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
                 $devMaster = $versions['dev-master'];
             }
 
-            $versions = \array_intersect_key($versions, $data['packages'][$parentName]);
+            $versions = array_intersect_key($versions, $data['packages'][$parentName]);
 
             if ($devMaster !== null && null !== $devMasterAlias = $versions['dev-master']['extra']['branch-alias']['dev-master'] ?? null) {
                 /** @var \Composer\Semver\Constraint\Constraint $legacyConstrain */
@@ -163,7 +169,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
                 }
             }
 
-            if (\count($versions) !== 0) {
+            if (count($versions) !== 0) {
                 $data['packages'][$name] = $versions;
             }
         }

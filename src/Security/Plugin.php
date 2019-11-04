@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Security;
 
 use Composer\Composer;
+use Composer\Config;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\EventDispatcher\EventSubscriberInterface;
@@ -26,14 +27,30 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
-use Narrowspark\Automatic\Security\Contract\Downloader;
+use Narrowspark\Automatic\Common\AbstractContainer;
+use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
-use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
-use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
+use Symfony\Component\Console\Input\InputInterface;
+use const DIRECTORY_SEPARATOR;
+use const PHP_INT_MAX;
+use function array_filter;
+use function array_key_exists;
+use function class_exists;
+use function count;
+use function preg_match;
+use function rtrim;
+use function sprintf;
+use function str_replace;
+use function strlen;
+use function substr;
+use function version_compare;
 
-final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
+class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 {
     /** @var string */
     public const VERSION = '0.12.0';
@@ -45,39 +62,11 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     public const PACKAGE_NAME = 'narrowspark/automatic-security-audit';
 
     /**
-     * The SecurityAdvisories database.
-     *
-     * @var array<string, array>
-     */
-    private $securityAdvisories = [];
-
-    /**
      * Found package vulnerabilities.
      *
      * @var array[]
      */
     private $foundVulnerabilities = [];
-
-    /**
-     * The composer instance.
-     *
-     * @var \Composer\Composer
-     */
-    private $composer;
-
-    /**
-     * The composer io implementation.
-     *
-     * @var \Composer\IO\IOInterface
-     */
-    private $io;
-
-    /**
-     * A Audit instance.
-     *
-     * @var \Narrowspark\Automatic\Security\Audit
-     */
-    private $audit;
 
     /**
      * Check if the the plugin is activated.
@@ -94,6 +83,30 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     private $securitySha;
 
     /**
+     * A Container instance.
+     *
+     * @var \Narrowspark\Automatic\Common\Contract\Container
+     */
+    protected $container;
+
+    /**
+     * Check if the package should run in uninstall mode.
+     *
+     * @var bool
+     */
+    private $uninstallMode = false;
+
+    /**
+     * Get the Container instance.
+     *
+     * @return \Narrowspark\Automatic\Common\Contract\Container
+     */
+    public function getContainer(): ContainerContract
+    {
+        return $this->container;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
@@ -103,10 +116,10 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
         }
 
         return [
-            PackageEvents::POST_PACKAGE_INSTALL => [['auditPackage', ~\PHP_INT_MAX]],
-            PackageEvents::POST_PACKAGE_UPDATE => [['auditPackage', ~\PHP_INT_MAX]],
-            ComposerScriptEvents::POST_INSTALL_CMD => [['auditComposerLock', \PHP_INT_MAX]],
-            ComposerScriptEvents::POST_UPDATE_CMD => [['auditComposerLock', \PHP_INT_MAX], ['onPostUpdatePostMessages', ~\PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_INSTALL => [['auditPackage', ~PHP_INT_MAX]],
+            PackageEvents::POST_PACKAGE_UPDATE => [['auditPackage', ~PHP_INT_MAX]],
+            ComposerScriptEvents::POST_INSTALL_CMD => [['auditComposerLock', PHP_INT_MAX]],
+            ComposerScriptEvents::POST_UPDATE_CMD => [['auditComposerLock', PHP_INT_MAX], ['onPostUpdatePostMessages', ~PHP_INT_MAX]],
         ];
     }
 
@@ -115,15 +128,25 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
-        if (\extension_loaded('curl')) {
-            $downloader = new CurlDownloader();
-        } else {
-            $downloader = new ComposerDownloader();
+        // to avoid issues when Automatic is upgraded, we load all PHP classes now
+        // that way, we are sure to use all files from the same version.
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
+            /** @var SplFileInfo $file */
+            if (substr($file->getFilename(), -4) === '.php') {
+                class_exists(__NAMESPACE__ . str_replace('/', '\\', substr($file->getFilename(), strlen(__DIR__), -4)));
+            }
         }
 
-        $extra = $composer->getPackage()->getExtra();
+        if (! class_exists(AbstractContainer::class)) {
+            require __DIR__ . DIRECTORY_SEPARATOR . 'alias.php';
+        }
 
-        if (isset($extra[self::COMPOSER_EXTRA_KEY]['timeout'])) {
+        $this->container = new Container($composer, $io);
+
+        $extra = $this->container->get('composer-extra');
+        $downloader = $this->container->get(DownloaderContract::class);
+
+        if (array_key_exists(self::COMPOSER_EXTRA_KEY, $extra) && array_key_exists('timeout', $extra[self::COMPOSER_EXTRA_KEY])) {
             $downloader->setTimeout($extra[self::COMPOSER_EXTRA_KEY]['timeout']);
         }
 
@@ -132,26 +155,24 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 
             $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
 
-            $downloader = $extra = null;
+            $extra = null;
 
             return;
         }
 
-        // to avoid issues when Automatic is upgraded, we load all PHP classes now
-        // that way, we are sure to use all files from the same version.
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
-            /** @var \SplFileInfo $file */
-            if (\substr($file->getFilename(), -4) === '.php') {
-                \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file->getFilename(), \strlen(__DIR__), -4)));
-            }
-        }
+        $this->container->set(Audit::class, function (ContainerContract $container) {
+            $audit = new Audit(rtrim($container->get(Config::class)->get('vendor-dir'), '/'), $container->get(DownloaderContract::class), $this->securitySha);
 
-        $this->composer = $composer;
-        $this->io = $io;
+            $name = 'no-dev';
+            $input = $container->get(InputInterface::class);
 
-        $this->audit = new Audit(\rtrim($composer->getConfig()->get('vendor-dir'), '/'), $downloader, $this->securitySha);
+            $audit->setDevMode($input->hasOption($name) ? ! (bool) $input->getOption($name) : true);
 
-        $this->securityAdvisories = $this->audit->getSecurityAdvisories($io);
+            return $audit;
+        });
+
+        // Downloading needed security advisories database.
+        $this->container->get('security_advisories');
     }
 
     /**
@@ -173,12 +194,17 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function onPostUpdatePostMessages(Event $event): void
     {
-        $count = \count(\array_filter($this->foundVulnerabilities));
+        if ($this->uninstallMode) {
+            return;
+        }
+
+        $count = count(array_filter($this->foundVulnerabilities));
+        $io = $this->container->get(IOInterface::class);
 
         if ($count !== 0) {
-            $this->io->write('<error>[!]</> Audit Security Report: ' . \sprintf('%s vulnerabilit%s found - run "composer audit" for more information', $count, $count === 1 ? 'y' : 'ies'));
+            $io->write('<error>[!]</> Audit Security Report: ' . sprintf('%s vulnerabilit%s found - run "composer audit" for more information', $count, $count === 1 ? 'y' : 'ies'));
         } else {
-            $this->io->write('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
+            $io->write('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
         }
     }
 
@@ -194,6 +220,10 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
         $operation = $event->getOperation();
 
         if ($operation instanceof UninstallOperation) {
+            if ($operation->getPackage()->getPrettyName() === self::PACKAGE_NAME) {
+                $this->uninstallMode = true;
+            }
+
             return;
         }
 
@@ -203,13 +233,13 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
             $composerPackage = $operation->getPackage();
         }
 
-        $data = $this->audit->checkPackage(
+        $data = $this->container->get(Audit::class)->checkPackage(
             $composerPackage->getName(),
             $composerPackage->getVersion(),
-            $this->securityAdvisories
+            $this->container->get('security_advisories')
         );
 
-        if (\count($data) === 0) {
+        if (count($data) === 0) {
             return;
         }
 
@@ -225,13 +255,13 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function auditComposerLock(Event $event): void
     {
-        if (\count($this->foundVulnerabilities) !== 0) {
+        if ($this->uninstallMode || count($this->foundVulnerabilities) !== 0) {
             return;
         }
 
-        $data = $this->audit->checkLock(Util::getComposerLockFile());
+        $data = $this->container->get(Audit::class)->checkLock(Util::getComposerLockFile());
 
-        if (\count($data) === 0) {
+        if (count($data) === 0) {
             return;
         }
 
@@ -241,16 +271,16 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     /**
      * Check if automatic can be activated.
      *
-     * @param \Composer\IO\IOInterface $io
-     * @param Downloader               $downloader
+     * @param \Composer\IO\IOInterface                            $io
+     * @param \Narrowspark\Automatic\Security\Contract\Downloader $downloader
      *
      * @return null|string
      */
-    private function getErrorMessage(IOInterface $io, Downloader $downloader): ?string
+    private function getErrorMessage(IOInterface $io, DownloaderContract $downloader): ?string
     {
         // @codeCoverageIgnoreStart
-        if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
-            return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
+        if (version_compare(self::getComposerVersion(), '1.7.0', '<')) {
+            return sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd
 
@@ -274,13 +304,13 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     private static function getComposerVersion(): string
     {
-        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
+        preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
 
         if ($matches !== null) {
             return $matches[0];
         }
 
-        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
+        preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
 
         if ($matches !== null) {
             return $matches[0];

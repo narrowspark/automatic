@@ -72,12 +72,6 @@ jobs:
 #      script:
 #        - composer psalm
 
-    - stage: Mutation
-      php: 7.2
-      env: REMOVE_XDEBUG=true SETUP=high COMPOSER_VERSION=1.9.0
-      script:
-        - ulimit -n 4096 && phpdbg -qrr ./vendor/bin/infection -vvv --min-msi=40 --min-covered-msi=60
-
     - stage: Coverage
       php: 7.2
       env: REMOVE_XDEBUG=false SETUP=high COMPOSER_VERSION=1.9.0

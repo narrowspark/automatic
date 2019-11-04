@@ -19,10 +19,20 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\PackageInterface;
+use Exception;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\ScriptExecutor;
+use const DIRECTORY_SEPARATOR;
+use const SORT_STRING;
+use function array_unshift;
+use function class_exists;
+use function count;
+use function file_get_contents;
+use function sort;
+use function sprintf;
+use function strpos;
 
 /**
  * @internal
@@ -76,7 +86,7 @@ final class Install extends AbstractOperation
         $classes = $this->findClassesInAutomaticFolder($package, $name);
 
         foreach ($classes as $class => $path) {
-            if (! \class_exists($class)) {
+            if (! class_exists($class)) {
                 require_once $path;
             }
         }
@@ -109,7 +119,7 @@ final class Install extends AbstractOperation
         $version = $package->getPrettyVersion();
         $extra = $package->getExtra();
 
-        if (isset($extra['branch-alias']) && \strpos($version, 'dev-') === 0) {
+        if (isset($extra['branch-alias']) && strpos($version, 'dev-') === 0) {
             $branchAliases = $extra['branch-alias'];
 
             if (
@@ -129,7 +139,7 @@ final class Install extends AbstractOperation
      * @param \Composer\Package\PackageInterface $composerPackage
      * @param string                             $automaticFile
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return \Narrowspark\Automatic\Common\Contract\Package
      */
@@ -141,14 +151,14 @@ final class Install extends AbstractOperation
         foreach ($composerPackage->getRequires() as $link) {
             $target = $link->getTarget();
 
-            if ($target === 'php' || \strpos($target, 'ext-') === 0) {
+            if ($target === 'php' || strpos($target, 'ext-') === 0) {
                 continue;
             }
 
             $requires[] = $target;
         }
 
-        \sort($requires, \SORT_STRING);
+        sort($requires, SORT_STRING);
 
         $package->setRequires($requires);
 
@@ -169,7 +179,7 @@ final class Install extends AbstractOperation
         $package->setAutoload($composerPackage->getAutoload());
 
         if ($this->filesystem->exists($automaticFile)) {
-            $package->setConfig(JsonFile::parseJson((string) \file_get_contents($automaticFile)));
+            $package->setConfig(JsonFile::parseJson((string) file_get_contents($automaticFile)));
         } else {
             $package->setConfig($composerPackage->getExtra()['automatic']);
         }
@@ -186,7 +196,7 @@ final class Install extends AbstractOperation
      */
     private function getAutomaticFilePath(PackageInterface $composerPackage): string
     {
-        return $this->vendorDir . \DIRECTORY_SEPARATOR . $composerPackage->getName() . \DIRECTORY_SEPARATOR . 'automatic.json';
+        return $this->vendorDir . DIRECTORY_SEPARATOR . $composerPackage->getName() . DIRECTORY_SEPARATOR . 'automatic.json';
     }
 
     /**
@@ -200,7 +210,7 @@ final class Install extends AbstractOperation
      */
     private function addScriptExtenders(PackageContract $package, $classes, $name): void
     {
-        if ($package->hasConfig(ScriptExecutor::TYPE) && \count($classes) !== 0) {
+        if ($package->hasConfig(ScriptExecutor::TYPE) && count($classes) !== 0) {
             $extenders = [];
             $notFoundExtenders = [];
 
@@ -212,12 +222,12 @@ final class Install extends AbstractOperation
                 }
             }
 
-            if (\count($notFoundExtenders) !== 0) {
-                $count = \count($notFoundExtenders);
+            if (count($notFoundExtenders) !== 0) {
+                $count = count($notFoundExtenders);
 
-                \array_unshift(
+                array_unshift(
                     $notFoundExtenders,
-                    \sprintf('%s script-extender%s not found in [%s]', $count, ($count <= 1 ? ' was' : 's were'), $name)
+                    sprintf('%s script-extender%s not found in [%s]', $count, ($count <= 1 ? ' was' : 's were'), $name)
                 );
 
                 $this->io->write($notFoundExtenders, true, IOInterface::VERBOSE);

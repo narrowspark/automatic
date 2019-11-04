@@ -13,14 +13,17 @@ declare(strict_types=1);
 
 namespace Narrowspark\Automatic\Test;
 
+use Closure;
 use Composer\Composer;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
+use Mockery;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use stdClass;
 
 /**
  * @internal
@@ -60,7 +63,7 @@ final class ScriptExecutorTest extends MockeryTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The class [stdClass] must implement the interface [Narrowspark\Automatic\Common\Contract\ScriptExtender].');
 
-        $this->scriptExecutor->add(ScriptExtender::getType(), \stdClass::class);
+        $this->scriptExecutor->add(ScriptExtender::getType(), stdClass::class);
     }
 
     public function testAddedExtenderThrowExceptionOnExistendExtender(): void
@@ -88,7 +91,7 @@ final class ScriptExecutorTest extends MockeryTestCase
 
         $this->processExecutorMock->shouldReceive('execute')
             ->once()
-            ->with('php -v', \Mockery::type(\Closure::class))
+            ->with('php -v', Mockery::type(Closure::class))
             ->andReturn(0);
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -115,7 +118,7 @@ final class ScriptExecutorTest extends MockeryTestCase
 
         $this->processExecutorMock->shouldReceive('execute')
             ->once()
-            ->with('php -v', \Mockery::type(\Closure::class))
+            ->with('php -v', Mockery::type(Closure::class))
             ->andReturn(1);
         $this->ioMock->shouldReceive('writeError')
             ->once()
@@ -146,7 +149,7 @@ final class ScriptExecutorTest extends MockeryTestCase
 
         $this->processExecutorMock->shouldReceive('execute')
             ->once()
-            ->with('php -v', \Mockery::type(\Closure::class))
+            ->with('php -v', Mockery::type(Closure::class))
             ->andReturn(0);
 
         $this->ioMock->shouldReceive('writeError')
@@ -174,7 +177,7 @@ final class ScriptExecutorTest extends MockeryTestCase
 
         $this->processExecutorMock->shouldReceive('execute')
             ->once()
-            ->with('php -v', \Mockery::type(\Closure::class))
+            ->with('php -v', Mockery::type(Closure::class))
             ->andReturn(1);
 
         $this->ioMock->shouldReceive('writeError')

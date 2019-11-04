@@ -20,6 +20,7 @@ use Composer\IO\BufferIO;
 use Composer\IO\IOInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Util\RemoteFilesystem;
+use Mockery;
 use Narrowspark\Automatic\Prefetcher\Container;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
 use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
@@ -27,6 +28,8 @@ use Narrowspark\Automatic\Prefetcher\LegacyTagsManager;
 use Narrowspark\Automatic\Prefetcher\Prefetcher;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Console\Input\InputInterface;
+use function is_array;
+use function is_string;
 
 /**
  * @internal
@@ -48,7 +51,7 @@ final class ContainerTest extends MockeryTestCase
         parent::setUpBeforeClass();
 
         $composer = new Composer();
-        $configMock = \Mockery::mock(Config::class);
+        $configMock = Mockery::mock(Config::class);
         $configMock->shouldReceive('get')
             ->with('vendor-dir')
             ->andReturn('/vendor');
@@ -67,13 +70,13 @@ final class ContainerTest extends MockeryTestCase
 
         $composer->setConfig($configMock);
 
-        $package = \Mockery::mock(RootPackageInterface::class);
+        $package = Mockery::mock(RootPackageInterface::class);
         $package->shouldReceive('getExtra')
             ->andReturn([]);
 
         $composer->setPackage($package);
 
-        $downloadManager = \Mockery::mock(DownloadManager::class);
+        $downloadManager = Mockery::mock(DownloadManager::class);
         $downloadManager->shouldReceive('getDownloader')
             ->with('file');
 
@@ -94,7 +97,7 @@ final class ContainerTest extends MockeryTestCase
     {
         $value = self::$staticContainer->get($key);
 
-        if (\is_string($value) || \is_array($value)) {
+        if (is_string($value) || is_array($value)) {
             self::assertSame($expected, $value);
         } else {
             self::assertInstanceOf($expected, $value);
@@ -121,6 +124,6 @@ final class ContainerTest extends MockeryTestCase
 
     public function testGetAll(): void
     {
-        self::assertCount(9, static::$staticContainer->getAll());
+        self::assertCount(9, self::$staticContainer->getAll());
     }
 }

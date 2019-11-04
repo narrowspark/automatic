@@ -14,8 +14,13 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test\Prefetcher;
 
 use Composer\IO\IOInterface;
+use Generator;
 use Narrowspark\Automatic\Prefetcher\LegacyTagsManager;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use const DIRECTORY_SEPARATOR;
+use function file_get_contents;
+use function json_decode;
+use function sprintf;
 
 /**
  * @internal
@@ -40,7 +45,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $pPath = __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'Packagist' . \DIRECTORY_SEPARATOR;
+        $pPath = __DIR__ . DIRECTORY_SEPARATOR . 'Fixture' . DIRECTORY_SEPARATOR . 'Packagist' . DIRECTORY_SEPARATOR;
 
         $this->downloadFileList = [
             'cakephp$cakephp' => $pPath . 'provider-cakephp$cakephp.json',
@@ -94,10 +99,10 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     {
         $this->tagsManger->addConstraint('symfony/symfony', '>=3.4');
 
-        $originalData = \json_decode(\file_get_contents($this->downloadFileList['symfony$symfony']), true);
+        $originalData = json_decode(file_get_contents($this->downloadFileList['symfony$symfony']), true);
 
         $this->ioMock->shouldReceive('writeError')
-            ->with(\sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', 'symfony/symfony', '>=3.4'));
+            ->with(sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', 'symfony/symfony', '>=3.4'));
 
         $data = $this->tagsManger->removeLegacyTags($originalData);
 
@@ -106,19 +111,19 @@ final class LegacyTagsManagerTest extends MockeryTestCase
 
     public function testRemoveLegacyTagsSkipIfNoProviderFound(): void
     {
-        $originalData = \json_decode(\file_get_contents($this->downloadFileList['codeigniter$framework']), true);
+        $originalData = json_decode(file_get_contents($this->downloadFileList['codeigniter$framework']), true);
 
         self::assertSame($originalData, $this->tagsManger->removeLegacyTags($originalData));
     }
 
     public function testRemoveLegacyTagsWithCakePHP(): void
     {
-        $originalData = \json_decode(\file_get_contents($this->downloadFileList['cakephp$cakephp']), true);
+        $originalData = json_decode(file_get_contents($this->downloadFileList['cakephp$cakephp']), true);
 
         $this->tagsManger->addConstraint('cakephp/cakephp', '>=3.5');
 
         $this->ioMock->shouldReceive('writeError')
-            ->with(\sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', 'cakephp/cakephp', '>=3.5'));
+            ->with(sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', 'cakephp/cakephp', '>=3.5'));
 
         $data = $this->tagsManger->removeLegacyTags($originalData);
 
@@ -144,7 +149,7 @@ final class LegacyTagsManagerTest extends MockeryTestCase
     }
 
     /**
-     * @return \Generator
+     * @return Generator
      */
     public function provideRemoveLegacyTagsCases(): iterable
     {

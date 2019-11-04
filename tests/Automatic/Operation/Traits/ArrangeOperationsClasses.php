@@ -19,6 +19,8 @@ use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\PackageConfigurator;
+use const DIRECTORY_SEPARATOR;
+use function dirname;
 
 trait ArrangeOperationsClasses
 {
@@ -45,7 +47,7 @@ trait ArrangeOperationsClasses
 
     protected function arrangeOperationsClasses(): void
     {
-        $this->fixturePath = \dirname(__DIR__, 2) . \DIRECTORY_SEPARATOR . 'Fixture';
+        $this->fixturePath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'Fixture';
 
         $this->lockMock = $this->mock(Lock::class);
         $this->ioMock = $this->mock(IOInterface::class);

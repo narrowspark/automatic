@@ -21,7 +21,17 @@ use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Contract\Operation as OperationContract;
 use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Lock;
+use ReflectionClass;
+use ReflectionException;
+use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
+use const DIRECTORY_SEPARATOR;
+use function array_keys;
+use function count;
+use function implode;
+use function sprintf;
+use function strpos;
+use function strstr;
 
 abstract class AbstractOperation implements OperationContract
 {
@@ -115,24 +125,24 @@ abstract class AbstractOperation implements OperationContract
         PackageConfiguratorContract $packageConfigurator,
         ConfiguratorContract $configurator
     ): void {
-        $packageConfigurators = \array_keys((array) $package->getConfig(CommonConfiguratorContract::TYPE));
+        $packageConfigurators = array_keys((array) $package->getConfig(CommonConfiguratorContract::TYPE));
 
-        foreach (\array_keys($configurator->getConfigurators()) as $key => $value) {
+        foreach (array_keys($configurator->getConfigurators()) as $key => $value) {
             if (isset($packageConfigurators[$key])) {
                 unset($packageConfigurators[$key]);
             }
         }
 
-        foreach (\array_keys($packageConfigurator->getConfigurators()) as $key => $value) {
+        foreach (array_keys($packageConfigurator->getConfigurators()) as $key => $value) {
             if (isset($packageConfigurators[$key])) {
                 unset($packageConfigurators[$key]);
             }
         }
 
-        if (\count($packageConfigurators) !== 0) {
-            $this->io->writeError(\sprintf(
+        if (count($packageConfigurators) !== 0) {
+            $this->io->writeError(sprintf(
                 '<warning>Configurators [%s] did not run for package [%s]</warning>',
-                \implode(', ', $packageConfigurators),
+                implode(', ', $packageConfigurators),
                 $package->getPrettyName()
             ));
         }
@@ -143,7 +153,7 @@ abstract class AbstractOperation implements OperationContract
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package $package
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      *
      * @return void
      */
@@ -152,7 +162,7 @@ abstract class AbstractOperation implements OperationContract
         if ($package->hasConfig(PackageConfiguratorContract::TYPE)) {
             /** @var \Narrowspark\Automatic\Common\Configurator\AbstractConfigurator $class */
             foreach ((array) $package->getConfig(PackageConfiguratorContract::TYPE) as $class) {
-                $reflectionClass = new \ReflectionClass($class);
+                $reflectionClass = new ReflectionClass($class);
 
                 if ($reflectionClass->isInstantiable() && $reflectionClass->hasMethod('getName')) {
                     $this->packageConfigurator->add($class::getName(), $reflectionClass->getName());
@@ -172,10 +182,10 @@ abstract class AbstractOperation implements OperationContract
         $composerAutoload = $package->getAutoload();
         $classes = [];
 
-        if (\count($composerAutoload) !== 0) {
+        if (count($composerAutoload) !== 0) {
             $classes = $this->classFinder->setComposerAutoload($name, $composerAutoload)
-                ->setFilter(static function (\SplFileInfo $fileInfo) use ($name) {
-                    return \strpos((string) \strstr($fileInfo->getPathname(), $name), \DIRECTORY_SEPARATOR . 'Automatic' . \DIRECTORY_SEPARATOR) !== false;
+                ->setFilter(static function (SplFileInfo $fileInfo) use ($name) {
+                    return strpos((string) strstr($fileInfo->getPathname(), $name), DIRECTORY_SEPARATOR . 'Automatic' . DIRECTORY_SEPARATOR) !== false;
                 })
                 ->find()
                 ->getAll();

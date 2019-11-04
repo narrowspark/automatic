@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test\Common;
 
 use Composer\Composer;
+use Mockery;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use function is_array;
+use function is_string;
 
 /**
  * @internal
@@ -36,7 +39,7 @@ final class ContainerTest extends MockeryTestCase
         parent::setUpBeforeClass();
         self::$staticContainer = new DummyContainer([
             Composer::class => static function (AbstractContainer $container) {
-                return \Mockery::mock(Composer::class);
+                return Mockery::mock(Composer::class);
             },
             'vendor-dir' => static function () {
                 return '/vendor';
@@ -56,7 +59,7 @@ final class ContainerTest extends MockeryTestCase
     {
         $value = self::$staticContainer->get($key);
 
-        if (\is_string($value) || \is_array($value)) {
+        if (is_string($value) || is_array($value)) {
             self::assertSame($expected, $value);
         } else {
             self::assertInstanceOf($expected, $value);
@@ -78,23 +81,23 @@ final class ContainerTest extends MockeryTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Identifier [test] is not defined.');
 
-        static::$staticContainer->get('test');
+        self::$staticContainer->get('test');
     }
 
     public function testGetCache(): void
     {
-        self::assertSame('/vendor', static::$staticContainer->get('vendor-dir'));
+        self::assertSame('/vendor', self::$staticContainer->get('vendor-dir'));
 
-        static::$staticContainer->set('vendor-dir', static function () {
+        self::$staticContainer->set('vendor-dir', static function () {
             return 'test';
         });
 
-        self::assertSame('/vendor', static::$staticContainer->get('vendor-dir'));
+        self::assertSame('/vendor', self::$staticContainer->get('vendor-dir'));
     }
 
     public function testGetAll(): void
     {
-        self::assertCount(2, static::$staticContainer->getAll());
+        self::assertCount(2, self::$staticContainer->getAll());
     }
 }
 

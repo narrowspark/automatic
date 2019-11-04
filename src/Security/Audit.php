@@ -21,6 +21,15 @@ use Composer\Semver\VersionParser;
 use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
+use const DIRECTORY_SEPARATOR;
+use function file_get_contents;
+use function is_array;
+use function json_decode;
+use function ksort;
+use function sprintf;
+use function strlen;
+use function strpos;
+use function substr;
 
 final class Audit
 {
@@ -69,6 +78,13 @@ final class Audit
     private $sha;
 
     /**
+     * Check if composer is in dev mode.
+     *
+     * @var bool
+     */
+    private $devMode = true;
+
+    /**
      * Create a new Audit instance.
      *
      * @param string                                              $composerVendorPath
@@ -82,6 +98,16 @@ final class Audit
         $this->versionParser = new VersionParser();
         $this->filesystem = new Filesystem();
         $this->sha = $sha;
+    }
+
+    /**
+     * Set the composer dev mode.
+     *
+     * @param bool $bool
+     */
+    public function setDevMode($bool): void
+    {
+        $this->devMode = $bool;
     }
 
     /**
@@ -103,7 +129,7 @@ final class Audit
 
         [$messages, $vulnerabilities] = $this->checkPackageAgainstSecurityAdvisories($securityAdvisories, $package);
 
-        \ksort($vulnerabilities);
+        ksort($vulnerabilities);
 
         return [$vulnerabilities, $messages];
     }
@@ -127,8 +153,13 @@ final class Audit
 
         /** @var \Composer\Package\Package[] $packages */
         $packages = [];
+        $keys = ['packages'];
 
-        foreach (['packages', 'packages-dev'] as $key) {
+        if ($this->devMode) {
+            $keys[] = 'packages-dev';
+        }
+
+        foreach ($keys as $key) {
             $data = $lockContents[$key];
 
             foreach ($data as $pkgData) {
@@ -148,7 +179,7 @@ final class Audit
             [$messages, $vulnerabilities] = $this->checkPackageAgainstSecurityAdvisories($securityAdvisories, $package, $messages, $vulnerabilities);
         }
 
-        \ksort($vulnerabilities);
+        ksort($vulnerabilities);
 
         return [$vulnerabilities, $messages];
     }
@@ -162,7 +193,7 @@ final class Audit
      */
     public function getSecurityAdvisories(?IOInterface $io = null): array
     {
-        $narrowsparkAutomaticPath = $this->composerVendorPath . \DIRECTORY_SEPARATOR . 'narrowspark' . \DIRECTORY_SEPARATOR . 'automatic' . \DIRECTORY_SEPARATOR;
+        $narrowsparkAutomaticPath = $this->composerVendorPath . DIRECTORY_SEPARATOR . 'narrowspark' . DIRECTORY_SEPARATOR . 'automatic' . DIRECTORY_SEPARATOR;
 
         if (! $this->filesystem->exists($narrowsparkAutomaticPath)) {
             $this->filesystem->mkdir($narrowsparkAutomaticPath);
@@ -172,10 +203,10 @@ final class Audit
         $securityAdvisoriesPath = $narrowsparkAutomaticPath . self::SECURITY_ADVISORIES;
 
         if ($this->filesystem->exists($securityAdvisoriesShaPath)) {
-            $oldSha = \file_get_contents($securityAdvisoriesShaPath);
+            $oldSha = file_get_contents($securityAdvisoriesShaPath);
 
             if ($oldSha === $this->sha) {
-                return \json_decode((string) \file_get_contents($securityAdvisoriesPath), true);
+                return json_decode((string) file_get_contents($securityAdvisoriesPath), true);
             }
         }
 
@@ -188,7 +219,7 @@ final class Audit
         $this->filesystem->dumpFile($securityAdvisoriesShaPath, $this->sha);
         $this->filesystem->dumpFile($securityAdvisoriesPath, $securityAdvisories);
 
-        return \json_decode($securityAdvisories, true);
+        return json_decode($securityAdvisories, true);
     }
 
     /**
@@ -198,11 +229,11 @@ final class Audit
      */
     private function getLockContents(string $lock): array
     {
-        $contents = \json_decode((string) \file_get_contents($lock), true);
+        $contents = json_decode((string) file_get_contents($lock), true);
         $packages = ['packages' => [], 'packages-dev' => []];
 
         foreach (['packages', 'packages-dev'] as $key) {
-            if (! \is_array($contents[$key])) {
+            if (! is_array($contents[$key])) {
                 continue;
             }
 
@@ -212,7 +243,7 @@ final class Audit
                     'version' => $package['version'],
                 ];
 
-                if (isset($package['time']) && false !== \strpos($package['version'], 'dev')) {
+                if (isset($package['time']) && false !== strpos($package['version'], 'dev')) {
                     $data['time'] = $package['time'];
                 }
 
@@ -242,7 +273,7 @@ final class Audit
         $name = $package->getName();
 
         foreach ($securityAdvisories[$name] as $key => $advisoryData) {
-            if (! \is_array($advisoryData['branches'])) {
+            if (! is_array($advisoryData['branches'])) {
                 $messages[$name][] = '"branches" is expected to be an array.';
 
                 continue;
@@ -250,9 +281,9 @@ final class Audit
 
             foreach ($advisoryData['branches'] as $n => $branch) {
                 if (! isset($branch['versions'])) {
-                    $messages[$n][] = \sprintf('Key [versions] is not set for branch [%s].', $key);
-                } elseif (! \is_array($branch['versions'])) {
-                    $messages[$n][] = \sprintf('Key [versions] is expected to be an array for branch [%s].', $key);
+                    $messages[$n][] = sprintf('Key [versions] is not set for branch [%s].', $key);
+                } elseif (! is_array($branch['versions'])) {
+                    $messages[$n][] = sprintf('Key [versions] is expected to be an array for branch [%s].', $key);
                 } else {
                     $constraints = [];
 
@@ -260,7 +291,7 @@ final class Audit
                         $op = null;
 
                         foreach (Constraint::getSupportedOperators() as $operators) {
-                            if (\strpos($version, $operators) === 0) {
+                            if (strpos($version, $operators) === 0) {
                                 $op = $operators;
 
                                 break;
@@ -268,19 +299,19 @@ final class Audit
                         }
 
                         if (null === $op) {
-                            $messages[$n][] = \sprintf('Version [%s] does not contain a supported operator.', $version);
+                            $messages[$n][] = sprintf('Version [%s] does not contain a supported operator.', $version);
 
                             continue;
                         }
 
-                        $constraints[] = new Constraint($op, \substr($version, \strlen($op)));
+                        $constraints[] = new Constraint($op, substr($version, strlen($op)));
                     }
 
                     $affectedConstraint = new MultiConstraint($constraints);
                     $affectedPackage = $affectedConstraint->matches(new Constraint('==', $package->getVersion()));
 
                     if ($affectedPackage) {
-                        $composerPackage = \substr($advisoryData['reference'], 11);
+                        $composerPackage = substr($advisoryData['reference'], 11);
 
                         $vulnerabilities[$composerPackage] = $vulnerabilities[$composerPackage] ?? [
                             'version' => $package->getPrettyVersion(),

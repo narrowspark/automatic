@@ -19,6 +19,7 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\ScriptExecutor;
+use function class_exists;
 
 /**
  * @internal
@@ -56,7 +57,7 @@ final class Uninstall extends AbstractOperation
         $classes = $this->findClassesInAutomaticFolder($package, $name);
 
         foreach ($classes as $class => $path) {
-            if (! \class_exists($class)) {
+            if (! class_exists($class)) {
                 require_once $path;
             }
         }

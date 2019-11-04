@@ -32,14 +32,33 @@ use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
 use FilesystemIterator;
+use InvalidArgumentException;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
+use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
 use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use ReflectionMethod;
+use SplFileInfo;
 use Symfony\Component\Console\Input\ArgvInput;
+use const DIRECTORY_SEPARATOR;
+use const PHP_INT_MAX;
+use function array_merge;
+use function class_exists;
+use function debug_backtrace;
+use function dirname;
+use function explode;
+use function getenv;
+use function is_int;
+use function method_exists;
+use function sprintf;
+use function str_replace;
+use function strlen;
+use function strpos;
+use function substr;
+use function version_compare;
 
 class Plugin implements EventSubscriberInterface, PluginInterface
 {
@@ -89,16 +108,16 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             return;
         }
 
-        if (! \class_exists(AbstractContainer::class)) {
-            require __DIR__ . \DIRECTORY_SEPARATOR . 'alias.php';
+        if (! class_exists(AbstractContainer::class)) {
+            require __DIR__ . DIRECTORY_SEPARATOR . 'alias.php';
         }
 
         // to avoid issues when Automatic Prefetcher is upgraded, we load all PHP classes now
         // that way, we are sure to use all classes from the same version.
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
-            /** @var \SplFileInfo $file */
-            if (\substr($file->getFilename(), -4) === '.php') {
-                \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file->getFilename(), \strlen(__DIR__), -4)));
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
+            /** @var SplFileInfo $file */
+            if (substr($file->getFilename(), -4) === '.php') {
+                class_exists(__NAMESPACE__ . str_replace('/', '\\', substr($file->getFilename(), strlen(__DIR__), -4)));
             }
         }
 
@@ -118,7 +137,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
         $this->container->get(Prefetcher::class)->populateRepoCacheDir();
 
-        $this->extendComposer(\debug_backtrace(), $tagsManager);
+        $this->extendComposer(debug_backtrace(), $tagsManager);
     }
 
     /**
@@ -131,10 +150,10 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         }
 
         return [
-            InstallerEvents::PRE_DEPENDENCIES_SOLVING => [['onPreDependenciesSolving', \PHP_INT_MAX]],
-            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_INSTALL => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_UPDATE => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING => [['onPreDependenciesSolving', PHP_INT_MAX]],
+            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_INSTALL => [['populateFilesCacheDir', ~PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UPDATE => [['populateFilesCacheDir', ~PHP_INT_MAX]],
             PluginEvents::PRE_FILE_DOWNLOAD => 'onFileDownload',
         ];
     }
@@ -151,7 +170,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         $listed = [];
         $packages = [];
         $pool = $event->getPool();
-        $pool = \Closure::bind(function () {
+        $pool = Closure::bind(function () {
             foreach ($this->providerRepos as $k => $repo) {
                 $this->providerRepos[$k] = new class($repo) extends BaseComposerRepository {
                     /**
@@ -176,7 +195,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
                     {
                         $packages = [];
 
-                        if (! \method_exists($this->repo, 'whatProvides')) {
+                        if (! method_exists($this->repo, 'whatProvides')) {
                             return $packages;
                         }
 
@@ -193,7 +212,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         }, clone $pool, $pool)();
 
         foreach ($event->getRequest()->getJobs() as $job) {
-            if ($job['cmd'] !== 'install' || \strpos($job['packageName'], '/') === false) {
+            if ($job['cmd'] !== 'install' || strpos($job['packageName'], '/') === false) {
                 continue;
             }
 
@@ -201,16 +220,16 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             $packages[] = [$job['packageName'], $job['constraint']];
         }
 
-        $loadExtraRepos = ! (new \ReflectionMethod(Pool::class, 'match'))->isPublic(); // Detect Composer < 1.7.3
+        $loadExtraRepos = ! (new ReflectionMethod(Pool::class, 'match'))->isPublic(); // Detect Composer < 1.7.3
 
         $this->container->get(ParallelDownloader::class)->download($packages, static function (string $packageName, $constraint) use (&$listed, &$packages, $pool, $loadExtraRepos): void {
             /** @var \Composer\Package\PackageInterface $package */
             foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
-                $links = $loadExtraRepos ? \array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) : $package->getRequires();
+                $links = $loadExtraRepos ? array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) : $package->getRequires();
 
                 /** @var \Composer\Package\Link $link */
                 foreach ($links as $link) {
-                    if (isset($listed[$link->getTarget()]) || \strpos($link->getTarget(), '/') === false) {
+                    if (isset($listed[$link->getTarget()]) || strpos($link->getTarget(), '/') === false) {
                         continue;
                     }
 
@@ -232,7 +251,10 @@ class Plugin implements EventSubscriberInterface, PluginInterface
      */
     public function populateFilesCacheDir($event): void
     {
-        $this->container->get(Prefetcher::class)->fetchAllFromOperations($event);
+        /** @var \Narrowspark\Automatic\Prefetcher\Prefetcher $prefetcher */
+        $prefetcher = $this->container->get(Prefetcher::class);
+
+        $prefetcher->fetchAllFromOperations($event);
     }
 
     /**
@@ -266,13 +288,13 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         LegacyTagsManagerContract $tagsManager,
         array $extra
     ): void {
-        $envRequire = \getenv('AUTOMATIC_PREFETCHER_REQUIRE');
+        $envRequire = getenv('AUTOMATIC_PREFETCHER_REQUIRE');
 
         if ($envRequire !== false) {
             $requires = [];
 
-            foreach (\explode(',', $envRequire) as $packageString) {
-                [$packageName, $version] = \explode(':', $packageString, 2);
+            foreach (explode(',', $envRequire) as $packageString) {
+                [$packageName, $version] = explode(':', $packageString, 2);
 
                 $requires[$packageName] = $version;
             }
@@ -295,14 +317,14 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     private function addLegacyTags(IOInterface $io, array $requires, LegacyTagsManagerContract $tagsManager): void
     {
         foreach ($requires as $name => $version) {
-            if (\is_int($name)) {
-                $io->writeError(\sprintf('Constrain [%s] skipped, because package name is a number [%s]', $version, $name));
+            if (is_int($name)) {
+                $io->writeError(sprintf('Constrain [%s] skipped, because package name is a number [%s]', $version, $name));
 
                 continue;
             }
 
-            if (\strpos($name, '/') === false) {
-                $io->writeError(\sprintf('Constrain [%s] skipped, package name [%s] without a slash is not supported', $version, $name));
+            if (strpos($name, '/') === false) {
+                $io->writeError(sprintf('Constrain [%s] skipped, package name [%s] without a slash is not supported', $version, $name));
 
                 continue;
             }
@@ -367,8 +389,8 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             return 'You must enable the openssl extension in your [php.ini] file';
         }
 
-        if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
-            return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
+        if (version_compare(Util::getComposerVersion(), '1.7.0', '<')) {
+            return sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd
 
@@ -402,7 +424,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
                 /** @var null|string $command */
                 $command = $input->getFirstArgument();
                 $command = $command !== null ? $app->find($command)->getName() : null;
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 $command = null;
             }
 
@@ -421,29 +443,5 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
             break;
         }
-    }
-
-    /**
-     * Get the composer version.
-     *
-     * @throws \Narrowspark\Automatic\Common\Contract\Exception\RuntimeException
-     *
-     * @return string
-     */
-    private static function getComposerVersion(): string
-    {
-        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        throw new RuntimeException('No composer version found.');
     }
 }

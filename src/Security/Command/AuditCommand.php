@@ -16,6 +16,7 @@ namespace Narrowspark\Automatic\Security\Command;
 use Composer\Command\BaseCommand;
 use Composer\Factory;
 use Composer\IO\NullIO;
+use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\Command\Formatter\JsonFormatter;
 use Narrowspark\Automatic\Security\Command\Formatter\SimpleFormatter;
@@ -23,12 +24,16 @@ use Narrowspark\Automatic\Security\Command\Formatter\TextFormatter;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
 use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
-use Narrowspark\Automatic\Security\Util;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use function count;
+use function extension_loaded;
+use function method_exists;
+use function rtrim;
+use function sprintf;
 
 final class AuditCommand extends BaseCommand
 {
@@ -61,7 +66,7 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (\extension_loaded('curl')) {
+        if (extension_loaded('curl')) {
             $downloader = new CurlDownloader();
         } else {
             $downloader = new ComposerDownloader();
@@ -87,7 +92,7 @@ EOF
         }
 
         $config = Factory::createConfig(new NullIO());
-        $audit = new Audit(\rtrim($config->get('vendor-dir'), '/'), $downloader, $sha);
+        $audit = new Audit(rtrim($config->get('vendor-dir'), '/'), $downloader, $sha);
 
         /** @var null|string $composerFile */
         $composerFile = $input->getOption('composer-lock');
@@ -121,13 +126,13 @@ EOF
 
         $message = 'This checker can only detect vulnerabilities that are referenced in the SensioLabs security advisories database.';
 
-        if (\method_exists($output, 'comment')) {
+        if (method_exists($output, 'comment')) {
             $output->comment($message);
         } else {
-            $output->writeln(\sprintf('<comment>%s</>', $message));
+            $output->writeln(sprintf('<comment>%s</>', $message));
         }
 
-        if (\count($messages) !== 0) {
+        if (count($messages) !== 0) {
             $output->note('Please report this found messages to https://github.com/narrowspark/security-advisories.');
 
             foreach ($messages as $key => $msg) {
@@ -135,9 +140,9 @@ EOF
             }
         }
 
-        $count = \count($vulnerabilities);
+        $count = count($vulnerabilities);
 
-        if (\count($vulnerabilities) !== 0) {
+        if (count($vulnerabilities) !== 0) {
             switch ($input->getOption('format')) {
                 case 'json':
                     $formatter = new JsonFormatter();
@@ -154,7 +159,7 @@ EOF
 
             $formatter->displayResults($output, $vulnerabilities);
 
-            $output->writeln('<error>[!]</> ' . \sprintf('%s vulnerabilit%s found - ', $count, $count === 1 ? 'y' : 'ies')
+            $output->writeln('<error>[!]</> ' . sprintf('%s vulnerabilit%s found - ', $count, $count === 1 ? 'y' : 'ies')
                 . 'We recommend you to check the related security advisories and upgrade these dependencies.');
 
             return $errorExitCode;

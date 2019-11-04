@@ -15,6 +15,8 @@ namespace Narrowspark\Automatic\Common;
 
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
+use function array_key_exists;
+use function sprintf;
 
 abstract class AbstractContainer implements ContainerContract
 {
@@ -55,7 +57,7 @@ abstract class AbstractContainer implements ContainerContract
      */
     public function has(string $id): bool
     {
-        return \array_key_exists($id, $this->data);
+        return array_key_exists($id, $this->data);
     }
 
     /**
@@ -63,12 +65,12 @@ abstract class AbstractContainer implements ContainerContract
      */
     public function get(string $id)
     {
-        if (\array_key_exists($id, $this->objects)) {
+        if (array_key_exists($id, $this->objects)) {
             return $this->objects[$id];
         }
 
-        if (! \array_key_exists($id, $this->data)) {
-            throw new InvalidArgumentException(\sprintf('Identifier [%s] is not defined.', $id));
+        if (! array_key_exists($id, $this->data)) {
+            throw new InvalidArgumentException(sprintf('Identifier [%s] is not defined.', $id));
         }
 
         return $this->objects[$id] = $this->data[$id]($this);

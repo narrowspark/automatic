@@ -31,6 +31,8 @@ use Narrowspark\Automatic\Operation\Uninstall;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use function array_merge;
+use function rtrim;
 
 /**
  * @internal
@@ -60,10 +62,10 @@ final class Container extends AbstractContainer
                 return $io;
             },
             'vendor-dir' => static function (ContainerContract $container) {
-                return \rtrim($container->get(Config::class)->get('vendor-dir'), '/');
+                return rtrim($container->get(Config::class)->get('vendor-dir'), '/');
             },
             'composer-extra' => static function (ContainerContract $container) {
-                return \array_merge(
+                return array_merge(
                     [
                         Automatic::COMPOSER_EXTRA_KEY => [
                             'allow-auto-install' => false,

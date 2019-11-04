@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Narrowspark\Automatic\Test;
 
 use Composer\IO\IOInterface;
+use Mockery;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Installer\InstallationManager;
@@ -24,6 +25,8 @@ use Narrowspark\Automatic\Test\Fixture\ConsoleFixtureGenerator;
 use Narrowspark\Automatic\Test\Fixture\FrameworkDefaultFixtureGenerator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use PHPUnit\Framework\Assert;
+use function file_exists;
+use function unlink;
 
 /**
  * @internal
@@ -73,8 +76,8 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
         $path = __DIR__ . '/Fixture/test.php';
 
-        if (\file_exists($path)) {
-            @\unlink($path);
+        if (file_exists($path)) {
+            @unlink($path);
         }
     }
 
@@ -141,7 +144,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
         $this->installationManagerMock->shouldReceive('uninstall')
             ->once()
-            ->with(\Mockery::type('array'), []);
+            ->with(Mockery::type('array'), []);
 
         $this->lockMock->shouldReceive('read')
             ->once();

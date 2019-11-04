@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Test\Fixture\MockConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
+use stdClass;
 
 /**
  * @internal
@@ -70,7 +71,7 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The class [stdClass] must implement the interface [\\Narrowspark\\Automatic\\Common\\Contract\\Configurator].');
 
-        $this->configurator->add('test', \stdClass::class);
+        $this->configurator->add('test', stdClass::class);
     }
 
     public function testClear(): void

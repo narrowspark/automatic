@@ -17,6 +17,11 @@ use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Symfony\Component\Filesystem\Exception\IOException;
+use const DIRECTORY_SEPARATOR;
+use function is_dir;
+use function is_file;
+use function sprintf;
+use function str_replace;
 
 final class CopyFromPackageConfigurator extends AbstractConfigurator
 {
@@ -38,13 +43,13 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $from => $to) {
             $target = self::expandTargetDir($this->options, $to);
             $from = $this->path->concatenate([
-                $this->composer->getConfig()->get('vendor-dir') . \DIRECTORY_SEPARATOR,
-                \str_replace('/', \DIRECTORY_SEPARATOR, $package->getPrettyName()) . \DIRECTORY_SEPARATOR,
+                $this->composer->getConfig()->get('vendor-dir') . DIRECTORY_SEPARATOR,
+                str_replace('/', DIRECTORY_SEPARATOR, $package->getPrettyName()) . DIRECTORY_SEPARATOR,
                 $from,
             ]);
 
-            if (! \is_dir($from) && ! \is_file($from)) {
-                $this->write(\sprintf(
+            if (! is_dir($from) && ! is_file($from)) {
+                $this->write(sprintf(
                     '<fg=red>Failed to find the from folder or file path for "%s" in "%s" package</>',
                     $from,
                     $package->getName()
@@ -57,7 +62,7 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
                 /* @var string $functionName */
                 $functionName = 'copy';
 
-                if (\is_dir($from)) {
+                if (is_dir($from)) {
                     $functionName = 'mirror';
                 }
 
@@ -66,9 +71,9 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
                     $this->path->concatenate([$this->path->getWorkingDir(), $target])
                 );
 
-                $this->write(\sprintf('Created <fg=green>"%s"</>', $this->path->relativize($target)));
+                $this->write(sprintf('Created <fg=green>"%s"</>', $this->path->relativize($target)));
             } catch (IOException $exception) {
-                $this->write(\sprintf(
+                $this->write(sprintf(
                     '<fg=red>Failed to create "%s"</>; Error message: %s',
                     $this->path->relativize($target),
                     $exception->getMessage()
@@ -90,9 +95,9 @@ final class CopyFromPackageConfigurator extends AbstractConfigurator
             try {
                 $this->filesystem->remove($this->path->concatenate([$this->path->getWorkingDir(), $source]));
 
-                $this->write(\sprintf('Removed <fg=green>"%s"</>', $this->path->relativize($source)));
+                $this->write(sprintf('Removed <fg=green>"%s"</>', $this->path->relativize($source)));
             } catch (IOException $exception) {
-                $this->write(\sprintf(
+                $this->write(sprintf(
                     '<fg=red>Failed to remove "%s"</>; Error message: %s',
                     $this->path->relativize($source),
                     $exception->getMessage()

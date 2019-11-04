@@ -55,6 +55,7 @@
                 <directory>./tests</directory>
                 <directory>./src/Prefetcher/Common/</directory>
                 <file>./src/Prefetcher/alias.php</file>
+                <file>./src/Security/alias.php</file>
                 <file>./build/update-mirror-classes.php</file>
             </exclude>
         </whitelist>

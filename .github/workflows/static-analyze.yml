@@ -1,6 +1,12 @@
-name: 'Static analyzing with phpstan'
+name: 'Static analyzing'
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - '**.php'
+  pull_request:
+    paths:
+      - '**.php'
 
 jobs:
   php-cs-fixer:

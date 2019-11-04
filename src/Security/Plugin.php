@@ -29,7 +29,7 @@ use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Common\Util;
+use Narrowspark\Automatic\Security\Common\Util;
 use Narrowspark\Automatic\Security\Contract\Downloader as DownloaderContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use RecursiveDirectoryIterator;

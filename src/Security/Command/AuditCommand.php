@@ -48,10 +48,11 @@ final class AuditCommand extends BaseCommand
         $this
             ->setName('audit')
             ->setDefinition([
-                new InputOption('composer-lock', '', InputOption::VALUE_REQUIRED, 'Path to a composer.lock'),
-                new InputOption('format', '', InputOption::VALUE_REQUIRED, 'The output format', 'txt'),
-                new InputOption('timeout', '', InputOption::VALUE_REQUIRED, 'The HTTP timeout in seconds'),
-                new InputOption('disable-exit', '', InputOption::VALUE_NONE, 'Only shows which vulnerabilities was found or not (without exit code)'),
+                new InputOption('composer-lock', null, InputOption::VALUE_REQUIRED, 'Path to a composer.lock'),
+                new InputOption('format', null, InputOption::VALUE_REQUIRED, 'The output format', 'txt'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
+                new InputOption('timeout', null, InputOption::VALUE_REQUIRED, 'The HTTP timeout in seconds'),
+                new InputOption('disable-exit', null, InputOption::VALUE_NONE, 'Only shows which vulnerabilities was found or not (without exit code)'),
             ])
             ->setDescription('Checks security issues in your project dependencies')
             ->setHelp(
@@ -94,6 +95,14 @@ EOF
         $config = Factory::createConfig(new NullIO());
         $audit = new Audit(rtrim($config->get('vendor-dir'), '/'), $downloader, $sha);
 
+        $isNotDevMode = true;
+
+        if ($input->hasOption('no-dev')) {
+            $isNotDevMode = false;
+
+            $audit->setDevMode(! $input->getOption('no-dev'));
+        }
+
         /** @var null|string $composerFile */
         $composerFile = $input->getOption('composer-lock');
 
@@ -103,6 +112,16 @@ EOF
 
         $output = new SymfonyStyle($input, $output);
         $output->writeln('=== Audit Security Report ===');
+
+        if (! $isNotDevMode) {
+            $message = 'Check is running in no-dev mode. Skipping dev requirements check.';
+
+            if (method_exists($output, 'comment')) {
+                $output->comment($message);
+            } else {
+                $output->writeln(sprintf('<comment>%s</>', $message));
+            }
+        }
 
         $errorExitCode = 1;
 

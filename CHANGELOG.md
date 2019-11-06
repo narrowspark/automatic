@@ -1,3 +1,42 @@
+v0.13.0
+=======
+
+- Total issues resolved: **3**
+- Total pull requests resolved: **9**
+- Total contributors: **1**
+
+Added
+-----
+
+ - [145: feat : added no-dev mode to audit command](https://github.com/narrowspark/automatic/pull/145) thanks to @prisis
+ - [140: feat : adding github actions](https://github.com/narrowspark/automatic/pull/140) thanks to @prisis
+
+Added,Changed
+-------------
+
+ - [130: build : create a new composer package prefetcher plugin out of automatic](https://github.com/narrowspark/automatic/issues/130) thanks to @prisis
+
+Changed
+-------
+
+ - [132: docs : follow google docs standard and fixed loading of aliases](https://github.com/narrowspark/automatic/pull/132) thanks to @prisis
+ - [127: feat : upgrade narrowspark/coding-standard to v3](https://github.com/narrowspark/automatic/issues/127) thanks to @prisis
+
+Changed,Fixed
+-------------
+
+ - [119: Fixed emoji output - cannot declare class because of require&#95;once](https://github.com/narrowspark/automatic/pull/119) thanks to @prisis
+
+Fixed
+-----
+
+ - [146: fix : fixed class&#95;alias use call](https://github.com/narrowspark/automatic/pull/146) thanks to @prisis
+ - [144: Added check for isDevMode in the security plugin](https://github.com/narrowspark/automatic/pull/144) thanks to @prisis
+ - [137: fix : fixed incorrect interface on curl downloader](https://github.com/narrowspark/automatic/pull/137) thanks to @prisis
+ - [136: fix : downloader check in ParallelDownloader](https://github.com/narrowspark/automatic/pull/136) thanks to @prisis
+ - [134: fix : removed trait call in prefetcher plugin](https://github.com/narrowspark/automatic/pull/134) thanks to @prisis
+ - [128: Skip parallel downloader for local files](https://github.com/narrowspark/automatic/issues/128) thanks to @prisis
+
 v0.12.0
 =======
 

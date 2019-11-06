@@ -1,4 +1,4 @@
-<h1 align="center">Narrowspark Automatic</h1>
+<h1 align="center">Narrowspark Automatic Common</h1>
 <p align="center">
     <a href="https://github.com/narrowspark/automatic/releases"><img src="https://img.shields.io/packagist/v/narrowspark/automatic.svg?style=flat-square"></a>
     <a href="https://php.net/"><img src="https://img.shields.io/badge/php-%5E7.1.0-8892BF.svg?style=flat-square"></a>

@@ -1,3 +1,15 @@
+v0.13.1
+=======
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+Fixed
+-----
+
+ - [148: fix : added method check for filesystem readlink](https://github.com/narrowspark/automatic/pull/148) thanks to @prisis
+
 v0.13.0
 =======
 

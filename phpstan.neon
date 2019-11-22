@@ -40,6 +40,9 @@ parameters:
         # CopyFromPackageConfigurator
         - '#Variable method call on Symfony\\Component\\Filesystem\\Filesystem#'
 
+        - '#Call to function method_exists\(\) with Symfony\\Component\\Filesystem\\Filesystem and#'
+        - '#Function readlink is unsafe to use\, rely on Symfony component Filesystem\:\:readlink instead#'
+
         # EnvConfigurator - phpstan missing support
         - '#Strict comparison using \!== between bool and null will always evaluate to true#'
 

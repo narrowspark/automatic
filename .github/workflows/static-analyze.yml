@@ -1,16 +1,16 @@
-name: 'Static analyzing'
+name: "Static analyzing"
 
 on:
   push:
     paths:
-      - '**.php'
+      - "**.php"
   pull_request:
     paths:
-      - '**.php'
+      - "**.php"
 
 jobs:
   php-cs-fixer:
-    name: 'PHPStan'
+    name: "PHPStan"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -19,5 +19,5 @@ jobs:
         with:
           php-version: 7.2
       - run: composer install
-      - name: 'analyze php code'
+      - name: "analyze php code"
         run: composer phpstan

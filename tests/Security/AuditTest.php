@@ -16,6 +16,7 @@ namespace Narrowspark\Automatic\Security\Test;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
+use Narrowspark\TestingHelper\Traits\AssertArrayTrait;
 use PHPUnit\Framework\TestCase;
 use const DIRECTORY_SEPARATOR;
 use function array_map;
@@ -33,6 +34,8 @@ use function unlink;
  */
 final class AuditTest extends TestCase
 {
+    use AssertArrayTrait;
+
     /** @var \Narrowspark\Automatic\Security\Audit */
     private $audit;
 
@@ -137,7 +140,7 @@ final class AuditTest extends TestCase
      */
     private function assertSymfonySecurity(int $vulnerabilitiesCount, array $vulnerabilities): void
     {
-        self::assertEquals(
+        self::assertArraySubset(
             array_merge([
                 'symfony/symfony' => [
                     'version' => 'v2.5.2',

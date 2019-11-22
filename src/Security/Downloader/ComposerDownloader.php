@@ -22,7 +22,9 @@ use function error_reporting;
 use function file_get_contents;
 use function is_dir;
 use function is_link;
+use function method_exists;
 use function preg_match;
+use function readlink;
 use function sprintf;
 use function trim;
 
@@ -51,7 +53,7 @@ final class ComposerDownloader extends AbstractDownloader
         $caPathOrFile = CaBundle::getSystemCaRootBundlePath();
         $filesystem = new Filesystem();
 
-        if (is_dir($caPathOrFile) || (is_link($caPathOrFile) && is_dir((string) $filesystem->readlink($caPathOrFile)))) {
+        if (is_dir($caPathOrFile) || (is_link($caPathOrFile) && is_dir((string) (method_exists($filesystem, 'readlink') ? $filesystem->readlink($caPathOrFile) : readlink($caPathOrFile))))) {
             $opts['ssl']['capath'] = $caPathOrFile;
         } else {
             $opts['ssl']['cafile'] = $caPathOrFile;

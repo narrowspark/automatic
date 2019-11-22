@@ -1,16 +1,16 @@
-name: 'Mutation testing'
+name: "Mutation testing"
 
 on:
   push:
     paths:
-      - '**.php'
+      - "**.php"
   pull_request:
     paths:
-      - '**.php'
+      - "**.php"
 
 jobs:
   php-cs-fixer:
-    name: 'Infection'
+    name: "Infection"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -19,5 +19,5 @@ jobs:
         with:
           php-version: 7.2
       - run: composer install
-      - name: 'mutation tests'
+      - name: "mutation tests"
         run: ulimit -n 4096 && phpdbg -qrr ./vendor/bin/infection -vvv --min-msi=40 --min-covered-msi=60

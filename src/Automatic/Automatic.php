@@ -79,7 +79,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     use GetGenericPropertyReaderTrait;
 
     /** @var string */
-    public const VERSION = '0.13.0';
+    public const VERSION = '0.13.1';
 
     /** @var string */
     public const LOCK_CLASSMAP = 'classmap';

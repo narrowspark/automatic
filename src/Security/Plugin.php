@@ -53,7 +53,7 @@ use function version_compare;
 class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 {
     /** @var string */
-    public const VERSION = '0.13.0';
+    public const VERSION = '0.13.1';
 
     /** @var string */
     public const COMPOSER_EXTRA_KEY = 'audit';

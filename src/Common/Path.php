@@ -3,23 +3,15 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Common;
-
-use const DIRECTORY_SEPARATOR;
-use function array_reduce;
-use function array_shift;
-use function is_dir;
-use function ltrim;
-use function rtrim;
-use function str_replace;
 
 final class Path
 {
@@ -32,8 +24,6 @@ final class Path
 
     /**
      * Create a new Path instance.
-     *
-     * @param string $workingDirectory
      */
     public function __construct(string $workingDirectory)
     {
@@ -42,37 +32,25 @@ final class Path
 
     /**
      * Get the working directory path.
-     *
-     * @return string
      */
     public function getWorkingDir(): string
     {
         return $this->workingDirectory;
     }
 
-    /**
-     * @param string $absolutePath
-     *
-     * @return string
-     */
     public function relativize(string $absolutePath): string
     {
-        $relativePath = str_replace($this->workingDirectory, '.', $absolutePath);
+        $relativePath = \str_replace($this->workingDirectory, '.', $absolutePath);
 
-        return is_dir($absolutePath) ? rtrim($relativePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : $relativePath;
+        return \is_dir($absolutePath) ? \rtrim($relativePath, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR : $relativePath;
     }
 
-    /**
-     * @param array $parts
-     *
-     * @return string
-     */
     public function concatenate(array $parts): string
     {
-        $first = array_shift($parts);
+        $first = \array_shift($parts);
 
-        return array_reduce($parts, static function (string $initial, string $next): string {
-            return rtrim($initial, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($next, DIRECTORY_SEPARATOR);
+        return \array_reduce($parts, static function (string $initial, string $next): string {
+            return \rtrim($initial, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR . \ltrim($next, \DIRECTORY_SEPARATOR);
         }, $first);
     }
 }

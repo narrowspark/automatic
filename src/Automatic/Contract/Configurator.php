@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Contract;
@@ -20,47 +20,28 @@ interface Configurator extends Resettable
 {
     /**
      * Get all registered configurators.
-     *
-     * @return array
      */
     public function getConfigurators(): array;
 
     /**
      * Add a new automatic configurator.
      *
-     * @param string $name
-     * @param string $configurator
-     *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
-     *
-     * @return void
      */
     public function add(string $name, string $configurator): void;
 
     /**
      * Check if configurator is registered.
-     *
-     * @param string $name
-     *
-     * @return bool
      */
     public function has(string $name): bool;
 
     /**
      * Configure the application after the package settings.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
-     * @return void
      */
     public function configure(PackageContract $package): void;
 
     /**
      * Unconfigure the application after the package settings.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
-     * @return void
      */
     public function unconfigure(PackageContract $package): void;
 }

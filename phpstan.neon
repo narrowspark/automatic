@@ -1,58 +1,99 @@
 includes:
-#    - vendor/pepakriz/phpstan-exception-rules/extension.neon
-    - %rootDir%/../phpstan-deprecation-rules/rules.neon
-    - %rootDir%/../phpstan-mockery/extension.neon
-    - %rootDir%/../phpstan-phpunit/extension.neon
-    - %rootDir%/../phpstan-phpunit/rules.neon
-    - %rootDir%/../phpstan-strict-rules/rules.neon
-#    - %rootDir%/../../thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
-    - %rootDir%/../phpstan/conf/bleedingEdge.neon
-    - %rootDir%/../../slam/phpstan-extensions/conf/slam-rules.neon
+    - %currentWorkingDirectory%/vendor/narrowspark/coding-standard/base_rules.neon
 
 parameters:
-    level: max
-    inferPrivatePropertyTypeFromConstructor: true
+    checkMissingIterableValueType: false
+
+    paths:
+        -  %currentWorkingDirectory%/../src
+#        -  %currentWorkingDirectory%/../tests
 
     autoload_directories:
-        - %currentWorkingDirectory%/src
+        - %currentWorkingDirectory%/../src
+        - %currentWorkingDirectory%/../tests
+
+    tmpDir: %currentWorkingDirectory%/phpstan
 
     excludes_analyse:
-        - %currentWorkingDirectory%/src/Prefetcher/Downloader/CurlDownloader.php
-        - %currentWorkingDirectory%/src/Prefetcher/Downloader/ParallelDownloader.php
-        - %currentWorkingDirectory%/src/Prefetcher/ComposerRepository.php
-        - %currentWorkingDirectory%/src/Prefetcher/Prefetcher.php
-        - %currentWorkingDirectory%/src/Prefetcher/TruncatedComposerRepository.php
-        - %currentWorkingDirectory%/src/Automatic/Configurator/Traits/AppendToFileTrait.php
+        - %currentWorkingDirectory%/../src/Prefetcher/Common/
+        - %currentWorkingDirectory%/../src/Prefetcher/ComposerRepository.php
+        - %currentWorkingDirectory%/../src/Prefetcher/Prefetcher.php
+        - %currentWorkingDirectory%/../src/Prefetcher/TruncatedComposerRepository.php
+        - %currentWorkingDirectory%/../src/Automatic/Configurator/Traits/AppendToFileTrait.php
+        - %currentWorkingDirectory%/../src/Security/Common/
+        - %currentWorkingDirectory%/../tests/Common/Fixture
+
+        - %currentWorkingDirectory%/../src/Common/Downloader/ParallelDownloader.php
 
     ignoreErrors:
         - '#should end with "Interface" suffix#'
-        # QuestionInstallationManager
-        - '#\$package of method Composer\\Package\\Version\\VersionSelector\:\:findRecommendedRequireVersion\(\) expects Composer\\Package\\PackageInterface, Composer\\Package\\PackageInterface\|true given#'
-        # ScriptExtender
-        - '#Parameter \#1 \$stream of class Symfony\\Component\\Console\\Output\\StreamOutput constructor expects resource, resource\|false given#'
 
-        - '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
+        -
+            message: '#Call to function method_exists\(\) with Symfony\\Component\\Console\\Style\\SymfonyStyle and#'
+            path: src/Security/Command/AuditCommand.php
+        -
+            message: '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
+            path: src/Security/Plugin.php
 
-        # Automatic
-        - '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'
-        - '#Call to function method_exists\(\) with Symfony\\Component\\Console\\Style\\SymfonyStyle and#'
+        -
+            message: '#does not call parent constructor from Composer\\Repository\\ComposerRepository#'
+            path: src/Prefetcher/Plugin.php
+        -
+            message: '#Should not use function "debug_backtrace", please change the code#'
+            path: src/Prefetcher/Plugin.php
+        -
+            message: '#Parameter \#1 \$file \(string\) of method Narrowspark\\Automatic\\Prefetcher\\Cache\:\:read\(\) should be contravariant with parameter \$file \(mixed\) of method Composer\\Cache\:\:read\(\)#'
+            path: src/Prefetcher/Cache.php
+        -
+            message: '#Parameter \#2 \$constraint of anonymous function has no typehint#'
+            path: src/Prefetcher/Plugin.php
 
-        # CopyFromPackageConfigurator
-        - '#Variable method call on Symfony\\Component\\Filesystem\\Filesystem#'
+        -
+            message: '#\$package of method Composer\\Package\\Version\\VersionSelector\:\:findRecommendedRequireVersion\(\) expects Composer\\Package\\PackageInterface, Composer\\Package\\PackageInterface\|true given#'
+            path: src/Common/Installer/AbstractInstallationManager.php
+        -
+            message: '#Variable property access on object#'
+            path: src/Common/Traits/GetGenericPropertyReaderTrait.php
+        -
+            message: '#Variable method call on Narrowspark\\Automatic\\Common\\Package#'
+            path: src/Common/Package.php
+        -
+            message: "#Casting to string something that's already string#"
+            path: src/Common/ScriptExtender/PhpScriptExtender.php
+        -
+            message: '#Result of \|\| is always true#'
+            path: src/Common/Downloader/Downloader.php
+        -
+            message: "#Strict comparison using !== between '/versions.json' and '/security…' will always evaluate to true#"
+            path: src/Common/Downloader/Downloader.php
+        -
+            message: '#Method Narrowspark\\Automatic\\Common\\Downloader\\Downloader\:\:fetchFile\(\) should return Narrowspark\\Automatic\\Common\\Downloader\\JsonResponse but return statement is missing#'
+            path: src/Common/Downloader/Downloader.php
+        -
+            message: '#Method Narrowspark\\Automatic\\Common\\Downloader\\Downloader\:\:fetchFileIfLastModified\(\) should return Narrowspark\\Automatic\\Common\\Downloader\\JsonResponse but return statement is missing#'
+            path: src/Common/Downloader/Downloader.php
+        -
+            message: '#Short ternary operator is not allowed. Use null coalesce operator if applicable or consider using long ternary#'
+            path: src/Common/Downloader/CurlDownloader.php
 
-        - '#Call to function method_exists\(\) with Symfony\\Component\\Filesystem\\Filesystem and#'
-        - '#Function readlink is unsafe to use\, rely on Symfony component Filesystem\:\:readlink instead#'
-
-        # EnvConfigurator - phpstan missing support
-        - '#Strict comparison using \!== between bool and null will always evaluate to true#'
-
-        # Package
-        - '#Variable method call on Narrowspark\\Automatic\\Common\\Package#'
-
-        # PhpScriptExtender
-        - "#Casting to string something that's already string#"
-
-        # GetGenericPropertyReaderTrait
-        - '#Variable property access on object#'
-
-        - '#Parameter \#2 \$constraint of anonymous function has no typehint#'
+        -
+            message: '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
+            path: src/Automatic/Operation/Uninstall.php
+        -
+            message: '#Call to an undefined method Composer\\DependencyResolver\\Operation\\OperationInterface\:\:getPackage#'
+            path: src/Automatic/Operation/Install.php
+        -
+            message: '#Should not use function "debug_backtrace", please change the cod#'
+            path: src/Automatic/Automatic.php
+        -
+            message: '#Should not use node with type "Expr_Exit", please change the code#'
+            path: src/Automatic/SkeletonGenerator.php
+        -
+            message: '#Parameter \#1 \$stream of class Symfony\\Component\\Console\\Output\\StreamOutput constructor expects resource, resource\|false given#'
+            path: src/Automatic/ScriptExecutor.php
+        -
+            message: '#Variable method call on Symfony\\Component\\Filesystem\\Filesystem#'
+            path: src/Automatic/Configurator/CopyFromPackageConfigurator.php
+        -
+            message: '#Anonymous function should have native return typehint "string"#'
+            path: src/Automatic/Installer/InstallationManager.php

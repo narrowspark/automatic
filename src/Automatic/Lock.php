@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic;
@@ -16,10 +16,6 @@ namespace Narrowspark\Automatic;
 use Composer\Json\JsonFile;
 use Exception;
 use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
-use function array_key_exists;
-use function count;
-use function is_array;
-use function ksort;
 
 class Lock implements ResettableContract
 {
@@ -39,8 +35,6 @@ class Lock implements ResettableContract
 
     /**
      * Create a new Lock instance.
-     *
-     * @param string $lockFile
      */
     public function __construct(string $lockFile)
     {
@@ -53,22 +47,17 @@ class Lock implements ResettableContract
 
     /**
      * Check if key exists in lock file.
-     *
-     * @param string      $mainKey
-     * @param null|string $name
-     *
-     * @return bool
      */
     public function has(string $mainKey, ?string $name = null): bool
     {
-        $mainCheck = array_key_exists($mainKey, $this->lock);
+        $mainCheck = \array_key_exists($mainKey, $this->lock);
 
         if ($name === null) {
             return $mainCheck;
         }
 
-        if ($mainCheck === true && is_array($this->lock[$mainKey])) {
-            return array_key_exists($name, $this->lock[$mainKey]);
+        if ($mainCheck === true && \is_array($this->lock[$mainKey])) {
+            return \array_key_exists($name, $this->lock[$mainKey]);
         }
 
         return false;
@@ -77,10 +66,7 @@ class Lock implements ResettableContract
     /**
      * Add a value to the lock file.
      *
-     * @param string            $mainKey
      * @param null|array|string $data
-     *
-     * @return void
      */
     public function add(string $mainKey, $data): void
     {
@@ -90,15 +76,11 @@ class Lock implements ResettableContract
     /**
      * Add sub value to the lock file.
      *
-     * @param string            $mainKey
-     * @param string            $name
      * @param null|array|string $data
-     *
-     * @return void
      */
     public function addSub(string $mainKey, string $name, $data): void
     {
-        if (! array_key_exists($mainKey, $this->lock)) {
+        if (! \array_key_exists($mainKey, $this->lock)) {
             $this->lock[$mainKey] = [];
         }
 
@@ -108,19 +90,16 @@ class Lock implements ResettableContract
     /**
      * Get package data found in the lock file.
      *
-     * @param string      $mainKey
-     * @param null|string $name
-     *
      * @return null|array|string
      */
     public function get(string $mainKey, ?string $name = null)
     {
-        if (array_key_exists($mainKey, $this->lock)) {
+        if (\array_key_exists($mainKey, $this->lock)) {
             if ($name === null) {
                 return $this->lock[$mainKey];
             }
 
-            if (is_array($this->lock[$mainKey]) && array_key_exists($name, $this->lock[$mainKey])) {
+            if (\is_array($this->lock[$mainKey]) && \array_key_exists($name, $this->lock[$mainKey])) {
                 return $this->lock[$mainKey][$name];
             }
         }
@@ -130,9 +109,6 @@ class Lock implements ResettableContract
 
     /**
      * Remove a package from lock file.
-     *
-     * @param string      $mainKey
-     * @param null|string $name
      */
     public function remove(string $mainKey, ?string $name = null): void
     {
@@ -140,7 +116,7 @@ class Lock implements ResettableContract
             unset($this->lock[$mainKey]);
         }
 
-        if (array_key_exists($mainKey, $this->lock)) {
+        if (\array_key_exists($mainKey, $this->lock)) {
             unset($this->lock[$mainKey][$name]);
         }
     }
@@ -149,12 +125,10 @@ class Lock implements ResettableContract
      * Write a lock file.
      *
      * @throws Exception
-     *
-     * @return void
      */
     public function write(): void
     {
-        ksort($this->lock);
+        \ksort($this->lock);
 
         $this->json->write($this->lock);
 
@@ -163,12 +137,10 @@ class Lock implements ResettableContract
 
     /**
      * Read the lock file.
-     *
-     * @return array
      */
     public function read(): array
     {
-        if (count($this->lock) === 0) {
+        if (\count($this->lock) === 0) {
             $this->lock = $this->json->read();
         }
 

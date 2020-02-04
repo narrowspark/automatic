@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Operation;
@@ -24,15 +24,6 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\ScriptExecutor;
-use const DIRECTORY_SEPARATOR;
-use const SORT_STRING;
-use function array_unshift;
-use function class_exists;
-use function count;
-use function file_get_contents;
-use function sort;
-use function sprintf;
-use function strpos;
 
 /**
  * @internal
@@ -86,7 +77,7 @@ final class Install extends AbstractOperation
         $classes = $this->findClassesInAutomaticFolder($package, $name);
 
         foreach ($classes as $class => $path) {
-            if (! class_exists($class)) {
+            if (! \class_exists($class)) {
                 require_once $path;
             }
         }
@@ -109,17 +100,13 @@ final class Install extends AbstractOperation
 
     /**
      * Get a pretty package version.
-     *
-     * @param \Composer\Package\PackageInterface $package
-     *
-     * @return string
      */
     private function getPackageVersion(PackageInterface $package): string
     {
         $version = $package->getPrettyVersion();
         $extra = $package->getExtra();
 
-        if (isset($extra['branch-alias']) && strpos($version, 'dev-') === 0) {
+        if (isset($extra['branch-alias']) && \strpos($version, 'dev-') === 0) {
             $branchAliases = $extra['branch-alias'];
 
             if (
@@ -136,12 +123,7 @@ final class Install extends AbstractOperation
     /**
      * Create a automatic package with the composer package data.
      *
-     * @param \Composer\Package\PackageInterface $composerPackage
-     * @param string                             $automaticFile
-     *
      * @throws Exception
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
      */
     private function createAutomaticPackage(PackageInterface $composerPackage, string $automaticFile): PackageContract
     {
@@ -151,14 +133,14 @@ final class Install extends AbstractOperation
         foreach ($composerPackage->getRequires() as $link) {
             $target = $link->getTarget();
 
-            if ($target === 'php' || strpos($target, 'ext-') === 0) {
+            if ($target === 'php' || \strpos($target, 'ext-') === 0) {
                 continue;
             }
 
             $requires[] = $target;
         }
 
-        sort($requires, SORT_STRING);
+        \sort($requires, \SORT_STRING);
 
         $package->setRequires($requires);
 
@@ -179,7 +161,7 @@ final class Install extends AbstractOperation
         $package->setAutoload($composerPackage->getAutoload());
 
         if ($this->filesystem->exists($automaticFile)) {
-            $package->setConfig(JsonFile::parseJson((string) file_get_contents($automaticFile)));
+            $package->setConfig(JsonFile::parseJson((string) \file_get_contents($automaticFile)));
         } else {
             $package->setConfig($composerPackage->getExtra()['automatic']);
         }
@@ -189,28 +171,21 @@ final class Install extends AbstractOperation
 
     /**
      * Get the automatic.json file path from package.
-     *
-     * @param \Composer\Package\PackageInterface $composerPackage
-     *
-     * @return string
      */
     private function getAutomaticFilePath(PackageInterface $composerPackage): string
     {
-        return $this->vendorDir . DIRECTORY_SEPARATOR . $composerPackage->getName() . DIRECTORY_SEPARATOR . 'automatic.json';
+        return $this->vendorDir . \DIRECTORY_SEPARATOR . $composerPackage->getName() . \DIRECTORY_SEPARATOR . 'automatic.json';
     }
 
     /**
      * Add package script executors.
      *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param array                                          $classes
-     * @param string                                         $name
-     *
-     * @return void
+     * @param array  $classes
+     * @param string $name
      */
     private function addScriptExtenders(PackageContract $package, $classes, $name): void
     {
-        if ($package->hasConfig(ScriptExecutor::TYPE) && count($classes) !== 0) {
+        if ($package->hasConfig(ScriptExecutor::TYPE) && \count($classes) !== 0) {
             $extenders = [];
             $notFoundExtenders = [];
 
@@ -222,12 +197,12 @@ final class Install extends AbstractOperation
                 }
             }
 
-            if (count($notFoundExtenders) !== 0) {
-                $count = count($notFoundExtenders);
+            if (\count($notFoundExtenders) !== 0) {
+                $count = \count($notFoundExtenders);
 
-                array_unshift(
+                \array_unshift(
                     $notFoundExtenders,
-                    sprintf('%s script-extender%s not found in [%s]', $count, ($count <= 1 ? ' was' : 's were'), $name)
+                    \sprintf('%s script-extender%s not found in [%s]', $count, ($count <= 1 ? ' was' : 's were'), $name)
                 );
 
                 $this->io->write($notFoundExtenders, true, IOInterface::VERBOSE);

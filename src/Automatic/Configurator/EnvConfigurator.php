@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Configurator;
@@ -17,21 +17,6 @@ use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Configurator\Traits\AppendToFileTrait;
-use const DIRECTORY_SEPARATOR;
-use const FILTER_NULL_ON_FAILURE;
-use const FILTER_VALIDATE_BOOLEAN;
-use function file_get_contents;
-use function filter_var;
-use function is_file;
-use function is_numeric;
-use function is_string;
-use function preg_replace;
-use function sprintf;
-use function str_replace;
-use function strpbrk;
-use function strpos;
-use function substr;
-use function var_export;
 
 final class EnvConfigurator extends AbstractConfigurator
 {
@@ -52,42 +37,42 @@ final class EnvConfigurator extends AbstractConfigurator
     {
         $this->write('Added environment variable defaults');
 
-        $distenv = $this->path->getWorkingDir() . DIRECTORY_SEPARATOR . '.env.dist';
+        $distenv = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env.dist';
 
-        if (! is_file($distenv) || $this->isFileMarked($package->getPrettyName(), $distenv)) {
+        if (! \is_file($distenv) || $this->isFileMarked($package->getPrettyName(), $distenv)) {
             return;
         }
 
         $data = '';
 
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $key => $value) {
-            if (strpos($key, '#') === 0 && is_numeric(substr($key, 1))) {
+            if (\strpos($key, '#') === 0 && \is_numeric(\substr($key, 1))) {
                 $data .= '# ' . $value . "\n";
 
                 continue;
             }
 
-            if (is_string($value)) {
+            if (\is_string($value)) {
                 $value = self::expandTargetDir($this->options, $value);
-            } elseif (filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) !== null) {
-                $value = var_export($value, true);
+            } elseif (\filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE) !== null) {
+                $value = \var_export($value, true);
             }
 
-            if (strpbrk($value, " \t\n&!\"") !== false) {
-                $value = '"' . str_replace(['\\', '"', "\t", "\n"], ['\\\\', '\\"', '\t', '\n'], $value) . '"';
+            if (\strpbrk($value, " \t\n&!\"") !== false) {
+                $value = '"' . \str_replace(['\\', '"', "\t", "\n"], ['\\\\', '\\"', '\t', '\n'], $value) . '"';
             }
 
             $data .= $key . '=' . $value . "\n";
         }
 
-        if (! $this->filesystem->exists($this->path->getWorkingDir() . DIRECTORY_SEPARATOR . '.env')) {
-            $this->filesystem->copy($distenv, $this->path->getWorkingDir() . DIRECTORY_SEPARATOR . '.env');
+        if (! $this->filesystem->exists($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env')) {
+            $this->filesystem->copy($distenv, $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env');
         }
 
         $data = $this->markData($package->getPrettyName(), $data);
 
         $this->appendToFile($distenv, $data);
-        $this->appendToFile($this->path->getWorkingDir() . DIRECTORY_SEPARATOR . '.env', $data);
+        $this->appendToFile($this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . '.env', $data);
     }
 
     /**
@@ -98,7 +83,7 @@ final class EnvConfigurator extends AbstractConfigurator
         $this->write('Remove environment variables');
 
         foreach (['.env', '.env.dist'] as $file) {
-            $env = $this->path->getWorkingDir() . DIRECTORY_SEPARATOR . $file;
+            $env = $this->path->getWorkingDir() . \DIRECTORY_SEPARATOR . $file;
 
             // @codeCoverageIgnoreStart
             if (! $this->filesystem->exists($env)) {
@@ -106,10 +91,10 @@ final class EnvConfigurator extends AbstractConfigurator
             }
             // @codeCoverageIgnoreEnd
             $count = 0;
-            $contents = preg_replace(
-                sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), "\n"),
+            $contents = \preg_replace(
+                \sprintf('{###> %s ###.*###< %s ###%s+}s', $package->getPrettyName(), $package->getPrettyName(), "\n"),
                 '',
-                (string) file_get_contents($env),
+                (string) \file_get_contents($env),
                 -1,
                 $count
             );
@@ -120,7 +105,7 @@ final class EnvConfigurator extends AbstractConfigurator
             }
             // @codeCoverageIgnoreEnd
 
-            $this->write(sprintf('Removing environment variables from %s', $file));
+            $this->write(\sprintf('Removing environment variables from %s', $file));
 
             $this->filesystem->dumpFile($env, (string) $contents);
         }

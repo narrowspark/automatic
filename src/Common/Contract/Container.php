@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Common\Contract;
@@ -22,17 +22,12 @@ interface Container
      *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException if no entry is found
      *
-     * @return mixed
+     * @return mixed entry
      */
     public function get(string $id);
 
     /**
      * Set a new entry to the container.
-     *
-     * @param string   $id
-     * @param callable $callback
-     *
-     * @return void
      */
     public function set(string $id, callable $callback): void;
 
@@ -44,15 +39,11 @@ interface Container
      * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
      *
      * @param string $id identifier of the entry to look for
-     *
-     * @return bool
      */
     public function has(string $id): bool;
 
     /**
      * Returns all container entries.
-     *
-     * @return array
      */
     public function getAll(): array;
 }

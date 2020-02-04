@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Configurator;
@@ -17,6 +17,7 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Mockery;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
@@ -25,15 +26,13 @@ use Narrowspark\Automatic\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Automatic\QuestionFactory;
 use Narrowspark\Automatic\Test\Fixture\ComposerJsonFactory;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
-use function file_put_contents;
-use function json_encode;
-use function sprintf;
-use function unlink;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Configurator\ComposerScriptsConfigurator
+ *
+ * @medium
  */
 final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 {
@@ -61,11 +60,11 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->jsonMock = $this->mock(JsonFile::class);
-        $this->jsonManipulatorMock = $this->mock(JsonManipulator::class);
+        $this->jsonMock = Mockery::mock(JsonFile::class);
+        $this->jsonManipulatorMock = Mockery::mock(JsonManipulator::class);
 
         $this->composer = new Composer();
-        $this->ioMock = $this->mock(IOInterface::class);
+        $this->ioMock = Mockery::mock(IOInterface::class);
 
         $this->configurator = new ComposerScriptsConfigurator($this->composer, $this->ioMock, ['self-dir' => 'test']);
 
@@ -101,7 +100,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ->andReturn($composerRootJsonData);
 
         $composerJsonPath = __DIR__ . '/composer.json';
-        file_put_contents($composerJsonPath, json_encode(['extra' => []]));
+        \file_put_contents($composerJsonPath, \json_encode(['extra' => []]));
 
         $this->jsonMock->shouldReceive('getPath')
             ->once()
@@ -129,7 +128,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
 
-        unlink($composerJsonPath);
+        \unlink($composerJsonPath);
     }
 
     public function testConfigureWithUpdate(): void
@@ -153,7 +152,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $composerJsonPath = __DIR__ . '/composer.json';
 
-        file_put_contents($composerJsonPath, json_encode(['extra' => []]));
+        \file_put_contents($composerJsonPath, \json_encode(['extra' => []]));
 
         $this->jsonMock->shouldReceive('getPath')
             ->once()
@@ -179,7 +178,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($package);
 
-        unlink($composerJsonPath);
+        \unlink($composerJsonPath);
     }
 
     public function testConfigureWithBlacklist(): void
@@ -226,7 +225,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
             ->andReturn($composerRootJsonData);
 
         $composerJsonPath = __DIR__ . '/composer.json';
-        file_put_contents($composerJsonPath, json_encode(['extra' => []]));
+        \file_put_contents($composerJsonPath, \json_encode(['extra' => []]));
 
         $this->jsonMock->shouldReceive('getPath')
             ->once()
@@ -254,15 +253,15 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->ioMock->shouldReceive('write')
             ->once()
-            ->with(sprintf(
-                '<warning>    Found not allowed composer events [notallowed] in [%s]</>' . "\n",
+            ->with(\sprintf(
+                "<warning>    Found not allowed composer events [notallowed] in [%s]</>\n",
                 $package->getName()
             ))
             ->andReturn(true);
 
         $this->configurator->configure($package);
 
-        unlink($composerJsonPath);
+        \unlink($composerJsonPath);
     }
 
     public function testConfigureWithoutScripts(): void
@@ -314,7 +313,7 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
 
         $this->configurator->unconfigure($package);
 
-        unlink($composerJsonPath);
+        \unlink($composerJsonPath);
     }
 
     /**

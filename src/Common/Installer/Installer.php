@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Common\Installer;
@@ -37,12 +37,6 @@ final class Installer
 
     /**
      * Create a configured Composer Installer.
-     *
-     * @param \Composer\IO\IOInterface                        $io
-     * @param \Composer\Composer                              $composer
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     *
-     * @return \Composer\Installer
      */
     public static function create(IOInterface $io, Composer $composer, InputInterface $input): BaseInstaller
     {
@@ -87,9 +81,6 @@ final class Installer
     /**
      * Returns preferSource and preferDist values based on the configuration.
      *
-     * @param \Composer\Config                                $config
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     *
      * @return bool[] An array composed of the preferSource and preferDist values
      */
     private static function getPreferredInstallOptions(Config $config, InputInterface $input): array
@@ -120,12 +111,6 @@ final class Installer
 
     /**
      * Returns default if options is not found.
-     *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param string                                          $name
-     * @param bool                                            $default
-     *
-     * @return bool
      */
     private static function getOption(InputInterface $input, string $name, bool $default = false): bool
     {

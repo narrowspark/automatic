@@ -3,30 +3,19 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Prefetcher;
 
 use Composer\Cache as BaseComposerCache;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
-use function is_array;
-use function is_string;
-use function json_decode;
-use function json_encode;
 
-/**
- * Ported from symfony flex, see original.
- *
- * @see https://github.com/symfony/flex/blob/master/src/Cache.php
- *
- * (c) Nicolas Grekas <p@tchwork.com>
- */
 final class Cache extends BaseComposerCache
 {
     /**
@@ -38,10 +27,6 @@ final class Cache extends BaseComposerCache
 
     /**
      * Set a tags manager instance.
-     *
-     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
-     *
-     * @return void
      */
     public function setTagsManager(LegacyTagsManagerContract $tagsManager): void
     {
@@ -49,7 +34,7 @@ final class Cache extends BaseComposerCache
     }
 
     /**
-     * @param mixed $file
+     * @param string $file
      *
      * @return bool|string
      */
@@ -57,8 +42,8 @@ final class Cache extends BaseComposerCache
     {
         $content = parent::read($file);
 
-        if ($this->tagsManager !== null && is_string($content) && $this->tagsManager->hasProvider($file) && is_array($data = json_decode($content, true))) {
-            $content = json_encode($this->removeLegacyTags($data));
+        if ($this->tagsManager !== null && \is_string($content) && $this->tagsManager->hasProvider($file) && \is_array($data = \json_decode($content, true))) {
+            $content = \json_encode($this->removeLegacyTags($data));
         }
 
         return $content;
@@ -66,10 +51,6 @@ final class Cache extends BaseComposerCache
 
     /**
      * Helper to remove legacy tags.
-     *
-     * @param array $data
-     *
-     * @return array
      */
     public function removeLegacyTags(array $data): array
     {

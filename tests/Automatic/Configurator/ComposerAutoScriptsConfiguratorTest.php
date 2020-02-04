@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Configurator;
@@ -17,18 +17,20 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Mockery;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Configurator\ComposerAutoScriptsConfigurator;
 use Narrowspark\Automatic\Test\Fixture\ComposerJsonFactory;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
-use function unlink;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Configurator\ComposerAutoScriptsConfigurator
+ *
+ * @medium
  */
 final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 {
@@ -56,11 +58,11 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->jsonMock = $this->mock(JsonFile::class);
-        $this->jsonManipulatorMock = $this->mock(JsonManipulator::class);
+        $this->jsonMock = Mockery::mock(JsonFile::class);
+        $this->jsonManipulatorMock = Mockery::mock(JsonManipulator::class);
 
         $this->composer = new Composer();
-        $this->ioMock = $this->mock(IOInterface::class);
+        $this->ioMock = Mockery::mock(IOInterface::class);
 
         $this->configurator = new ComposerAutoScriptsConfigurator($this->composer, $this->ioMock, ['self-dir' => 'test']);
 
@@ -85,7 +87,7 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 
         $script = ['php -v' => 'script'];
 
-        $packageMock = $this->mock(PackageContract::class);
+        $packageMock = Mockery::mock(PackageContract::class);
         $packageMock->shouldReceive('getConfig')
             ->once()
             ->with(ConfiguratorContract::TYPE, ComposerAutoScriptsConfigurator::getName())
@@ -111,7 +113,7 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 
         $this->configurator->configure($packageMock);
 
-        unlink($composerJsonPath);
+        \unlink($composerJsonPath);
     }
 
     public function testUnconfigure(): void
@@ -119,7 +121,7 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
         $composerRootJsonString = ComposerJsonFactory::createComposerScriptJson('unconfigure', ['auto-scripts' => ['php -v' => 'script', 'list' => 'cerebro-cmd']]);
         $composerRootJsonData = ComposerJsonFactory::jsonToArray($composerRootJsonString);
 
-        $packageMock = $this->mock(PackageContract::class);
+        $packageMock = Mockery::mock(PackageContract::class);
         $packageMock->shouldReceive('getConfig')
             ->once()
             ->with(ConfiguratorContract::TYPE, ComposerAutoScriptsConfigurator::getName())
@@ -143,7 +145,7 @@ final class ComposerAutoScriptsConfiguratorTest extends MockeryTestCase
 
         $this->configurator->unconfigure($packageMock);
 
-        unlink($composerJsonPath);
+        \unlink($composerJsonPath);
     }
 
     /**

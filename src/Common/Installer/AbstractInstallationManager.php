@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Common\Installer;
@@ -32,9 +32,6 @@ use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use function array_merge;
-use function file_get_contents;
-use function sprintf;
 
 abstract class AbstractInstallationManager
 {
@@ -125,10 +122,6 @@ abstract class AbstractInstallationManager
 
     /**
      * Use this class to create a new Installation manager.
-     *
-     * @param \Composer\Composer                              $composer
-     * @param \Composer\IO\IOInterface                        $io
-     * @param \Symfony\Component\Console\Input\InputInterface $input
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input)
     {
@@ -136,15 +129,15 @@ abstract class AbstractInstallationManager
         $this->io = $io;
         $this->input = $input;
         $this->jsonFile = new JsonFile(Factory::getComposerFile());
-        $this->composerBackup = (string) file_get_contents($this->jsonFile->getPath());
+        $this->composerBackup = (string) \file_get_contents($this->jsonFile->getPath());
         $this->filesystem = new Filesystem();
 
         $this->rootPackage = $this->composer->getPackage();
-        $this->stability = $this->rootPackage->getMinimumStability() ?: 'stable';
+        $this->stability = $this->rootPackage->getMinimumStability() ?? 'stable';
 
         $pool = new Pool($this->stability);
         $pool->addRepository(
-            new CompositeRepository(array_merge([new PlatformRepository()], RepositoryFactory::defaultRepos($io)))
+            new CompositeRepository(\array_merge([new PlatformRepository()], RepositoryFactory::defaultRepos($io)))
         );
 
         $this->versionSelector = new VersionSelector($pool);
@@ -155,8 +148,6 @@ abstract class AbstractInstallationManager
      * Get configured installer instance.
      *
      * @codeCoverageIgnore
-     *
-     * @return \Composer\Installer
      */
     protected function getInstaller(): BaseInstaller
     {
@@ -166,11 +157,7 @@ abstract class AbstractInstallationManager
     /**
      * Try to find the best version fot the package.
      *
-     * @param string $name
-     *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException
-     *
-     * @return string
      */
     protected function findBestVersionForPackage(string $name): string
     {
@@ -178,7 +165,7 @@ abstract class AbstractInstallationManager
         $package = $this->versionSelector->findBestCandidate($name, null, null, 'stable');
 
         if ($package === false) {
-            throw new InvalidArgumentException(sprintf('Could not find package [%s] at any version for your minimum-stability [%s]. Check the package spelling or your minimum-stability.', $name, $this->stability));
+            throw new InvalidArgumentException(\sprintf('Could not find package [%s] at any version for your minimum-stability [%s]. Check the package spelling or your minimum-stability.', $name, $this->stability));
         }
 
         return $this->versionSelector->findRecommendedRequireVersion($package);
@@ -186,12 +173,6 @@ abstract class AbstractInstallationManager
 
     /**
      * Update the root package require and dev-require.
-     *
-     * @param array $requires
-     * @param array $devRequires
-     * @param int   $type
-     *
-     * @return \Composer\Package\RootPackageInterface
      */
     protected function updateRootComposerJson(array $requires, array $devRequires, int $type): RootPackageInterface
     {
@@ -206,20 +187,14 @@ abstract class AbstractInstallationManager
     /**
      * Manipulate root composer.json with the new packages and dump it.
      *
-     * @param array $requires
-     * @param array $devRequires
-     * @param int   $type
-     *
      * @throws Exception happens in the JsonFile class
-     *
-     * @return void
      */
     protected function updateComposerJson(array $requires, array $devRequires, int $type): void
     {
         $this->io->writeError('Updating composer.json');
 
         if ($type === self::ADD) {
-            $jsonManipulator = new JsonManipulator(file_get_contents($this->jsonFile->getPath()));
+            $jsonManipulator = new JsonManipulator(\file_get_contents($this->jsonFile->getPath()));
             $sortPackages = $this->composer->getConfig()->get('sort-packages') ?? false;
 
             foreach ($requires as $name => $version) {
@@ -249,12 +224,7 @@ abstract class AbstractInstallationManager
     /**
      * Install selected packages.
      *
-     * @param \Composer\Package\RootPackageInterface $rootPackage
-     * @param array                                  $whitelistPackages
-     *
      * @throws Exception
-     *
-     * @return int
      */
     protected function runInstaller(RootPackageInterface $rootPackage, array $whitelistPackages): int
     {
@@ -275,16 +245,11 @@ abstract class AbstractInstallationManager
      */
     protected function getRootRequires(): array
     {
-        return array_merge($this->rootPackage->getRequires(), $this->rootPackage->getDevRequires());
+        return \array_merge($this->rootPackage->getRequires(), $this->rootPackage->getDevRequires());
     }
 
     /**
      * Update the root required packages.
-     *
-     * @param array $packages
-     * @param int   $type
-     *
-     * @return void
      */
     protected function updateRootPackageRequire(array $packages, int $type): void
     {
@@ -299,11 +264,6 @@ abstract class AbstractInstallationManager
 
     /**
      * Update the root dev-required packages.
-     *
-     * @param array $packages
-     * @param int   $type
-     *
-     * @return void
      */
     protected function updateRootPackageDevRequire(array $packages, int $type): void
     {
@@ -318,12 +278,6 @@ abstract class AbstractInstallationManager
 
     /**
      * Manipulates the given requires with the new added packages.
-     *
-     * @param array $packages
-     * @param int   $type
-     * @param array $requires
-     *
-     * @return array
      */
     protected function manipulateRootPackage(array $packages, int $type, array $requires): array
     {

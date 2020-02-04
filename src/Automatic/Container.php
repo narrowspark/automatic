@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic;
@@ -31,8 +31,6 @@ use Narrowspark\Automatic\Operation\Uninstall;
 use Narrowspark\Automatic\ScriptExtender\ScriptExtender;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use function array_merge;
-use function rtrim;
 
 /**
  * @internal
@@ -43,29 +41,26 @@ final class Container extends AbstractContainer
 
     /**
      * Instantiate the container.
-     *
-     * @param \Composer\Composer       $composer
-     * @param \Composer\IO\IOInterface $io
      */
     public function __construct(Composer $composer, IOInterface $io)
     {
         $genericPropertyReader = $this->getGenericPropertyReader();
 
         parent::__construct([
-            Composer::class => static function () use ($composer) {
+            Composer::class => static function () use ($composer): Composer {
                 return $composer;
             },
-            Config::class => static function (ContainerContract $container) {
+            Config::class => static function (ContainerContract $container): Config {
                 return $container->get(Composer::class)->getConfig();
             },
-            IOInterface::class => static function () use ($io) {
+            IOInterface::class => static function () use ($io): IOInterface {
                 return $io;
             },
-            'vendor-dir' => static function (ContainerContract $container) {
-                return rtrim($container->get(Config::class)->get('vendor-dir'), '/');
+            'vendor-dir' => static function (ContainerContract $container): string {
+                return \rtrim($container->get(Config::class)->get('vendor-dir'), '/');
             },
-            'composer-extra' => static function (ContainerContract $container) {
-                return array_merge(
+            'composer-extra' => static function (ContainerContract $container): array {
+                return \array_merge(
                     [
                         Automatic::COMPOSER_EXTRA_KEY => [
                             'allow-auto-install' => false,
@@ -75,16 +70,16 @@ final class Container extends AbstractContainer
                     $container->get(Composer::class)->getPackage()->getExtra()
                 );
             },
-            InputInterface::class => static function (ContainerContract $container) use ($genericPropertyReader) {
+            InputInterface::class => static function (ContainerContract $container) use ($genericPropertyReader): InputInterface {
                 return $genericPropertyReader($container->get(IOInterface::class), 'input');
             },
-            Lock::class => static function () {
+            Lock::class => static function (): Lock {
                 return new Lock(Automatic::getAutomaticLockFile());
             },
-            ClassFinder::class => static function (ContainerContract $container) {
+            ClassFinder::class => static function (ContainerContract $container): ClassFinder {
                 return new ClassFinder($container->get('vendor-dir'));
             },
-            ConfiguratorInstaller::class => static function (ContainerContract $container) {
+            ConfiguratorInstaller::class => static function (ContainerContract $container): ConfiguratorInstaller {
                 return new ConfiguratorInstaller(
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
@@ -92,7 +87,7 @@ final class Container extends AbstractContainer
                     $container->get(ClassFinder::class)
                 );
             },
-            SkeletonInstaller::class => static function (ContainerContract $container) {
+            SkeletonInstaller::class => static function (ContainerContract $container): SkeletonInstaller {
                 return new SkeletonInstaller(
                     $container->get(IOInterface::class),
                     $container->get(Composer::class),
@@ -100,21 +95,21 @@ final class Container extends AbstractContainer
                     $container->get(ClassFinder::class)
                 );
             },
-            ConfiguratorContract::class => static function (ContainerContract $container) {
+            ConfiguratorContract::class => static function (ContainerContract $container): ConfiguratorContract {
                 return new Configurator(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
                     $container->get('composer-extra')
                 );
             },
-            PackageConfiguratorContract::class => static function (ContainerContract $container) {
+            PackageConfiguratorContract::class => static function (ContainerContract $container): PackageConfiguratorContract {
                 return new PackageConfigurator(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
                     $container->get('composer-extra')
                 );
             },
-            Install::class => static function (ContainerContract $container) {
+            Install::class => static function (ContainerContract $container): Install {
                 return new Install(
                     $container->get('vendor-dir'),
                     $container->get(Lock::class),
@@ -124,7 +119,7 @@ final class Container extends AbstractContainer
                     $container->get(ClassFinder::class)
                 );
             },
-            Uninstall::class => static function (ContainerContract $container) {
+            Uninstall::class => static function (ContainerContract $container): Uninstall {
                 return new Uninstall(
                     $container->get('vendor-dir'),
                     $container->get(Lock::class),
@@ -134,7 +129,7 @@ final class Container extends AbstractContainer
                     $container->get(ClassFinder::class)
                 );
             },
-            ScriptExecutor::class => static function (ContainerContract $container) {
+            ScriptExecutor::class => static function (ContainerContract $container): ScriptExecutor {
                 $scriptExecutor = new ScriptExecutor(
                     $container->get(Composer::class),
                     $container->get(IOInterface::class),
@@ -147,7 +142,7 @@ final class Container extends AbstractContainer
 
                 return $scriptExecutor;
             },
-            Filesystem::class => static function () {
+            Filesystem::class => static function (): Filesystem {
                 return new Filesystem();
             },
         ]);

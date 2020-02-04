@@ -3,18 +3,19 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
+use Mockery;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\Automatic\Test\Fixture\MockConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -41,14 +42,14 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->composerMock = $this->mock(Composer::class);
-        $this->ioMock = $this->mock(IOInterface::class);
+        $this->composerMock = Mockery::mock(Composer::class);
+        $this->ioMock = Mockery::mock(IOInterface::class);
 
         $configurator = $this->getConfiguratorClass();
         $this->configurator = new $configurator($this->composerMock, $this->ioMock, []);
     }
 
-    public function testAdd(): void
+    final public function testAdd(): void
     {
         self::assertFalse($this->configurator->has(MockConfigurator::getName()));
 
@@ -57,7 +58,7 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
         self::assertTrue($this->configurator->has(MockConfigurator::getName()));
     }
 
-    public function testAddWithExistingConfiguratorName(): void
+    final public function testAddWithExistingConfiguratorName(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Configurator with the name [' . MockConfigurator::getName() . '] already exists.');
@@ -66,7 +67,7 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
         $this->configurator->add(MockConfigurator::getName(), MockConfigurator::class);
     }
 
-    public function testAddWithoutConfiguratorContractClass(): void
+    final public function testAddWithoutConfiguratorContractClass(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The class [stdClass] must implement the interface [\\Narrowspark\\Automatic\\Common\\Contract\\Configurator].');
@@ -74,7 +75,7 @@ abstract class AbstractConfiguratorTest extends MockeryTestCase
         $this->configurator->add('test', stdClass::class);
     }
 
-    public function testClear(): void
+    final public function testClear(): void
     {
         $this->configurator->add(MockConfigurator::getName(), MockConfigurator::class);
 

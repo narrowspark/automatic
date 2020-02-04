@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Installer;
@@ -21,31 +21,21 @@ use Composer\Repository\RepositoryManager;
 use Mockery;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Installer\InstallationManager;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
+use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use PHPUnit\Framework\Assert;
-use const DIRECTORY_SEPARATOR;
-use function array_keys;
-use function array_map;
-use function dirname;
-use function file_put_contents;
-use function glob;
-use function is_dir;
-use function json_encode;
-use function mkdir;
-use function putenv;
-use function rmdir;
-use function sprintf;
-use function unlink;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Common\Installer\AbstractInstallationManager
+ * @covers \Narrowspark\Automatic\Installer\InstallationManager
+ *
+ * @medium
  */
 final class InstallationManagerTest extends MockeryTestCase
 {
-    use ArrangeComposerClasses;
+    use ArrangeComposerClassesTrait;
 
     /** @var \Composer\Package\Package|\Mockery\MockInterface */
     private $rootPackageMock;
@@ -62,18 +52,18 @@ final class InstallationManagerTest extends MockeryTestCase
 
         $this->composerCachePath = __DIR__ . '/AutomaticTest';
 
-        @mkdir($this->composerCachePath);
-        putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
+        @\mkdir($this->composerCachePath);
+        \putenv('COMPOSER_CACHE_DIR=' . $this->composerCachePath);
 
         $this->arrangeComposerClasses();
 
-        $this->rootPackageMock = $this->mock(RootPackageInterface::class);
+        $this->rootPackageMock = Mockery::mock(RootPackageInterface::class);
         $this->rootPackageMock->shouldReceive('getMinimumStability')
             ->andReturn(null);
 
-        $this->localRepositoryMock = $this->mock(RepositoryInterface::class);
+        $this->localRepositoryMock = Mockery::mock(RepositoryInterface::class);
 
-        $repositoryMock = $this->mock(RepositoryManager::class);
+        $repositoryMock = Mockery::mock(RepositoryManager::class);
         $repositoryMock->shouldReceive('getLocalRepository')
             ->once()
             ->andReturn($this->localRepositoryMock);
@@ -97,19 +87,22 @@ final class InstallationManagerTest extends MockeryTestCase
     {
         parent::tearDown();
 
-        putenv('COMPOSER_CACHE_DIR=');
-        putenv('COMPOSER_CACHE_DIR');
+        \putenv('COMPOSER_CACHE_DIR=');
+        \putenv('COMPOSER_CACHE_DIR');
 
-        $narrowsparkPath = __DIR__ . DIRECTORY_SEPARATOR . 'narrowspark';
+        $narrowsparkPath = __DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark';
 
         $this->delete($this->composerCachePath);
         $this->delete($narrowsparkPath);
 
-        @unlink($this->composerCachePath . DIRECTORY_SEPARATOR . '.htaccess');
-        @rmdir($this->composerCachePath);
-        @rmdir($narrowsparkPath);
+        @\unlink($this->composerCachePath . \DIRECTORY_SEPARATOR . '.htaccess');
+        @\rmdir($this->composerCachePath);
+        @\rmdir($narrowsparkPath);
     }
 
+    /**
+     * @group network
+     */
     public function testInstallWithoutRequireAndRequireDev(): void
     {
         $this->ioMock->shouldReceive('writeError')
@@ -129,14 +122,15 @@ final class InstallationManagerTest extends MockeryTestCase
         $manager->install([]);
     }
 
+    /**
+     * @group network
+     */
     public function testInstallWithRequireAndNoPackageVersion(): void
     {
-        $path = __DIR__ . '/Fixture/composer.json';
-        $dirPath = dirname($path);
+        $path = \dirname(__DIR__) . '/Fixture/install_composer.json';
 
-        @mkdir($dirPath);
-        @file_put_contents($path, json_encode(['require' => [], 'require-dev' => []]));
-        putenv('COMPOSER=' . $path);
+        @\file_put_contents($path, \json_encode(['require' => [], 'require-dev' => []]));
+        \putenv('COMPOSER=' . $path);
 
         $this->ioMock->shouldReceive('writeError')
             ->with('Downloading https://repo.packagist.org/packages.json', true, IOInterface::DEBUG);
@@ -155,7 +149,7 @@ final class InstallationManagerTest extends MockeryTestCase
                 return true;
             });
 
-        $linkMock = $this->mock(Link::class);
+        $linkMock = Mockery::mock(Link::class);
         $linkMock->shouldReceive('getTarget')
             ->once()
             ->andReturn('viserio/log');
@@ -173,7 +167,7 @@ final class InstallationManagerTest extends MockeryTestCase
 
         $name = 'symfony/symfony';
 
-        $packageMock = $this->mock(PackageContract::class);
+        $packageMock = Mockery::mock(PackageContract::class);
         $packageMock->shouldReceive('getPrettyName')
             ->once()
             ->andReturn($name);
@@ -183,7 +177,7 @@ final class InstallationManagerTest extends MockeryTestCase
         $this->ioMock->shouldReceive('askAndValidate')
             ->once()
             ->with(
-                sprintf('Enter the version of <info>%s</info> to require (or leave blank to use the latest version): ', $name),
+                \sprintf('Enter the version of <info>%s</info> to require (or leave blank to use the latest version): ', $name),
                 Mockery::type('closure')
             )
             ->andReturnFalse();
@@ -198,7 +192,7 @@ final class InstallationManagerTest extends MockeryTestCase
         $this->rootPackageMock->shouldReceive('setRequires')
             ->once()
             ->withArgs(static function ($value) use ($name) {
-                $keys = array_keys($value);
+                $keys = \array_keys($value);
 
                 Assert::assertSame($name, $keys[1]);
                 Assert::assertInstanceOf(Link::class, $value[$name]);
@@ -214,21 +208,21 @@ final class InstallationManagerTest extends MockeryTestCase
 
         $manager->install([$packageMock]);
 
-        $this->delete($dirPath);
-        rmdir($dirPath);
+        \unlink($path);
 
-        putenv('COMPOSER=');
-        putenv('COMPOSER');
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
     }
 
+    /**
+     * @group network
+     */
     public function testInstallWithRequireAndPackageVersion(): void
     {
-        $path = __DIR__ . '/Fixture/composer.json';
-        $dirPath = dirname($path);
+        $path = \dirname(__DIR__) . '/Fixture/install_composer.json';
 
-        @mkdir($dirPath);
-        @file_put_contents($path, json_encode(['require' => [], 'require-dev' => []]));
-        putenv('COMPOSER=' . $path);
+        @\file_put_contents($path, \json_encode(['require' => [], 'require-dev' => []]));
+        \putenv('COMPOSER=' . $path);
 
         $this->ioMock->shouldReceive('writeError')
             ->with('Downloading https://repo.packagist.org/packages.json', true, IOInterface::DEBUG);
@@ -239,7 +233,7 @@ final class InstallationManagerTest extends MockeryTestCase
         $this->ioMock->shouldReceive('writeError')
             ->with('Updating root package');
 
-        $linkMock = $this->mock(Link::class);
+        $linkMock = Mockery::mock(Link::class);
         $linkMock->shouldReceive('getTarget')
             ->once()
             ->andReturn('viserio/log');
@@ -257,7 +251,7 @@ final class InstallationManagerTest extends MockeryTestCase
 
         $name = 'symfony/symfony';
 
-        $packageMock = $this->mock(PackageContract::class);
+        $packageMock = Mockery::mock(PackageContract::class);
         $packageMock->shouldReceive('getPrettyName')
             ->once()
             ->andReturn($name);
@@ -267,13 +261,13 @@ final class InstallationManagerTest extends MockeryTestCase
         $this->ioMock->shouldReceive('askAndValidate')
             ->never()
             ->with(
-                sprintf('Enter the version of <info>%s</info> to require (or leave blank to use the latest version): ', $name),
+                \sprintf('Enter the version of <info>%s</info> to require (or leave blank to use the latest version): ', $name),
                 Mockery::type('closure')
             );
 
         $this->ioMock->shouldReceive('writeError')
             ->once()
-            ->with(sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $name));
+            ->with(\sprintf('Using version <info>%s</info> for <info>%s</info>', $constraint, $name));
 
         $this->configMock->shouldReceive('get')
             ->with('sort-packages')
@@ -285,7 +279,7 @@ final class InstallationManagerTest extends MockeryTestCase
         $this->rootPackageMock->shouldReceive('setRequires')
             ->once()
             ->withArgs(static function ($value) use ($name) {
-                $keys = array_keys($value);
+                $keys = \array_keys($value);
 
                 Assert::assertSame($name, $keys[1]);
                 Assert::assertInstanceOf(Link::class, $value[$name]);
@@ -301,21 +295,21 @@ final class InstallationManagerTest extends MockeryTestCase
 
         $manager->install([$packageMock]);
 
-        $this->delete($dirPath);
-        rmdir($dirPath);
+        \unlink($path);
 
-        putenv('COMPOSER=');
-        putenv('COMPOSER');
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
     }
 
+    /**
+     * @group network
+     */
     public function testUninstallWithoutRequireAndRequireDev(): void
     {
-        $path = __DIR__ . '/Fixture/composer.json';
-        $dirPath = dirname($path);
+        $path = \dirname(__DIR__) . '/Fixture/install_composer.json';
 
-        @mkdir($dirPath);
-        @file_put_contents($path, json_encode(['require' => [], 'require-dev' => []]));
-        putenv('COMPOSER=' . $path);
+        @\file_put_contents($path, \json_encode(['require' => [], 'require-dev' => []]));
+        \putenv('COMPOSER=' . $path);
 
         $this->ioMock->shouldReceive('writeError')
             ->atLeast()
@@ -341,11 +335,10 @@ final class InstallationManagerTest extends MockeryTestCase
 
         $manager->uninstall([]);
 
-        $this->delete($dirPath);
-        rmdir($dirPath);
+        \unlink($path);
 
-        putenv('COMPOSER=');
-        putenv('COMPOSER');
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
     }
 
     /**
@@ -358,14 +351,14 @@ final class InstallationManagerTest extends MockeryTestCase
 
     private function delete(string $path): void
     {
-        array_map(function ($value): void {
-            if (is_dir($value)) {
+        \array_map(function ($value): void {
+            if (\is_dir($value)) {
                 $this->delete($value);
 
-                @rmdir($value);
+                @\rmdir($value);
             } else {
-                @unlink($value);
+                @\unlink($value);
             }
-        }, glob($path . DIRECTORY_SEPARATOR . '*'));
+        }, \glob($path . \DIRECTORY_SEPARATOR . '*'));
     }
 }

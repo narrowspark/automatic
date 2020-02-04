@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Prefetcher;
@@ -18,25 +18,30 @@ use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Util\RemoteFilesystem;
 use Mockery;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
+use Narrowspark\Automatic\Common\Downloader\ParallelDownloader;
+use Narrowspark\Automatic\Prefetcher\Contract\Prefetcher as PrefetcherContract;
 use Narrowspark\Automatic\Prefetcher\FunctionMock;
 use Narrowspark\Automatic\Prefetcher\Plugin;
-use Narrowspark\Automatic\Prefetcher\Prefetcher;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
+use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Prefetcher\Plugin
+ *
+ * @medium
  */
 final class PluginTest extends MockeryTestCase
 {
-    use ArrangeComposerClasses;
+    use ArrangeComposerClassesTrait;
 
     /** @var \Narrowspark\Automatic\Prefetcher\Plugin */
     private $plugin;
+
+    /** @var \Mockery\MockInterface|\Narrowspark\Automatic\Common\Contract\Container */
+    private $containerMock;
 
     /**
      * {@inheritdoc}
@@ -45,12 +50,11 @@ final class PluginTest extends MockeryTestCase
     {
         $this->arrangeComposerClasses();
 
-        $this->plugin = new class() extends Plugin {
-            public function setContainer($container): void
-            {
-                $this->container = $container;
-            }
-        };
+        $this->plugin = new Plugin();
+
+        $this->containerMock = Mockery::mock(ContainerContract::class);
+
+        NSA::setProperty($this->plugin, 'container', $this->containerMock);
     }
 
     /**
@@ -76,36 +80,34 @@ final class PluginTest extends MockeryTestCase
 
     public function testPopulateFilesCacheDir(): void
     {
-        $event = $this->mock(InstallerEvent::class);
+        $event = Mockery::mock(InstallerEvent::class);
 
-        $prefetcher = $this->mock(Prefetcher::class);
+        $prefetcher = Mockery::mock(PrefetcherContract::class);
         $prefetcher->shouldReceive('fetchAllFromOperations')
             ->once()
             ->with($event);
 
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
+        $this->containerMock->shouldReceive('get')
             ->once()
-            ->with(Prefetcher::class)
+            ->with(PrefetcherContract::class)
             ->andReturn($prefetcher);
 
-        $this->plugin->setContainer($containerMock);
         $this->plugin->populateFilesCacheDir($event);
     }
 
     public function testOnFileDownload(): void
     {
-        $remoteFilesystem = $this->mock(RemoteFilesystem::class);
+        $remoteFilesystem = Mockery::mock(RemoteFilesystem::class);
         $remoteFilesystem->shouldReceive('getOptions')
             ->once()
             ->andReturn([]);
 
-        $event = $this->mock(PreFileDownloadEvent::class);
+        $event = Mockery::mock(PreFileDownloadEvent::class);
         $event->shouldReceive('getRemoteFilesystem')
             ->twice()
             ->andReturn($remoteFilesystem);
 
-        $downloader = $this->mock(ParallelDownloader::class);
+        $downloader = Mockery::mock(ParallelDownloader::class);
         $downloader->shouldReceive('setNextOptions')
             ->once()
             ->with([]);
@@ -114,13 +116,11 @@ final class PluginTest extends MockeryTestCase
             ->once()
             ->with(Mockery::type(ParallelDownloader::class));
 
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
+        $this->containerMock->shouldReceive('get')
             ->once()
             ->with(ParallelDownloader::class)
             ->andReturn($downloader);
 
-        $this->plugin->setContainer($containerMock);
         $this->plugin->onFileDownload($event);
     }
 

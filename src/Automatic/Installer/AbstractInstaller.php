@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Installer;
@@ -22,10 +22,6 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
-use function array_map;
-use function count;
-use function sprintf;
-use function str_replace;
 
 abstract class AbstractInstaller extends LibraryInstaller
 {
@@ -51,11 +47,6 @@ abstract class AbstractInstaller extends LibraryInstaller
 
     /**
      * Create a new Installer instance.
-     *
-     * @param \Composer\IO\IOInterface                  $io
-     * @param \Composer\Composer                        $composer
-     * @param \Narrowspark\Automatic\Lock               $lock
-     * @param \Narrowspark\Automatic\Common\ClassFinder $loader
      */
     public function __construct(IOInterface $io, Composer $composer, Lock $lock, ClassFinder $loader)
     {
@@ -68,7 +59,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     /**
      * {@inheritdoc}
      */
-    public function supports($packageType): bool
+    final public function supports($packageType): bool
     {
         return $packageType === static::TYPE;
     }
@@ -76,12 +67,12 @@ abstract class AbstractInstaller extends LibraryInstaller
     /**
      * {@inheritdoc}
      */
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package): void
+    final public function install(InstalledRepositoryInterface $repo, PackageInterface $package): void
     {
         $autoload = $package->getAutoload();
 
-        if (count($autoload['psr-4']) === 0) {
-            throw new UnexpectedValueException(sprintf('Error while installing [%s], %s packages should have a namespace defined in their psr4 key to be usable.', $package->getPrettyName(), static::TYPE));
+        if (\count($autoload['psr-4']) === 0) {
+            throw new UnexpectedValueException(\sprintf('Error while installing [%s], %s packages should have a namespace defined in their psr4 key to be usable.', $package->getPrettyName(), static::TYPE));
         }
 
         parent::install($repo, $package);
@@ -99,7 +90,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     /**
      * {@inheritdoc}
      */
-    public function update(
+    final public function update(
         InstalledRepositoryInterface $repo,
         PackageInterface $initial,
         PackageInterface $target
@@ -113,7 +104,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     /**
      * {@inheritdoc}
      */
-    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package): void
+    final public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package): void
     {
         parent::uninstall($repo, $package);
 
@@ -124,11 +115,6 @@ abstract class AbstractInstaller extends LibraryInstaller
 
     /**
      * Finds all class in given namespace.
-     *
-     * @param array                              $autoload
-     * @param \Composer\Package\PackageInterface $package
-     *
-     * @return null|array
      */
     protected function findClasses(array $autoload, PackageInterface $package): ?array
     {
@@ -142,7 +128,7 @@ abstract class AbstractInstaller extends LibraryInstaller
             $classes[] = $class;
         }
 
-        if (count($classes) === 0) {
+        if (\count($classes) === 0) {
             return null;
         }
 
@@ -151,10 +137,6 @@ abstract class AbstractInstaller extends LibraryInstaller
 
     /**
      * Save values to the automatic lock file.
-     *
-     * @param array                              $autoload
-     * @param \Composer\Package\PackageInterface $package
-     * @param string                             $key
      *
      * @return bool FALSE if saving to lock failed, TRUE if anything is alright
      */
@@ -173,25 +155,16 @@ abstract class AbstractInstaller extends LibraryInstaller
 
     /**
      * Remove values from the automatic lock file.
-     *
-     * @param \Composer\Package\PackageInterface $package
-     * @param string                             $key
-     *
-     * @return void
      */
     abstract protected function removeFromLock(PackageInterface $package, string $key): void;
 
     /**
      * Adds found classes to the automatic classmap.
-     *
-     * @param \Composer\Package\PackageInterface $package
-     *
-     * @return void
      */
     protected function addToClassMap(PackageInterface $package): void
     {
-        $classMap = array_map(function (string $value) {
-            return str_replace($this->vendorDir, '%vendor_path%', $value);
+        $classMap = \array_map(function (string $value): string {
+            return \str_replace($this->vendorDir, '%vendor_path%', $value);
         }, $this->loader->getAll());
 
         $this->lock->addSub(Automatic::LOCK_CLASSMAP, $package->getName(), $classMap);

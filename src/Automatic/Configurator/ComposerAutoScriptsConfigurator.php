@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Configurator;
@@ -19,8 +19,6 @@ use Narrowspark\Automatic\Common\Configurator\AbstractConfigurator;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Util;
-use function array_keys;
-use function array_merge;
 
 final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
 {
@@ -63,7 +61,7 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     {
         $autoScripts = $this->getComposerAutoScripts();
 
-        $autoScripts = array_merge($autoScripts, (array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()));
+        $autoScripts = \array_merge($autoScripts, (array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()));
 
         $this->manipulateAndWrite($autoScripts);
     }
@@ -75,7 +73,7 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
     {
         $autoScripts = $this->getComposerAutoScripts();
 
-        foreach (array_keys((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName())) as $cmd) {
+        foreach (\array_keys((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName())) as $cmd) {
             unset($autoScripts[$cmd]);
         }
 
@@ -84,8 +82,6 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
 
     /**
      * Get root composer.json content and the auto-scripts section.
-     *
-     * @return array
      */
     private function getComposerAutoScripts(): array
     {
@@ -96,10 +92,6 @@ final class ComposerAutoScriptsConfigurator extends AbstractConfigurator
 
     /**
      * Manipulate the root composer.json with given auto-scripts.
-     *
-     * @param array $autoScripts
-     *
-     * @return void
      */
     private function manipulateAndWrite(array $autoScripts): void
     {

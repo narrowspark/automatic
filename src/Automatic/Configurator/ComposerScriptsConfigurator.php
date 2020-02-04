@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Configurator;
@@ -24,12 +24,6 @@ use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\QuestionFactory;
-use function array_flip;
-use function array_keys;
-use function array_merge;
-use function count;
-use function implode;
-use function sprintf;
 
 final class ComposerScriptsConfigurator extends AbstractConfigurator
 {
@@ -109,17 +103,17 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     {
         $packageEvents = (array) $package->getConfig(ConfiguratorContract::TYPE, self::getName());
 
-        if (count($packageEvents) === 0) {
+        if (\count($packageEvents) === 0) {
             return;
         }
 
         $composerContent = $this->json->read();
 
         if (isset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::BLACKLIST])) {
-            $blackList = array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::BLACKLIST]);
+            $blackList = \array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::BLACKLIST]);
 
             if (isset($blackList[$package->getName()])) {
-                $this->io->write(sprintf('Composer scripts for [%s] skipped, because it was found in the [%s]', $package->getPrettyName(), self::BLACKLIST));
+                $this->io->write(\sprintf('Composer scripts for [%s] skipped, because it was found in the [%s]', $package->getPrettyName(), self::BLACKLIST));
 
                 return;
             }
@@ -137,9 +131,9 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
         $allowed = false;
 
-        if (count($allowedEvents) !== 0) {
+        if (\count($allowedEvents) !== 0) {
             if (isset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST])) {
-                $whiteList = array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST]);
+                $whiteList = \array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST]);
 
                 if (isset($whiteList[$package->getName()])) {
                     $allowed = true;
@@ -151,10 +145,10 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
             }
         }
 
-        if (count($packageEvents) !== 0) {
-            $this->io->write(sprintf(
-                '<warning>    Found not allowed composer events [%s] in [%s]</>' . "\n",
-                implode(', ', array_keys($packageEvents)),
+        if (\count($packageEvents) !== 0) {
+            $this->io->write(\sprintf(
+                "<warning>    Found not allowed composer events [%s] in [%s]</>\n",
+                \implode(', ', \array_keys($packageEvents)),
                 $package->getName()
             ));
         }
@@ -164,14 +158,14 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
                 'extra',
                 Automatic::COMPOSER_EXTRA_KEY,
                 [
-                    self::COMPOSER_EXTRA_KEY => array_merge(
+                    self::COMPOSER_EXTRA_KEY => \array_merge(
                         $composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY] ?? [],
                         [self::WHITELIST => [$package->getName()]]
                     ),
                 ]
             );
 
-            $this->manipulateAndWrite(array_merge($this->getComposerScripts(), $allowedEvents));
+            $this->manipulateAndWrite(\array_merge($this->getComposerScripts(), $allowedEvents));
         }
     }
 
@@ -193,7 +187,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
         $composerContent = $this->json->read();
 
         if (isset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST])) {
-            $whiteList = array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST]);
+            $whiteList = \array_flip($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST]);
 
             if (isset($whiteList[$package->getName()])) {
                 unset($composerContent['extra'][Automatic::COMPOSER_EXTRA_KEY][self::COMPOSER_EXTRA_KEY][self::WHITELIST][$whiteList[$package->getName()]]);
@@ -211,8 +205,6 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
     /**
      * Get root composer.json content and the auto-scripts section.
-     *
-     * @return array
      */
     private function getComposerScripts(): array
     {
@@ -223,10 +215,6 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
     /**
      * Manipulate the root composer.json with given scripts.
-     *
-     * @param array $scripts
-     *
-     * @return void
      */
     private function manipulateAndWrite(array $scripts): void
     {

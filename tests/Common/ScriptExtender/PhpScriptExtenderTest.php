@@ -3,27 +3,29 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Common;
+namespace Narrowspark\Automatic\Test\Common\ScriptExtender;
 
 use Composer\Composer;
 use Composer\IO\NullIO;
 use Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use function putenv;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Common\ScriptExtender\AbstractScriptExtender
+ * @covers \Narrowspark\Automatic\Common\ScriptExtender\PhpScriptExtender
+ *
+ * @medium
  */
 final class PhpScriptExtenderTest extends TestCase
 {
@@ -64,8 +66,8 @@ final class PhpScriptExtenderTest extends TestCase
     public function testExpandWithIniLoad(): void
     {
         // clear the composer env
-        putenv('COMPOSER_ORIGINAL_INIS=');
-        putenv('COMPOSER_ORIGINAL_INIS');
+        \putenv('COMPOSER_ORIGINAL_INIS=');
+        \putenv('COMPOSER_ORIGINAL_INIS');
 
         $output = $this->extender->expand('echo "hallo";');
 

@@ -3,22 +3,23 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Common;
 
 use Narrowspark\Automatic\Common\Path;
 use PHPUnit\Framework\TestCase;
-use const DIRECTORY_SEPARATOR;
 
 /**
  * @internal
+ *
+ * @covers \Narrowspark\Automatic\Common\Path
  *
  * @small
  */
@@ -45,7 +46,7 @@ final class PathTest extends TestCase
     public function testRelativize(): void
     {
         self::assertSame(
-            '.' . DIRECTORY_SEPARATOR,
+            '.' . \DIRECTORY_SEPARATOR,
             $this->path->relativize(__DIR__)
         );
     }
@@ -53,17 +54,13 @@ final class PathTest extends TestCase
     public function testConcatenateOnWindows(): void
     {
         self::assertEquals(
-            'c:' . DIRECTORY_SEPARATOR . 'my-project' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'kernel.php',
-            $this->path->concatenate(['c:' . DIRECTORY_SEPARATOR . 'my-project', 'src' . DIRECTORY_SEPARATOR, 'kernel.php'])
+            'c:' . \DIRECTORY_SEPARATOR . 'my-project' . \DIRECTORY_SEPARATOR . 'src' . \DIRECTORY_SEPARATOR . 'kernel.php',
+            $this->path->concatenate(['c:' . \DIRECTORY_SEPARATOR . 'my-project', 'src' . \DIRECTORY_SEPARATOR, 'kernel.php'])
         );
     }
 
     /**
      * @dataProvider provideConcatenateCases
-     *
-     * @param string $part1
-     * @param string $part2
-     * @param string $expectedPath
      */
     public function testConcatenate(string $part1, string $part2, string $expectedPath): void
     {
@@ -73,16 +70,16 @@ final class PathTest extends TestCase
     }
 
     /**
-     * @return array
+     * @return array<int, array<int, string>>
      */
-    public function provideConcatenateCases(): iterable
+    public static function provideConcatenateCases(): iterable
     {
         return [
-            [__DIR__, 'foo' . DIRECTORY_SEPARATOR . 'bar.txt', __DIR__ . DIRECTORY_SEPARATOR . 'foo' . DIRECTORY_SEPARATOR . 'bar.txt'],
-            [__DIR__, DIRECTORY_SEPARATOR . 'foo' . DIRECTORY_SEPARATOR . 'bar.txt', __DIR__ . DIRECTORY_SEPARATOR . 'foo' . DIRECTORY_SEPARATOR . 'bar.txt'],
-            ['', 'foo' . DIRECTORY_SEPARATOR . 'bar.txt', DIRECTORY_SEPARATOR . 'foo' . DIRECTORY_SEPARATOR . 'bar.txt'],
-            ['', DIRECTORY_SEPARATOR . 'foo' . DIRECTORY_SEPARATOR . 'bar.txt', DIRECTORY_SEPARATOR . 'foo' . DIRECTORY_SEPARATOR . 'bar.txt'],
-            ['.', 'foo' . DIRECTORY_SEPARATOR . 'bar.txt', '.' . DIRECTORY_SEPARATOR . 'foo' . DIRECTORY_SEPARATOR . 'bar.txt'],
+            [__DIR__, 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt', __DIR__ . \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt'],
+            [__DIR__, \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt', __DIR__ . \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt'],
+            ['', 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt', \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt'],
+            ['', \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt', \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt'],
+            ['.', 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt', '.' . \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'bar.txt'],
         ];
     }
 }

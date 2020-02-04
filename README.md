@@ -1,7 +1,9 @@
+psalm.xml
+psalm-baseline.xml
 <h1 align="center">Narrowspark Automatic</h1>
 <p align="center">
     <a href="https://github.com/narrowspark/automatic/releases"><img src="https://img.shields.io/packagist/v/narrowspark/automatic.svg?style=flat-square"></a>
-    <a href="https://php.net/"><img src="https://img.shields.io/badge/php-%5E7.1.0-8892BF.svg?style=flat-square"></a>
+    <a href="https://php.net/"><img src="https://img.shields.io/badge/php-%5E7.3.0-8892BF.svg?style=flat-square"></a>
     <a href="https://codecov.io/gh/narrowspark/automatic"><img src="https://img.shields.io/codecov/c/github/narrowspark/automatic/master.svg?style=flat-square"></a>
     <a href="#"><img src="https://img.shields.io/badge/style-level%207-brightgreen.svg?style=flat-square&label=phpstan"></a>
     <a href="http://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"></a>
@@ -86,7 +88,7 @@ Narrowspark Automatic supports skeleton generation. For example this is your `co
 ```
 
 Automatic search all packages for the package type: `automatic-skeleton`.
-If packages are found with this type, all skeletons will be saved in the `automatic.lock` for the runtime. 
+If packages are found with this type, all skeletons will be saved in the `automatic.lock` for the runtime.
 
 This means you can execute the following command: `composer create-project your/project` to create an Automatic extended app, Automatic will ask which skeleton can be generated for your app.
 
@@ -138,7 +140,7 @@ With the below example you can see how to add a skip tag to Narrowspark Automati
         }
     }
 }
-``` 
+```
 
 You can skip `auto discovery` for packages with this Narrowspark Automatic key `dont-discover` in your composer.json extra `automatic` section. Use the package name to skip the `auto discovery`, like in this example:
 

@@ -3,21 +3,18 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Security\Command\Formatter;
 
 use Narrowspark\Automatic\Security\Contract\Command\Formatter as FormatterContract;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use function count;
-use function str_repeat;
-use function strlen;
 
 final class SimpleFormatter implements FormatterContract
 {
@@ -26,24 +23,37 @@ final class SimpleFormatter implements FormatterContract
      */
     public function displayResults(SymfonyStyle $output, array $vulnerabilities): void
     {
-        if (count($vulnerabilities) !== 0) {
+        if (\count($vulnerabilities) !== 0) {
             foreach ($vulnerabilities as $dependency => $issues) {
                 $dependencyFullName = $dependency . ' (' . $issues['version'] . ')';
-                $output->writeln('<info>' . $dependencyFullName . "\n" . str_repeat('-', strlen($dependencyFullName)) . '</>' . "\n");
+
+                $output->writeln('<info>' . $dependencyFullName . "\n" . \str_repeat('-', \strlen($dependencyFullName)) . "</>\n");
 
                 foreach ($issues['advisories'] as $issue => $details) {
                     $output->write(' * ');
+                    $cve = null;
 
-                    if ($details['cve']) {
-                        $output->write('<comment>' . $details['cve'] . ': </comment>');
+                    if (\array_key_exists('cve', $details) && $details['cve'] !== '') {
+                        $cve = $details['cve'];
                     }
 
+                    $link = null;
+
+                    if (\array_key_exists('link', $details) && $details['link'] !== '') {
+                        $link = $details['link'];
+                    }
+
+                    if ($cve === null) {
+                        $cve = '(no CVE ID)';
+                    }
+
+                    if ($link === null) {
+                        $link = '';
+                    }
+
+                    $output->write('<comment>' . $cve . ': </comment>');
                     $output->writeln($details['title']);
-
-                    if ('' !== $details['link']) {
-                        $output->writeln('   ' . $details['link']);
-                    }
-
+                    $output->writeln('   ' . $link);
                     $output->writeln('');
                 }
             }

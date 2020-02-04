@@ -3,20 +3,18 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Common;
 
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
-use function array_key_exists;
-use function sprintf;
 
 abstract class AbstractContainer implements ContainerContract
 {
@@ -36,8 +34,6 @@ abstract class AbstractContainer implements ContainerContract
 
     /**
      * Instantiate the container.
-     *
-     * @param array $data
      */
     public function __construct(array $data)
     {
@@ -47,7 +43,7 @@ abstract class AbstractContainer implements ContainerContract
     /**
      * {@inheritdoc}
      */
-    public function set(string $id, callable $callback): void
+    final public function set(string $id, callable $callback): void
     {
         $this->data[$id] = $callback;
     }
@@ -55,22 +51,22 @@ abstract class AbstractContainer implements ContainerContract
     /**
      * {@inheritdoc}
      */
-    public function has(string $id): bool
+    final public function has(string $id): bool
     {
-        return array_key_exists($id, $this->data);
+        return \array_key_exists($id, $this->data);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function get(string $id)
+    final public function get(string $id)
     {
-        if (array_key_exists($id, $this->objects)) {
+        if (\array_key_exists($id, $this->objects)) {
             return $this->objects[$id];
         }
 
-        if (! array_key_exists($id, $this->data)) {
-            throw new InvalidArgumentException(sprintf('Identifier [%s] is not defined.', $id));
+        if (! \array_key_exists($id, $this->data)) {
+            throw new InvalidArgumentException(\sprintf('Identifier [%s] is not defined.', $id));
         }
 
         return $this->objects[$id] = $this->data[$id]($this);
@@ -79,7 +75,7 @@ abstract class AbstractContainer implements ContainerContract
     /**
      * {@inheritdoc}
      */
-    public function getAll(): array
+    final public function getAll(): array
     {
         return $this->data;
     }

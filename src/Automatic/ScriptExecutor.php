@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic;
@@ -22,12 +22,6 @@ use Narrowspark\Automatic\Common\Contract\ScriptExtender as ScriptExtenderContra
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
-use function explode;
-use function fopen;
-use function fseek;
-use function is_subclass_of;
-use function sprintf;
-use function stream_get_contents;
 
 final class ScriptExecutor
 {
@@ -73,11 +67,6 @@ final class ScriptExecutor
 
     /**
      * Create a new ScriptExtender instance.
-     *
-     * @param \Composer\Composer             $composer
-     * @param \Composer\IO\IOInterface       $io
-     * @param \Composer\Util\ProcessExecutor $executor
-     * @param array                          $options
      */
     public function __construct(Composer $composer, IOInterface $io, ProcessExecutor $executor, array $options)
     {
@@ -89,32 +78,22 @@ final class ScriptExecutor
 
     /**
      * Register a cmd extender.
-     *
-     * @param string $name
-     * @param string $extender
-     *
-     * @return void
      */
     public function add(string $name, string $extender): void
     {
         if (isset($this->extenders[$name])) {
-            throw new InvalidArgumentException(sprintf('Script executor with the name [%s] already exists.', $name));
+            throw new InvalidArgumentException(\sprintf('Script executor with the name [%s] already exists.', $name));
         }
 
-        if (! is_subclass_of($extender, ScriptExtenderContract::class)) {
-            throw new InvalidArgumentException(sprintf('The class [%s] must implement the interface [%s].', $extender, ScriptExtenderContract::class));
+        if (! \is_subclass_of($extender, ScriptExtenderContract::class)) {
+            throw new InvalidArgumentException(\sprintf('The class [%s] must implement the interface [%s].', $extender, ScriptExtenderContract::class));
         }
 
         $this->extenders[$name] = $extender;
     }
 
     /**
-     * @param string $type
-     * @param string $cmd
-     *
      * @throws \Composer\EventDispatcher\ScriptExecutionException if the executed command returns a non-0 exit code
-     *
-     * @return void
      */
     public function execute(string $type, string $cmd): void
     {
@@ -126,7 +105,7 @@ final class ScriptExecutor
         $isVerbose = $this->io->isVerbose();
 
         $cmdOutput = new StreamOutput(
-            fopen('php://temp', 'rwb'),
+            \fopen('php://temp', 'rwb'),
             OutputInterface::VERBOSITY_VERBOSE,
             $this->io->isDecorated()
         );
@@ -137,7 +116,7 @@ final class ScriptExecutor
         };
         // @codeCoverageIgnoreEnd
 
-        $this->io->writeError(sprintf('Executing script [%s]', $parsedCmd), $isVerbose);
+        $this->io->writeError(\sprintf('Executing script [%s]', $parsedCmd), $isVerbose);
 
         /** @var \Narrowspark\Automatic\Common\Contract\ScriptExtender $extender */
         $extender = new $this->extenders[$type]($this->composer, $this->io, $this->options);
@@ -145,7 +124,7 @@ final class ScriptExecutor
         $exitCode = $this->executor->execute($extender->expand($parsedCmd), $outputHandler);
 
         if ($isVerbose) {
-            $this->io->writeError(sprintf('Executed script [%s] %s', $cmd, $exitCode === 0 ? '<info>[OK]</info>' : '<error>[KO]</error>'));
+            $this->io->writeError(\sprintf('Executed script [%s] %s', $cmd, $exitCode === 0 ? '<info>[OK]</info>' : '<error>[KO]</error>'));
         }
 
         if ($exitCode !== 0) {
@@ -153,11 +132,11 @@ final class ScriptExecutor
                 $this->io->writeError('<error>[KO]</error>');
             }
 
-            $this->io->writeError(sprintf('<error>Script [%s] returned with error code %s</error>', $cmd, $exitCode));
+            $this->io->writeError(\sprintf('<error>Script [%s] returned with error code %s</error>', $cmd, $exitCode));
 
-            fseek($cmdOutput->getStream(), 0);
+            \fseek($cmdOutput->getStream(), 0);
 
-            foreach (explode("\n", (string) stream_get_contents($cmdOutput->getStream())) as $line) {
+            foreach (\explode("\n", (string) \stream_get_contents($cmdOutput->getStream())) as $line) {
                 $this->io->writeError('!!  ' . $line);
             }
 

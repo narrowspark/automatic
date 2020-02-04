@@ -3,35 +3,18 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Fixture;
 
-use const JSON_PRETTY_PRINT;
-use const JSON_UNESCAPED_SLASHES;
-use const JSON_UNESCAPED_UNICODE;
-use function count;
-use function file_get_contents;
-use function json_decode;
-use function json_encode;
-
 final class ComposerJsonFactory
 {
-    /**
-     * @param string $name
-     * @param array  $require
-     * @param array  $devRequire
-     * @param array  $autoload
-     * @param array  $extra
-     *
-     * @return string
-     */
     public static function createComposerJson(
         string $name,
         array $require = [],
@@ -52,21 +35,13 @@ final class ComposerJsonFactory
             'extra' => $extra,
         ];
 
-        if (count($devRequire) !== 0) {
+        if (\count($devRequire) !== 0) {
             $composerJsonContent['require-dev'] = $devRequire;
         }
 
         return self::arrayToJson($composerJsonContent);
     }
 
-    /**
-     * @param string $name
-     * @param array  $require
-     * @param array  $devRequire
-     * @param array  $automaticExtra
-     *
-     * @return string
-     */
     public static function createAutomaticComposerJson(
         string $name,
         array $require = [],
@@ -80,13 +55,6 @@ final class ComposerJsonFactory
         return self::createComposerJson($name, $require, $devRequire, [], $extendedExtra);
     }
 
-    /**
-     * @param string $name
-     * @param array  $require
-     * @param array  $autoload
-     *
-     * @return string
-     */
     public static function createComposerPluginJson(string $name, array $require = [], array $autoload = []): string
     {
         $composerJsonContent = [
@@ -107,12 +75,6 @@ final class ComposerJsonFactory
         return self::arrayToJson($composerJsonContent);
     }
 
-    /**
-     * @param string $name
-     * @param array  $script
-     *
-     * @return string
-     */
     public static function createComposerScriptJson(string $name, array $script = []): string
     {
         $composerJsonContent = [
@@ -133,33 +95,18 @@ final class ComposerJsonFactory
         return self::arrayToJson($composerJsonContent);
     }
 
-    /**
-     * @param string $jsonFilePath
-     *
-     * @return array
-     */
     public static function jsonFileToArray(string $jsonFilePath): array
     {
-        return json_decode(file_get_contents($jsonFilePath), true);
+        return \json_decode(\file_get_contents($jsonFilePath), true);
     }
 
-    /**
-     * @param string $jsonContent
-     *
-     * @return array
-     */
     public static function jsonToArray(string $jsonContent): array
     {
-        return json_decode($jsonContent, true);
+        return \json_decode($jsonContent, true);
     }
 
-    /**
-     * @param array $jsonData
-     *
-     * @return string
-     */
     public static function arrayToJson(array $jsonData): string
     {
-        return json_encode($jsonData, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        return \json_encode($jsonData, \JSON_UNESCAPED_SLASHES | \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE);
     }
 }

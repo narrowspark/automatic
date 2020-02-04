@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Common;
@@ -18,30 +18,31 @@ use Mockery;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
-use function is_array;
-use function is_string;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Common\AbstractContainer
+ *
+ * @medium
  */
 final class ContainerTest extends MockeryTestCase
 {
     /** @var \Narrowspark\Automatic\Common\AbstractContainer */
-    private static $staticContainer;
+    private $container;
 
     /**
      * {@inheritdoc}
      */
-    public static function setUpBeforeClass(): void
+    protected function setUp(): void
     {
-        parent::setUpBeforeClass();
-        self::$staticContainer = new DummyContainer([
+        parent::setUp();
+
+        $this->container = new DummyContainer([
             Composer::class => static function (AbstractContainer $container) {
                 return Mockery::mock(Composer::class);
             },
-            'vendor-dir' => static function () {
+            'vendor-dir' => static function (): string {
                 return '/vendor';
             },
         ]);
@@ -50,26 +51,25 @@ final class ContainerTest extends MockeryTestCase
     /**
      * @dataProvider provideContainerInstancesCases
      *
-     * @param string $key
-     * @param mixed  $expected
-     *
-     * @return void
+     * @param class-string<object>|mixed[] $expected
      */
     public function testContainerInstances(string $key, $expected): void
     {
-        $value = self::$staticContainer->get($key);
+        $value = $this->container->get($key);
 
-        if (is_string($value) || is_array($value)) {
+        if (\is_string($value) || (\is_array($value) && \is_array($expected))) {
             self::assertSame($expected, $value);
-        } else {
+        }
+
+        if (\is_object($value) && \is_string($expected)) {
             self::assertInstanceOf($expected, $value);
         }
     }
 
     /**
-     * @return array
+     * @return array<int, array<int|string, mixed>|string>
      */
-    public function provideContainerInstancesCases(): iterable
+    public static function provideContainerInstancesCases(): iterable
     {
         return [
             [Composer::class, Composer::class],
@@ -81,23 +81,23 @@ final class ContainerTest extends MockeryTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Identifier [test] is not defined.');
 
-        self::$staticContainer->get('test');
+        $this->container->get('test');
     }
 
     public function testGetCache(): void
     {
-        self::assertSame('/vendor', self::$staticContainer->get('vendor-dir'));
+        self::assertSame('/vendor', $this->container->get('vendor-dir'));
 
-        self::$staticContainer->set('vendor-dir', static function () {
+        $this->container->set('vendor-dir', static function (): string {
             return 'test';
         });
 
-        self::assertSame('/vendor', self::$staticContainer->get('vendor-dir'));
+        self::assertSame('/vendor', $this->container->get('vendor-dir'));
     }
 
     public function testGetAll(): void
     {
-        self::assertCount(2, self::$staticContainer->getAll());
+        self::assertCount(2, $this->container->getAll());
     }
 }
 

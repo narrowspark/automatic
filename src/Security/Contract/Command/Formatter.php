@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Security\Contract\Command;
@@ -20,10 +20,7 @@ interface Formatter
     /**
      * Displays a security report.
      *
-     * @param \Symfony\Component\Console\Style\SymfonyStyle $output
-     * @param array                                         $vulnerabilities An array of vulnerabilities
-     *
-     * @return void
+     * @param array $vulnerabilities An array of vulnerabilities
      */
     public function displayResults(SymfonyStyle $output, array $vulnerabilities): void;
 }

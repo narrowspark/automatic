@@ -3,17 +3,18 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Prefetcher;
 
 use Composer\IO\IOInterface;
+use Mockery;
 use Narrowspark\Automatic\Prefetcher\Cache;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
@@ -21,7 +22,9 @@ use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Prefetcher\Cache
+ *
+ * @medium
  */
 final class CacheTest extends MockeryTestCase
 {
@@ -45,8 +48,8 @@ final class CacheTest extends MockeryTestCase
         parent::setUp();
 
         $this->path = __DIR__ . '/Fixture/Packagist';
-        $this->ioMock = $this->mock(IOInterface::class);
-        $this->legacyTagsManager = $this->mock(LegacyTagsManagerContract::class);
+        $this->ioMock = Mockery::mock(IOInterface::class);
+        $this->legacyTagsManager = Mockery::mock(LegacyTagsManagerContract::class);
         $this->cache = new Cache($this->ioMock, $this->path);
     }
 

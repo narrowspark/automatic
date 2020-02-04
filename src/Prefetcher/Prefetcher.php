@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Prefetcher;
@@ -22,26 +22,12 @@ use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginManager;
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
 use Hirak\Prestissimo\Plugin as PrestissimoPlugin;
+use Narrowspark\Automatic\Common\Downloader\ParallelDownloader;
 use Narrowspark\Automatic\Common\Util;
-use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
+use Narrowspark\Automatic\Prefetcher\Contract\Prefetcher as PrefetcherContract;
 use Symfony\Component\Console\Input\InputInterface;
-use const DIRECTORY_SEPARATOR;
-use const PHP_URL_HOST;
-use function count;
-use function current;
-use function dirname;
-use function file_exists;
-use function get_class;
-use function is_dir;
-use function method_exists;
-use function mkdir;
-use function parse_url;
-use function preg_match;
-use function rtrim;
-use function sprintf;
-use function strpos;
 
-class Prefetcher
+final class Prefetcher implements PrefetcherContract
 {
     /**
      * The composer io implementation.
@@ -67,7 +53,7 @@ class Prefetcher
     /**
      * A ParallelDownloader instance.
      *
-     * @var \Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader
+     * @var \Narrowspark\Automatic\Common\Downloader\ParallelDownloader
      */
     private $rfs;
 
@@ -117,11 +103,6 @@ class Prefetcher
 
     /**
      * Create a new PreFetcher instance.
-     *
-     * @param \Composer\Composer                                              $composer
-     * @param \Composer\IO\IOInterface                                        $io
-     * @param \Symfony\Component\Console\Input\InputInterface                 $input
-     * @param \Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader $rfs
      */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input, ParallelDownloader $rfs)
     {
@@ -131,13 +112,11 @@ class Prefetcher
         $this->config = $composer->getConfig();
         $this->fileDownloader = $composer->getDownloadManager()->getDownloader('file');
         $this->rfs = $rfs;
-        $this->cacheFilesDir = rtrim($this->config->get('cache-files-dir'), '\/');
+        $this->cacheFilesDir = \rtrim($this->config->get('cache-files-dir'), '\/');
     }
 
     /**
-     * Should the repo- and dir cache be populated.
-     *
-     * @return void
+     * {@inheritdoc}
      */
     public function populateRepoCacheDir(): void
     {
@@ -146,8 +125,8 @@ class Prefetcher
 
         if ($pluginManager instanceof PluginManager) {
             foreach ($pluginManager->getPlugins() as $plugin) {
-                if (strpos(get_class($plugin), PrestissimoPlugin::class) === 0) {
-                    if (method_exists($this->rfs, 'getRemoteContents')) {
+                if (\strpos(\get_class($plugin), PrestissimoPlugin::class) === 0) {
+                    if (\method_exists($this->rfs, 'getRemoteContents')) {
                         $plugin->disable();
                     } else {
                         $this->cacheDirPopulated = true;
@@ -162,7 +141,7 @@ class Prefetcher
     }
 
     /**
-     * @return void
+     * {@inheritdoc}
      */
     public function prefetchComposerRepositories(): void
     {
@@ -170,7 +149,7 @@ class Prefetcher
 
         if ($this->populateRepoCacheDir === true
             && isset(self::$repoReadingCommands[$command])
-            && ($command !== 'install' || (file_exists(Factory::getComposerFile()) && ! file_exists(Util::getComposerLockFile())))
+            && ($command !== 'install' || (\file_exists(Factory::getComposerFile()) && ! \file_exists(Util::getComposerLockFile())))
         ) {
             $repos = [];
 
@@ -180,7 +159,7 @@ class Prefetcher
                 }
 
                 /** @see https://github.com/composer/composer/blob/master/src/Composer/Repository/ComposerRepository.php#L74 */
-                if (! preg_match('#^http(s\??)?://#', $repo['url'])) {
+                if (! \preg_match('#^http(s\??)?://#', $repo['url'])) {
                     continue;
                 }
 
@@ -196,9 +175,7 @@ class Prefetcher
     }
 
     /**
-     * @param \Composer\Installer\InstallerEvent|\Composer\Installer\PackageEvent $event
-     *
-     * @return void
+     * {@inheritdoc}
      */
     public function fetchAllFromOperations($event): void
     {
@@ -227,30 +204,30 @@ class Prefetcher
 
             $url = self::getUrlFromPackage($package);
 
-            if ($url === null || ! $originUrl = parse_url($url, PHP_URL_HOST)) {
+            if ($url === null || ! $originUrl = \parse_url($url, \PHP_URL_HOST)) {
                 continue;
             }
 
-            $destination = $this->cacheFilesDir . DIRECTORY_SEPARATOR . $this->getCacheKey($package, $url);
+            $destination = $this->cacheFilesDir . \DIRECTORY_SEPARATOR . $this->getCacheKey($package, $url);
 
-            if (file_exists($destination)) {
+            if (\file_exists($destination)) {
                 continue;
             }
 
-            if (! @mkdir($concurrentDirectory = dirname($destination), 0775, true) && ! is_dir($concurrentDirectory)) {
+            if (! @\mkdir($concurrentDirectory = \dirname($destination), 0775, true) && ! \is_dir($concurrentDirectory)) {
                 continue;
             }
 
-            if (preg_match('#^https://github\.com/#', $package->getSourceUrl())
-                && preg_match('#^https://api\.github\.com/repos(/[^/]++/[^/]++/)zipball(.++)$#', $url, $matches)
+            if (\preg_match('#^https://github\.com/#', $package->getSourceUrl())
+                && \preg_match('#^https://api\.github\.com/repos(/[^/]++/[^/]++/)zipball(.++)$#', $url, $matches)
             ) {
-                $url = sprintf('https://codeload.github.com%slegacy.zip%s', $matches[1], $matches[2]);
+                $url = \sprintf('https://codeload.github.com%slegacy.zip%s', $matches[1], $matches[2]);
             }
 
             $downloads[] = [$originUrl, $url, [], $destination, false];
         }
 
-        if (count($downloads) > 1) {
+        if (\count($downloads) > 1) {
             $progress = true;
 
             if ($this->input->hasParameterOption('--no-progress', true)) {
@@ -263,10 +240,6 @@ class Prefetcher
 
     /**
      * Get the package url.
-     *
-     * @param \Composer\Package\PackageInterface $package
-     *
-     * @return null|string
      */
     private static function getUrlFromPackage(PackageInterface $package): ?string
     {
@@ -277,10 +250,10 @@ class Prefetcher
         }
 
         if ($package->getDistMirrors()) {
-            $fileUrl = current($package->getDistUrls());
+            $fileUrl = \current($package->getDistUrls());
         }
 
-        if (! preg_match('/^https?:/', $fileUrl)) {
+        if (! \preg_match('/^https?:/', $fileUrl)) {
             return null;
         }
 
@@ -289,11 +262,6 @@ class Prefetcher
 
     /**
      * Get cache key from package and url.
-     *
-     * @param \Composer\Package\PackageInterface $package
-     * @param string                             $url
-     *
-     * @return string
      */
     private function getCacheKey(PackageInterface $package, string $url): string
     {
@@ -310,8 +278,6 @@ class Prefetcher
 
     /**
      * Check if composer is in dry-run mode.
-     *
-     * @return bool
      */
     private function getDryRun(): bool
     {

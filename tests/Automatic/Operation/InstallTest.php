@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Operation;
@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\IO\IOInterface;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
+use Mockery;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
@@ -26,19 +27,19 @@ use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorCon
 use Narrowspark\Automatic\Operation\Install;
 use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\Automatic\Test\Fixture\Test\TransformWithScriptsExecutor\Automatic\TestExecutor;
-use Narrowspark\Automatic\Test\Operation\Traits\ArrangeOperationsClasses;
+use Narrowspark\Automatic\Test\Operation\Traits\ArrangeOperationsClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
-use const DIRECTORY_SEPARATOR;
-use function str_replace;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Operation\Install
+ *
+ * @medium
  */
 final class InstallTest extends MockeryTestCase
 {
-    use ArrangeOperationsClasses;
+    use ArrangeOperationsClassesTrait;
 
     /** @var \Composer\DependencyResolver\Operation\InstallOperation|\Mockery\MockInterface */
     private $installOperationMock;
@@ -56,8 +57,8 @@ final class InstallTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->installOperationMock = $this->mock(InstallOperation::class);
-        $this->updateOperationMock = $this->mock(UpdateOperation::class);
+        $this->installOperationMock = Mockery::mock(InstallOperation::class);
+        $this->updateOperationMock = Mockery::mock(UpdateOperation::class);
 
         $this->arrangeOperationsClasses();
 
@@ -73,7 +74,7 @@ final class InstallTest extends MockeryTestCase
 
     public function testSupportsWithInstallAndExtraAutomaticKey(): void
     {
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getExtra')
             ->once()
             ->andReturn(['automatic' => []]);
@@ -89,7 +90,7 @@ final class InstallTest extends MockeryTestCase
 
     public function testSupportsWithAutomaticJsonFile(): void
     {
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getExtra')
             ->never();
         $packageMock->shouldReceive('getName')
@@ -104,7 +105,7 @@ final class InstallTest extends MockeryTestCase
 
     public function testSupportsWithInstallWithoutAutomatic(): void
     {
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getExtra')
             ->once()
             ->andReturn([]);
@@ -120,7 +121,7 @@ final class InstallTest extends MockeryTestCase
 
     public function testSupportsWithUpdateAndExtraAutomaticKey(): void
     {
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getExtra')
             ->once()
             ->andReturn(['automatic' => []]);
@@ -136,7 +137,7 @@ final class InstallTest extends MockeryTestCase
 
     public function testSupportsWithUpdateAndAutomaticJsonFile(): void
     {
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getExtra')
             ->never();
         $packageMock->shouldReceive('getName')
@@ -151,7 +152,7 @@ final class InstallTest extends MockeryTestCase
 
     public function testResolveWithInstall(): void
     {
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getExtra')
             ->twice()
             ->andReturn(['automatic' => [], 'branch-alias' => ['dev-master' => '1.0-dev']]);
@@ -188,7 +189,7 @@ final class InstallTest extends MockeryTestCase
 
     public function testResolveWithUpdateAndAutomaticJsonFile(): void
     {
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getExtra')
             ->once()
             ->andReturn([]);
@@ -208,12 +209,12 @@ final class InstallTest extends MockeryTestCase
             ->once()
             ->andReturn('library');
 
-        $link1Mock = $this->mock(Link::class);
+        $link1Mock = Mockery::mock(Link::class);
         $link1Mock->shouldReceive('getTarget')
             ->once()
             ->andReturn('foo/bar');
 
-        $link2Mock = $this->mock(Link::class);
+        $link2Mock = Mockery::mock(Link::class);
         $link2Mock->shouldReceive('getTarget')
             ->once()
             ->andReturn('ext-mbstring');
@@ -288,7 +289,7 @@ final class InstallTest extends MockeryTestCase
                 ScriptExecutor::TYPE,
                 $name,
                 [
-                    TestExecutor::class => $this->fixturePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $packageName) . DIRECTORY_SEPARATOR . 'Automatic' . DIRECTORY_SEPARATOR . 'TestExecutor.php',
+                    TestExecutor::class => $this->fixturePath . \DIRECTORY_SEPARATOR . \str_replace('/', \DIRECTORY_SEPARATOR, $packageName) . \DIRECTORY_SEPARATOR . 'Automatic' . \DIRECTORY_SEPARATOR . 'TestExecutor.php',
                 ]
             );
         $this->lockMock->shouldReceive('addSub')
@@ -306,19 +307,12 @@ final class InstallTest extends MockeryTestCase
         parent::allowMockingNonExistentMethods(true);
     }
 
-    /**
-     * @param string $name
-     * @param array  $autoloadData
-     * @param array  $packageData
-     *
-     * @return array
-     */
     private function arrangeTransformPackage(
         string $name = 'test',
         array $autoloadData = [],
         array $packageData = []
     ): array {
-        $package = $this->mock(PackageContract::class);
+        $package = Mockery::mock(PackageContract::class);
 
         $package->shouldReceive('getName')
             ->twice()

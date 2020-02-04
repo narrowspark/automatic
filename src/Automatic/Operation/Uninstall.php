@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Operation;
@@ -19,7 +19,6 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\ScriptExecutor;
-use function class_exists;
 
 /**
  * @internal
@@ -57,7 +56,7 @@ final class Uninstall extends AbstractOperation
         $classes = $this->findClassesInAutomaticFolder($package, $name);
 
         foreach ($classes as $class => $path) {
-            if (! class_exists($class)) {
+            if (! \class_exists($class)) {
                 require_once $path;
             }
         }

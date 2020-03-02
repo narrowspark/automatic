@@ -149,7 +149,9 @@ class InstallationManager extends AbstractInstallationManager
                         $packageName
                     ),
                     static function (string $input) {
-                        return \trim($input) ?? false;
+                        $input = \trim($input);
+
+                        return $input === '' ? false : $input;
                     }
                 );
 

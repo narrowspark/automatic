@@ -52,6 +52,10 @@ parameters:
             message: '#\$package of method Composer\\Package\\Version\\VersionSelector\:\:findRecommendedRequireVersion\(\) expects Composer\\Package\\PackageInterface, Composer\\Package\\PackageInterface\|true given#'
             path: src/Common/Installer/AbstractInstallationManager.php
         -
+            message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
+            count: 1
+            path: src/Common/Installer/AbstractInstallationManager.php
+        -
             message: '#Variable property access on object#'
             path: src/Common/Traits/GetGenericPropertyReaderTrait.php
         -
@@ -94,6 +98,3 @@ parameters:
         -
             message: '#Variable method call on Symfony\\Component\\Filesystem\\Filesystem#'
             path: src/Automatic/Configurator/CopyFromPackageConfigurator.php
-        -
-            message: '#Anonymous function should have native return typehint "string"#'
-            path: src/Automatic/Installer/InstallationManager.php

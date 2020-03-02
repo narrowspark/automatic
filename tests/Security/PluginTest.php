@@ -96,8 +96,11 @@ final class PluginTest extends MockeryTestCase
             ->andReturn(true);
 
         $this->ioMock->input = $inputMock;
-        $this->ioMock->shouldReceive('writeError')
-            ->with('');
+
+        if (\PHP_OS_FAMILY !== 'Windows') {
+            $this->ioMock->shouldReceive('writeError')
+                ->with('<warning>Cannot create cache directory /https---automatic.narrowspark.com/, or directory is not writable. Proceeding without cache</warning>');
+        }
 
         $this->configMock->shouldReceive('get')
             ->with('disable-tls')

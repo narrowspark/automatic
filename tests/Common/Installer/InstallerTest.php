@@ -160,6 +160,10 @@ final class InstallerTest extends MockeryTestCase
             ->with('apcu-autoloader')
             ->once()
             ->andReturn(false);
+        $this->configMock->shouldReceive('get')
+            ->with('lock')
+            ->once()
+            ->andReturn('');
 
         $this->composerMock->shouldReceive('getConfig')
             ->andReturn($this->configMock);

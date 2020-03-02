@@ -717,7 +717,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
             return 'You must enable the openssl extension in your [php.ini] file';
         }
 
-        if (\version_compare(Util::getComposerVersion(), '1.7.0', '<')) {
+        if (\version_compare(Util::getComposerVersion(), '1.8.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
 

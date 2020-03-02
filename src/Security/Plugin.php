@@ -28,9 +28,8 @@ use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Security\Common\Util;
+use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Security\Contract\Audit as AuditContract;
-use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -226,33 +225,11 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     private function getErrorMessage(): ?string
     {
         // @codeCoverageIgnoreStart
-        if (\version_compare(self::getComposerVersion(), '1.7.0', '<')) {
+        if (\version_compare(Util::getComposerVersion(), '1.8.0', '<')) {
             return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd
 
         return null;
-    }
-
-    /**
-     * Get the composer version.
-     *
-     * @throws \Narrowspark\Automatic\Security\Contract\Exception\RuntimeException
-     */
-    private static function getComposerVersion(): string
-    {
-        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
-
-        if ($matches !== null) {
-            return $matches[0];
-        }
-
-        throw new RuntimeException('No composer version found.');
     }
 }

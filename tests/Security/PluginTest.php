@@ -96,6 +96,8 @@ final class PluginTest extends MockeryTestCase
             ->andReturn(true);
 
         $this->ioMock->input = $inputMock;
+        $this->ioMock->shouldReceive('writeError')
+            ->with('');
 
         $this->configMock->shouldReceive('get')
             ->with('disable-tls')

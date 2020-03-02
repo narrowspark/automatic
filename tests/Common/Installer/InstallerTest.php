@@ -162,7 +162,7 @@ final class InstallerTest extends MockeryTestCase
             ->andReturn(false);
         $this->configMock->shouldReceive('get')
             ->with('lock')
-            ->once()
+            ->zeroOrMoreTimes()
             ->andReturn('');
 
         $this->composerMock->shouldReceive('getConfig')

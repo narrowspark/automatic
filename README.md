@@ -1,5 +1,3 @@
-psalm.xml
-psalm-baseline.xml
 <h1 align="center">Narrowspark Automatic</h1>
 <p align="center">
     <a href="https://github.com/narrowspark/automatic/releases"><img src="https://img.shields.io/packagist/v/narrowspark/automatic.svg?style=flat-square"></a>
@@ -9,15 +7,9 @@ psalm-baseline.xml
     <a href="http://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"></a>
 </p>
 
-Branch Status
-------------
-[![Travis branch](https://img.shields.io/travis/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://travis-ci.org/narrowspark/automatic)
-[![Appveyor branch](https://img.shields.io/appveyor/ci/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://ci.appveyor.com/project/narrowspark/automatic/branch/master)
-
 Narrowspark Automatic automates the most common tasks of applications, like installing and removing bundles or providers, copying files, boosting dependencies downloads, creating skeletons and other Composer dependencies based configurations.
 
-How Does Narrowspark Automatic Work
-------------
+## How Does Narrowspark Automatic Work
 
 Narrowspark Automatic is a Composer plugin that modifies the behavior of the `require`, `update`, `create project`, and `remove` commands.
 When installing or removing dependencies in an Automatic extended app, your Application can perform tasks before and after the execution of Composer tasks.
@@ -38,14 +30,12 @@ In the above example, Automatic decided which automated tasks need to be run aft
 
 > **Note** Narrowspark Automatic keeps tracks of the configuration, in a `automatic.lock` file, which must be committed to your code repository.
 
-Using Narrowspark Automatic in New Applications
-------------
+## Using Narrowspark Automatic in New Applications
 
 Include Narrowspark Automatic as a required dependency to your app with this command:
 `composer require narrospark/automatic`.
 
-Using Narrowspark Automatic for Skeleton Application
-------------
+## Using Narrowspark Automatic for Skeleton Application
 
 Narrowspark Automatic supports skeleton generation. For example this is your `composer.json` file:
 
@@ -115,7 +105,7 @@ Narrowspark Automatic tasks are defined in a `automatic.json` file or in the com
 
 The `providers` and `proxies` option tells Narrowspark Automatic in which environments this `provider`, `proxy` can be turn on automatically (all in this case).
 
-Finally the `script-extenders` option adds a new script executor to the Narrowspark Automatic `auto-scripts`.
+The `script-extenders` option adds a new script executor to the Narrowspark Automatic `auto-scripts`.
 Now you can run `viserio console` commands in the `auto-scripts` section of your `composer.json` app file.
 
 The instructions defined in this `automatic.json` file are also used by Narrowspark Automatic when uninstalling dependencies (for example `composer remove viserio/console`) to undo all changes.
@@ -123,8 +113,7 @@ This means that Automatic can remove the Console Provider and Proxy from the app
 
 Read the [configuration documentation](docs/CONFIGURATORS.md) to learn everything about how to create configuration for your own packages.
 
-Automatic extends Composer
-------------
+## Automatic extends Composer
 
 Narrowspark Automatic adds a parallel downloader with the feature to skip old dependencies tags for a download boost.
 
@@ -156,11 +145,11 @@ You can skip `auto discovery` for packages with this Narrowspark Automatic key `
 
 Auto discovery will now be skipped for `viserio/console`.
 
-Automatic Security Audit
-------------
+## Automatic Security Audit
+
 Narrowspark Automatic shows you on every `composer install` and `composer update` known security vulnerabilities for your installed dependencies based on [FriendsOfPHP/security-advisories](https://github.com/FriendsOfPHP/security-advisories) database.
 
-If you like to change the default HTTP `timeout = 20` for the downloader, just add `audit` to your composer.json `extra` section, like in this example:
+If you like to change the default HTTP `timeout = 20` for the downloader, add `audit` to your composer.json `extra` section, like in this example:
 
 ```json
 {
@@ -172,29 +161,37 @@ If you like to change the default HTTP `timeout = 20` for the downloader, just a
 }
 ```
 
-Testing
--------------
+## Testing
 
 You need to run:
 ``` bash
 $ php vendor/bin/phpunit
 ```
 
-Contributing
-------------
+## Versioning
 
-If you would like to help take a look at the [list of issues](https://github.com/narrowspark/testing-helper/issues) and check our [Contributing](CONTRIBUTING.md) guild.
+This library follows semantic versioning, and additions to the code ruleset are performed in major releases.
 
-> **Note** Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+## Changelog
 
-Credits
--------------
+Please have a look at [`CHANGELOG.md`](CHANGELOG.md).
+
+## Contributing
+
+Please have a look at [`CONTRIBUTING.md`](.github/CONTRIBUTING.md).
+
+## Code of Conduct
+
+Please have a look at [`CODE_OF_CONDUCT.md`](.github/CODE_OF_CONDUCT.md).
+
+## Credits
 
 - [Daniel Bannert](https://github.com/prisis)
 - [All Contributors](https://github.com/narrowspark/automatic/graphs/contributors)
 - Narrowspark Automatic has been inspired by [symfony/flex](https://github.com/symfony/flex)
 
-License
--------------
+## License
 
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+This package is licensed using the MIT License.
+
+Please have a look at [`LICENSE.md`](LICENSE.md).

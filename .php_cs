@@ -5,19 +5,26 @@ declare(strict_types=1);
 use Ergebnis\License;
 use Narrowspark\CS\Config\Config;
 
-$license = License\Type\MIT::markdown(
-    __DIR__ . '/LICENSE.md',
-    License\Range::since(
-        License\Year::fromString('2018'),
-        new \DateTimeZone('UTC')
-    ),
-    License\Holder::fromString('Daniel Bannert'),
-    License\Url::fromString('https://github.com/narrowspark/automatic')
-);
+$license = static function ($path) {
+    return License\Type\MIT::markdown(
+        $path . '/LICENSE.md',
+        License\Range::since(
+            License\Year::fromString('2018'),
+            new \DateTimeZone('UTC')
+        ),
+        License\Holder::fromString('Daniel Bannert'),
+        License\Url::fromString('https://github.com/narrowspark/automatic')
+    );
+};
 
-$license->save();
+$mainLicense = $license(__DIR__);
+$mainLicense->save();
 
-$config = new Config($license->header(), [
+$license(__DIR__ . '/src/Common')->save();
+$license(__DIR__ . '/src/Prefetcher')->save();
+$license(__DIR__ . '/src/Security')->save();
+
+$config = new Config($mainLicense->header(), [
     'native_function_invocation' => [
         'exclude' => [
             'getcwd',

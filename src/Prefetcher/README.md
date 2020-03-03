@@ -12,7 +12,7 @@ Branch Status
 [![Travis branch](https://img.shields.io/travis/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://travis-ci.org/narrowspark/automatic)
 [![Appveyor branch](https://img.shields.io/appveyor/ci/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://ci.appveyor.com/project/narrowspark/automatic/branch/master)
 
-> **Note** This package is part of the [Narrowspark automatic](https://github.com/narrowspark/automatic). 
+> **Note** This package is part of the [Narrowspark automatic](https://github.com/narrowspark/automatic).
 
 Installation
 -------------
@@ -31,9 +31,9 @@ is used, you will experience a speed up of composer package installations.
 
 Narrowspark Automatic Prefetcher supports on `skipping legacy package tags`.
 
-There are two ways to skip old tags of a package.
+You have two ways to skip old tags of a package.
 
-The first one is to use the `composer.json extra` field, just add `prefetcher` inside of this a `require` key,
+The first one is to use the `composer.json extra` field, add `prefetcher` inside of this a `require` key,
 then you packages with the version you want start skipping.
 
 ```json5
@@ -57,7 +57,7 @@ export AUTOMATIC_PREFETCHER_REQUIRE="symfony/symfony:4.2.*[, and you next packag
 Contributing
 ------------
 
-Issues for this package shall be posted on [Narrowspark Automatic issues](https://github.com/narrowspark/automatic/issues). <br>
+Issues for this package must be posted on [Narrowspark Automatic issues](https://github.com/narrowspark/automatic/issues). <br>
 Thank you for considering contributing to the Narrowspark automatic.
 
 > **Note** Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.

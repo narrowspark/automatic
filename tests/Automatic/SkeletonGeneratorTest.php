@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test;
@@ -25,13 +25,14 @@ use Narrowspark\Automatic\Test\Fixture\ConsoleFixtureGenerator;
 use Narrowspark\Automatic\Test\Fixture\FrameworkDefaultFixtureGenerator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use PHPUnit\Framework\Assert;
-use function file_exists;
-use function unlink;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Common\Generator\AbstractGenerator
+ * @covers \Narrowspark\Automatic\SkeletonGenerator
+ *
+ * @medium
  */
 final class SkeletonGeneratorTest extends MockeryTestCase
 {
@@ -54,9 +55,9 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->ioMock = $this->mock(IOInterface::class);
-        $this->installationManagerMock = $this->mock(InstallationManager::class);
-        $this->lockMock = $this->mock(Lock::class);
+        $this->ioMock = Mockery::mock(IOInterface::class);
+        $this->installationManagerMock = Mockery::mock(InstallationManager::class);
+        $this->lockMock = Mockery::mock(Lock::class);
 
         $this->skeletonGenerator = new SkeletonGenerator(
             $this->ioMock,
@@ -76,8 +77,8 @@ final class SkeletonGeneratorTest extends MockeryTestCase
 
         $path = __DIR__ . '/Fixture/test.php';
 
-        if (file_exists($path)) {
-            @unlink($path);
+        if (\file_exists($path)) {
+            @\unlink($path);
         }
     }
 
@@ -85,7 +86,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     {
         $this->installationManagerMock->shouldReceive('install')
             ->once()
-            ->withArgs(static function ($requires, $devRequires) {
+            ->withArgs(static function (array $requires, array $devRequires): bool {
                 Assert::assertInstanceOf(Package::class, $requires[0]);
                 Assert::assertIsArray($devRequires);
 
@@ -104,7 +105,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
             ->with('Please select a skeleton:', ['console'], 'console')
             ->andReturn(0);
         $this->ioMock->shouldReceive('write')
-            ->with("\n" . 'Generating [console] skeleton.' . "\n");
+            ->with("\nGenerating [console] skeleton.\n");
 
         $this->skeletonGenerator->run();
     }
@@ -130,7 +131,7 @@ final class SkeletonGeneratorTest extends MockeryTestCase
             ->with('Please select a skeleton:', ['console', 'framework'], 'framework')
             ->andReturn(1);
         $this->ioMock->shouldReceive('write')
-            ->with("\n" . 'Generating [framework] skeleton.' . "\n");
+            ->with("\nGenerating [framework] skeleton.\n");
 
         $this->skeletonGenerator->run();
     }
@@ -169,8 +170,8 @@ final class SkeletonGeneratorTest extends MockeryTestCase
     }
 
     /**
-     * @param array $classmap
-     * @param array $generators
+     * @param array<string, string>             $classmap
+     * @param array<string, array<int, string>> $generators
      */
     protected function arrangeLock(array $classmap, array $generators): void
     {

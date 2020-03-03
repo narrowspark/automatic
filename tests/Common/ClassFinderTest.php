@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Common;
@@ -24,15 +24,13 @@ use Narrowspark\Automatic\Test\Common\Fixture\Finder\FooTrait;
 use Narrowspark\Automatic\Test\Common\Fixture\Finder\Nested\DummyClassNested;
 use Narrowspark\Automatic\Test\Common\Fixture\Finder\StaticFunctionAndClasses;
 use PHPUnit\Framework\TestCase;
-use function mkdir;
-use function rmdir;
-use function touch;
-use function unlink;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Common\ClassFinder
+ *
+ * @medium
  */
 final class ClassFinderTest extends TestCase
 {
@@ -80,8 +78,8 @@ final class ClassFinderTest extends TestCase
         $dir = __DIR__ . '/Fixture/empty';
         $filePath = $dir . '/empty.php';
 
-        @mkdir($dir);
-        @touch($filePath);
+        @\mkdir($dir);
+        @\touch($filePath);
 
         $this->loader
             ->addPsr0('/Fixture/empty', [''])
@@ -92,8 +90,8 @@ final class ClassFinderTest extends TestCase
         self::assertSame([], $this->loader->getAbstractClasses());
         self::assertSame([], $this->loader->getInterfaces());
 
-        @unlink($filePath);
-        @rmdir($dir);
+        @\unlink($filePath);
+        @\rmdir($dir);
     }
 
     public function testSetComposerAutoload(): void
@@ -131,7 +129,7 @@ final class ClassFinderTest extends TestCase
     {
         $genericPropertyReader = $this->getGenericPropertyReader();
 
-        $this->loader->setFilter(static function () {
+        $this->loader->setFilter(static function (): bool {
             return false;
         });
 

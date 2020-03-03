@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Prefetcher;
@@ -35,30 +35,15 @@ use FilesystemIterator;
 use InvalidArgumentException;
 use Narrowspark\Automatic\Common\AbstractContainer;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Common\Downloader\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Common\Util;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
-use Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader;
+use Narrowspark\Automatic\Prefetcher\Contract\Prefetcher as PrefetcherContract;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionMethod;
 use SplFileInfo;
 use Symfony\Component\Console\Input\ArgvInput;
-use const DIRECTORY_SEPARATOR;
-use const PHP_INT_MAX;
-use function array_merge;
-use function class_exists;
-use function debug_backtrace;
-use function dirname;
-use function explode;
-use function getenv;
-use function is_int;
-use function method_exists;
-use function sprintf;
-use function str_replace;
-use function strlen;
-use function strpos;
-use function substr;
-use function version_compare;
 
 class Plugin implements EventSubscriberInterface, PluginInterface
 {
@@ -87,8 +72,6 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
     /**
      * Get the Container instance.
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Container
      */
     public function getContainer(): ContainerContract
     {
@@ -108,16 +91,16 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             return;
         }
 
-        if (! class_exists(AbstractContainer::class)) {
-            require __DIR__ . DIRECTORY_SEPARATOR . 'alias.php';
+        if (! \class_exists(AbstractContainer::class)) {
+            require __DIR__ . \DIRECTORY_SEPARATOR . 'alias.php';
         }
 
         // to avoid issues when Automatic Prefetcher is upgraded, we load all PHP classes now
         // that way, we are sure to use all classes from the same version.
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
             /** @var SplFileInfo $file */
-            if (substr($file->getFilename(), -4) === '.php') {
-                class_exists(__NAMESPACE__ . str_replace('/', '\\', substr($file->getFilename(), strlen(__DIR__), -4)));
+            if (\substr($file->getFilename(), -4) === '.php') {
+                \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file->getFilename(), \strlen(__DIR__), -4)));
             }
         }
 
@@ -131,13 +114,13 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         $composer->setRepositoryManager($this->extendRepositoryManager($composer, $io, $tagsManager));
 
         // overwrite composer instance
-        $this->container->set(Composer::class, static function () use ($composer) {
+        $this->container->set(Composer::class, static function () use ($composer): Composer {
             return $composer;
         });
 
-        $this->container->get(Prefetcher::class)->populateRepoCacheDir();
+        $this->container->get(PrefetcherContract::class)->populateRepoCacheDir();
 
-        $this->extendComposer(debug_backtrace(), $tagsManager);
+        $this->extendComposer(\debug_backtrace(), $tagsManager);
     }
 
     /**
@@ -150,20 +133,16 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         }
 
         return [
-            InstallerEvents::PRE_DEPENDENCIES_SOLVING => [['onPreDependenciesSolving', PHP_INT_MAX]],
-            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_INSTALL => [['populateFilesCacheDir', ~PHP_INT_MAX]],
-            PackageEvents::PRE_PACKAGE_UPDATE => [['populateFilesCacheDir', ~PHP_INT_MAX]],
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING => [['onPreDependenciesSolving', \PHP_INT_MAX]],
+            InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_INSTALL => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+            PackageEvents::PRE_PACKAGE_UPDATE => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
             PluginEvents::PRE_FILE_DOWNLOAD => 'onFileDownload',
         ];
     }
 
     /**
      * Populate the provider cache.
-     *
-     * @param \Composer\Installer\InstallerEvent $event
-     *
-     * @return void
      */
     public function onPreDependenciesSolving(InstallerEvent $event): void
     {
@@ -180,9 +159,6 @@ class Plugin implements EventSubscriberInterface, PluginInterface
                      */
                     private $repo;
 
-                    /**
-                     * @param \Composer\Repository\RepositoryInterface $repo
-                     */
                     public function __construct(RepositoryInterface $repo)
                     {
                         $this->repo = $repo;
@@ -195,7 +171,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
                     {
                         $packages = [];
 
-                        if (! method_exists($this->repo, 'whatProvides')) {
+                        if (! \method_exists($this->repo, 'whatProvides')) {
                             return $packages;
                         }
 
@@ -212,7 +188,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         }, clone $pool, $pool)();
 
         foreach ($event->getRequest()->getJobs() as $job) {
-            if ($job['cmd'] !== 'install' || strpos($job['packageName'], '/') === false) {
+            if ($job['cmd'] !== 'install' || \strpos($job['packageName'], '/') === false) {
                 continue;
             }
 
@@ -225,11 +201,11 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         $this->container->get(ParallelDownloader::class)->download($packages, static function (string $packageName, $constraint) use (&$listed, &$packages, $pool, $loadExtraRepos): void {
             /** @var \Composer\Package\PackageInterface $package */
             foreach ($pool->whatProvides($packageName, $constraint, true) as $package) {
-                $links = $loadExtraRepos ? array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) : $package->getRequires();
+                $links = $loadExtraRepos ? \array_merge($package->getRequires(), $package->getConflicts(), $package->getReplaces()) : $package->getRequires();
 
                 /** @var \Composer\Package\Link $link */
                 foreach ($links as $link) {
-                    if (isset($listed[$link->getTarget()]) || strpos($link->getTarget(), '/') === false) {
+                    if (isset($listed[$link->getTarget()]) || \strpos($link->getTarget(), '/') === false) {
                         continue;
                     }
 
@@ -243,30 +219,24 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     /**
      * Wrapper for the fetchAllFromOperations function.
      *
-     * @see \Narrowspark\Automatic\Prefetcher\Prefetcher::fetchAllFromOperations()
+     * @see \Narrowspark\Automatic\Prefetcher\Contract\Prefetcher::fetchAllFromOperations()
      *
      * @param \Composer\Installer\InstallerEvent|\Composer\Installer\PackageEvent $event
-     *
-     * @return void
      */
     public function populateFilesCacheDir($event): void
     {
-        /** @var \Narrowspark\Automatic\Prefetcher\Prefetcher $prefetcher */
-        $prefetcher = $this->container->get(Prefetcher::class);
+        /** @var \Narrowspark\Automatic\Prefetcher\Contract\Prefetcher $prefetcher */
+        $prefetcher = $this->container->get(PrefetcherContract::class);
 
         $prefetcher->fetchAllFromOperations($event);
     }
 
     /**
      * Adds the parallel downloader to composer.
-     *
-     * @param \Composer\Plugin\PreFileDownloadEvent $event
-     *
-     * @return void
      */
     public function onFileDownload(PreFileDownloadEvent $event): void
     {
-        /** @var \Narrowspark\Automatic\Prefetcher\Downloader\ParallelDownloader $rfs */
+        /** @var \Narrowspark\Automatic\Common\Downloader\ParallelDownloader $rfs */
         $rfs = $this->container->get(ParallelDownloader::class);
 
         if ($event->getRemoteFilesystem() !== $rfs) {
@@ -276,25 +246,17 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
     /**
      * Configure the LegacyTagsManager with legacy package requires.
-     *
-     * @param \Composer\IO\IOInterface                                     $io
-     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
-     * @param array                                                        $extra
-     *
-     * @return void
      */
     private function configureLegacyTagsManager(
         IOInterface $io,
         LegacyTagsManagerContract $tagsManager,
         array $extra
     ): void {
-        $envRequire = getenv('AUTOMATIC_PREFETCHER_REQUIRE');
-
-        if ($envRequire !== false) {
+        if (false !== $envRequire = \getenv('AUTOMATIC_PREFETCHER_REQUIRE')) {
             $requires = [];
 
-            foreach (explode(',', $envRequire) as $packageString) {
-                [$packageName, $version] = explode(':', $packageString, 2);
+            foreach (\explode(',', $envRequire) as $packageString) {
+                [$packageName, $version] = \explode(':', $packageString, 2);
 
                 $requires[$packageName] = $version;
             }
@@ -307,24 +269,18 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
     /**
      * Add found legacy tags to the tags manager.
-     *
-     * @param \Composer\IO\IOInterface                                     $io
-     * @param array                                                        $requires
-     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
-     *
-     * @return void
      */
     private function addLegacyTags(IOInterface $io, array $requires, LegacyTagsManagerContract $tagsManager): void
     {
         foreach ($requires as $name => $version) {
-            if (is_int($name)) {
-                $io->writeError(sprintf('Constrain [%s] skipped, because package name is a number [%s]', $version, $name));
+            if (\is_int($name)) {
+                $io->writeError(\sprintf('Constrain [%s] skipped, because package name is a number [%s]', $version, $name));
 
                 continue;
             }
 
-            if (strpos($name, '/') === false) {
-                $io->writeError(sprintf('Constrain [%s] skipped, package name [%s] without a slash is not supported', $version, $name));
+            if (\strpos($name, '/') === false) {
+                $io->writeError(\sprintf('Constrain [%s] skipped, package name [%s] without a slash is not supported', $version, $name));
 
                 continue;
             }
@@ -335,12 +291,6 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
     /**
      * Extend the repository manager with a truncated composer repository and parallel downloader.
-     *
-     * @param \Composer\Composer                                           $composer
-     * @param \Composer\IO\IOInterface                                     $io
-     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
-     *
-     * @return \Composer\Repository\RepositoryManager
      */
     private function extendRepositoryManager(
         Composer $composer,
@@ -379,8 +329,6 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
     /**
      * Check if automatic can be activated.
-     *
-     * @return null|string
      */
     private function getErrorMessage(): ?string
     {
@@ -389,8 +337,8 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             return 'You must enable the openssl extension in your [php.ini] file';
         }
 
-        if (version_compare(Util::getComposerVersion(), '1.7.0', '<')) {
-            return sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
+        if (\version_compare(Util::getComposerVersion(), '1.8.0', '<')) {
+            return \sprintf('Your version "%s" of Composer is too old; Please upgrade', Composer::VERSION);
         }
         // @codeCoverageIgnoreEnd
 
@@ -400,10 +348,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     /**
      * Extend the composer object with some automatic prefetcher settings.
      *
-     * @param array                                                        $backtrace
-     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
-     *
-     * @return void
+     * @param array $backtrace
      */
     private function extendComposer($backtrace, LegacyTagsManagerContract $tagsManager): void
     {
@@ -439,7 +384,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
                 BasePackage::$stabilities['dev'] = 1 + BasePackage::STABILITY_STABLE;
             }
 
-            $this->container->get(Prefetcher::class)->prefetchComposerRepositories();
+            $this->container->get(PrefetcherContract::class)->prefetchComposerRepositories();
 
             break;
         }

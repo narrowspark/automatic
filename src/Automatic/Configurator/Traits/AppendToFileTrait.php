@@ -3,25 +3,18 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Configurator\Traits;
 
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
-use const FILE_APPEND;
-use function dirname;
-use function file_put_contents;
-use function is_dir;
-use function is_writable;
-use function method_exists;
-use function sprintf;
 
 /**
  * @property Filesystem $filesystem
@@ -37,29 +30,27 @@ trait AppendToFileTrait
      * @param string $content  The content to append
      *
      * @throws IOException If the file is not writable
-     *
-     * @return void
      */
     public function appendToFile(string $filename, string $content): void
     {
-        if (method_exists($this->filesystem, 'appendToFile')) {
+        if (\method_exists($this->filesystem, 'appendToFile')) {
             $this->filesystem->appendToFile($filename, $content);
 
             return;
         }
         // @codeCoverageIgnoreStart
-        $dir = dirname($filename);
+        $dir = \dirname($filename);
 
-        if (! is_dir($dir)) {
+        if (! \is_dir($dir)) {
             $this->filesystem->mkdir($dir);
         }
 
-        if (! is_writable($dir)) {
-            throw new IOException(sprintf('Unable to write to the "%s" directory.', $dir), 0, null, $dir);
+        if (! \is_writable($dir)) {
+            throw new IOException(\sprintf('Unable to write to the "%s" directory.', $dir), 0, null, $dir);
         }
 
-        if (false === @file_put_contents($filename, $content, FILE_APPEND)) {
-            throw new IOException(sprintf('Failed to write file "%s".', $filename), 0, null, $filename);
+        if (false === @\file_put_contents($filename, $content, \FILE_APPEND)) {
+            throw new IOException(\sprintf('Failed to write file "%s".', $filename), 0, null, $filename);
         }
         // @codeCoverageIgnoreEnd
     }

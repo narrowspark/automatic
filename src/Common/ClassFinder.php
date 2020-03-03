@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Common;
@@ -17,27 +17,7 @@ use Closure;
 use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
-use const DIRECTORY_SEPARATOR;
-use const SORT_STRING;
-use const T_ABSTRACT;
-use const T_CLASS;
-use const T_INTERFACE;
-use const T_NAMESPACE;
-use const T_NS_SEPARATOR;
-use const T_STRING;
-use const T_TRAIT;
-use const T_WHITESPACE;
-use function array_map;
-use function array_merge;
-use function array_unique;
-use function count;
-use function file_get_contents;
-use function gc_mem_caches;
-use function is_array;
-use function ltrim;
-use function rtrim;
 use function token_get_all;
-use function trim;
 
 final class ClassFinder implements ResettableContract
 {
@@ -99,8 +79,6 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Create a new ClassLoader instance.
-     *
-     * @param string $vendorDir
      */
     public function __construct(string $vendorDir)
     {
@@ -154,15 +132,11 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Exclude paths from finder.
-     *
-     * @param array $excludes
-     *
-     * @return self
      */
     public function setExcludes(array $excludes): self
     {
-        $this->excludes = array_map(static function (string $value) {
-            return trim($value, '/');
+        $this->excludes = \array_map(static function (string $value): string {
+            return \trim($value, '/');
         }, $excludes);
 
         return $this;
@@ -170,10 +144,6 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Set a symfony finder filter.
-     *
-     * @param Closure $filter
-     *
-     * @return self
      */
     public function setFilter(Closure $filter): self
     {
@@ -184,11 +154,6 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Set the composer.json file autoload key values.
-     *
-     * @param string $packageName
-     * @param array  $autoload
-     *
-     * @return self
      */
     public function setComposerAutoload(string $packageName, array $autoload): self
     {
@@ -215,11 +180,6 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Add composer psr0 paths.
-     *
-     * @param string $packageName
-     * @param array  $paths
-     *
-     * @return self
      */
     public function addPsr0(string $packageName, array $paths): self
     {
@@ -230,11 +190,6 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Add composer psr4 paths.
-     *
-     * @param string $packageName
-     * @param array  $paths
-     *
-     * @return self
      */
     public function addPsr4(string $packageName, array $paths): self
     {
@@ -245,11 +200,6 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Add composer classmap paths.
-     *
-     * @param string $packageName
-     * @param array  $paths
-     *
-     * @return self
      */
     public function addClassmap(string $packageName, array $paths): self
     {
@@ -260,18 +210,16 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Find all the class, traits and interface names in a given directory.
-     *
-     * @return self
      */
     public function find(): self
     {
-        $preparedPaths = array_unique(
-            array_merge(
+        $preparedPaths = \array_unique(
+            \array_merge(
                 $this->getPreparedPaths($this->paths['psr0']),
                 $this->getPreparedPaths($this->paths['psr4']),
                 $this->getPreparedPaths($this->paths['classmap'])
             ),
-            SORT_STRING
+            \SORT_STRING
         );
 
         $finder = Finder::create()
@@ -290,53 +238,53 @@ final class ClassFinder implements ResettableContract
             $realPath = (string) $file->getRealPath();
 
             $namespace = null;
-            $tokens = token_get_all((string) file_get_contents($realPath));
+            $tokens = \token_get_all((string) \file_get_contents($realPath));
 
             foreach ($tokens as $key => $token) {
-                if (is_array($token)) {
-                    if ($token[0] === T_NAMESPACE) {
+                if (\is_array($token)) {
+                    if ($token[0] === \T_NAMESPACE) {
                         $namespace = self::getNamespace($key + 2, $tokens);
-                    } elseif ($token[0] === T_INTERFACE) {
+                    } elseif ($token[0] === \T_INTERFACE) {
                         $name = self::getName($key + 2, $tokens);
 
                         if ($name === null) {
                             continue 2;
                         }
 
-                        $this->interfaces[ltrim($namespace . '\\' . $name, '\\')] = $realPath;
-                    } elseif ($token[0] === T_TRAIT) {
+                        $this->interfaces[\ltrim($namespace . '\\' . $name, '\\')] = $realPath;
+                    } elseif ($token[0] === \T_TRAIT) {
                         $name = self::getName($key + 2, $tokens);
 
                         if ($name === null) {
                             continue 2;
                         }
 
-                        $this->traits[ltrim($namespace . '\\' . $name, '\\')] = $realPath;
-                    } elseif ($token[0] === T_ABSTRACT) {
+                        $this->traits[\ltrim($namespace . '\\' . $name, '\\')] = $realPath;
+                    } elseif ($token[0] === \T_ABSTRACT) {
                         $name = self::getName($key + 4, $tokens);
 
                         if ($name === null) {
                             continue 2;
                         }
 
-                        $this->abstractClasses[ltrim($namespace . '\\' . $name, '\\')] = $realPath;
+                        $this->abstractClasses[\ltrim($namespace . '\\' . $name, '\\')] = $realPath;
 
                         continue 2;
-                    } elseif ($token[0] === T_CLASS) {
+                    } elseif ($token[0] === \T_CLASS) {
                         $name = self::getName($key + 2, $tokens);
 
                         if ($name === null) {
                             continue 2;
                         }
 
-                        $this->classes[ltrim($namespace . '\\' . $name, '\\')] = $realPath;
+                        $this->classes[\ltrim($namespace . '\\' . $name, '\\')] = $realPath;
                     }
                 }
             }
 
             unset($tokens);
             // PHP 7 memory manager will not release after token_get_all(), see https://bugs.php.net/70098
-            gc_mem_caches();
+            \gc_mem_caches();
         }
 
         return $this;
@@ -349,7 +297,7 @@ final class ClassFinder implements ResettableContract
      */
     public function getAll(): array
     {
-        return array_merge(
+        return \array_merge(
             $this->interfaces,
             $this->traits,
             $this->abstractClasses,
@@ -375,16 +323,11 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Find the namespace in the tokens starting at a given key.
-     *
-     * @param int   $key
-     * @param array $tokens
-     *
-     * @return null|string
      */
     private static function getNamespace(int $key, array $tokens): ?string
     {
         $namespace = null;
-        $tokenCount = count($tokens);
+        $tokenCount = \count($tokens);
 
         for ($i = $key; $i < $tokenCount; $i++) {
             if (self::isPartOfNamespace($tokens[$i])) {
@@ -401,32 +344,27 @@ final class ClassFinder implements ResettableContract
      * Determine if the given token is part of the namespace.
      *
      * @param array|string $token
-     *
-     * @return bool
      */
     private static function isPartOfNamespace($token): bool
     {
-        return is_array($token) && ($token[0] === T_STRING || $token[0] === T_NS_SEPARATOR);
+        return \is_array($token) && ($token[0] === \T_STRING || $token[0] === \T_NS_SEPARATOR);
     }
 
     /**
      * Find the name in the tokens starting at a given key.
      *
-     * @param int   $key
-     * @param array $tokens
-     *
-     * @return null|string
+     * @param int $key
      */
     private static function getName($key, array $tokens): ?string
     {
         $class = null;
-        $tokenCount = count($tokens);
+        $tokenCount = \count($tokens);
 
         for ($i = $key; $i < $tokenCount; $i++) {
-            if (is_array($tokens[$i])) {
-                if ($tokens[$i][0] === T_STRING) {
+            if (\is_array($tokens[$i])) {
+                if ($tokens[$i][0] === \T_STRING) {
                     $class .= $tokens[$i][1];
-                } elseif ($tokens[$i][0] === T_WHITESPACE) {
+                } elseif ($tokens[$i][0] === \T_WHITESPACE) {
                     return $class;
                 }
             }
@@ -437,22 +375,18 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Prepare psr0 and psr4 to full vendor package paths.
-     *
-     * @param array $paths
-     *
-     * @return array
      */
     private function getPreparedPaths(array $paths): array
     {
         $fullPaths = [];
 
         foreach ($paths as $name => $path) {
-            if (is_array($path)) {
+            if (\is_array($path)) {
                 foreach ($path as $p) {
-                    $fullPaths[] = rtrim($this->vendorDir . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR . $p, '/');
+                    $fullPaths[] = \rtrim($this->vendorDir . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $p, '/');
                 }
             } else {
-                $fullPaths[] = rtrim($this->vendorDir . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR . $path, '/');
+                $fullPaths[] = \rtrim($this->vendorDir . \DIRECTORY_SEPARATOR . $name . \DIRECTORY_SEPARATOR . $path, '/');
             }
         }
 

@@ -3,36 +3,33 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Security\Test;
 
+use Exception;
+use Mockery;
+use Narrowspark\Automatic\Common\Downloader\Downloader;
+use Narrowspark\Automatic\Common\Downloader\JsonResponse;
 use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
-use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
+use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Narrowspark\TestingHelper\Traits\AssertArrayTrait;
-use PHPUnit\Framework\TestCase;
-use const DIRECTORY_SEPARATOR;
-use function array_map;
-use function array_merge;
-use function count;
-use function glob;
-use function is_dir;
-use function rmdir;
-use function unlink;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Security\Audit
+ *
+ * @medium
  */
-final class AuditTest extends TestCase
+final class AuditTest extends MockeryTestCase
 {
     use AssertArrayTrait;
 
@@ -41,6 +38,9 @@ final class AuditTest extends TestCase
 
     /** @var string */
     private $path;
+
+    /** @var \Mockery\MockInterface|\Narrowspark\Automatic\Common\Downloader\Downloader */
+    private $downloaderMock;
 
     /**
      * {@inheritdoc}
@@ -51,9 +51,22 @@ final class AuditTest extends TestCase
 
         $this->path = __DIR__ . 'audit';
 
-        $downloader = new ComposerDownloader();
+        $this->downloaderMock = Mockery::mock(Downloader::class);
 
-        $this->audit = new Audit($this->path, $downloader, $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA));
+        $header = ['User-Agent:' . Audit::getUserAgent()];
+
+        $this->downloaderMock->shouldReceive('get')
+            ->with(
+                '/security-advisories.json',
+                $header
+            )
+            ->andReturn(new JsonResponse(
+                \json_decode((string) \file_get_contents(__DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'audit_db.json'), true),
+                $header,
+                200
+            ));
+
+        $this->audit = new Audit($this->downloaderMock);
     }
 
     /**
@@ -64,14 +77,14 @@ final class AuditTest extends TestCase
         parent::tearDown();
 
         $this->delete($this->path);
-        @rmdir($this->path);
+        @\rmdir($this->path);
     }
 
     public function testCheckPackageWithSymfony(): void
     {
         [$vulnerabilities, $messages] = $this->audit->checkPackage('symfony/symfony', 'v2.5.2', $this->audit->getSecurityAdvisories());
 
-        $this->assertSymfonySecurity(count($vulnerabilities), $vulnerabilities);
+        $this->assertSymfonySecurity(\count($vulnerabilities), $vulnerabilities);
         self::assertCount(0, $messages);
     }
 
@@ -79,21 +92,21 @@ final class AuditTest extends TestCase
     {
         [$vulnerabilities, $messages] = $this->audit->checkPackage('symfony/symfony', 'v2.5.2', $this->audit->getSecurityAdvisories());
 
-        $this->assertSymfonySecurity(count($vulnerabilities), $vulnerabilities);
+        $this->assertSymfonySecurity(\count($vulnerabilities), $vulnerabilities);
         self::assertCount(0, $messages);
 
-        [$vulnerabilities, $messages] = $this->audit->checkPackage('symfony/symfony', 'v2.5.2', $this->audit->getSecurityAdvisories());
+        [$vulnerabilities] = $this->audit->checkPackage('symfony/symfony', 'v2.5.2', $this->audit->getSecurityAdvisories());
 
-        $this->assertSymfonySecurity(count($vulnerabilities), $vulnerabilities);
+        $this->assertSymfonySecurity(\count($vulnerabilities), $vulnerabilities);
     }
 
     public function testCheckLockWithSymfony252(): void
     {
         [$vulnerabilities, $messages] = $this->audit->checkLock(
-            __DIR__ . DIRECTORY_SEPARATOR . 'Fixture' . DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock'
+            __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.lock'
         );
 
-        $this->assertSymfonySecurity(count($vulnerabilities), $vulnerabilities);
+        $this->assertSymfonySecurity(\count($vulnerabilities), $vulnerabilities);
         self::assertCount(0, $messages);
     }
 
@@ -102,7 +115,7 @@ final class AuditTest extends TestCase
         $this->audit->setDevMode(false);
 
         [$vulnerabilities, $messages] = $this->audit->checkLock(
-            __DIR__ . DIRECTORY_SEPARATOR . 'Fixture' . DIRECTORY_SEPARATOR . 'symfony_2.5.2_dev_packages_composer.lock'
+            __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_dev_packages_composer.lock'
         );
 
         self::assertCount(0, $vulnerabilities);
@@ -112,7 +125,7 @@ final class AuditTest extends TestCase
     public function testCheckLockWithComposer171(): void
     {
         [$vulnerabilities, $messages] = $this->audit->checkLock(
-            __DIR__ . DIRECTORY_SEPARATOR . 'Fixture' . DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock'
+            __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'composer_1.7.1_composer.lock'
         );
 
         self::assertCount(0, $vulnerabilities);
@@ -133,15 +146,14 @@ final class AuditTest extends TestCase
     }
 
     /**
-     * @param int   $vulnerabilitiesCount
-     * @param array $vulnerabilities
+     * @param array<string, array<string, null|string>> $vulnerabilities
      *
-     * @return void
+     * @throws Exception
      */
     private function assertSymfonySecurity(int $vulnerabilitiesCount, array $vulnerabilities): void
     {
         self::assertArraySubset(
-            array_merge([
+            \array_merge([
                 'symfony/symfony' => [
                     'version' => 'v2.5.2',
                     'advisories' => [
@@ -318,14 +330,14 @@ final class AuditTest extends TestCase
 
     private function delete(string $path): void
     {
-        array_map(function ($value): void {
-            if (is_dir($value)) {
+        \array_map(function (string $value): void {
+            if (\is_dir($value)) {
                 $this->delete($value);
 
-                @rmdir($value);
+                @\rmdir($value);
             } else {
-                @unlink($value);
+                @\unlink($value);
             }
-        }, glob($path . DIRECTORY_SEPARATOR . '*'));
+        }, (array) \glob($path . \DIRECTORY_SEPARATOR . '*'));
     }
 }

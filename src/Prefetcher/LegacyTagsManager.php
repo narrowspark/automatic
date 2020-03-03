@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Prefetcher;
@@ -16,13 +16,8 @@ namespace Narrowspark\Automatic\Prefetcher;
 use Composer\IO\IOInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\VersionParser;
+use Narrowspark\Automatic\Common\Downloader\Downloader;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
-use function array_filter;
-use function array_intersect_key;
-use function count;
-use function explode;
-use function sprintf;
-use function strpos;
 
 final class LegacyTagsManager implements LegacyTagsManagerContract
 {
@@ -50,14 +45,19 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
     /** @var array */
     private static $packageCache = [];
 
+    /** @var \Narrowspark\Automatic\Common\Downloader\Downloader */
+    private $downloader;
+
+    /** @var null|array */
+    private $versions;
+
     /**
-     * LegacyTagsManager constructor.
-     *
-     * @param IOInterface $io
+     * Create a new LegacyTagsManager instance.
      */
-    public function __construct(IOInterface $io)
+    public function __construct(IOInterface $io, Downloader $downloader)
     {
         $this->io = $io;
+        $this->downloader = $downloader;
         $this->versionParser = new VersionParser();
     }
 
@@ -78,9 +78,9 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
     public function hasProvider(string $file): bool
     {
         foreach ($this->legacyTags as $name => $constraint) {
-            [$namespace,] = explode('/', $name, 2);
+            [$namespace,] = \explode('/', $name, 2);
 
-            if (strpos($file, sprintf('provider-%s$', $namespace)) !== false) {
+            if (\strpos($file, \sprintf('provider-%s$', $namespace)) !== false) {
                 return true;
             }
         }
@@ -95,6 +95,25 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
     {
         if (! isset($data['packages'])) {
             return $data;
+        }
+
+        if (\array_key_exists('symfony/symfony', $this->legacyTags)) {
+            /** @var \Composer\Semver\Constraint\Constraint|\Composer\Semver\Constraint\MultiConstraint $symfonyConstraint */
+            $symfonyConstraint = $this->legacyTags['symfony/symfony']['constrain'];
+
+            if ($this->versions === null) {
+                $this->versions = $this->getVersions(
+                    $this->downloader->get('/versions.json')->getBody() ?? [],
+                    $symfonyConstraint
+                );
+            }
+
+            /** @var string $symfonyVersion */
+            $symfonyVersion = $this->legacyTags['symfony/symfony']['version'];
+
+            foreach ($this->versions['splits'] as $name => $version) {
+                $this->addConstraint($name, $symfonyVersion);
+            }
         }
 
         $packagesReplace = [];
@@ -120,7 +139,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
                 $constrain = $legacy['constrain'];
 
                 if ($constrain->matches(new Constraint('==', $normalizedVersion))) {
-                    if (isset($composerJson['replace'])) {
+                    if (\array_key_exists('replace', $composerJson)) {
                         foreach ($composerJson['replace'] as $key => $value) {
                             $packagesReplace[$key] = $name;
                         }
@@ -128,7 +147,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
                 } else {
                     if (! isset(self::$packageCache[$name])) {
                         $this->io->writeError(
-                            sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', $name, (string) $legacy['version'])
+                            \sprintf('<info>Restricting packages listed in [%s] to [%s]</info>', $name, (string) $legacy['version'])
                         );
                         self::$packageCache[$name] = true;
                     }
@@ -138,7 +157,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
             }
         }
 
-        if (count(array_filter($packages)) === 0) {
+        if (\count(\array_filter($packages)) === 0) {
             return $data;
         }
 
@@ -158,7 +177,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
                 $devMaster = $versions['dev-master'];
             }
 
-            $versions = array_intersect_key($versions, $data['packages'][$parentName]);
+            $versions = \array_intersect_key($versions, $data['packages'][$parentName]);
 
             if ($devMaster !== null && null !== $devMasterAlias = $versions['dev-master']['extra']['branch-alias']['dev-master'] ?? null) {
                 /** @var \Composer\Semver\Constraint\Constraint $legacyConstrain */
@@ -169,7 +188,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
                 }
             }
 
-            if (count($versions) !== 0) {
+            if (\count($versions) !== 0) {
                 $data['packages'][$name] = $versions;
             }
         }
@@ -183,5 +202,39 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
     public function reset(): void
     {
         $this->legacyTags = [];
+    }
+
+    /**
+     * @param \Composer\Semver\Constraint\Constraint|\Composer\Semver\Constraint\MultiConstraint $symfonyConstraint
+     */
+    private function getVersions(array $versions, $symfonyConstraint): array
+    {
+        $okVersions = [];
+
+        foreach ($versions['splits'] as $name => $vers) {
+            foreach ($vers as $i => $v) {
+                if (! isset($okVersions[$v])) {
+                    $okVersions[$v] = false;
+
+                    for ($j = 0; $j < 60; $j++) {
+                        if ($symfonyConstraint->matches(new Constraint('==', $v . '.' . $j . '.0'))) {
+                            $okVersions[$v] = true;
+
+                            break;
+                        }
+                    }
+                }
+
+                if (! $okVersions[$v]) {
+                    unset($vers[$i]);
+                }
+            }
+
+            if (! $vers || $versions['splits'][$name] === $vers) {
+                unset($versions['splits'][$name]);
+            }
+        }
+
+        return $versions;
     }
 }

@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test;
@@ -36,27 +36,29 @@ use Narrowspark\Automatic\ScriptExecutor;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use function is_array;
-use function is_string;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Container
+ *
+ * @medium
  */
 final class ContainerTest extends MockeryTestCase
 {
     /** @var \Narrowspark\Automatic\Container */
-    private static $staticContainer;
+    private $container;
 
     /**
      * {@inheritdoc}
      */
-    public static function setUpBeforeClass(): void
+    protected function setUp(): void
     {
-        parent::setUpBeforeClass();
+        parent::setUp();
 
         $composer = new Composer();
+
+        /** @var \Composer\Config|\Mockery\MockInterface $configMock */
         $configMock = Mockery::mock(Config::class);
         $configMock->shouldReceive('get')
             ->with('vendor-dir')
@@ -76,34 +78,31 @@ final class ContainerTest extends MockeryTestCase
 
         $composer->setConfig($configMock);
 
+        /** @var \Composer\Package\RootPackageInterface|\Mockery\MockInterface $package */
         $package = Mockery::mock(RootPackageInterface::class);
         $package->shouldReceive('getExtra')
             ->andReturn([]);
 
         $composer->setPackage($package);
 
+        /** @var \Composer\Downloader\DownloadManager|\Mockery\MockInterface $downloadManager */
         $downloadManager = Mockery::mock(DownloadManager::class);
         $downloadManager->shouldReceive('getDownloader')
             ->with('file');
 
         $composer->setDownloadManager($downloadManager);
 
-        self::$staticContainer = new Container($composer, new BufferIO());
+        $this->container = new Container($composer, new BufferIO());
     }
 
     /**
      * @dataProvider provideContainerInstancesCases
-     *
-     * @param string $key
-     * @param mixed  $expected
-     *
-     * @return void
      */
     public function testContainerInstances(string $key, $expected): void
     {
-        $value = self::$staticContainer->get($key);
+        $value = $this->container->get($key);
 
-        if (is_string($value) || is_array($value)) {
+        if (\is_string($value) || \is_array($value)) {
             self::assertSame($expected, $value);
         } else {
             self::assertInstanceOf($expected, $value);
@@ -113,7 +112,7 @@ final class ContainerTest extends MockeryTestCase
     /**
      * @return array
      */
-    public function provideContainerInstancesCases(): iterable
+    public static function provideContainerInstancesCases(): iterable
     {
         return [
             [Composer::class, Composer::class],
@@ -145,6 +144,6 @@ final class ContainerTest extends MockeryTestCase
 
     public function testGetAll(): void
     {
-        self::assertCount(16, self::$staticContainer->getAll());
+        self::assertCount(16, $this->container->getAll());
     }
 }

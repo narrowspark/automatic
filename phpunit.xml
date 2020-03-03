@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    cacheResult="true"
+    cacheResultFile=".build/phpunit/phpunit.cache"
+    colors="true"
+    verbose="true"
+    failOnRisky="true"
+    failOnWarning="true"
+    backupGlobals="true"
+    columns="max"
+    executionOrder="random"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    resolveDependencies="true"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    beStrictAboutResourceUsageDuringSmallTests="true"
+    beStrictAboutChangesToGlobalState="true"
+    beStrictAboutOutputDuringTests="true"
+    beStrictAboutTodoAnnotatedTests="true"
+    stopOnError="false"
+    stopOnFailure="false"
+    stopOnIncomplete="false"
+    stopOnSkipped="false"
+>
+    <php>
+        <ini name="error_reporting" value="-1" />
+        <ini name="intl.default_locale" value="en" />
+        <ini name="intl.error_level" value="0" />
+        <ini name="memory_limit" value="-1" />
+    </php>
+
+    <testsuites>
+        <testsuite name="Narrowspark Automatic Internal Test Suite">
+            <directory>./tests/Internal/</directory>
+        </testsuite>
+
+        <testsuite name="Narrowspark Automatic Test Suite">
+            <directory>./tests/Automatic/</directory>
+        </testsuite>
+
+        <testsuite name="Narrowspark Automatic Common Test Suite">
+            <directory>./tests/Common/</directory>
+        </testsuite>
+
+        <testsuite name="Narrowspark Automatic Prefetcher Test Suite">
+            <directory>./tests/Prefetcher/</directory>
+        </testsuite>
+
+        <testsuite name="Narrowspark Automatic Security Test Suite">
+            <directory>./tests/Security/</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./</directory>
+            <exclude>
+                <directory>./vendor</directory>
+                <directory>./tests</directory>
+                <directory>./src/Prefetcher/Common/</directory>
+                <directory>./src/Security/Common/</directory>
+                <file>./src/Prefetcher/alias.php</file>
+                <file>./src/Security/alias.php</file>
+                <file>./.build/update-mirror-classes.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>

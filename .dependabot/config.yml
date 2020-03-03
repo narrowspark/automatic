@@ -1,0 +1,43 @@
+# https://dependabot.com/docs/config-file/
+
+version: 1
+
+update_configs:
+  - package_manager: "php:composer"
+    directory: "/"
+    update_schedule: "live"
+    version_requirement_updates: "increase_versions"
+    allowed_updates:
+      - match:
+          dependency_type: "development"
+    commit_message:
+      include_scope: true
+      prefix: "Build"
+    default_labels:
+      - "dependency"
+
+  - package_manager: "php:composer"
+    directory: "/.build"
+    update_schedule: "live"
+    version_requirement_updates: "increase_versions"
+    allowed_updates:
+      - match:
+          dependency_type: "all"
+    commit_message:
+      include_scope: true
+      prefix: "Build"
+    default_labels:
+      - "dependency"
+
+  - package_manager: "javascript"
+    directory: "/"
+    update_schedule: "live"
+    version_requirement_updates: "increase_versions"
+    allowed_updates:
+      - match:
+          dependency_type: "all"
+    commit_message:
+      include_scope: true
+      prefix: "Build"
+    default_labels:
+      - "dependency"

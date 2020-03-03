@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Operation;
@@ -25,13 +25,6 @@ use ReflectionClass;
 use ReflectionException;
 use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
-use const DIRECTORY_SEPARATOR;
-use function array_keys;
-use function count;
-use function implode;
-use function sprintf;
-use function strpos;
-use function strstr;
 
 abstract class AbstractOperation implements OperationContract
 {
@@ -86,13 +79,6 @@ abstract class AbstractOperation implements OperationContract
 
     /**
      * Base functions for Install and Uninstall Operation.
-     *
-     * @param string                                              $vendorDir
-     * @param \Narrowspark\Automatic\Lock                         $lock
-     * @param \Composer\IO\IOInterface                            $io
-     * @param \Narrowspark\Automatic\Contract\Configurator        $configurator
-     * @param \Narrowspark\Automatic\Contract\PackageConfigurator $packageConfigurator
-     * @param \Narrowspark\Automatic\Common\ClassFinder           $classFinder
      */
     public function __construct(
         string $vendorDir,
@@ -113,36 +99,30 @@ abstract class AbstractOperation implements OperationContract
 
     /**
      * Show a waring if remaining configurators are found in package config.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package      $package
-     * @param \Narrowspark\Automatic\Contract\PackageConfigurator $packageConfigurator
-     * @param \Narrowspark\Automatic\Contract\Configurator        $configurator
-     *
-     * @return void
      */
     protected function showWarningOnRemainingConfigurators(
         PackageContract $package,
         PackageConfiguratorContract $packageConfigurator,
         ConfiguratorContract $configurator
     ): void {
-        $packageConfigurators = array_keys((array) $package->getConfig(CommonConfiguratorContract::TYPE));
+        $packageConfigurators = \array_keys((array) $package->getConfig(CommonConfiguratorContract::TYPE));
 
-        foreach (array_keys($configurator->getConfigurators()) as $key => $value) {
+        foreach (\array_keys($configurator->getConfigurators()) as $key => $value) {
             if (isset($packageConfigurators[$key])) {
                 unset($packageConfigurators[$key]);
             }
         }
 
-        foreach (array_keys($packageConfigurator->getConfigurators()) as $key => $value) {
+        foreach (\array_keys($packageConfigurator->getConfigurators()) as $key => $value) {
             if (isset($packageConfigurators[$key])) {
                 unset($packageConfigurators[$key]);
             }
         }
 
-        if (count($packageConfigurators) !== 0) {
-            $this->io->writeError(sprintf(
+        if (\count($packageConfigurators) !== 0) {
+            $this->io->writeError(\sprintf(
                 '<warning>Configurators [%s] did not run for package [%s]</warning>',
-                implode(', ', $packageConfigurators),
+                \implode(', ', $packageConfigurators),
                 $package->getPrettyName()
             ));
         }
@@ -151,11 +131,7 @@ abstract class AbstractOperation implements OperationContract
     /**
      * Add package configuration from package.
      *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
      * @throws ReflectionException
-     *
-     * @return void
      */
     protected function addPackageConfigurators(PackageContract $package): void
     {
@@ -171,21 +147,15 @@ abstract class AbstractOperation implements OperationContract
         }
     }
 
-    /**
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     * @param string                                         $name
-     *
-     * @return array
-     */
     protected function findClassesInAutomaticFolder(PackageContract $package, string $name): array
     {
         $composerAutoload = $package->getAutoload();
         $classes = [];
 
-        if (count($composerAutoload) !== 0) {
+        if (\count($composerAutoload) !== 0) {
             $classes = $this->classFinder->setComposerAutoload($name, $composerAutoload)
-                ->setFilter(static function (SplFileInfo $fileInfo) use ($name) {
-                    return strpos((string) strstr($fileInfo->getPathname(), $name), DIRECTORY_SEPARATOR . 'Automatic' . DIRECTORY_SEPARATOR) !== false;
+                ->setFilter(static function (SplFileInfo $fileInfo) use ($name): bool {
+                    return \strpos((string) \strstr($fileInfo->getPathname(), $name), \DIRECTORY_SEPARATOR . 'Automatic' . \DIRECTORY_SEPARATOR) !== false;
                 })
                 ->find()
                 ->getAll();

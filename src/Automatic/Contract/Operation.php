@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Contract;
@@ -20,28 +20,16 @@ interface Operation
 {
     /**
      * Check if operation is supported.
-     *
-     * @param \Composer\DependencyResolver\Operation\OperationInterface $operation
-     *
-     * @return bool
      */
     public function supports(OperationInterface $operation): bool;
 
     /**
      * Resolve package from composer operation.
-     *
-     * @param \Composer\DependencyResolver\Operation\OperationInterface $operation
-     *
-     * @return \Narrowspark\Automatic\Common\Contract\Package
      */
     public function resolve(OperationInterface $operation): PackageContract;
 
     /**
      * Transform the project with configurators.
-     *
-     * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
-     * @return void
      */
     public function transform(PackageContract $package): void;
 }

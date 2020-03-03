@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic;
@@ -20,10 +20,6 @@ use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Symfony\Component\Filesystem\Filesystem;
-use function array_walk;
-use function class_exists;
-use function sprintf;
-use function str_replace;
 
 final class SkeletonGenerator
 {
@@ -65,11 +61,8 @@ final class SkeletonGenerator
     /**
      * Create a new SkeletonGenerator instance.
      *
-     * @param \Composer\IO\IOInterface                             $io
-     * @param \Narrowspark\Automatic\Installer\InstallationManager $installationManager
-     * @param \Narrowspark\Automatic\Lock                          $lock
-     * @param string                                               $vendorPath
-     * @param string[]                                             $options
+     * @param \Narrowspark\Automatic\Lock $lock
+     * @param string[]                    $options
      */
     public function __construct(
         IOInterface $io,
@@ -89,8 +82,6 @@ final class SkeletonGenerator
      * Generate the selected skeleton.
      *
      * @throws Exception
-     *
-     * @return void
      */
     public function run(): void
     {
@@ -120,7 +111,7 @@ final class SkeletonGenerator
         /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $generator */
         $generator = $generators[$answer];
 
-        $this->io->write(sprintf('%sGenerating [%s] skeleton.%s', "\n", $generatorTypes[$answer], "\n"));
+        $this->io->write(\sprintf('%sGenerating [%s] skeleton.%s', "\n", $generatorTypes[$answer], "\n"));
 
         $generator->generate();
 
@@ -142,8 +133,6 @@ final class SkeletonGenerator
      * Removes all information about the skeleton package.
      *
      * @throws Exception
-     *
-     * @return void
      */
     public function selfRemove(): void
     {
@@ -174,8 +163,8 @@ final class SkeletonGenerator
 
         foreach ((array) $this->lock->get(SkeletonInstaller::LOCK_KEY) as $name => $generators) {
             foreach ((array) $this->lock->get(Automatic::LOCK_CLASSMAP, $name) as $class => $path) {
-                if (! class_exists($class)) {
-                    require_once str_replace('%vendor_path%', $this->vendorPath, $path);
+                if (! \class_exists($class)) {
+                    require_once \str_replace('%vendor_path%', $this->vendorPath, $path);
                 }
             }
 
@@ -184,7 +173,7 @@ final class SkeletonGenerator
 
         $options = $this->options;
 
-        array_walk($foundGenerators, static function (string &$class) use ($options): void {
+        \array_walk($foundGenerators, static function (string &$class) use ($options): void {
             /** @var \Narrowspark\Automatic\Common\Generator\AbstractGenerator $class */
             $class = new $class(new Filesystem(), $options);
         });
@@ -194,8 +183,6 @@ final class SkeletonGenerator
 
     /**
      * Transforms requires data to automatic packages.
-     *
-     * @param array $requires
      *
      * @return \Narrowspark\Automatic\Common\Contract\Package[]
      */

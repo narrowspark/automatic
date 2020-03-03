@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Common\Installer;
@@ -16,23 +16,25 @@ namespace Narrowspark\Automatic\Test\Common\Installer;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Installer as BaseInstaller;
 use Composer\Installer\InstallationManager;
 use Composer\Package\Locker;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
+use Mockery;
 use Narrowspark\Automatic\Common\Installer\Installer;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
+use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Common\Installer\Installer
+ *
+ * @medium
  */
 final class InstallerTest extends MockeryTestCase
 {
-    use ArrangeComposerClasses;
+    use ArrangeComposerClassesTrait;
 
     /**
      * {@inheritdoc}
@@ -45,25 +47,25 @@ final class InstallerTest extends MockeryTestCase
 
         $this->composerMock->shouldReceive('getLocker')
             ->once()
-            ->andReturn($this->mock(Locker::class));
+            ->andReturn(Mockery::mock(Locker::class));
         $this->composerMock->shouldReceive('getEventDispatcher')
             ->once()
-            ->andReturn($this->mock(EventDispatcher::class));
+            ->andReturn(Mockery::mock(EventDispatcher::class));
         $this->composerMock->shouldReceive('getAutoloadGenerator')
             ->once()
-            ->andReturn($this->mock(AutoloadGenerator::class));
+            ->andReturn(Mockery::mock(AutoloadGenerator::class));
         $this->composerMock->shouldReceive('getDownloadManager')
             ->once()
-            ->andReturn($this->mock(DownloadManager::class));
+            ->andReturn(Mockery::mock(DownloadManager::class));
 
         $this->composerMock->shouldReceive('getPackage')
             ->once()
-            ->andReturn($this->mock(RootPackageInterface::class));
+            ->andReturn(Mockery::mock(RootPackageInterface::class));
         $this->composerMock->shouldReceive('getRepositoryManager')
             ->once()
-            ->andReturn($this->mock(RepositoryManager::class));
+            ->andReturn(Mockery::mock(RepositoryManager::class));
 
-        $installationManager = $this->mock(InstallationManager::class);
+        $installationManager = Mockery::mock(InstallationManager::class);
         $installationManager->shouldReceive('disablePlugins')
             ->once();
 
@@ -77,9 +79,7 @@ final class InstallerTest extends MockeryTestCase
         $this->setupInstallerConfig(true, true, 'auto');
         $this->arrangeInput();
 
-        $installer = Installer::create($this->ioMock, $this->composerMock, $this->inputMock);
-
-        self::assertInstanceOf(BaseInstaller::class, $installer);
+        Installer::create($this->ioMock, $this->composerMock, $this->inputMock);
     }
 
     /**
@@ -142,11 +142,6 @@ final class InstallerTest extends MockeryTestCase
             ->andReturn(false);
     }
 
-    /**
-     * @param bool        $optimize
-     * @param bool        $classmap
-     * @param null|string $preferred
-     */
     private function setupInstallerConfig(bool $optimize, bool $classmap, ?string $preferred): void
     {
         $this->configMock->shouldReceive('get')
@@ -165,6 +160,10 @@ final class InstallerTest extends MockeryTestCase
             ->with('apcu-autoloader')
             ->once()
             ->andReturn(false);
+        $this->configMock->shouldReceive('get')
+            ->with('lock')
+            ->zeroOrMoreTimes()
+            ->andReturn('');
 
         $this->composerMock->shouldReceive('getConfig')
             ->andReturn($this->configMock);

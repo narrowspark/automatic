@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Installer;
@@ -21,16 +21,15 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
+use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
-use function trim;
 
 /**
  * @internal
  */
 abstract class AbstractInstallerTest extends MockeryTestCase
 {
-    use ArrangeComposerClasses;
+    use ArrangeComposerClassesTrait;
 
     /** @var \Composer\Repository\InstalledRepositoryInterface|\Mockery\MockInterface */
     protected $repositoryMock;
@@ -68,7 +67,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 
         $this->arrangeComposerClasses();
 
-        $this->lockMock = $this->mock(Lock::class);
+        $this->lockMock = Mockery::mock(Lock::class);
 
         $this->configMock->shouldReceive('get')
             ->once()
@@ -86,7 +85,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->composerMock->shouldReceive('getConfig')
             ->andReturn($this->configMock);
 
-        $this->downloadManagerMock = $this->mock(DownloadManager::class);
+        $this->downloadManagerMock = Mockery::mock(DownloadManager::class);
 
         $this->composerMock->shouldReceive('getDownloadManager')
             ->once()
@@ -94,17 +93,17 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 
         $this->configuratorInstaller = new $this->installerClass($this->ioMock, $this->composerMock, $this->lockMock, new ClassFinder($this->configuratorPath));
 
-        $this->repositoryMock = $this->mock(InstalledRepositoryInterface::class);
-        $this->packageMock = $this->mock(PackageInterface::class);
-        $this->targetPackageMock = $this->mock(PackageInterface::class);
+        $this->repositoryMock = Mockery::mock(InstalledRepositoryInterface::class);
+        $this->packageMock = Mockery::mock(PackageInterface::class);
+        $this->targetPackageMock = Mockery::mock(PackageInterface::class);
     }
 
-    public function testSupports(): void
+    final public function testSupports(): void
     {
         self::assertTrue($this->configuratorInstaller->supports($this->installerClass::TYPE));
     }
 
-    public function testInstallWithEmptyPsr4(): void
+    final public function testInstallWithEmptyPsr4(): void
     {
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage('Error while installing [prisis/test], ' . $this->installerClass::TYPE . ' packages should have a namespace defined in their psr4 key to be usable.');
@@ -119,7 +118,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
     }
 
-    public function testInstall(): void
+    final public function testInstall(): void
     {
         $name = 'prisis/install';
 
@@ -131,7 +130,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
             ->andReturn($name);
         $this->packageMock->shouldReceive('getName')
             ->times(3)
-            ->andReturn(trim($name, '/'));
+            ->andReturn(\trim($name, '/'));
 
         $this->packageMock->shouldReceive('getTargetDir')
             ->andReturn(null);
@@ -153,7 +152,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->configuratorInstaller->install($this->repositoryMock, $this->packageMock);
     }
 
-    public function testUpdate(): void
+    final public function testUpdate(): void
     {
         $name = 'prisis/update';
 
@@ -167,12 +166,12 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->packageMock->shouldReceive('getPrettyName')
             ->andReturn($name);
         $this->packageMock->shouldReceive('getName')
-            ->andReturn(trim($name, '/'));
+            ->andReturn(\trim($name, '/'));
 
         $this->targetPackageMock->shouldReceive('getPrettyName')
             ->andReturn($name);
         $this->targetPackageMock->shouldReceive('getName')
-            ->andReturn(trim($name, '/'));
+            ->andReturn(\trim($name, '/'));
         $this->targetPackageMock->shouldReceive('getTargetDir')
             ->andReturn('');
         $this->targetPackageMock->shouldReceive('getBinaries')
@@ -208,7 +207,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->packageMock->shouldReceive('getBinaries')
             ->andReturn([]);
         $this->packageMock->shouldReceive('getName')
-            ->andReturn(trim($name, '/'));
+            ->andReturn(\trim($name, '/'));
 
         $this->repositoryMock->shouldReceive('hasPackage')
             ->twice()

@@ -1,5 +1,5 @@
 {
-    "name": "framework",
+    "name": "automatic",
     "private": true,
     "engines": {
         "node": "^10.16.0 || ^11.3.0"
@@ -8,22 +8,23 @@
         "@textlint-rule/textlint-rule-no-invalid-control-character": "^1.2.0",
         "@textlint-rule/textlint-rule-no-unmatched-pair": "^1.0.7",
         "@textlint-rule/textlint-rule-preset-google": "^0.1.2",
-        "textlint": "^11.5.0",
+        "textlint": "^11.6.3",
         "textlint-rule-abbr-within-parentheses": "^1.0.2",
         "textlint-rule-alex": "^1.3.1",
-        "textlint-rule-apostrophe": "^1.0.0",
+        "textlint-rule-apostrophe": "^2.0.0",
+        "textlint-rule-common-misspellings": "^1.0.1",
         "textlint-rule-diacritics": "1.0.0",
         "textlint-rule-en-capitalization": "^2.0.2",
         "textlint-rule-footnote-order": "^1.0.3",
         "textlint-rule-helper": "^2.1.1",
-        "textlint-rule-no-dead-link": "^4.6.1",
+        "textlint-rule-no-dead-link": "^4.6.2",
         "textlint-rule-no-empty-section": "^1.1.0",
         "textlint-rule-no-todo": "^2.0.1",
-        "textlint-rule-terminology": "^2.0.1",
-        "write-good": "^1.0.2"
+        "textlint-rule-terminology": "^2.1.3",
+        "textlint-rule-write-good": "^1.6.2"
     },
     "scripts": {
-        "lint": "textlint ./src/** ./docs/** ./README.md --dry-run",
-        "lint:fix": "textlint ./src/** ./docs/** ./README.md --fix"
+        "lint": "textlint ./.build/ISSUE_TEMPLATE/** ./src/** ./docs/** ./README.md ./UPGRADE.md --dry-run",
+        "lint:fix": "textlint ./.build/ISSUE_TEMPLATE/** ./src/** ./docs/** ./README.md ./UPGRADE.md --fix"
     }
 }

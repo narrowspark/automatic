@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test;
@@ -17,13 +17,13 @@ use Composer\IO\IOInterface;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator;
-use function sys_get_temp_dir;
-use function unlink;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Configurator
+ *
+ * @medium
  */
 final class ConfiguratorTest extends AbstractConfiguratorTest
 {
@@ -41,7 +41,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
         parent::setUp();
 
         $this->copyFileName = 'copy_of_copy.txt';
-        $this->copyPath = sys_get_temp_dir() . '/' . $this->copyFileName;
+        $this->copyPath = \sys_get_temp_dir() . '/' . $this->copyFileName;
     }
 
     public function testConfigureWithCopy(): void
@@ -62,7 +62,7 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
 
         self::assertFileExists($this->copyPath);
 
-        unlink($this->copyPath);
+        \unlink($this->copyPath);
     }
 
     public function testGetConfigurators(): void
@@ -109,9 +109,6 @@ final class ConfiguratorTest extends AbstractConfiguratorTest
         parent::allowMockingNonExistentMethods(true);
     }
 
-    /**
-     * @return \Narrowspark\Automatic\Common\Package
-     */
     protected function arrangeCopyPackage(): Package
     {
         $package = new Package('Fixture/copy', '1.0');

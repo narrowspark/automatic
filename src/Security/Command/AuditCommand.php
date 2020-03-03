@@ -3,42 +3,54 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Security\Command;
 
 use Composer\Command\BaseCommand;
-use Composer\Factory;
-use Composer\IO\NullIO;
+use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Util;
-use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\Command\Formatter\JsonFormatter;
 use Narrowspark\Automatic\Security\Command\Formatter\SimpleFormatter;
 use Narrowspark\Automatic\Security\Command\Formatter\TextFormatter;
+use Narrowspark\Automatic\Security\Container;
+use Narrowspark\Automatic\Security\Contract\Audit as AuditContract;
 use Narrowspark\Automatic\Security\Contract\Exception\RuntimeException;
-use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
-use Narrowspark\Automatic\Security\Downloader\CurlDownloader;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use function count;
-use function extension_loaded;
-use function method_exists;
-use function rtrim;
-use function sprintf;
 
 final class AuditCommand extends BaseCommand
 {
     /** @var string */
     protected static $defaultName = 'audit';
+
+    /**
+     * A Container instance.
+     *
+     * @var \Narrowspark\Automatic\Common\Contract\Container
+     */
+    protected $container;
+
+    /**
+     * Get the Container instance.
+     */
+    public function getContainer(): ContainerContract
+    {
+        if ($this->container === null) {
+            $this->container = new Container($this->getComposer(), $this->getIO());
+        }
+
+        return $this->container;
+    }
 
     /**
      * {@inheritdoc}
@@ -51,7 +63,6 @@ final class AuditCommand extends BaseCommand
                 new InputOption('composer-lock', null, InputOption::VALUE_REQUIRED, 'Path to a composer.lock'),
                 new InputOption('format', null, InputOption::VALUE_REQUIRED, 'The output format', 'txt'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
-                new InputOption('timeout', null, InputOption::VALUE_REQUIRED, 'The HTTP timeout in seconds'),
                 new InputOption('disable-exit', null, InputOption::VALUE_NONE, 'Only shows which vulnerabilities was found or not (without exit code)'),
             ])
             ->setDescription('Checks security issues in your project dependencies')
@@ -67,40 +78,15 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (extension_loaded('curl')) {
-            $downloader = new CurlDownloader();
-        } else {
-            $downloader = new ComposerDownloader();
-        }
-
-        /** @var null|string $timeout */
-        $timeout = $input->getOption('timeout');
-
-        if ($timeout !== null) {
-            $downloader->setTimeout((int) $timeout);
-        }
-
-        try {
-            $output->write('Narrowspark Automatic Security Audit is checking for internet connection...', true, OutputInterface::VERBOSITY_VERBOSE);
-
-            $sha = $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA);
-        } catch (RuntimeException $exception) {
-            $output->write('Connecting to github.com failed.');
-
-            $downloader = $timeout = null;
-
-            return 1;
-        }
-
-        $config = Factory::createConfig(new NullIO());
-        $audit = new Audit(rtrim($config->get('vendor-dir'), '/'), $downloader, $sha);
+        /** @var \Narrowspark\Automatic\Security\Contract\Audit $audit */
+        $audit = $this->getContainer()->get(AuditContract::class);
 
         $isNotDevMode = true;
 
-        if ($input->hasOption('no-dev')) {
+        if ((bool) $input->getOption('no-dev')) {
             $isNotDevMode = false;
 
-            $audit->setDevMode(! (bool) $input->getOption('no-dev'));
+            $audit->setDevMode(true);
         }
 
         /** @var null|string $composerFile */
@@ -116,16 +102,16 @@ EOF
         if (! $isNotDevMode) {
             $message = 'Check is running in no-dev mode. Skipping dev requirements check.';
 
-            if (method_exists($output, 'comment')) {
+            if (\method_exists($output, 'comment')) {
                 $output->comment($message);
             } else {
-                $output->writeln(sprintf('<comment>%s</>', $message));
+                $output->writeln(\sprintf('<comment>%s</>', $message));
             }
         }
 
         $errorExitCode = 1;
 
-        if ($input->getOption('disable-exit') !== false) {
+        if ((bool) $input->getOption('disable-exit') !== false) {
             $errorExitCode = 0;
         }
 
@@ -143,15 +129,15 @@ EOF
             return $errorExitCode;
         }
 
-        $message = 'This checker can only detect vulnerabilities that are referenced in the SensioLabs security advisories database.';
+        $message = 'This checker can only detect vulnerabilities that are referenced in the SensioLabs security or the Github security advisories database.';
 
-        if (method_exists($output, 'comment')) {
+        if (\method_exists($output, 'comment')) {
             $output->comment($message);
         } else {
-            $output->writeln(sprintf('<comment>%s</>', $message));
+            $output->writeln(\sprintf('<comment>%s</>', $message));
         }
 
-        if (count($messages) !== 0) {
+        if (\count($messages) !== 0) {
             $output->note('Please report this found messages to https://github.com/narrowspark/security-advisories.');
 
             foreach ($messages as $key => $msg) {
@@ -159,9 +145,9 @@ EOF
             }
         }
 
-        $count = count($vulnerabilities);
+        $count = \count($vulnerabilities);
 
-        if (count($vulnerabilities) !== 0) {
+        if (\count($vulnerabilities) !== 0) {
             switch ($input->getOption('format')) {
                 case 'json':
                     $formatter = new JsonFormatter();
@@ -178,7 +164,7 @@ EOF
 
             $formatter->displayResults($output, $vulnerabilities);
 
-            $output->writeln('<error>[!]</> ' . sprintf('%s vulnerabilit%s found - ', $count, $count === 1 ? 'y' : 'ies')
+            $output->writeln('<error>[!]</> ' . \sprintf('%s vulnerabilit%s found - ', $count, $count === 1 ? 'y' : 'ies')
                 . 'We recommend you to check the related security advisories and upgrade these dependencies.');
 
             return $errorExitCode;

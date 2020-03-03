@@ -3,18 +3,19 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Operation;
 
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\Package\PackageInterface;
+use Mockery;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
@@ -22,17 +23,19 @@ use Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Operation\Uninstall;
 use Narrowspark\Automatic\ScriptExecutor;
-use Narrowspark\Automatic\Test\Operation\Traits\ArrangeOperationsClasses;
+use Narrowspark\Automatic\Test\Operation\Traits\ArrangeOperationsClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Operation\Uninstall
+ *
+ * @medium
  */
 final class UninstallTest extends MockeryTestCase
 {
-    use ArrangeOperationsClasses;
+    use ArrangeOperationsClassesTrait;
 
     /** @var \Composer\DependencyResolver\Operation\UninstallOperation|\Mockery\MockInterface */
     private $uninstallOperationMock;
@@ -47,7 +50,7 @@ final class UninstallTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->uninstallOperationMock = $this->mock(UninstallOperation::class);
+        $this->uninstallOperationMock = Mockery::mock(UninstallOperation::class);
 
         $this->arrangeOperationsClasses();
 
@@ -69,7 +72,7 @@ final class UninstallTest extends MockeryTestCase
             ->with(Automatic::LOCK_PACKAGES, $name)
             ->andReturn(false);
 
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getName')
             ->once()
             ->andReturn($name);
@@ -88,7 +91,7 @@ final class UninstallTest extends MockeryTestCase
             ->with(Automatic::LOCK_PACKAGES, $name)
             ->andReturn(true);
 
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getName')
             ->once()
             ->andReturn($name);
@@ -103,7 +106,7 @@ final class UninstallTest extends MockeryTestCase
     {
         $name = 'uninstall/uninstall';
 
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getName')
             ->once()
             ->andReturn($name);
@@ -152,7 +155,7 @@ final class UninstallTest extends MockeryTestCase
 
     public function testTransform(): void
     {
-        $package = $this->mock(PackageContract::class);
+        $package = Mockery::mock(PackageContract::class);
 
         $name = 'test';
 

@@ -1,0 +1,4 @@
+'Component: Automatic': ["src/Automatic"]
+'Component: Common': ["src/Common"]
+'Component: Prefetcher': ["src/Prefetcher"]
+'Component: Security': ["src/Security"]

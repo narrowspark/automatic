@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Common\Contract;
@@ -20,8 +20,6 @@ interface Configurator
 
     /**
      * Return the configurator key name.
-     *
-     * @return string
      */
     public static function getName(): string;
 
@@ -29,8 +27,6 @@ interface Configurator
      * Configure the application after the package settings.
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
-     * @return void
      */
     public function configure(Package $package): void;
 
@@ -38,8 +34,6 @@ interface Configurator
      * Unconfigure the application after the package settings.
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package $package
-     *
-     * @return void
      */
     public function unconfigure(Package $package): void;
 }

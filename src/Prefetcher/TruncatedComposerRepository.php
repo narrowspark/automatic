@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Prefetcher;
@@ -19,8 +19,6 @@ use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository as BaseComposerRepository;
 use Composer\Util\RemoteFilesystem;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
-use function is_array;
-use function preg_replace;
 
 /**
  * Ported from symfony flex, see original.
@@ -45,17 +43,13 @@ final class TruncatedComposerRepository extends BaseComposerRepository
 
         $this->cache = new Cache(
             $io,
-            $config->get('cache-repo-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url),
+            $config->get('cache-repo-dir') . '/' . \preg_replace('{[^a-z0-9.]}i', '-', $this->url),
             'a-z0-9.$'
         );
     }
 
     /**
      * Set a tags manager instance.
-     *
-     * @param \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager
-     *
-     * @return void
      */
     public function setTagsManager(LegacyTagsManagerContract $tagsManager): void
     {
@@ -69,6 +63,6 @@ final class TruncatedComposerRepository extends BaseComposerRepository
     {
         $data = parent::fetchFile($filename, $cacheKey, $sha256, $storeLastModifiedTime);
 
-        return is_array($data) ? $this->cache->removeLegacyTags($data) : $data;
+        return \is_array($data) ? $this->cache->removeLegacyTags($data) : $data;
     }
 }

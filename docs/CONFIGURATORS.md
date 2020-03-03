@@ -7,7 +7,7 @@ Configurators
 ----------------
 Configurators define the different tasks executed when installing a dependency, such as running commands, copying files or adding new environment variables.
 
-The package only contain the tasks needed to install and configure the dependency, because Narrowspark Automatic Configurators are smart enough to reverse those tasks when uninstalling and unconfiguring the dependencies.
+The package contains the tasks needed to install and configure the dependency, because Narrowspark Automatic Configurators are smart enough to reverse those tasks when uninstalling and unconfiguring the dependencies.
 
 Narrowspark Automatic comes with several types of tasks, which are called **configurators:** `copy`, `env`, `composer-scripts`, `composer-auto-scripts`, `gitignore` and a special configurator `post-messages`.
 
@@ -91,7 +91,7 @@ The value is an associative array where the key is the script to execute (includ
 ### Composer Scripts Configurator `composer-scripts`
 
 Registers [composer scripts](https://getcomposer.org/doc/articles/scripts.md) in the `composer-scripts` section of the root `composer.json` file.
-Only the composer `command`, `installer` and `package` events are supported, you will get a warning if other events a used.
+The composer `command`, `installer` and `package` events are supported, you will get a warning if other events a used.
 
 ```json
 {
@@ -159,7 +159,7 @@ that must not be removed or modified.
 ### The package messages `post-messages`
 
 Displays contents in the command console after the package has been installed.
-Avoid outputting meaningless information and use it only when you need to show
+Avoid outputting meaningless information and use it when you need to show
 help messages or the next step actions.
 
 * The contents must be defined in the `automatic` section of your package composer.json or the `automatic.json` file (a `\n` character is added after each line). [Symfony Console styles and colors](https://symfony.com/doc/current/console/coloring.html) are supported too:
@@ -174,7 +174,7 @@ help messages or the next step actions.
 }
 ```
 
-This output will be only shown on the `composer install` and `composer update` command.
+This output will be shown on the `composer install` and `composer update` command.
 
 How to create Configurators
 ----------------
@@ -265,7 +265,7 @@ final class YourConfigurator extends AbstractConfigurator
     {
         return 'the configurator name';
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -273,7 +273,7 @@ final class YourConfigurator extends AbstractConfigurator
     {
         // your code
     }
-    
+
     /**
      * {@inheritdoc}
      */

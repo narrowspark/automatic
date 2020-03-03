@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Security\Test;
@@ -21,33 +21,36 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\Capability\CommandProvider as CommandProviderContract;
 use Composer\Script\Event;
+use Mockery;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
-use Narrowspark\Automatic\Security\Audit;
 use Narrowspark\Automatic\Security\CommandProvider;
-use Narrowspark\Automatic\Security\Downloader\ComposerDownloader;
+use Narrowspark\Automatic\Security\Contract\Audit as AuditContract;
 use Narrowspark\Automatic\Security\Plugin;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClasses;
+use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use const DIRECTORY_SEPARATOR;
-use function putenv;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Security\Plugin
+ *
+ * @medium
  */
 final class PluginTest extends MockeryTestCase
 {
-    use ArrangeComposerClasses;
+    use ArrangeComposerClassesTrait;
 
     /** @var \Narrowspark\Automatic\Security\Plugin */
-    private $securityPlugin;
+    private $plugin;
 
     /** @var string */
     private $tmpFolder;
+
+    /** @var \Mockery\MockInterface|\Narrowspark\Automatic\Common\Contract\Container */
+    private $containerMock;
 
     /**
      * {@inheritdoc}
@@ -56,13 +59,13 @@ final class PluginTest extends MockeryTestCase
     {
         $this->arrangeComposerClasses();
 
-        $this->securityPlugin = new class() extends Plugin {
-            public function setContainer($container): void
-            {
-                $this->container = $container;
-            }
-        };
-        $this->tmpFolder = __DIR__ . DIRECTORY_SEPARATOR . 'tmp';
+        $this->plugin = new Plugin();
+
+        $this->containerMock = Mockery::mock(ContainerContract::class);
+
+        NSA::setProperty($this->plugin, 'container', $this->containerMock);
+
+        $this->tmpFolder = __DIR__ . \DIRECTORY_SEPARATOR . 'tmp';
     }
 
     /**
@@ -72,7 +75,7 @@ final class PluginTest extends MockeryTestCase
     {
         parent::tearDown();
 
-        (new Filesystem())->remove([$this->tmpFolder, __DIR__ . DIRECTORY_SEPARATOR . 'narrowspark']);
+        (new Filesystem())->remove([$this->tmpFolder, __DIR__ . \DIRECTORY_SEPARATOR . 'narrowspark']);
     }
 
     public function testActivate(): void
@@ -83,7 +86,8 @@ final class PluginTest extends MockeryTestCase
 
         $name = 'no-dev';
 
-        $inputMock = $this->mock(InputInterface::class);
+        /** @var \Mockery\MockInterface|\Symfony\Component\Console\Input\Input $inputMock */
+        $inputMock = Mockery::mock(InputInterface::class);
         $inputMock->shouldReceive('hasOption')
             ->with($name)
             ->andReturn(true);
@@ -94,80 +98,79 @@ final class PluginTest extends MockeryTestCase
         $this->ioMock->input = $inputMock;
 
         $this->configMock->shouldReceive('get')
-            ->once()
-            ->with('vendor-dir')
-            ->andReturn(__DIR__);
+            ->with('disable-tls')
+            ->andReturn(false);
+        $this->configMock->shouldReceive('get')
+            ->with('cafile')
+            ->andReturn('');
+        $this->configMock->shouldReceive('get')
+            ->with('capath')
+            ->andReturn('');
+        $this->configMock->shouldReceive('get')
+            ->with('cache-repo-dir')
+            ->andReturn('');
 
         $this->composerMock->shouldReceive('getConfig')
             ->andReturn($this->configMock);
 
         $this->ioMock->shouldReceive('writeError')
-            ->once()
-            ->with('Downloading the Security Advisories database...', true, IOInterface::VERBOSE);
+            ->with('<warning>Cannot create cache directory /https---automatic.narrowspark.com/, or directory is not writable. Proceeding without cache</warning>');
 
-        $this->ioMock->shouldReceive('writeError')
-            ->once()
-            ->with('Narrowspark Automatic Security Audit is checking for internet connection...', true, IOInterface::VERBOSE);
-
-        $this->securityPlugin->activate($this->composerMock, $this->ioMock);
+        $this->plugin->activate($this->composerMock, $this->ioMock);
     }
 
     public function testGetSubscribedEvents(): void
     {
         self::assertCount(4, Plugin::getSubscribedEvents());
 
-        NSA::setProperty($this->securityPlugin, 'activated', false);
+        NSA::setProperty($this->plugin, 'activated', false);
 
         self::assertCount(0, Plugin::getSubscribedEvents());
     }
 
     public function testGetCapabilities(): void
     {
-        self::assertSame([CommandProviderContract::class => CommandProvider::class], $this->securityPlugin->getCapabilities());
+        self::assertSame([CommandProviderContract::class => CommandProvider::class], $this->plugin->getCapabilities());
     }
 
     public function testOnPostUpdatePostMessages(): void
     {
-        $eventMock = $this->mock(Event::class);
+        /** @var \Composer\Script\Event|\Mockery\MockInterface $eventMock */
+        $eventMock = Mockery::mock(Event::class);
 
         $this->ioMock->shouldReceive('write')
             ->once()
             ->with('<fg=black;bg=green>[+]</> Audit Security Report: No known vulnerabilities found');
 
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
+        $this->containerMock->shouldReceive('get')
             ->with(IOInterface::class)
             ->andReturn($this->ioMock);
 
-        $this->securityPlugin->setContainer($containerMock);
-
-        $this->securityPlugin->onPostUpdatePostMessages($eventMock);
+        $this->plugin->onPostUpdatePostMessages($eventMock);
     }
 
     public function testOnPostUpdatePostMessagesWithVulnerability(): void
     {
-        $eventMock = $this->mock(Event::class);
-
-        NSA::setProperty($this->securityPlugin, 'foundVulnerabilities', ['test']);
+        NSA::setProperty($this->plugin, 'foundVulnerabilities', ['test']);
 
         $this->ioMock->shouldReceive('write')
             ->once()
             ->with('<error>[!]</> Audit Security Report: 1 vulnerability found - run "composer audit" for more information');
 
-
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
+        $this->containerMock->shouldReceive('get')
             ->with(IOInterface::class)
             ->andReturn($this->ioMock);
 
-        $this->securityPlugin->setContainer($containerMock);
+        /** @var \Composer\Script\Event|\Mockery\MockInterface $eventMock */
+        $eventMock = Mockery::mock(Event::class);
 
-        $this->securityPlugin->onPostUpdatePostMessages($eventMock);
+        $this->plugin->onPostUpdatePostMessages($eventMock);
     }
 
     public function testAuditPackage(): void
     {
-        $packageMock = $this->mock(PackageInterface::class);
+        /** @var \Composer\Package\PackageInterface|\Mockery\MockInterface $packageMock */
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getName')
             ->once()
             ->andReturn('symfony/symfony');
@@ -175,54 +178,61 @@ final class PluginTest extends MockeryTestCase
             ->once()
             ->andReturn('v2.5.2');
 
-        $operationMock = $this->mock(InstallOperation::class);
+        $operationMock = Mockery::mock(InstallOperation::class);
         $operationMock->shouldReceive('getPackage')
             ->once()
             ->andReturn($packageMock);
 
-        $eventMock = $this->mock(PackageEvent::class);
+        $eventMock = Mockery::mock(PackageEvent::class);
         $eventMock->shouldReceive('getOperation')
             ->once()
             ->andReturn($operationMock);
 
-        $downloader = new ComposerDownloader();
-        $audit = new Audit($this->tmpFolder, $downloader, $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA));
+        $auditMock = Mockery::mock(AuditContract::class);
+        $auditMock->shouldReceive('checkPackage')
+            ->once()
+            ->andReturn([
+                [
+                    'symfony/symfony' => [
+                        'version' => 'v2.5.2',
+                        'advisories' => [],
+                    ],
+                ],
+                [],
+            ]);
 
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
-            ->with(Audit::class)
-            ->andReturn($audit);
-        $containerMock->shouldReceive('get')
+        $this->containerMock->shouldReceive('get')
+            ->with(AuditContract::class)
+            ->andReturn($auditMock);
+        $this->containerMock->shouldReceive('get')
             ->with('security_advisories')
-            ->andReturn($audit->getSecurityAdvisories());
+            ->andReturn([]);
 
-        $this->securityPlugin->setContainer($containerMock);
+        $this->plugin->auditPackage($eventMock);
 
-        $this->securityPlugin->auditPackage($eventMock);
-
-        self::assertCount(1, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        self::assertCount(1, NSA::getProperty($this->plugin, 'foundVulnerabilities'));
     }
 
     public function testAuditPackageWithUninstall(): void
     {
-        $operationMock = $this->mock(UninstallOperation::class);
+        $operationMock = Mockery::mock(UninstallOperation::class);
         $operationMock->shouldReceive('getPackage->getPrettyName')
             ->once()
             ->andReturn(Plugin::PACKAGE_NAME);
 
-        $eventMock = $this->mock(PackageEvent::class);
+        $eventMock = Mockery::mock(PackageEvent::class);
         $eventMock->shouldReceive('getOperation')
             ->once()
             ->andReturn($operationMock);
 
-        $this->securityPlugin->auditPackage($eventMock);
+        $this->plugin->auditPackage($eventMock);
 
-        self::assertCount(0, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        self::assertCount(0, NSA::getProperty($this->plugin, 'foundVulnerabilities'));
     }
 
     public function testAuditPackageWithUpdate(): void
     {
-        $packageMock = $this->mock(PackageInterface::class);
+        $packageMock = Mockery::mock(PackageInterface::class);
         $packageMock->shouldReceive('getName')
             ->once()
             ->andReturn('symfony/view');
@@ -230,54 +240,64 @@ final class PluginTest extends MockeryTestCase
             ->once()
             ->andReturn('v4.1.0');
 
-        $operationMock = $this->mock(UpdateOperation::class);
+        $operationMock = Mockery::mock(UpdateOperation::class);
         $operationMock->shouldReceive('getTargetPackage')
             ->once()
             ->andReturn($packageMock);
 
-        $eventMock = $this->mock(PackageEvent::class);
+        $eventMock = Mockery::mock(PackageEvent::class);
         $eventMock->shouldReceive('getOperation')
             ->once()
             ->andReturn($operationMock);
 
-        $downloader = new ComposerDownloader();
+        $auditMock = Mockery::mock(AuditContract::class);
+        $auditMock->shouldReceive('checkPackage')
+            ->once()
+            ->andReturn([]);
 
-        $audit = new Audit($this->tmpFolder, $downloader, $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA));
-
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
-            ->with(Audit::class)
-            ->andReturn($audit);
-        $containerMock->shouldReceive('get')
+        $this->containerMock->shouldReceive('get')
+            ->with(AuditContract::class)
+            ->andReturn($auditMock);
+        $this->containerMock->shouldReceive('get')
             ->with('security_advisories')
-            ->andReturn($audit->getSecurityAdvisories());
+            ->andReturn([]);
 
-        $this->securityPlugin->setContainer($containerMock);
+        $this->plugin->auditPackage($eventMock);
 
-        $this->securityPlugin->auditPackage($eventMock);
-
-        self::assertCount(0, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
+        self::assertCount(0, NSA::getProperty($this->plugin, 'foundVulnerabilities'));
     }
 
     public function testAuditComposerLock(): void
     {
-        putenv('COMPOSER=' . __DIR__ . DIRECTORY_SEPARATOR . 'Fixture' . DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.json');
+        \putenv('COMPOSER=' . __DIR__ . \DIRECTORY_SEPARATOR . 'Fixture' . \DIRECTORY_SEPARATOR . 'symfony_2.5.2_composer.json');
 
-        $downloader = new ComposerDownloader();
+        $auditMock = Mockery::mock(AuditContract::class);
+        $auditMock->shouldReceive('checkLock')
+            ->once()
+            ->andReturn([
+                [
+                    'symfony/symfony' => [
+                        'version' => 'v2.5.2',
+                        'advisories' => [],
+                    ],
+                    'twig/twig' => [
+                        'version' => 'v2.0.0',
+                        'advisories' => [],
+                    ],
+                ],
+                [],
+            ]);
 
-        $containerMock = $this->mock(ContainerContract::class);
-        $containerMock->shouldReceive('get')
-            ->with(Audit::class)
-            ->andReturn(new Audit($this->tmpFolder, $downloader, $downloader->download(Audit::SECURITY_ADVISORIES_BASE_URL . Audit::SECURITY_ADVISORIES_SHA)));
+        $this->containerMock->shouldReceive('get')
+            ->with(AuditContract::class)
+            ->andReturn($auditMock);
 
-        $this->securityPlugin->setContainer($containerMock);
+        $this->plugin->auditComposerLock();
 
-        $this->securityPlugin->auditComposerLock($this->mock(Event::class));
+        self::assertCount(2, NSA::getProperty($this->plugin, 'foundVulnerabilities'));
 
-        self::assertCount(2, NSA::getProperty($this->securityPlugin, 'foundVulnerabilities'));
-
-        putenv('COMPOSER=');
-        putenv('COMPOSER');
+        \putenv('COMPOSER=');
+        \putenv('COMPOSER');
     }
 
     /**

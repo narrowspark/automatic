@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark Framework.
+ * Copyright (c) 2018-2020 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/automatic
  */
 
 namespace Narrowspark\Automatic\Test\Configurator;
@@ -20,14 +20,13 @@ use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Configurator\GitIgnoreConfigurator;
 use PHPUnit\Framework\TestCase;
-use function sys_get_temp_dir;
-use function touch;
-use function unlink;
 
 /**
  * @internal
  *
- * @small
+ * @covers \Narrowspark\Automatic\Configurator\GitignoreConfigurator
+ *
+ * @medium
  */
 final class GitignoreConfiguratorTest extends TestCase
 {
@@ -55,9 +54,9 @@ final class GitignoreConfiguratorTest extends TestCase
 
         $this->configurator = new GitIgnoreConfigurator($this->composer, $this->nullIo, ['public-dir' => 'public']);
 
-        $this->gitignorePath = sys_get_temp_dir() . '/.gitignore';
+        $this->gitignorePath = \sys_get_temp_dir() . '/.gitignore';
 
-        touch($this->gitignorePath);
+        \touch($this->gitignorePath);
     }
 
     /**
@@ -67,7 +66,7 @@ final class GitignoreConfiguratorTest extends TestCase
     {
         parent::tearDown();
 
-        @unlink($this->gitignorePath);
+        @\unlink($this->gitignorePath);
     }
 
     public function testGetName(): void
@@ -82,9 +81,9 @@ final class GitignoreConfiguratorTest extends TestCase
             '/%PUBLIC_DIR%/css/',
         ]);
 
-        $gitignoreContents = '###> Foo/Bundle ###' . "\n";
-        $gitignoreContents .= '.env' . "\n";
-        $gitignoreContents .= '/public/css/' . "\n";
+        $gitignoreContents = "###> Foo/Bundle ###\n";
+        $gitignoreContents .= ".env\n";
+        $gitignoreContents .= "/public/css/\n";
         $gitignoreContents .= '###< Foo/Bundle ###';
 
         $package2 = $this->arrangePackageWithConfig('Bar/Bundle', [
@@ -92,9 +91,9 @@ final class GitignoreConfiguratorTest extends TestCase
             '/vendor/',
         ]);
 
-        $gitignoreContents2 = '###> Bar/Bundle ###' . "\n";
-        $gitignoreContents2 .= '/var/' . "\n";
-        $gitignoreContents2 .= '/vendor/' . "\n";
+        $gitignoreContents2 = "###> Bar/Bundle ###\n";
+        $gitignoreContents2 .= "/var/\n";
+        $gitignoreContents2 .= "/vendor/\n";
         $gitignoreContents2 .= '###< Bar/Bundle ###';
 
         $this->configurator->configure($package);
@@ -135,21 +134,16 @@ final class GitignoreConfiguratorTest extends TestCase
 
         $this->configurator->unconfigure($package);
 
-        $gitignoreContents = '###> Foo/Bundle ###' . "\n";
-        $gitignoreContents .= '.env' . "\n";
-        $gitignoreContents .= '/public/css/' . "\n";
+        $gitignoreContents = "###> Foo/Bundle ###\n";
+        $gitignoreContents .= ".env\n";
+        $gitignoreContents .= "/public/css/\n";
         $gitignoreContents .= '###< Foo/Bundle ###';
 
         self::assertStringEqualsFile($this->gitignorePath, "\n" . $gitignoreContents . "\n");
     }
 
     /**
-     * @param string $name
-     * @param array  $config
-     *
      * @throws Exception
-     *
-     * @return Package
      */
     private function arrangePackageWithConfig(string $name, array $config): Package
     {

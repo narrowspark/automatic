@@ -1,7 +1,7 @@
 <h1 align="center">Narrowspark Automatic Common</h1>
 <p align="center">
     <a href="https://github.com/narrowspark/automatic/releases"><img src="https://img.shields.io/packagist/v/narrowspark/automatic.svg?style=flat-square"></a>
-    <a href="https://php.net/"><img src="https://img.shields.io/badge/php-%5E7.1.0-8892BF.svg?style=flat-square"></a>
+    <a href="https://php.net/"><img src="https://img.shields.io/badge/php-%5E7.3.0-8892BF.svg?style=flat-square"></a>
     <a href="https://codecov.io/gh/narrowspark/automatic"><img src="https://img.shields.io/codecov/c/github/narrowspark/automatic/master.svg?style=flat-square"></a>
     <a href="#"><img src="https://img.shields.io/badge/style-level%207-brightgreen.svg?style=flat-square&label=phpstan"></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"></a>
@@ -19,7 +19,7 @@ Use [Composer](https://getcomposer.org/) to install this package:
 composer require --dev narrowspark/automatic-common
 ```
 
-## Usage
+## Usage1
 
 Use the ```\Narrowspark\Automatic\Common\Configurator\AbstractConfigurator``` to create a new Automatic configurator.
 

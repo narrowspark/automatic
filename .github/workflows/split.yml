@@ -62,7 +62,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: "Init Sub-Split"
-        run: git subsplit init git@github.com:narrowspark/framework.git
+        run: git subsplit init git@github.com:narrowspark/automatic.git
 
       - name: "Splitting ${{ matrix.dependencies }}"
         run: |

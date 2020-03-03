@@ -24,7 +24,7 @@
         "textlint-rule-write-good": "^1.6.2"
     },
     "scripts": {
-        "lint": "textlint ./.build/ISSUE_TEMPLATE/** ./src/** ./docs/** ./README.md ./UPGRADE.md --dry-run",
-        "lint:fix": "textlint ./.build/ISSUE_TEMPLATE/** ./src/** ./docs/** ./README.md ./UPGRADE.md --fix"
+        "lint": "textlint ./.build/ISSUE_TEMPLATE/** ./src/**/README.md ./docs/** ./README.md ./UPGRADE.md --dry-run",
+        "lint:fix": "textlint ./.build/ISSUE_TEMPLATE/** ./src/**/README.md ./docs/** ./README.md ./UPGRADE.md --fix"
     }
 }

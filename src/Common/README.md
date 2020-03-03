@@ -7,15 +7,9 @@
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"></a>
 </p>
 
-Branch Status
-------------
-[![Travis branch](https://img.shields.io/travis/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://travis-ci.org/narrowspark/automatic)
-[![Appveyor branch](https://img.shields.io/appveyor/ci/narrowspark/automatic/master.svg?longCache=false&style=for-the-badge)](https://ci.appveyor.com/project/narrowspark/automatic/branch/master)
-
 > **Note** This package is part of the [Narrowspark automatic](https://github.com/narrowspark/automatic).
 
-Installation
--------------
+## Installation
 
 Use [Composer](https://getcomposer.org/) to install this package:
 
@@ -25,26 +19,34 @@ Use [Composer](https://getcomposer.org/) to install this package:
 composer require --dev narrowspark/automatic-common
 ```
 
-Usage
--------------
+## Usage
 
 Use the ```\Narrowspark\Automatic\Common\Configurator\AbstractConfigurator``` to create a new Automatic configurator.
 
-Contributing
-------------
+## Versioning
 
-Issues for this package must be posted on [Narrowspark Automatic issues](https://github.com/narrowspark/automatic/issues). <br>
-Thank you for considering contributing to the Narrowspark automatic.
+This library follows semantic versioning, and additions to the code ruleset are performed in major releases.
 
-> **Note** Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+## Changelog
 
-Credits
--------------
+Please have a look at [`CHANGELOG.md`](https://github.com/narrowspark/automatic/blob/master/CHANGELOG.md).
+
+## Contributing
+
+Please have a look at [`CONTRIBUTING.md`](https://github.com/narrowspark/automatic/blob/master/.github/CONTRIBUTING.md).
+
+## Code of Conduct
+
+Please have a look at [`CODE_OF_CONDUCT.md`](https://github.com/narrowspark/automatic/blob/master/.github/CODE_OF_CONDUCT.md).
+
+## Credits
 
 - [Daniel Bannert](https://github.com/prisis)
 - [All Contributors](https://github.com/narrowspark/automatic/graphs/contributors)
+- Narrowspark Automatic has been inspired by [symfony/flex](https://github.com/symfony/flex)
 
-License
--------------
+## License
 
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+This package is licensed using the MIT License.
+
+Please have a look at [`LICENSE.md`](LICENSE.md).

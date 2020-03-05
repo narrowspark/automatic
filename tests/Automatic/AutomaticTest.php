@@ -34,6 +34,7 @@ use Composer\Util\RemoteFilesystem;
 use Mockery;
 use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
+use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\FunctionMock;
 use Narrowspark\Automatic\Installer\ConfiguratorInstaller;
@@ -59,6 +60,7 @@ use Symfony\Component\Filesystem\Filesystem;
 final class AutomaticTest extends MockeryTestCase
 {
     use ArrangeComposerClassesTrait;
+    use GetGenericPropertyReaderTrait;
 
     /** @var \Narrowspark\Automatic\Automatic */
     private $plugin;
@@ -180,18 +182,21 @@ final class AutomaticTest extends MockeryTestCase
         $this->ioMock->shouldReceive('loadConfiguration');
 
         $this->plugin->activate($this->composerMock, $this->ioMock);
+        $genericPropertyReader = $this->getGenericPropertyReader();
+
+        $container = $genericPropertyReader($this->plugin, 'container');
 
         self::assertSame(
             [
                 'This file locks the automatic information of your project to a known state',
                 'This file is @generated automatically',
             ],
-            $this->plugin->getContainer()->get(Lock::class)->get('@readme')
+            $container->get(Lock::class)->get('@readme')
         );
 
         self::assertInstanceOf(
             NarrowsparkInstallationManager::class,
-            $this->plugin->getContainer()->get(NarrowsparkInstallationManager::class)
+            $container->get(NarrowsparkInstallationManager::class)
         );
     }
 

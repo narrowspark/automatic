@@ -133,14 +133,6 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     private static $isGlobalCommand = false;
 
     /**
-     * Get the Container instance.
-     */
-    public function getContainer(): ContainerContract
-    {
-        return $this->container;
-    }
-
-    /**
      * Get the automatic.lock file path.
      */
     public static function getAutomaticLockFile(): string
@@ -198,6 +190,14 @@ class Automatic implements EventSubscriberInterface, PluginInterface
         }
 
         $this->container = new Container($composer, $io);
+
+        if ($this->container->get(InputInterface::class) === null) {
+            self::$activated = false;
+
+            $io->writeError('<warning>Narrowspark Automatic has been disabled. No input object found on composer class.</warning>');
+
+            return;
+        }
 
         // overwrite composer instance
         $this->container->set(Composer::class, static function () use ($composer): Composer {
@@ -734,9 +734,9 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     /**
      * Extend the composer object with some automatic settings.
      *
-     * @param array $backtrace
+     * @param array<int|string, mixed> $backtrace
      */
-    private function extendComposer($backtrace): void
+    private function extendComposer(array $backtrace): void
     {
         foreach ($backtrace as $trace) {
             if (isset($trace['object']) && $trace['object'] instanceof Installer) {

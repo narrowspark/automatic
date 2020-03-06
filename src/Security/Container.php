@@ -50,7 +50,7 @@ final class Container extends AbstractContainer
             IOInterface::class => static function () use ($io): IOInterface {
                 return $io;
             },
-            InputInterface::class => static function (ContainerContract $container) use ($genericPropertyReader): InputInterface {
+            InputInterface::class => static function (ContainerContract $container) use ($genericPropertyReader): ?InputInterface {
                 return $genericPropertyReader($container->get(IOInterface::class), 'input');
             },
             RemoteFilesystem::class => static function (ContainerContract $container): RemoteFilesystem {

@@ -27,7 +27,6 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents as ComposerScriptEvents;
 use FilesystemIterator;
 use Narrowspark\Automatic\Common\AbstractContainer;
-use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Util;
 use Narrowspark\Automatic\Security\Contract\Audit as AuditContract;
 use RecursiveDirectoryIterator;
@@ -75,14 +74,6 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     private $uninstallMode = false;
 
     /**
-     * Get the Container instance.
-     */
-    public function getContainer(): ContainerContract
-    {
-        return $this->container;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
@@ -104,6 +95,14 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
+        if (($errorMessage = $this->getErrorMessage()) !== null) {
+            self::$activated = false;
+
+            $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
+
+            return;
+        }
+
         // to avoid issues when Automatic is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
@@ -119,21 +118,28 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 
         $this->container = new Container($composer, $io);
 
-        if (($errorMessage = $this->getErrorMessage()) !== null) {
+        /** @var null|\Symfony\Component\Console\Input\InputInterface $input */
+        $input = $this->container->get(InputInterface::class);
+
+        if ($input === null) {
             self::$activated = false;
 
-            $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
+            $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. No input object found on composer class.</warning>');
 
             return;
         }
 
         $name = 'no-dev';
-        /** @var InputInterface $input */
-        $input = $this->getContainer()->get(InputInterface::class);
 
         /** @var AuditContract $audit */
-        $audit = $this->getContainer()->get(AuditContract::class);
-        $audit->setDevMode($input->hasOption($name) ? ! (bool) $input->getOption($name) : true);
+        $audit = $this->container->get(AuditContract::class);
+        $devMode = true;
+
+        if ($input->hasOption($name)) {
+            $devMode = ! (bool) $input->getOption($name);
+        }
+
+        $audit->setDevMode($devMode);
     }
 
     /**
@@ -156,7 +162,7 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
         }
 
         $count = \count(\array_filter($this->foundVulnerabilities));
-        $io = $this->getContainer()->get(IOInterface::class);
+        $io = $this->container->get(IOInterface::class);
 
         if ($count !== 0) {
             $io->write('<error>[!]</> Audit Security Report: ' . \sprintf('%s vulnerabilit%s found - run "composer audit" for more information', $count, $count === 1 ? 'y' : 'ies'));
@@ -186,10 +192,10 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
             $composerPackage = $operation->getPackage();
         }
 
-        $data = $this->getContainer()->get(AuditContract::class)->checkPackage(
+        $data = $this->container->get(AuditContract::class)->checkPackage(
             $composerPackage->getName(),
             $composerPackage->getVersion(),
-            $this->getContainer()->get('security_advisories')
+            $this->container->get('security_advisories')
         );
 
         if (\count($data) === 0) {
@@ -209,7 +215,7 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
         }
 
         /** @var \Narrowspark\Automatic\Security\Contract\Audit $audit */
-        $audit = $this->getContainer()->get(AuditContract::class);
+        $audit = $this->container->get(AuditContract::class);
         $data = $audit->checkLock(Util::getComposerLockFile());
 
         if (\count($data) === 0) {

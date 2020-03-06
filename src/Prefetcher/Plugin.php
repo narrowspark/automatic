@@ -34,7 +34,6 @@ use Composer\Repository\RepositoryManager;
 use FilesystemIterator;
 use InvalidArgumentException;
 use Narrowspark\Automatic\Common\AbstractContainer;
-use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Common\Downloader\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Common\Util;
 use Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager as LegacyTagsManagerContract;
@@ -44,6 +43,7 @@ use RecursiveIteratorIterator;
 use ReflectionMethod;
 use SplFileInfo;
 use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputInterface;
 
 class Plugin implements EventSubscriberInterface, PluginInterface
 {
@@ -69,14 +69,6 @@ class Plugin implements EventSubscriberInterface, PluginInterface
      * @var bool
      */
     private static $activated = true;
-
-    /**
-     * Get the Container instance.
-     */
-    public function getContainer(): ContainerContract
-    {
-        return $this->container;
-    }
 
     /**
      * {@inheritdoc}
@@ -106,6 +98,14 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
         $this->container = new Container($composer, $io);
 
+        if ($this->container->get(InputInterface::class) === null) {
+            self::$activated = false;
+
+            $io->writeError('<warning>Narrowspark Automatic Prefetcher has been disabled. No input object found on composer class.</warning>');
+
+            return;
+        }
+
         /** @var \Narrowspark\Automatic\Prefetcher\Contract\LegacyTagsManager $tagsManager */
         $tagsManager = $this->container->get(LegacyTagsManagerContract::class);
 
@@ -117,8 +117,6 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         $this->container->set(Composer::class, static function () use ($composer): Composer {
             return $composer;
         });
-
-        $this->container->get(PrefetcherContract::class)->populateRepoCacheDir();
 
         $this->extendComposer(\debug_backtrace(), $tagsManager);
     }
@@ -348,9 +346,9 @@ class Plugin implements EventSubscriberInterface, PluginInterface
     /**
      * Extend the composer object with some automatic prefetcher settings.
      *
-     * @param array $backtrace
+     * @param array<int|string, mixed> $backtrace
      */
-    private function extendComposer($backtrace, LegacyTagsManagerContract $tagsManager): void
+    private function extendComposer(array $backtrace, LegacyTagsManagerContract $tagsManager): void
     {
         foreach ($backtrace as $trace) {
             if (! isset($trace['object']) || ! isset($trace['args'][0])) {
@@ -388,5 +386,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
             break;
         }
+
+        $this->container->get(PrefetcherContract::class)->populateRepoCacheDir();
     }
 }

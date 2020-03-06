@@ -95,14 +95,6 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
-        if (($errorMessage = $this->getErrorMessage()) !== null) {
-            self::$activated = false;
-
-            $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
-
-            return;
-        }
-
         // to avoid issues when Automatic is upgraded, we load all PHP classes now
         // that way, we are sure to use all files from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS)) as $file) {
@@ -114,6 +106,14 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 
         if (! \class_exists(AbstractContainer::class)) {
             require __DIR__ . \DIRECTORY_SEPARATOR . 'alias.php';
+        }
+
+        if (($errorMessage = $this->getErrorMessage()) !== null) {
+            self::$activated = false;
+
+            $io->writeError('<warning>Narrowspark Automatic Security Audit has been disabled. ' . $errorMessage . '</warning>');
+
+            return;
         }
 
         $this->container = new Container($composer, $io);

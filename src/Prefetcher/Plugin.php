@@ -75,18 +75,6 @@ class Plugin implements EventSubscriberInterface, PluginInterface
      */
     public function activate(Composer $composer, IOInterface $io): void
     {
-        if (($errorMessage = $this->getErrorMessage()) !== null) {
-            self::$activated = false;
-
-            $io->writeError('<warning>Narrowspark Automatic Prefetcher has been disabled. ' . $errorMessage . '</warning>');
-
-            return;
-        }
-
-        if (! \class_exists(AbstractContainer::class)) {
-            require __DIR__ . \DIRECTORY_SEPARATOR . 'alias.php';
-        }
-
         // to avoid issues when Automatic Prefetcher is upgraded, we load all PHP classes now
         // that way, we are sure to use all classes from the same version.
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\dirname(__DIR__, 1), FilesystemIterator::SKIP_DOTS)) as $file) {
@@ -94,6 +82,18 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             if (\substr($file->getFilename(), -4) === '.php') {
                 \class_exists(__NAMESPACE__ . \str_replace('/', '\\', \substr($file->getFilename(), \strlen(__DIR__), -4)));
             }
+        }
+
+        if (! \class_exists(AbstractContainer::class)) {
+            require __DIR__ . \DIRECTORY_SEPARATOR . 'alias.php';
+        }
+
+        if (($errorMessage = $this->getErrorMessage()) !== null) {
+            self::$activated = false;
+
+            $io->writeError('<warning>Narrowspark Automatic Prefetcher has been disabled. ' . $errorMessage . '</warning>');
+
+            return;
         }
 
         $this->container = new Container($composer, $io);

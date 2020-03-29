@@ -147,6 +147,9 @@ abstract class AbstractOperation implements OperationContract
         }
     }
 
+    /**
+     * @return mixed[]
+     */
     protected function findClassesInAutomaticFolder(PackageContract $package, string $name): array
     {
         $composerAutoload = $package->getAutoload();

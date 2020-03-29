@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Prefetcher;
+namespace Narrowspark\Automatic\Tests\Prefetcher;
 
 use Composer\IO\IOInterface;
 use Generator;

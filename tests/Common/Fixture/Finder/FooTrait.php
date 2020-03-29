@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Common\Fixture\Finder;
+namespace Narrowspark\Automatic\Tests\Common\Fixture\Finder;
 
 trait FooTrait
 {

@@ -145,7 +145,7 @@ class ParallelDownloader extends RemoteFilesystem
     /**
      * Returns the headers of the last request.
      *
-     * @return array<int|string, string>
+     * @return mixed|mixed[]
      */
     public function getLastHeaders(): array
     {
@@ -224,6 +224,8 @@ class ParallelDownloader extends RemoteFilesystem
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[]
      */
     public function getOptions(): array
     {
@@ -269,6 +271,8 @@ class ParallelDownloader extends RemoteFilesystem
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool|string
      */
     public function getContents($originUrl, $fileUrl, $progress = true, $options = [])
     {
@@ -346,6 +350,8 @@ class ParallelDownloader extends RemoteFilesystem
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool|mixed|string
      */
     protected function getRemoteContents($originUrl, $fileUrl, $context, ?array &$responseHeaders = null)
     {

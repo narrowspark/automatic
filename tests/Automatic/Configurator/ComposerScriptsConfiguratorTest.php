@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Configurator;
+namespace Narrowspark\Automatic\Tests\Configurator;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
@@ -24,7 +24,7 @@ use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Configurator\ComposerScriptsConfigurator;
 use Narrowspark\Automatic\QuestionFactory;
-use Narrowspark\Automatic\Test\Fixture\ComposerJsonFactory;
+use Narrowspark\Automatic\Tests\Fixture\ComposerJsonFactory;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
@@ -319,10 +319,8 @@ final class ComposerScriptsConfiguratorTest extends MockeryTestCase
     /**
      * {@inheritdoc}
      */
-    protected function assertPreConditions(): void
+    protected function allowMockingNonExistentMethods(bool $allow = false): void
     {
-        parent::assertPreConditions();
-
-        $this->allowMockingNonExistentMethods(true);
+        parent::allowMockingNonExistentMethods(true);
     }
 }

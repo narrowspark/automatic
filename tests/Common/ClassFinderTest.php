@@ -11,18 +11,18 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Common;
+namespace Narrowspark\Automatic\Tests\Common;
 
 use Closure;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
-use Narrowspark\Automatic\Test\Common\Fixture\Finder\AbstractClass;
-use Narrowspark\Automatic\Test\Common\Fixture\Finder\DummyClass;
-use Narrowspark\Automatic\Test\Common\Fixture\Finder\DummyClassTwo;
-use Narrowspark\Automatic\Test\Common\Fixture\Finder\DummyInterface;
-use Narrowspark\Automatic\Test\Common\Fixture\Finder\FooTrait;
-use Narrowspark\Automatic\Test\Common\Fixture\Finder\Nested\DummyClassNested;
-use Narrowspark\Automatic\Test\Common\Fixture\Finder\StaticFunctionAndClasses;
+use Narrowspark\Automatic\Tests\Common\Fixture\Finder\AbstractClass;
+use Narrowspark\Automatic\Tests\Common\Fixture\Finder\DummyClass;
+use Narrowspark\Automatic\Tests\Common\Fixture\Finder\DummyClassTwo;
+use Narrowspark\Automatic\Tests\Common\Fixture\Finder\DummyInterface;
+use Narrowspark\Automatic\Tests\Common\Fixture\Finder\FooTrait;
+use Narrowspark\Automatic\Tests\Common\Fixture\Finder\Nested\DummyClassNested;
+use Narrowspark\Automatic\Tests\Common\Fixture\Finder\StaticFunctionAndClasses;
 use PHPUnit\Framework\TestCase;
 
 /**

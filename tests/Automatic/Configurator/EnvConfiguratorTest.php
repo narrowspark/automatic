@@ -11,7 +11,7 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
-namespace Narrowspark\Automatic\Test\Configurator;
+namespace Narrowspark\Automatic\Tests\Configurator;
 
 use Composer\Composer;
 use Composer\IO\NullIO;

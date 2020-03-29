@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Security\Test;
+namespace Narrowspark\Automatic\Security\Tests;
 
 use Composer\Composer;
 use Composer\Config;

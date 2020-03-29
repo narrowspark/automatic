@@ -18,16 +18,16 @@ use JsonSerializable;
 class JsonResponse implements JsonSerializable
 {
     /** @var null|array */
-    protected $body;
+    private $body;
 
     /** @var array<int|string, string> */
-    protected $origHeaders;
+    private $origHeaders;
 
     /** @var array<int|string, array<int, string>> */
-    protected $headers;
+    private $headers;
 
     /** @var int */
-    protected $code;
+    private $code;
 
     /**
      * @param array<string, mixed>      $body    The response as JSON
@@ -54,7 +54,7 @@ class JsonResponse implements JsonSerializable
     /**
      * Returns the header array on given header name.
      *
-     * @return array<int, int|string>
+     * @return string[]
      */
     public function getHeaders(string $name): array
     {
@@ -78,6 +78,8 @@ class JsonResponse implements JsonSerializable
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[][]|null[][]
      */
     public function jsonSerialize(): array
     {
@@ -94,6 +96,8 @@ class JsonResponse implements JsonSerializable
 
     /**
      * Returns the header before the parsing was done.
+     *
+     * @return string[]
      */
     public function getOriginalHeaders(): array
     {
@@ -116,7 +120,7 @@ class JsonResponse implements JsonSerializable
     /**
      * @param array<int|string, string> $headers
      *
-     * @return array<int|string, array<int, string>>
+     * @return mixed[][]
      */
     private function parseHeaders(array $headers): array
     {

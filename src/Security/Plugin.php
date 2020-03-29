@@ -34,7 +34,7 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputInterface;
 
-class Plugin implements Capable, EventSubscriberInterface, PluginInterface
+final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 {
     /** @var string */
     public const VERSION = '0.13.1';
@@ -45,12 +45,15 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
     /** @var string */
     public const PACKAGE_NAME = 'narrowspark/automatic-security-audit';
 
+    /** @var string */
+    private const NAME = 'no-dev';
+
     /**
      * A Container instance.
      *
      * @var \Narrowspark\Automatic\Common\Contract\Container
      */
-    protected $container;
+    private $container;
 
     /**
      * Found package vulnerabilities.
@@ -75,6 +78,8 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[][][]
      */
     public static function getSubscribedEvents(): array
     {
@@ -129,14 +134,12 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
             return;
         }
 
-        $name = 'no-dev';
-
         /** @var AuditContract $audit */
         $audit = $this->container->get(AuditContract::class);
         $devMode = true;
 
-        if ($input->hasOption($name)) {
-            $devMode = ! (bool) $input->getOption($name);
+        if ($input->hasOption(self::NAME)) {
+            $devMode = ! (bool) $input->getOption(self::NAME);
         }
 
         $audit->setDevMode($devMode);
@@ -144,6 +147,8 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @return string[]
      */
     public function getCapabilities(): array
     {
@@ -198,7 +203,7 @@ class Plugin implements Capable, EventSubscriberInterface, PluginInterface
             $this->container->get('security_advisories')
         );
 
-        if (\count($data) === 0) {
+        if ((\is_countable($data) ? \count($data) : 0) === 0) {
             return;
         }
 

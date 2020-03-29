@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Common;
+namespace Narrowspark\Automatic\Tests\Common;
 
 use DateTime;
 use DateTimeImmutable;
@@ -37,12 +37,12 @@ final class PackageTest extends TestCase
     {
         parent::setUp();
 
-        $this->package = new Package('test/Test', '1');
+        $this->package = new Package('test/Tests', '1');
     }
 
     public function testGetName(): void
     {
-        self::assertSame('test/test', $this->package->getName());
+        self::assertSame('test/tests', $this->package->getName());
 
         $this->package->setName('test/test2');
 
@@ -51,7 +51,7 @@ final class PackageTest extends TestCase
 
     public function testGetPrettyName(): void
     {
-        self::assertSame('test/Test', $this->package->getPrettyName());
+        self::assertSame('test/Tests', $this->package->getPrettyName());
     }
 
     public function testGetPrettyVersion(): void
@@ -157,8 +157,8 @@ final class PackageTest extends TestCase
     {
         $array = [
             'psr-4' => [
-                'Narrowspark\\Automatic\\Common\\Test\\' => 'tests/Common/',
-                'Narrowspark\\Automatic\\Test\\' => 'tests/Automatic/',
+                'Narrowspark\\Automatic\\Common\\Tests\\' => 'tests/Common/',
+                'Narrowspark\\Automatic\\Tests\\' => 'tests/Automatic/',
             ],
         ];
 
@@ -173,7 +173,7 @@ final class PackageTest extends TestCase
 
         self::assertSame(
             [
-                'pretty-name' => 'test/Test',
+                'pretty-name' => 'test/Tests',
                 'version' => '1',
                 'parent' => null,
                 'is-dev' => false,
@@ -192,7 +192,7 @@ final class PackageTest extends TestCase
     public function testCreateFromLock(): void
     {
         $lockdata = [
-            'pretty-name' => 'test/Test',
+            'pretty-name' => 'test/Tests',
             'version' => '1',
             'parent' => null,
             'is-dev' => false,

@@ -4,8 +4,10 @@ parameters:
     project_type: "open-source"
 
     exclude_paths:
-        - '*/src/Prefetcher/Common/*'
-        - '*/src/Security/Common/*'
+        - 'src/Prefetcher/Common/*'
+        - 'src/Prefetcher/alias.php'
+        - 'src/Security/Common/*'
+        - 'src/Security/alias.php'
 
     sets:
         - 'action-injection-to-constructor-injection'

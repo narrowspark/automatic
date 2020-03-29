@@ -26,6 +26,36 @@ use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
 final class CurlDownloader
 {
     /**
+     * All curl options.
+     *
+     * @var array
+     */
+    private const OPTIONS = [
+        'http' => [
+            'method' => \CURLOPT_CUSTOMREQUEST,
+            'content' => \CURLOPT_POSTFIELDS,
+        ],
+        'ssl' => [
+            'cafile' => \CURLOPT_CAINFO,
+            'capath' => \CURLOPT_CAPATH,
+        ],
+    ];
+
+    /**
+     * The curl progress time info.
+     *
+     * @var array
+     */
+    private const TIME_INFO = [
+        'total_time' => true,
+        'namelookup_time' => true,
+        'connect_time' => true,
+        'pretransfer_time' => true,
+        'starttransfer_time' => true,
+        'redirect_time' => true,
+    ];
+
+    /**
      * Curl multi resource.
      *
      * @var resource
@@ -52,36 +82,6 @@ final class CurlDownloader
      * @var array
      */
     private $exceptions = [];
-
-    /**
-     * All curl options.
-     *
-     * @var array
-     */
-    private static $options = [
-        'http' => [
-            'method' => \CURLOPT_CUSTOMREQUEST,
-            'content' => \CURLOPT_POSTFIELDS,
-        ],
-        'ssl' => [
-            'cafile' => \CURLOPT_CAINFO,
-            'capath' => \CURLOPT_CAPATH,
-        ],
-    ];
-
-    /**
-     * The curl progress time info.
-     *
-     * @var array
-     */
-    private static $timeInfo = [
-        'total_time' => true,
-        'namelookup_time' => true,
-        'connect_time' => true,
-        'pretransfer_time' => true,
-        'starttransfer_time' => true,
-        'redirect_time' => true,
-    ];
 
     /**
      * Create a new CurlDownloader instance.
@@ -115,6 +115,8 @@ final class CurlDownloader
      * This must stay in sync with the RemoteFilesystem::getRemoteContents interface.
      *
      * @param resource $context
+     *
+     * @return bool[][]|string[][]
      */
     public function get(string $originUrl, string $url, $context, ?string $file): array
     {
@@ -153,7 +155,7 @@ final class CurlDownloader
         \curl_setopt($ch, \CURLOPT_FILE, $fd);
         \curl_setopt($ch, \CURLOPT_SHARE, $this->shareHandle);
 
-        foreach (self::$options as $type => $options) {
+        foreach (self::OPTIONS as $type => $options) {
             foreach ($options as $name => $curlopt) {
                 if (isset($params['options'][$type][$name])) {
                     \curl_setopt($ch, $curlopt, $params['options'][$type][$name]);
@@ -161,7 +163,7 @@ final class CurlDownloader
             }
         }
 
-        $progress = \array_diff_key(\curl_getinfo($ch), self::$timeInfo);
+        $progress = \array_diff_key(\curl_getinfo($ch), self::TIME_INFO);
 
         $this->jobs[(int) $ch] = [
             'progress' => $progress,
@@ -187,7 +189,7 @@ final class CurlDownloader
                         continue;
                     }
 
-                    $progress = \array_diff_key(\curl_getinfo($h), self::$timeInfo);
+                    $progress = \array_diff_key(\curl_getinfo($h), self::TIME_INFO);
                     $job = $this->jobs[$i];
 
                     unset($this->jobs[$i]);
@@ -216,7 +218,7 @@ final class CurlDownloader
                     }
 
                     $h = $this->jobs[$i]['ch'];
-                    $progress = \array_diff_key(\curl_getinfo($h), self::$timeInfo);
+                    $progress = \array_diff_key(\curl_getinfo($h), self::TIME_INFO);
 
                     if ($this->jobs[$i]['progress'] !== $progress) {
                         $previousProgress = $this->jobs[$i]['progress'];

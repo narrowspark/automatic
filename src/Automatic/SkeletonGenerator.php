@@ -155,7 +155,7 @@ final class SkeletonGenerator
     /**
      * Requires the found skeleton generators and create them.
      *
-     * @return \Narrowspark\Automatic\Common\Generator\AbstractGenerator[]
+     * @return float|int|mixed[]
      */
     private function prepareGenerators(): array
     {

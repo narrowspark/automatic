@@ -68,11 +68,11 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Narrowspark\\Automatic\\Test\\": "tests/Automatic/",
-            "Narrowspark\\Automatic\\Test\\Common\\": "tests/Common/",
-            "Narrowspark\\Automatic\\Test\\AutoReview\\": "tests/AutoReview/",
-            "Narrowspark\\Automatic\\Test\\Prefetcher\\": "tests/Prefetcher/",
-            "Narrowspark\\Automatic\\Test\\Security\\": "tests/Security/"
+            "Narrowspark\\Automatic\\Tests\\": "tests/Automatic/",
+            "Narrowspark\\Automatic\\Tests\\Common\\": "tests/Common/",
+            "Narrowspark\\Automatic\\Tests\\AutoReview\\": "tests/AutoReview/",
+            "Narrowspark\\Automatic\\Tests\\Prefetcher\\": "tests/Prefetcher/",
+            "Narrowspark\\Automatic\\Tests\\Security\\": "tests/Security/"
         },
         "files": [
             "tests/Automatic/FunctionMock.php",

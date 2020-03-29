@@ -109,6 +109,8 @@ class InstallationManager extends AbstractInstallationManager
      * Checks if package exists and prepares package version.
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package[] $requires
+     *
+     * @return mixed[]
      */
     protected function preparePackagesToInstall(array $requires, array $rootPackages): array
     {
@@ -175,7 +177,7 @@ class InstallationManager extends AbstractInstallationManager
      *
      * @param \Narrowspark\Automatic\Common\Contract\Package[] $requires
      *
-     * @return array<string, null|string>
+     * @return null[]|string[]
      */
     private function preparePackagesToUninstall(array $requires): array
     {

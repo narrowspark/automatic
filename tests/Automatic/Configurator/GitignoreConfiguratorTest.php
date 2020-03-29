@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Configurator;
+namespace Narrowspark\Automatic\Tests\Configurator;
 
 use Composer\Composer;
 use Composer\IO\NullIO;

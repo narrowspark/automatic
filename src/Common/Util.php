@@ -35,6 +35,8 @@ final class Util
      * Return the composer json file and json manipulator.
      *
      * @throws InvalidArgumentException
+     *
+     * @return \Composer\Json\JsonFile[]|\Composer\Json\JsonManipulator[]
      */
     public static function getComposerJsonFileAndManipulator(): array
     {
@@ -59,16 +61,16 @@ final class Util
      */
     public static function getComposerVersion(): string
     {
-        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $matches);
+        \preg_match('/\d+.\d+.\d+/m', Composer::VERSION, $versionMatches);
 
-        if ($matches !== null) {
-            return $matches[0];
+        if ($versionMatches !== null) {
+            return $versionMatches[0];
         }
 
-        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $matches);
+        \preg_match('/\d+.\d+.\d+/m', Composer::BRANCH_ALIAS_VERSION, $branchAliasMatches);
 
-        if ($matches !== null) {
-            return $matches[0];
+        if ($branchAliasMatches !== null) {
+            return $branchAliasMatches[0];
         }
 
         throw new RuntimeException('No composer version found.');

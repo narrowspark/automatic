@@ -2,7 +2,7 @@ parameters:
     php_version_features: '7.3'
 
     exclude_paths:
-        - '*/tests/Common/Fixture/*'
+        - 'tests/Common/Fixture/*'
 
     sets:
         - 'celebrity'

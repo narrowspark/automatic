@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\AutoReview;
+namespace Narrowspark\Automatic\Tests\AutoReview;
 
 use Narrowspark\Automatic\Automatic;
 use PHPUnit\Framework\TestCase;

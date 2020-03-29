@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test;
+namespace Narrowspark\Automatic\Tests;
 
 use Narrowspark\Automatic\Lock;
 use PHPUnit\Framework\TestCase;

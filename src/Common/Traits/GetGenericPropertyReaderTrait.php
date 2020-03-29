@@ -22,14 +22,12 @@ trait GetGenericPropertyReaderTrait
      */
     protected function getGenericPropertyReader(): Closure
     {
-        $reader = function &(object $object, string $property) {
+        return function &(object $object, string $property) {
             $value = &Closure::bind(function &() use ($property) {
                 return $this->{$property};
             }, $object, $object)->__invoke();
 
             return $value;
         };
-
-        return $reader;
     }
 }

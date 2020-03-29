@@ -42,8 +42,8 @@ final class Cache extends BaseComposerCache
     {
         $content = parent::read($file);
 
-        if ($this->tagsManager !== null && \is_string($content) && $this->tagsManager->hasProvider($file) && \is_array($data = \json_decode($content, true))) {
-            $content = \json_encode($this->removeLegacyTags($data));
+        if ($this->tagsManager !== null && \is_string($content) && $this->tagsManager->hasProvider($file) && \is_array($data = \json_decode($content, true, 512, \JSON_THROW_ON_ERROR))) {
+            $content = \json_encode($this->removeLegacyTags($data), \JSON_THROW_ON_ERROR);
         }
 
         return $content;
@@ -51,6 +51,8 @@ final class Cache extends BaseComposerCache
 
     /**
      * Helper to remove legacy tags.
+     *
+     * @return mixed[]
      */
     public function removeLegacyTags(array $data): array
     {

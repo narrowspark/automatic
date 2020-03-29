@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Fixture\Test\TransformWithScriptsExecutor\Automatic;
+namespace Narrowspark\Automatic\Tests\Fixture\Tests\TransformWithScriptsExecutor\Automatic;
 
 use Narrowspark\Automatic\Common\ScriptExtender\AbstractScriptExtender;
 

@@ -120,9 +120,6 @@ abstract class AbstractInstallationManager
      */
     protected $filesystem;
 
-    /**
-     * Use this class to create a new Installation manager.
-     */
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input)
     {
         $this->composer = $composer;
@@ -278,6 +275,8 @@ abstract class AbstractInstallationManager
 
     /**
      * Manipulates the given requires with the new added packages.
+     *
+     * @return mixed[]
      */
     protected function manipulateRootPackage(array $packages, int $type, array $requires): array
     {

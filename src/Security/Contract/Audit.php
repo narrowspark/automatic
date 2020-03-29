@@ -19,10 +19,8 @@ interface Audit
 {
     /**
      * Set the composer dev mode.
-     *
-     * @param bool $bool
      */
-    public function setDevMode($bool): void;
+    public function setDevMode(bool $bool): void;
 
     /**
      * Checks a package on name and version.

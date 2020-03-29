@@ -66,7 +66,7 @@ final class Audit implements AuditContract
     /**
      * {@inheritdoc}
      */
-    public function setDevMode($bool): void
+    public function setDevMode(bool $bool): void
     {
         $this->devMode = $bool;
     }
@@ -85,6 +85,8 @@ final class Audit implements AuditContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[][]
      */
     public function checkPackage(string $name, string $version, array $securityAdvisories): array
     {
@@ -103,6 +105,8 @@ final class Audit implements AuditContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[][]
      */
     public function checkLock(string $lock): array
     {
@@ -147,6 +151,8 @@ final class Audit implements AuditContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[]
      */
     public function getSecurityAdvisories(?IOInterface $io = null): array
     {
@@ -159,9 +165,12 @@ final class Audit implements AuditContract
         return $response->getBody() ?? [];
     }
 
+    /**
+     * @return mixed[][][]|mixed[][][][]
+     */
     private function getLockContents(string $lock): array
     {
-        $contents = \json_decode((string) \file_get_contents($lock), true);
+        $contents = \json_decode((string) \file_get_contents($lock), true, 512, \JSON_THROW_ON_ERROR);
         $packages = ['packages' => [], 'packages-dev' => []];
 
         foreach (['packages', 'packages-dev'] as $key) {
@@ -218,7 +227,7 @@ final class Audit implements AuditContract
                         $op = null;
 
                         foreach (Constraint::getSupportedOperators() as $operators) {
-                            if (\strpos($version, $operators) === 0) {
+                            if (\strpos($version, (string) $operators) === 0) {
                                 $op = $operators;
 
                                 break;

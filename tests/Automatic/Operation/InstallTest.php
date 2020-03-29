@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Operation;
+namespace Narrowspark\Automatic\Tests\Operation;
 
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
@@ -26,8 +26,8 @@ use Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Operation\Install;
 use Narrowspark\Automatic\ScriptExecutor;
-use Narrowspark\Automatic\Test\Fixture\Test\TransformWithScriptsExecutor\Automatic\TestExecutor;
-use Narrowspark\Automatic\Test\Operation\Traits\ArrangeOperationsClassesTrait;
+use Narrowspark\Automatic\Tests\Fixture\Tests\TransformWithScriptsExecutor\Automatic\TestExecutor;
+use Narrowspark\Automatic\Tests\Operation\Traits\ArrangeOperationsClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
@@ -266,22 +266,22 @@ final class InstallTest extends MockeryTestCase
         $packageData = [];
         $autoload = [
             'psr-4' => [
-                'Narrowspark\Automatic\Test\Automatic' => '',
+                'Narrowspark\Automatic\Tests\Automatic' => '',
             ],
         ];
 
-        $packageName = 'Test/TransformWithScriptsExecutor';
+        $packageName = 'Tests/TransformWithScriptsExecutor';
 
         [$package, $name] = $this->arrangeTransformPackage($packageName, $autoload, $packageData);
 
         $package->shouldReceive('getConfig')
             ->once()
-            ->with('script-extenders')
+            ->with(ScriptExecutor::TYPE)
             ->andReturn([TestExecutor::class, ScriptExecutor::class]);
 
         $this->ioMock->shouldReceive('write')
             ->once()
-            ->with(['1 script-extender was not found in [Test/TransformWithScriptsExecutor]', '        - ' . ScriptExecutor::class], true, IOInterface::VERBOSE);
+            ->with(['1 script-extender was not found in [Tests/TransformWithScriptsExecutor]', '        - ' . ScriptExecutor::class], true, IOInterface::VERBOSE);
 
         $this->lockMock->shouldReceive('addSub')
             ->once()

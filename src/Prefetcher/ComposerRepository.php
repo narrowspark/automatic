@@ -60,6 +60,8 @@ final class ComposerRepository extends BaseComposerRepository
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed|mixed[]
      */
     protected function fetchFile($filename, $cacheKey = null, $sha256 = null, $storeLastModifiedTime = false): array
     {

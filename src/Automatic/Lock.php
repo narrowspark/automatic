@@ -56,7 +56,7 @@ class Lock implements ResettableContract
             return $mainCheck;
         }
 
-        if ($mainCheck === true && \is_array($this->lock[$mainKey])) {
+        if ($mainCheck && \is_array($this->lock[$mainKey])) {
             return \array_key_exists($name, $this->lock[$mainKey]);
         }
 
@@ -90,7 +90,7 @@ class Lock implements ResettableContract
     /**
      * Get package data found in the lock file.
      *
-     * @return null|array|string
+     * @return null|mixed
      */
     public function get(string $mainKey, ?string $name = null)
     {
@@ -137,6 +137,8 @@ class Lock implements ResettableContract
 
     /**
      * Read the lock file.
+     *
+     * @return mixed[][]|mixed[][]|null[]|string[]
      */
     public function read(): array
     {

@@ -11,14 +11,14 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test;
+namespace Narrowspark\Automatic\Tests;
 
 use Composer\IO\IOInterface;
 use Exception;
 use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Package;
 use Narrowspark\Automatic\PackageConfigurator;
-use Narrowspark\Automatic\Test\Fixture\MockConfigurator;
+use Narrowspark\Automatic\Tests\Fixture\MockConfigurator;
 
 /**
  * @internal

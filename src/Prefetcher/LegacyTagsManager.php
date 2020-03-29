@@ -51,9 +51,6 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
     /** @var null|array */
     private $versions;
 
-    /**
-     * Create a new LegacyTagsManager instance.
-     */
     public function __construct(IOInterface $io, Downloader $downloader)
     {
         $this->io = $io;
@@ -205,6 +202,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
     }
 
     /**
+     * @param array<string, array<string, array<int, string>>>                                   $versions
      * @param \Composer\Semver\Constraint\Constraint|\Composer\Semver\Constraint\MultiConstraint $symfonyConstraint
      */
     private function getVersions(array $versions, $symfonyConstraint): array

@@ -96,6 +96,8 @@ abstract class AbstractGenerator
 
     /**
      * List of narrowspark files and directories that should be removed.
+     *
+     * @return mixed[]
      */
     protected function clean(): array
     {

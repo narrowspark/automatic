@@ -1,0 +1,24 @@
+parameters:
+    php_version_features: '7.3'
+
+    project_type: "open-source"
+
+    exclude_paths:
+        - '*/src/Prefetcher/Common/*'
+        - '*/src/Security/Common/*'
+
+    sets:
+        - 'action-injection-to-constructor-injection'
+        - 'array-str-functions-to-static-call'
+        - 'celebrity'
+        - 'doctrine'
+        - 'phpstan'
+        - 'solid'
+        - 'early-return'
+        - 'doctrine-code-quality'
+        - 'dead-code'
+        - 'code-quality'
+        - 'type-declaration'
+        - 'php71'
+        - 'php72'
+        - 'php73'

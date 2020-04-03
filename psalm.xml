@@ -13,10 +13,6 @@
     totallyTyped='true'
     usePhpDocMethodsWithoutMagicCall='true'
 >
-    <issueHandlers>
-        <LessSpecificReturnType errorLevel="info" />
-    </issueHandlers>
-
     <plugins>
         <pluginClass class="Psalm\MockeryPlugin\Plugin" />
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin" />

@@ -11,6 +11,7 @@ composer.phar
 
 infection.log
 
+/.build/composer.lock
 /.build/infection/
 !/.build/infection/.gitkeep
 /.build/php-cs-fixer/
@@ -22,7 +23,6 @@ infection.log
 /.build/psalm/
 !/.build/psalm/.gitkeep
 
-/.build/composer.lock
 /.build/vendor
 /.build/logs/
 

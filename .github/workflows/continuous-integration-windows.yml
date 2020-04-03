@@ -22,7 +22,7 @@ jobs:
       matrix:
         php-versions: ["7.3", "7.4.2"]
         dependencies: ["highest", "lowest"]
-        composer_versions: ["1.8.0", "1.9.0", "1.10.0-RC"]
+        composer_versions: ["1.8.0", "1.9.0", "1.10.0"]
 
     env:
       key: "continuous-integration-windows-v1" # change key (version) to clear cache

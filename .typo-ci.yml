@@ -45,7 +45,10 @@ excluded_files:
 # Any typos we should ignore?
 excluded_words:
   - typoci
-  - testomat
+  - anolilab
+  - bannert
+  - prisis
+  - narrowspark
   - composer
 
 # Would you like filenames to also be spellchecked?

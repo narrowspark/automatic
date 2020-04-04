@@ -167,6 +167,7 @@ final class Plugin implements Capable, EventSubscriberInterface, PluginInterface
         }
 
         $count = \count(\array_filter($this->foundVulnerabilities));
+        /** @var IOInterface $io */
         $io = $this->container->get(IOInterface::class);
 
         if ($count !== 0) {

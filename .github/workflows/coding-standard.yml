@@ -19,8 +19,6 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false
-
       matrix:
         php-versions: ["7.3"]
 
@@ -110,8 +108,6 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false
-
       matrix:
         php-versions: ["7.3"]
 
@@ -119,7 +115,7 @@ jobs:
       key: "rector-ci-v1" # change key (version) to clear cache
       extensions: "mbstring"
       ini-values: "date.timezone=Europe/Berlin, opcache.enable_cli=1"
-      tools: "composer, composer-prefetcher, cs2pr"
+      tools: "composer, prestissimo, cs2pr"
 
     steps:
       - uses: actions/checkout@v2

@@ -72,14 +72,14 @@ final class CurlDownloader
     /**
      * List of curl jobs.
      *
-     * @var array
+     * @var array<int, array<string, mixed>>
      */
     private $jobs = [];
 
     /**
      * List of curl exceptions.
      *
-     * @var array
+     * @var array<int, \Throwable>
      */
     private $exceptions = [];
 

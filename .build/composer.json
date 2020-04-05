@@ -15,6 +15,9 @@
             "merge-scripts": false
         }
     },
+    "config": {
+        "process-timeout": 2000
+    },
     "scripts": {
         "changelog": "changelog-generator generate --config=\"./../.changelog\" --file=./../CHANGELOG.md --prepend",
         "cs": "php-cs-fixer fix --config=\"./../.php_cs\" --ansi",

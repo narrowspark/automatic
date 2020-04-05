@@ -45,6 +45,9 @@ use SplFileInfo;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 
+/**
+ * @noRector \Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector
+ */
 final class Plugin implements EventSubscriberInterface, PluginInterface
 {
     /** @var string */
@@ -225,7 +228,7 @@ final class Plugin implements EventSubscriberInterface, PluginInterface
      *
      * @param \Composer\Installer\InstallerEvent|\Composer\Installer\PackageEvent $event
      */
-    public function populateFilesCacheDir($event): void
+    public function populateFilesCacheDir(InstallerEvent $event): void
     {
         /** @var \Narrowspark\Automatic\Prefetcher\Contract\Prefetcher $prefetcher */
         $prefetcher = $this->container->get(PrefetcherContract::class);

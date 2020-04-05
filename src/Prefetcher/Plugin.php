@@ -56,14 +56,6 @@ final class Plugin implements EventSubscriberInterface, PluginInterface
     /** @var string */
     public const PACKAGE_NAME = 'narrowspark/automatic-composer-prefetcher';
 
-    public $providerRepos;
-
-    public $repositoryClasses;
-
-    public $repositories;
-
-    public $config;
-
     /**
      * A Container instance.
      *

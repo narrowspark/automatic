@@ -155,7 +155,7 @@ final class SkeletonGenerator
     /**
      * Requires the found skeleton generators and create them.
      *
-     * @return float|int|mixed[]
+     * @return object[]
      */
     private function prepareGenerators(): array
     {

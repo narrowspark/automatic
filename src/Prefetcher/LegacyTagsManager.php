@@ -228,7 +228,7 @@ final class LegacyTagsManager implements LegacyTagsManagerContract
                 }
             }
 
-            if (! $vers || $versions['splits'][$name] === $vers) {
+            if ($versions['splits'][$name] === $vers || \count($vers) === 0) {
                 unset($versions['splits'][$name]);
             }
         }

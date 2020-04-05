@@ -15,6 +15,7 @@ namespace Narrowspark\Automatic\Common\Downloader;
 
 use Composer\Downloader\TransportException;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
+use Throwable;
 
 /**
  * Ported from symfony flex, see original.
@@ -79,7 +80,7 @@ final class CurlDownloader
     /**
      * List of curl exceptions.
      *
-     * @var array<int, \Throwable>
+     * @var array<int, Throwable>
      */
     private $exceptions = [];
 
@@ -116,7 +117,7 @@ final class CurlDownloader
      *
      * @param resource $context
      *
-     * @return bool[][]|string[][]
+     * @return array<int, array<int, string>|false|string>
      */
     public function get(string $originUrl, string $url, $context, ?string $file): array
     {
@@ -203,7 +204,7 @@ final class CurlDownloader
                             throw new TransportException(\curl_error($h));
                         }
 
-                        if ($job['file'] && \curl_errno($h) === \CURLE_OK && ! isset($this->exceptions[$i])) {
+                        if (! isset($this->exceptions[$i]) && \is_string($job['file']) && \curl_errno($h) === \CURLE_OK) {
                             \fclose($job['fd']);
                             \rename($job['file'] . '~', $job['file']);
                         }

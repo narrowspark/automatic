@@ -17,7 +17,7 @@ use JsonSerializable;
 
 class JsonResponse implements JsonSerializable
 {
-    /** @var null|array */
+    /** @var null|array<string, mixed> */
     private $body;
 
     /** @var array<int|string, string> */
@@ -79,7 +79,7 @@ class JsonResponse implements JsonSerializable
     /**
      * {@inheritdoc}
      *
-     * @return mixed[][]|null[][]
+     * @return array{body: null|array, headers: array}
      */
     public function jsonSerialize(): array
     {

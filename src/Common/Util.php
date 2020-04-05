@@ -36,7 +36,7 @@ final class Util
      *
      * @throws InvalidArgumentException
      *
-     * @return \Composer\Json\JsonFile[]|\Composer\Json\JsonManipulator[]
+     * @return array{0: \Composer\Json\JsonFile, 1: \Composer\Json\JsonManipulator}
      */
     public static function getComposerJsonFileAndManipulator(): array
     {

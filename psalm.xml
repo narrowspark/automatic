@@ -26,6 +26,13 @@
             <directory name=".build" />
             <directory name=".docker" />
             <directory name=".github" />
+            <directory name="src/Prefetcher/Common/" />
+            <directory name="src/Security/Common/" />
+            <directory name="tests/Common/Fixture" />
+            <file name="src/Prefetcher/ComposerRepository.php"/>
+            <file name="src/Prefetcher/Prefetcher.php"/>
+            <file name="src/Prefetcher/TruncatedComposerRepository.php"/>
+            <file name="src/Automatic/Configurator/Traits/AppendToFileTrait.php"/>
         </ignoreFiles>
     </projectFiles>
 

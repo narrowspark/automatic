@@ -11,13 +11,13 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test;
+namespace Narrowspark\Automatic\Tests;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Mockery;
 use Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException;
-use Narrowspark\Automatic\Test\Fixture\MockConfigurator;
+use Narrowspark\Automatic\Tests\Fixture\MockConfigurator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use stdClass;
 

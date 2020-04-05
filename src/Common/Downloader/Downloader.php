@@ -31,7 +31,7 @@ use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
  */
 class Downloader
 {
-    const RETRIES = 3;
+    private const RETRIES = 3;
 
     /** @var string */
     private $endpoint;
@@ -109,7 +109,7 @@ class Downloader
         $cacheKey = $cache ? \ltrim($path, '/') : null;
 
         if ($cacheKey !== null && false !== $contents = $this->cache->read($cacheKey)) {
-            $cachedResponse = JsonResponse::fromJson(\json_decode($contents, true));
+            $cachedResponse = JsonResponse::fromJson(\json_decode($contents, true, 512, \JSON_THROW_ON_ERROR));
 
             if ('' !== $lastModified = $cachedResponse->getHeader('last-modified')) {
                 $response = $this->fetchFileIfLastModified($url, $cacheKey, $lastModified, $headers);
@@ -232,7 +232,7 @@ class Downloader
         $response = new JsonResponse($data, $lastHeaders);
 
         if ($cacheKey !== null && $response->getHeader('last-modified') !== '') {
-            $this->cache->write($cacheKey, \json_encode($response));
+            $this->cache->write($cacheKey, \json_encode($response, \JSON_THROW_ON_ERROR));
         }
 
         return $response;

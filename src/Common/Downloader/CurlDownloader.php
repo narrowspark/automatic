@@ -15,6 +15,7 @@ namespace Narrowspark\Automatic\Common\Downloader;
 
 use Composer\Downloader\TransportException;
 use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
+use Throwable;
 
 /**
  * Ported from symfony flex, see original.
@@ -25,6 +26,36 @@ use Narrowspark\Automatic\Common\Contract\Exception\RuntimeException;
  */
 final class CurlDownloader
 {
+    /**
+     * All curl options.
+     *
+     * @var array
+     */
+    private const OPTIONS = [
+        'http' => [
+            'method' => \CURLOPT_CUSTOMREQUEST,
+            'content' => \CURLOPT_POSTFIELDS,
+        ],
+        'ssl' => [
+            'cafile' => \CURLOPT_CAINFO,
+            'capath' => \CURLOPT_CAPATH,
+        ],
+    ];
+
+    /**
+     * The curl progress time info.
+     *
+     * @var array
+     */
+    private const TIME_INFO = [
+        'total_time' => true,
+        'namelookup_time' => true,
+        'connect_time' => true,
+        'pretransfer_time' => true,
+        'starttransfer_time' => true,
+        'redirect_time' => true,
+    ];
+
     /**
      * Curl multi resource.
      *
@@ -42,46 +73,16 @@ final class CurlDownloader
     /**
      * List of curl jobs.
      *
-     * @var array
+     * @var array<int, array<string, mixed>>
      */
     private $jobs = [];
 
     /**
      * List of curl exceptions.
      *
-     * @var array
+     * @var array<int, Throwable>
      */
     private $exceptions = [];
-
-    /**
-     * All curl options.
-     *
-     * @var array
-     */
-    private static $options = [
-        'http' => [
-            'method' => \CURLOPT_CUSTOMREQUEST,
-            'content' => \CURLOPT_POSTFIELDS,
-        ],
-        'ssl' => [
-            'cafile' => \CURLOPT_CAINFO,
-            'capath' => \CURLOPT_CAPATH,
-        ],
-    ];
-
-    /**
-     * The curl progress time info.
-     *
-     * @var array
-     */
-    private static $timeInfo = [
-        'total_time' => true,
-        'namelookup_time' => true,
-        'connect_time' => true,
-        'pretransfer_time' => true,
-        'starttransfer_time' => true,
-        'redirect_time' => true,
-    ];
 
     /**
      * Create a new CurlDownloader instance.
@@ -115,6 +116,8 @@ final class CurlDownloader
      * This must stay in sync with the RemoteFilesystem::getRemoteContents interface.
      *
      * @param resource $context
+     *
+     * @return array<int, array<int, string>|false|string>
      */
     public function get(string $originUrl, string $url, $context, ?string $file): array
     {
@@ -153,7 +156,7 @@ final class CurlDownloader
         \curl_setopt($ch, \CURLOPT_FILE, $fd);
         \curl_setopt($ch, \CURLOPT_SHARE, $this->shareHandle);
 
-        foreach (self::$options as $type => $options) {
+        foreach (self::OPTIONS as $type => $options) {
             foreach ($options as $name => $curlopt) {
                 if (isset($params['options'][$type][$name])) {
                     \curl_setopt($ch, $curlopt, $params['options'][$type][$name]);
@@ -161,7 +164,7 @@ final class CurlDownloader
             }
         }
 
-        $progress = \array_diff_key(\curl_getinfo($ch), self::$timeInfo);
+        $progress = \array_diff_key(\curl_getinfo($ch), self::TIME_INFO);
 
         $this->jobs[(int) $ch] = [
             'progress' => $progress,
@@ -187,7 +190,7 @@ final class CurlDownloader
                         continue;
                     }
 
-                    $progress = \array_diff_key(\curl_getinfo($h), self::$timeInfo);
+                    $progress = \array_diff_key(\curl_getinfo($h), self::TIME_INFO);
                     $job = $this->jobs[$i];
 
                     unset($this->jobs[$i]);
@@ -201,7 +204,7 @@ final class CurlDownloader
                             throw new TransportException(\curl_error($h));
                         }
 
-                        if ($job['file'] && \curl_errno($h) === \CURLE_OK && ! isset($this->exceptions[$i])) {
+                        if (! isset($this->exceptions[$i]) && \is_string($job['file']) && \curl_errno($h) === \CURLE_OK) {
                             \fclose($job['fd']);
                             \rename($job['file'] . '~', $job['file']);
                         }
@@ -216,7 +219,7 @@ final class CurlDownloader
                     }
 
                     $h = $this->jobs[$i]['ch'];
-                    $progress = \array_diff_key(\curl_getinfo($h), self::$timeInfo);
+                    $progress = \array_diff_key(\curl_getinfo($h), self::TIME_INFO);
 
                     if ($this->jobs[$i]['progress'] !== $progress) {
                         $previousProgress = $this->jobs[$i]['progress'];

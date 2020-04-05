@@ -45,7 +45,10 @@ use SplFileInfo;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 
-class Plugin implements EventSubscriberInterface, PluginInterface
+/**
+ * @noRector \Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector
+ */
+final class Plugin implements EventSubscriberInterface, PluginInterface
 {
     /** @var string */
     public const VERSION = '0.13.1';
@@ -61,7 +64,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
      *
      * @var \Narrowspark\Automatic\Common\Contract\Container
      */
-    protected $container;
+    private $container;
 
     /**
      * Check if the the plugin is activated.
@@ -123,6 +126,8 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[][][]|string[]
      */
     public static function getSubscribedEvents(): array
     {
@@ -147,7 +152,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
         $listed = [];
         $packages = [];
         $pool = $event->getPool();
-        $pool = Closure::bind(function () {
+        $pool = Closure::bind(function (): Pool {
             foreach ($this->providerRepos as $k => $repo) {
                 $this->providerRepos[$k] = new class($repo) extends BaseComposerRepository {
                     /**
@@ -164,8 +169,10 @@ class Plugin implements EventSubscriberInterface, PluginInterface
 
                     /**
                      * {@inheritdoc}
+                     *
+                     * @return mixed[]
                      */
-                    public function whatProvides(Pool $pool, $name, $bypassFilters = false)
+                    public function whatProvides(Pool $pool, $name, $bypassFilters = false): array
                     {
                         $packages = [];
 
@@ -221,7 +228,7 @@ class Plugin implements EventSubscriberInterface, PluginInterface
      *
      * @param \Composer\Installer\InstallerEvent|\Composer\Installer\PackageEvent $event
      */
-    public function populateFilesCacheDir($event): void
+    public function populateFilesCacheDir(InstallerEvent $event): void
     {
         /** @var \Narrowspark\Automatic\Prefetcher\Contract\Prefetcher $prefetcher */
         $prefetcher = $this->container->get(PrefetcherContract::class);
@@ -260,8 +267,8 @@ class Plugin implements EventSubscriberInterface, PluginInterface
             }
 
             $this->addLegacyTags($io, $requires, $tagsManager);
-        } elseif (isset($extra[static::COMPOSER_EXTRA_KEY]['require'])) {
-            $this->addLegacyTags($io, $extra[static::COMPOSER_EXTRA_KEY]['require'], $tagsManager);
+        } elseif (isset($extra[self::COMPOSER_EXTRA_KEY]['require'])) {
+            $this->addLegacyTags($io, $extra[self::COMPOSER_EXTRA_KEY]['require'], $tagsManager);
         }
     }
 

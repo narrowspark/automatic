@@ -33,7 +33,7 @@ abstract class AbstractContainer implements ContainerContract
     protected $objects = [];
 
     /**
-     * Instantiate the container.
+     * @param callable[] $data
      */
     public function __construct(array $data)
     {
@@ -74,6 +74,8 @@ abstract class AbstractContainer implements ContainerContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return callable[]
      */
     final public function getAll(): array
     {

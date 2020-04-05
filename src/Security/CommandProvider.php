@@ -23,6 +23,8 @@ final class CommandProvider implements CommandProviderContract
 {
     /**
      * {@inheritdoc}
+     *
+     * @return \Narrowspark\Automatic\Security\Command\AuditCommand[]
      */
     public function getCommands(): array
     {

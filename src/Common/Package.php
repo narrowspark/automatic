@@ -20,6 +20,19 @@ use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 
 final class Package implements PackageContract
 {
+    /** @var string[] */
+    private const KEY_TO_FUNCTION_MAPPERS = [
+        'parent' => 'setParentName',
+        'is-dev' => 'setIsDev',
+        'url' => 'setUrl',
+        'operation' => 'setOperation',
+        'type' => 'setType',
+        'requires' => 'setRequires',
+        'automatic-extra' => 'setConfig',
+        'autoload' => 'setAutoload',
+        'created' => 'setTime',
+    ];
+
     /**
      * The package name.
      *
@@ -225,6 +238,8 @@ final class Package implements PackageContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[]
      */
     public function getRequires(): array
     {
@@ -243,6 +258,8 @@ final class Package implements PackageContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[]
      */
     public function getConfigs(): array
     {
@@ -251,6 +268,8 @@ final class Package implements PackageContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[]
      */
     public function getAutoload(): array
     {
@@ -259,6 +278,8 @@ final class Package implements PackageContract
 
     /**
      * {@inheritdoc}
+     *
+     * @param mixed[] $autoload
      */
     public function setAutoload(array $autoload): PackageContract
     {
@@ -290,23 +311,11 @@ final class Package implements PackageContract
      */
     public static function createFromLock(string $name, array $packageData): PackageContract
     {
-        $keyToFunctionMappers = [
-            'parent' => 'setParentName',
-            'is-dev' => 'setIsDev',
-            'url' => 'setUrl',
-            'operation' => 'setOperation',
-            'type' => 'setType',
-            'requires' => 'setRequires',
-            'automatic-extra' => 'setConfig',
-            'autoload' => 'setAutoload',
-            'created' => 'setTime',
-        ];
-
         $package = new self($name, $packageData['version']);
 
         foreach ($packageData as $key => $data) {
-            if ($data !== null && isset($keyToFunctionMappers[$key])) {
-                $package->{$keyToFunctionMappers[$key]}($data);
+            if ($data !== null && isset(self::KEY_TO_FUNCTION_MAPPERS[$key])) {
+                $package->{self::KEY_TO_FUNCTION_MAPPERS[$key]}($data);
             }
         }
 
@@ -315,6 +324,8 @@ final class Package implements PackageContract
 
     /**
      * {@inheritdoc}
+     *
+     * @param mixed[] $configs
      */
     public function setConfig(array $configs): PackageContract
     {
@@ -334,7 +345,7 @@ final class Package implements PackageContract
             return $mainCheck;
         }
 
-        if ($mainCheck === true && \is_array($this->configs[$mainKey])) {
+        if ($mainCheck && \is_array($this->configs[$mainKey])) {
             return \array_key_exists($name, $this->configs[$mainKey]);
         }
 
@@ -343,6 +354,8 @@ final class Package implements PackageContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return null|mixed
      */
     public function getConfig(string $mainKey, ?string $name = null)
     {

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Configurator;
+namespace Narrowspark\Automatic\Tests\Configurator;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
@@ -22,7 +22,7 @@ use Narrowspark\Automatic\Common\Contract\Configurator as ConfiguratorContract;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Common\Traits\GetGenericPropertyReaderTrait;
 use Narrowspark\Automatic\Configurator\ComposerAutoScriptsConfigurator;
-use Narrowspark\Automatic\Test\Fixture\ComposerJsonFactory;
+use Narrowspark\Automatic\Tests\Fixture\ComposerJsonFactory;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**

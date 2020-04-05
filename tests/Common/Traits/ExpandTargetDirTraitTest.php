@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Common\Traits;
+namespace Narrowspark\Automatic\Tests\Common\Traits;
 
 use Narrowspark\Automatic\Common\Traits\ExpandTargetDirTrait;
 use PHPUnit\Framework\TestCase;

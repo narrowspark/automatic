@@ -15,13 +15,20 @@
             "merge-scripts": false
         }
     },
+    "config": {
+        "process-timeout": 2000
+    },
     "scripts": {
-        "changelog": "changelog-generator generate --config=\"./../.changelog\" --file --prepend",
-        "cs": "php-cs-fixer fix --config=\"./../.php_cs\"",
-        "cs:check": "php-cs-fixer fix --config=\"./../.php_cs\" --dry-run",
-        "phpstan": "phpstan analyse -c ./../phpstan.neon",
+        "changelog": "changelog-generator generate --config=\"./../.changelog\" --file=./../CHANGELOG.md --prepend",
+        "cs": "php-cs-fixer fix --config=\"./../.php_cs\" --ansi",
+        "cs:check": "php-cs-fixer fix --config=\"./../.php_cs\" --ansi --dry-run",
+        "phpstan": "phpstan analyse -c ./../phpstan.neon --ansi",
         "psalm": "psalm --threads=$(nproc)",
         "psalm:fix": "psalm --alter --issues=all --threads=$(nproc)",
-        "infection": "infection --configuration=\"./../infection.json\" -j$(nproc)"
+        "infection": "infection --configuration=\"./../infection.json\" -j$(nproc) --ansi",
+        "rector-src": "rector process ../src/ --config=./rector-src.yaml --ansi --dry-run",
+        "rector-src:fix": "rector process ../src/ --config=./rector-src.yaml --ansi",
+        "rector-tests": "rector process ../tests/ --config=./rector-tests.yaml --ansi --dry-run",
+        "rector-tests:fix": "rector process ../tests/ --config=./rector-tests.yaml --ansi"
     }
 }

@@ -2,7 +2,7 @@
 | ------------- | ---
 | Branch?       | master   <!-- for features -->
 | Bug fix?      | yes/no
-| New feature?  | yes/no   <!-- don't forget to update CHANGELOG.md file(s) -->
+| New feature?  | yes/no
 | Deprecations? | yes/no   <!-- don't forget to update UPGRADE-*.md file(s) -->
 | Tickets       | Fix #... <!-- prefix each issue number with "Fix #", if any -->
 | License       | MIT

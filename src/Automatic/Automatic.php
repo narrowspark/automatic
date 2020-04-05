@@ -71,10 +71,10 @@ class Automatic implements EventSubscriberInterface, PluginInterface
     public const LOCK_PACKAGES = 'packages';
 
     /** @var string */
-    public const PACKAGE_NAME = 'narrowspark/automatic';
+    public const COMPOSER_EXTRA_KEY = 'automatic';
 
     /** @var string */
-    public const COMPOSER_EXTRA_KEY = 'automatic';
+    public const PACKAGE_NAME = 'narrowspark/automatic';
 
     /**
      * A Container instance.
@@ -286,7 +286,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
 
         [$json, $manipulator] = Util::getComposerJsonFileAndManipulator();
 
-        if (\count($scripts) === 0) {
+        if ((\is_countable($scripts) ? \count($scripts) : 0) === 0) {
             $manipulator->addMainKey('scripts', []);
         }
 
@@ -416,7 +416,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
         if ($operation->getPackage()->getName() === self::PACKAGE_NAME) {
             $scripts = $this->container->get(Composer::class)->getPackage()->getScripts();
 
-            if (\count($scripts) === 0) {
+            if ((\is_countable($scripts) ? \count($scripts) : 0) === 0) {
                 return;
             }
 
@@ -456,7 +456,7 @@ class Automatic implements EventSubscriberInterface, PluginInterface
         /** @var \Narrowspark\Automatic\Configurator $configurator */
         $configurator = $this->container->get(ConfiguratorContract::class);
 
-        if (self::$configuratorsLoaded === true) {
+        if (self::$configuratorsLoaded) {
             $configurator->reset();
         }
 

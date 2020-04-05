@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Installer;
+namespace Narrowspark\Automatic\Tests\Installer;
 
 use Composer\Downloader\DownloadManager;
 use Composer\Package\PackageInterface;
@@ -21,7 +21,7 @@ use Narrowspark\Automatic\Automatic;
 use Narrowspark\Automatic\Common\ClassFinder;
 use Narrowspark\Automatic\Common\Contract\Exception\UnexpectedValueException;
 use Narrowspark\Automatic\Lock;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
+use Narrowspark\Automatic\Tests\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**
@@ -124,7 +124,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
 
         $this->packageMock->shouldReceive('getAutoload')
             ->once()
-            ->andReturn(['psr-4' => ['Test\\' => '']]);
+            ->andReturn(['psr-4' => ['Tests\\' => '']]);
         $this->packageMock->shouldReceive('getPrettyName')
             ->times(3)
             ->andReturn($name);
@@ -182,7 +182,7 @@ abstract class AbstractInstallerTest extends MockeryTestCase
         $this->repositoryMock->shouldReceive('removePackage');
 
         $this->targetPackageMock->shouldReceive('getAutoload')
-            ->andReturn(['psr-4' => ['Test\\' => '']]);
+            ->andReturn(['psr-4' => ['Tests\\' => '']]);
 
         $this->lockMock->shouldReceive('addSub')
             ->with($this->installerClass::LOCK_KEY, $name, Mockery::type('array'));

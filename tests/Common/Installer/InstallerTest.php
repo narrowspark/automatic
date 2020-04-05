@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Common\Installer;
+namespace Narrowspark\Automatic\Tests\Common\Installer;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Downloader\DownloadManager;
@@ -22,7 +22,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
 use Mockery;
 use Narrowspark\Automatic\Common\Installer\Installer;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
+use Narrowspark\Automatic\Tests\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**

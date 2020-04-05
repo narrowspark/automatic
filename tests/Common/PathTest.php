@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Common;
+namespace Narrowspark\Automatic\Tests\Common;
 
 use Narrowspark\Automatic\Common\Path;
 use PHPUnit\Framework\TestCase;

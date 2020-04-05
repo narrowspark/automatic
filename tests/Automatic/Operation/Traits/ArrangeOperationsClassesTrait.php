@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Operation\Traits;
+namespace Narrowspark\Automatic\Tests\Operation\Traits;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;

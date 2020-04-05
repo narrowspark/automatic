@@ -17,7 +17,6 @@ use Closure;
 use Narrowspark\Automatic\Common\Contract\Resettable as ResettableContract;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
-use function token_get_all;
 
 final class ClassFinder implements ResettableContract
 {
@@ -93,7 +92,7 @@ final class ClassFinder implements ResettableContract
     /**
      * Returns a list with found traits.
      *
-     * @return array|string[]
+     * @return string[]
      */
     public function getTraits(): array
     {
@@ -103,7 +102,7 @@ final class ClassFinder implements ResettableContract
     /**
      * Returns a list with found interfaces.
      *
-     * @return array|string[]
+     * @return string[]
      */
     public function getInterfaces(): array
     {
@@ -113,7 +112,7 @@ final class ClassFinder implements ResettableContract
     /**
      * Returns a list with found abstract classes.
      *
-     * @return array|string[]
+     * @return string[]
      */
     public function getAbstractClasses(): array
     {
@@ -123,7 +122,7 @@ final class ClassFinder implements ResettableContract
     /**
      * Returns a list with found classes.
      *
-     * @return array|string[]
+     * @return string[]
      */
     public function getClasses(): array
     {
@@ -293,7 +292,7 @@ final class ClassFinder implements ResettableContract
     /**
      * Returns a array of all found classes, interface and traits.
      *
-     * @return array|array<string, string>
+     * @return string[]
      */
     public function getAll(): array
     {
@@ -352,10 +351,8 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Find the name in the tokens starting at a given key.
-     *
-     * @param int $key
      */
-    private static function getName($key, array $tokens): ?string
+    private static function getName(int $key, array $tokens): ?string
     {
         $class = null;
         $tokenCount = \count($tokens);
@@ -375,6 +372,8 @@ final class ClassFinder implements ResettableContract
 
     /**
      * Prepare psr0 and psr4 to full vendor package paths.
+     *
+     * @return string[]
      */
     private function getPreparedPaths(array $paths): array
     {

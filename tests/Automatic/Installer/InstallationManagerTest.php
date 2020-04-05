@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Installer;
+namespace Narrowspark\Automatic\Tests\Installer;
 
 use Composer\IO\IOInterface;
 use Composer\Package\Link;
@@ -21,7 +21,7 @@ use Composer\Repository\RepositoryManager;
 use Mockery;
 use Narrowspark\Automatic\Common\Contract\Package as PackageContract;
 use Narrowspark\Automatic\Installer\InstallationManager;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
+use Narrowspark\Automatic\Tests\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use PHPUnit\Framework\Assert;
 

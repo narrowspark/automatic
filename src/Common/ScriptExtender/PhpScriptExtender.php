@@ -41,7 +41,7 @@ class PhpScriptExtender extends AbstractScriptExtender
         $arguments = $phpFinder->findArguments();
 
         if (($env = \getenv('COMPOSER_ORIGINAL_INIS')) !== false) {
-            $paths = \explode(\PATH_SEPARATOR, (string) $env);
+            $paths = \explode(\PATH_SEPARATOR, $env);
             $ini = \array_shift($paths);
         } else {
             $ini = \php_ini_loaded_file();
@@ -53,6 +53,6 @@ class PhpScriptExtender extends AbstractScriptExtender
 
         $phpArgs = \implode(' ', \array_map([ProcessExecutor::class, 'escape'], $arguments));
 
-        return ProcessExecutor::escape((string) $php) . ($phpArgs !== '' ? ' ' . $phpArgs : '') . ' ' . $cmd;
+        return ProcessExecutor::escape($php) . ($phpArgs !== '' ? ' ' . $phpArgs : '') . ' ' . $cmd;
     }
 }

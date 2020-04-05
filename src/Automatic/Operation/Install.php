@@ -179,11 +179,8 @@ final class Install extends AbstractOperation
 
     /**
      * Add package script executors.
-     *
-     * @param array  $classes
-     * @param string $name
      */
-    private function addScriptExtenders(PackageContract $package, $classes, $name): void
+    private function addScriptExtenders(PackageContract $package, array $classes, string $name): void
     {
         if ($package->hasConfig(ScriptExecutor::TYPE) && \count($classes) !== 0) {
             $extenders = [];

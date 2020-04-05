@@ -1,0 +1,20 @@
+parameters:
+    php_version_features: '7.3'
+
+    exclude_paths:
+        - 'tests/Common/Fixture/*'
+
+    sets:
+        - 'celebrity'
+        - 'phpstan'
+        - 'phpunit-code-quality'
+        - 'phpunit-exception'
+        - 'phpunit-injector'
+        - 'phpunit-specific-method'
+        - 'early-return'
+        - 'dead-code'
+        - 'code-quality'
+        - 'type-declaration'
+        - 'php71'
+        - 'php72'
+        - 'php73'

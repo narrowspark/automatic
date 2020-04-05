@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Prefetcher;
+namespace Narrowspark\Automatic\Tests\Prefetcher;
 
 use Composer\Installer\InstallerEvent;
 use Composer\Plugin\PreFileDownloadEvent;
@@ -22,7 +22,7 @@ use Narrowspark\Automatic\Common\Downloader\ParallelDownloader;
 use Narrowspark\Automatic\Prefetcher\Contract\Prefetcher as PrefetcherContract;
 use Narrowspark\Automatic\Prefetcher\FunctionMock;
 use Narrowspark\Automatic\Prefetcher\Plugin;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
+use Narrowspark\Automatic\Tests\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
 

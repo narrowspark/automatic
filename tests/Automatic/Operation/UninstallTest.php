@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Operation;
+namespace Narrowspark\Automatic\Tests\Operation;
 
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\Package\PackageInterface;
@@ -23,7 +23,7 @@ use Narrowspark\Automatic\Configurator;
 use Narrowspark\Automatic\Contract\PackageConfigurator as PackageConfiguratorContract;
 use Narrowspark\Automatic\Operation\Uninstall;
 use Narrowspark\Automatic\ScriptExecutor;
-use Narrowspark\Automatic\Test\Operation\Traits\ArrangeOperationsClassesTrait;
+use Narrowspark\Automatic\Tests\Operation\Traits\ArrangeOperationsClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 
 /**

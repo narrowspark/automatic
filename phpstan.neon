@@ -62,9 +62,6 @@ parameters:
             message: '#Variable method call on Narrowspark\\Automatic\\Common\\Package#'
             path: src/Common/Package.php
         -
-            message: "#Casting to string something that's already string#"
-            path: src/Common/ScriptExtender/PhpScriptExtender.php
-        -
             message: '#Result of \|\| is always true#'
             path: src/Common/Downloader/Downloader.php
         -

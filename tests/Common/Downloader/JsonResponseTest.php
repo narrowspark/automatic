@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Common\Downloader;
+namespace Narrowspark\Automatic\Tests\Common\Downloader;
 
 use Narrowspark\Automatic\Common\Downloader\JsonResponse;
 use Narrowspark\Automatic\Security\Audit;

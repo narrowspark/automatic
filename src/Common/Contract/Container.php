@@ -22,7 +22,7 @@ interface Container
      *
      * @throws \Narrowspark\Automatic\Common\Contract\Exception\InvalidArgumentException if no entry is found
      *
-     * @return mixed entry
+     * @return mixed
      */
     public function get(string $id);
 

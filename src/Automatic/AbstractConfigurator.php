@@ -62,6 +62,8 @@ abstract class AbstractConfigurator implements MainConfiguratorContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed[]
      */
     final public function getConfigurators(): array
     {

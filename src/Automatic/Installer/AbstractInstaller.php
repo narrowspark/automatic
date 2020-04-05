@@ -71,13 +71,13 @@ abstract class AbstractInstaller extends LibraryInstaller
     {
         $autoload = $package->getAutoload();
 
-        if (\count($autoload['psr-4']) === 0) {
+        if ((\is_countable($autoload['psr-4']) ? \count($autoload['psr-4']) : 0) === 0) {
             throw new UnexpectedValueException(\sprintf('Error while installing [%s], %s packages should have a namespace defined in their psr4 key to be usable.', $package->getPrettyName(), static::TYPE));
         }
 
         parent::install($repo, $package);
 
-        if ($this->saveToLockFile($autoload, $package, static::LOCK_KEY) === false) {
+        if (! $this->saveToLockFile($autoload, $package, static::LOCK_KEY)) {
             // Rollback installation
             $this->io->writeError('Installation failed, rolling back');
 

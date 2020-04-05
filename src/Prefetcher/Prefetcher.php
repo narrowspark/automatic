@@ -29,6 +29,15 @@ use Symfony\Component\Console\Input\InputInterface;
 
 final class Prefetcher implements PrefetcherContract
 {
+    /** @var array */
+    private const REPO_READING_COMMANDS = [
+        'create-project' => true,
+        'outdated' => true,
+        'require' => true,
+        'update' => true,
+        'install' => true,
+    ];
+
     /**
      * The composer io implementation.
      *
@@ -92,15 +101,6 @@ final class Prefetcher implements PrefetcherContract
      */
     private $cacheDirPopulated = false;
 
-    /** @var array */
-    private static $repoReadingCommands = [
-        'create-project' => true,
-        'outdated' => true,
-        'require' => true,
-        'update' => true,
-        'install' => true,
-    ];
-
     /**
      * Create a new PreFetcher instance.
      */
@@ -148,12 +148,12 @@ final class Prefetcher implements PrefetcherContract
         $command = $this->input->getFirstArgument();
 
         if ($this->populateRepoCacheDir === true
-            && isset(self::$repoReadingCommands[$command])
+            && isset(self::REPO_READING_COMMANDS[$command])
             && ($command !== 'install' || (\file_exists(Factory::getComposerFile()) && ! \file_exists(Util::getComposerLockFile())))
         ) {
             $repos = [];
 
-            foreach ($this->composer->getPackage()->getRepositories() as $name => $repo) {
+            foreach ($this->composer->getPackage()->getRepositories() as $repo) {
                 if (! isset($repo['type']) || $repo['type'] !== 'composer' || ! empty($repo['force-lazy-providers'])) {
                     continue;
                 }
@@ -179,7 +179,7 @@ final class Prefetcher implements PrefetcherContract
      */
     public function fetchAllFromOperations($event): void
     {
-        if ($this->cacheDirPopulated === true || $this->getDryRun() === true) {
+        if ($this->cacheDirPopulated || $this->getDryRun()) {
             return;
         }
 
@@ -187,7 +187,7 @@ final class Prefetcher implements PrefetcherContract
 
         $downloads = [];
 
-        foreach ($event->getOperations() as $i => $operation) {
+        foreach ($event->getOperations() as $operation) {
             switch ($operation->getJobType()) {
                 case 'install':
                     $package = $operation->getPackage();
@@ -245,7 +245,7 @@ final class Prefetcher implements PrefetcherContract
     {
         $fileUrl = $package->getDistUrl();
 
-        if (! $fileUrl) {
+        if ($fileUrl === '') {
             return null;
         }
 
@@ -281,10 +281,6 @@ final class Prefetcher implements PrefetcherContract
      */
     private function getDryRun(): bool
     {
-        if ($this->input->hasParameterOption('--dry-run')) {
-            return true;
-        }
-
-        return false;
+        return $this->input->hasParameterOption('--dry-run');
     }
 }

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test;
+namespace Narrowspark\Automatic\Tests;
 
 use Composer\IO\IOInterface;
 use Mockery;
@@ -21,8 +21,8 @@ use Narrowspark\Automatic\Installer\InstallationManager;
 use Narrowspark\Automatic\Installer\SkeletonInstaller;
 use Narrowspark\Automatic\Lock;
 use Narrowspark\Automatic\SkeletonGenerator;
-use Narrowspark\Automatic\Test\Fixture\ConsoleFixtureGenerator;
-use Narrowspark\Automatic\Test\Fixture\FrameworkDefaultFixtureGenerator;
+use Narrowspark\Automatic\Tests\Fixture\ConsoleFixtureGenerator;
+use Narrowspark\Automatic\Tests\Fixture\FrameworkDefaultFixtureGenerator;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use PHPUnit\Framework\Assert;
 

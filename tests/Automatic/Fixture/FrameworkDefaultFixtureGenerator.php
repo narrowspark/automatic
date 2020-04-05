@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Test\Fixture;
+namespace Narrowspark\Automatic\Tests\Fixture;
 
 use Narrowspark\Automatic\Common\Contract\Generator\DefaultGenerator as DefaultGeneratorContract;
 use Narrowspark\Automatic\Common\Generator\AbstractGenerator;

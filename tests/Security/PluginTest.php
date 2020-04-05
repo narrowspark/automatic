@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/narrowspark/automatic
  */
 
-namespace Narrowspark\Automatic\Security\Test;
+namespace Narrowspark\Automatic\Security\Tests;
 
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
@@ -26,7 +26,7 @@ use Narrowspark\Automatic\Common\Contract\Container as ContainerContract;
 use Narrowspark\Automatic\Security\CommandProvider;
 use Narrowspark\Automatic\Security\Contract\Audit as AuditContract;
 use Narrowspark\Automatic\Security\Plugin;
-use Narrowspark\Automatic\Test\Traits\ArrangeComposerClassesTrait;
+use Narrowspark\Automatic\Tests\Traits\ArrangeComposerClassesTrait;
 use Narrowspark\TestingHelper\Phpunit\MockeryTestCase;
 use Nyholm\NSA;
 use Symfony\Component\Console\Input\InputInterface;

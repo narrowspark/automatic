@@ -37,25 +37,11 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
     public const BLACKLIST = 'blacklist';
 
     /**
-     * A json instance.
-     *
-     * @var \Composer\Json\JsonFile
-     */
-    private $json;
-
-    /**
-     * A json manipulator instance.
-     *
-     * @var \Composer\Json\JsonManipulator
-     */
-    private $manipulator;
-
-    /**
      * All allowed composer scripts.
      *
      * @var array
      */
-    private $allowedComposerEvents = [
+    private const ALLOWED_COMPOSER_EVENTS = [
         ScriptEvents::POST_ARCHIVE_CMD,
         ScriptEvents::POST_AUTOLOAD_DUMP,
         ScriptEvents::POST_CREATE_PROJECT_CMD,
@@ -77,6 +63,20 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
         PackageEvents::PRE_PACKAGE_UNINSTALL,
         PackageEvents::PRE_PACKAGE_UPDATE,
     ];
+
+    /**
+     * A json instance.
+     *
+     * @var \Composer\Json\JsonFile
+     */
+    private $json;
+
+    /**
+     * A json manipulator instance.
+     *
+     * @var \Composer\Json\JsonManipulator
+     */
+    private $manipulator;
 
     /**
      * {@inheritdoc}
@@ -121,7 +121,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
         $allowedEvents = [];
 
-        foreach ($this->allowedComposerEvents as $event) {
+        foreach (self::ALLOWED_COMPOSER_EVENTS as $event) {
             if (isset($packageEvents[$event])) {
                 $allowedEvents[$event] = (array) $packageEvents[$event];
 
@@ -140,7 +140,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
                 }
             }
 
-            if ($allowed === false) {
+            if (! $allowed) {
                 $allowed = $this->io->askConfirmation(QuestionFactory::getPackageScriptsQuestion($package->getPrettyName()), false);
             }
         }
@@ -178,7 +178,7 @@ final class ComposerScriptsConfigurator extends AbstractConfigurator
 
         foreach ((array) $package->getConfig(ConfiguratorContract::TYPE, self::getName()) as $key => $scripts) {
             foreach ((array) $scripts as $script) {
-                if (isset($this->allowedComposerEvents[$key], $composerScripts[$key][$script])) {
+                if (isset(self::ALLOWED_COMPOSER_EVENTS[$key], $composerScripts[$key][$script])) {
                     unset($composerScripts[$key][$script]);
                 }
             }

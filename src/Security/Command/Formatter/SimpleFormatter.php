@@ -29,7 +29,7 @@ final class SimpleFormatter implements FormatterContract
 
                 $output->writeln('<info>' . $dependencyFullName . "\n" . \str_repeat('-', \strlen($dependencyFullName)) . "</>\n");
 
-                foreach ($issues['advisories'] as $issue => $details) {
+                foreach ($issues['advisories'] as $details) {
                     $output->write(' * ');
                     $cve = null;
 

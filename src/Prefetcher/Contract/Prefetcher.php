@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Narrowspark\Automatic\Prefetcher\Contract;
 
+use Composer\Installer\InstallerEvent;
+
 interface Prefetcher
 {
     /**
@@ -25,5 +27,5 @@ interface Prefetcher
     /**
      * @param \Composer\Installer\InstallerEvent|\Composer\Installer\PackageEvent $event
      */
-    public function fetchAllFromOperations($event): void;
+    public function fetchAllFromOperations(InstallerEvent $event): void;
 }

@@ -38,7 +38,7 @@
         "nyholm/nsa": "^1.1.0",
         "phpunit/phpunit": "^8.5.4",
         "ocramius/package-versions": "^1.5.1",
-        "justinrainbow/json-schema": "^4.0 || ^5.0",
+        "justinrainbow/json-schema": "^5.2.10",
         "symfony/process": "^5.0.8"
     },
     "config": {

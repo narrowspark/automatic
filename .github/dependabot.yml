@@ -1,0 +1,44 @@
+version: 2
+updates:
+- package-ecosystem: composer
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 99
+  labels:
+  - dependency
+  versioning-strategy: increase
+  commit-message:
+    prefix: Build
+    include: scope
+- package-ecosystem: composer
+  directory: "/.build"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 99
+  labels:
+  - dependency
+  versioning-strategy: increase
+  commit-message:
+    prefix: Build
+    include: scope
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 99
+  labels:
+  - dependency
+  versioning-strategy: increase
+  ignore:
+  - dependency-name: textlint
+    versions:
+    - 11.8.1
+    - 11.8.2
+    - 11.8.3
+  - dependency-name: lodash
+    versions:
+    - 4.17.20
+  commit-message:
+    prefix: Build
+    include: scope
